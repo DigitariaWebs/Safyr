@@ -136,3 +136,26 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-weight: 300;
 }
+
+/* Sidebar collapsed state - hide text when both collapsed and icon mode */
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="menu-button"] > span:not([class*="sr-only"]) {
+  @apply opacity-0 w-0;
+}
+
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="group-label"] {
+  @apply opacity-0 -mt-8;
+}
+
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="group-action"],
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="menu-action"],
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="menu-badge"] {
+  @apply hidden;
+}
+
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="content"] {
+  @apply overflow-hidden;
+}
+
+.group[data-state="collapsed"][data-collapsible="icon"] [data-sidebar="menu-button"] {
+  @apply size-8! p-2!;
+}
