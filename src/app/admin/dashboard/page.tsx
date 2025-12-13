@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Users,
   User,
@@ -9,10 +9,10 @@ import {
   TrendingUp,
   TrendingDown,
   RefreshCw,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for stats
 const mockStats = [
@@ -48,25 +48,25 @@ const mockStats = [
     trend: "up" as const,
     icon: DollarSign,
   },
-]
+];
 
-type Stat = (typeof mockStats)[number]
+type Stat = (typeof mockStats)[number];
 
 interface StatCardProps {
-  stat: Stat
-  isLoading?: boolean
+  stat: Stat;
+  isLoading?: boolean;
 }
 
 function StatCard({ stat, isLoading }: StatCardProps) {
-  const Icon = stat.icon
-  const TrendIcon = stat.trend === "up" ? TrendingUp : TrendingDown
+  const Icon = stat.icon;
+  const TrendIcon = stat.trend === "up" ? TrendingUp : TrendingDown;
 
   if (isLoading) {
     return (
-      <div className="rounded-[0.625rem] border border-border/40 bg-card p-6">
+      <div className="rounded-lg border border-border/40 bg-card p-6">
         <div className="flex items-center justify-between">
           <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-8 w-8 rounded-[0.625rem]" />
+          <Skeleton className="h-8 w-8 rounded-lg" />
         </div>
         <div className="mt-4">
           <Skeleton className="h-8 w-32" />
@@ -76,16 +76,16 @@ function StatCard({ stat, isLoading }: StatCardProps) {
           <Skeleton className="h-4 w-20" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="rounded-[0.625rem] border border-border/40 bg-card p-6 transition-all duration-200 hover:border-border/80 hover:shadow-sm">
+    <div className="rounded-lg border border-border/40 bg-card p-6 transition-all duration-200 hover:border-border/80 hover:shadow-sm">
       <div className="flex items-center justify-between">
         <span className="text-sm font-light text-muted-foreground">
           {stat.title}
         </span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-[0.625rem] bg-primary/10">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
           <Icon className="h-4 w-4 text-primary" />
         </div>
       </div>
@@ -96,7 +96,7 @@ function StatCard({ stat, isLoading }: StatCardProps) {
         <div
           className={cn(
             "flex items-center gap-1 text-sm font-light",
-            stat.trend === "up" ? "text-emerald-600" : "text-red-500"
+            stat.trend === "up" ? "text-emerald-600" : "text-red-500",
           )}
         >
           <TrendIcon className="h-3 w-3" />
@@ -107,20 +107,20 @@ function StatCard({ stat, isLoading }: StatCardProps) {
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 interface StatCardsProps {
-  stats: Stat[]
-  isLoading: boolean
-  error: Error | null
-  onRetry: () => void
+  stats: Stat[];
+  isLoading: boolean;
+  error: Error | null;
+  onRetry: () => void;
 }
 
 function StatCards({ stats, isLoading, error, onRetry }: StatCardsProps) {
   if (error) {
     return (
-      <div className="rounded-[0.625rem] border border-destructive/40 bg-destructive/5 p-8 text-center">
+      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-8 text-center">
         <p className="text-sm font-light text-destructive">
           Failed to load statistics
         </p>
@@ -135,7 +135,7 @@ function StatCards({ stats, isLoading, error, onRetry }: StatCardsProps) {
           Retry
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -148,37 +148,37 @@ function StatCards({ stats, isLoading, error, onRetry }: StatCardsProps) {
         />
       ))}
     </div>
-  )
+  );
 }
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [stats, setStats] = useState<Stat[]>([])
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [stats, setStats] = useState<Stat[]>([]);
 
   const fetchStats = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Simulate occasional error for demo purposes
       // Uncomment to test error state:
       // if (Math.random() > 0.7) throw new Error("Network error")
 
-      setStats(mockStats)
+      setStats(mockStats);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Unknown error"))
+      setError(err instanceof Error ? err : new Error("Unknown error"));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -188,7 +188,8 @@ export default function DashboardPage() {
           Tableau de bord RH
         </h1>
         <p className="mt-2 text-sm font-light text-muted-foreground">
-          Bienvenue ! Voici un aperçu des indicateurs clés de votre entreprise de sécurité.
+          Bienvenue ! Voici un aperçu des indicateurs clés de votre entreprise
+          de sécurité.
         </p>
       </div>
 
@@ -202,12 +203,14 @@ export default function DashboardPage() {
 
       {/* Placeholder for additional content */}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-[0.625rem] border border-border/40 bg-card p-6">
+        <div className="rounded-lg border border-border/40 bg-card p-6">
           <h2 className="font-serif text-lg font-light">Alertes urgentes</h2>
           <div className="mt-4 space-y-3">
             <div className="flex items-center gap-3 text-sm">
               <div className="h-2 w-2 rounded-full bg-red-500"></div>
-              <span className="font-light">8 cartes CNAPS expirent sous 30j</span>
+              <span className="font-light">
+                8 cartes CNAPS expirent sous 30j
+              </span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="h-2 w-2 rounded-full bg-orange-500"></div>
@@ -215,25 +218,27 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-              <span className="font-light">5 visites médicales à planifier</span>
+              <span className="font-light">
+                5 visites médicales à planifier
+              </span>
             </div>
           </div>
         </div>
-        <div className="rounded-[0.625rem] border border-border/40 bg-card p-6">
+        <div className="rounded-lg border border-border/40 bg-card p-6">
           <h2 className="font-serif text-lg font-light">Actions rapides</h2>
           <div className="mt-4 space-y-2">
-            <button className="w-full rounded-[0.625rem] border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
+            <button className="w-full rounded-lg border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
               + Nouveau salarié
             </button>
-            <button className="w-full rounded-[0.625rem] border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
+            <button className="w-full rounded-lg border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
               Préparer la paie
             </button>
-            <button className="w-full rounded-[0.625rem] border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
+            <button className="w-full rounded-lg border border-border/40 p-3 text-left text-sm font-light transition-colors hover:bg-accent">
               Export registres
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
