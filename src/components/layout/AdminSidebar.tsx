@@ -9,6 +9,8 @@ import {
   Shield,
   Settings,
   Mail,
+  Calendar,
+  Clock,
 } from "lucide-react";
 
 import { GenericSidebar, MenuSection } from "@/components/ui/generic-sidebar";
