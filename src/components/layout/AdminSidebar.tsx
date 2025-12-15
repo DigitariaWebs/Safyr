@@ -61,13 +61,11 @@ const navigationSections: MenuSection[] = [
         title: "Heures travaillées",
         url: "/admin/time-management/worked-hours",
         icon: Clock,
-        disabled: true,
       },
       {
         title: "Heures CSE",
         url: "/admin/time-management/cse-hours",
         icon: ClipboardList,
-        disabled: true,
       },
     ],
   },

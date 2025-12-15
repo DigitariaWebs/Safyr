@@ -17,6 +17,7 @@ import {
   FileText,
   Package,
   Users,
+  Shield,
 } from "lucide-react";
 import type { Employee } from "@/types/employee";
 import { getEmployeeById } from "@/data/employees";
@@ -27,6 +28,7 @@ import {
   EmployeeEquipmentTab,
   EmployeeAlertsTab,
   EmployeeCSETab,
+  EmployeeCNAPSTab,
 } from "@/components/employees";
 
 type TabType =
@@ -70,6 +72,7 @@ export default function EmployeeDetailPage({
     { id: "equipment" as const, label: "Équipements", icon: Package },
     { id: "alerts" as const, label: "Alertes", icon: AlertTriangle },
     { id: "cse" as const, label: "CSE", icon: Users },
+    { id: "cnaps" as const, label: "CNAPS", icon: Shield },
   ];
 
   const getStatusBadge = (status: Employee["status"]) => {
@@ -229,6 +232,7 @@ export default function EmployeeDetailPage({
         )}
         {activeTab === "alerts" && <EmployeeAlertsTab employee={employee} />}
         {activeTab === "cse" && <EmployeeCSETab employee={employee} />}
+        {activeTab === "cnaps" && <EmployeeCNAPSTab employee={employee} />}
       </div>
     </div>
   );

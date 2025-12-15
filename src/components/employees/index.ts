@@ -4,3 +4,4 @@ export { EmployeeContractsTab } from './EmployeeContractsTab';
 export { EmployeeEquipmentTab } from './EmployeeEquipmentTab';
 export { EmployeeAlertsTab } from './EmployeeAlertsTab';
 export { EmployeeCSETab } from './EmployeeCSETab';
+export { EmployeeCNAPSTab } from './EmployeeCNAPSTab';

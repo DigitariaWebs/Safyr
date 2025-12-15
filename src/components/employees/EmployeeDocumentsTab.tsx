@@ -180,7 +180,7 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     {doc.type === "id-card" || doc.type === "health-card" ? (
-                      <Image className="h-5 w-5 text-primary" />
+                      <Image className="h-5 w-5 text-primary" alt="" />
                     ) : (
                       <FileText className="h-5 w-5 text-primary" />
                     )}
