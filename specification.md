@@ -1,16 +1,15 @@
 # Specification of the Complete HR Platform for Security Companies
 
 ## 1. Personnel Administrative Management
-
-- [ ] Employee File: ID, HEALTH CARD, CV, photo, proof of address
-- [ ] Diploma Documents: CQP/APS, pro card CNAPS, SSIAP, SST, VM
-- [ ] Direct access to CNAPS DRACAR
-- [ ] Contract and Employee Contract History (CDD, CDI, amendments)
-- [ ] CSE Management / delegation hours / elected officials
-- [ ] Tracking of assigned equipment (PPE, radios, keys…)
-- [ ] Dematerialized signature of PPE (issuance / return)
-- [ ] Expiration alerts: pro card, SSIAP, VM, SST
-- [ ] Update civil status, contact details, bank details, etc.
+- [x] Employee File: ID, HEALTH CARD, CV, photo, proof of address
+- [x] Diploma Documents: CQP/APS, pro card CNAPS, SSIAP, SST, VM
+- [x] Direct access to CNAPS DRACAR
+- [x] Contract and Employee Contract History (CDD, CDI, amendments)
+- [x] CSE Management / delegation hours / elected officials
+- [x] Tracking of assigned equipment (PPE, radios, keys…)
+- [x] Dematerialized signature of PPE (issuance / return)
+- [x] Expiration alerts: pro card, SSIAP, VM, SST
+- [x] Update civil status, contact details, bank details, etc.
 
 ## 2. HR Communication
 
@@ -23,12 +22,11 @@
 - [ ] Push notifications / SMS (option)
 
 ## 3. Time Management & Absences
-
-- [ ] Vacations, absences, sick leaves
-- [ ] Worked hours (for payroll only)
-- [ ] Complete tracking of CSE delegation hours / elected officials
-- [ ] Declarations + HR validation
-- [ ] Automatic payroll export
+- [x] Vacations, absences, sick leaves
+- [x] Worked hours (for payroll only)
+- [x] Complete tracking of CSE delegation hours / elected officials
+- [x] Declarations + HR validation
+- [x] Automatic payroll export
 
 ## 4. Payroll Preparation & Analyses
 
