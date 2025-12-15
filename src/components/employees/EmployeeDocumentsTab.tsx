@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { Employee, Document, Certification } from "@/lib/types";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
 interface EmployeeDocumentsTabProps {
   employee: Employee;
@@ -150,6 +151,109 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
     return labels[type] || type;
   };
 
+  const documentColumns: ColumnDef<Document>[] = [
+    {
+      key: "icon",
+      label: "",
+      render: (doc) => (
+        <div className="p-2 bg-primary/10 rounded-lg">
+          {doc.type === "id-card" || doc.type === "health-card" ? (
+            <Image className="h-5 w-5 text-primary" />
+          ) : (
+            <FileText className="h-5 w-5 text-primary" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "name",
+      label: "Document",
+      sortable: true,
+      render: (doc) => (
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-semibold truncate">{doc.name}</span>
+          {doc.verified && (
+            <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "uploadedAt",
+      label: "Date d'ajout",
+      sortable: true,
+      render: (doc) => doc.uploadedAt.toLocaleDateString("fr-FR"),
+    },
+    {
+      key: "expiresAt",
+      label: "Date d'expiration",
+      sortable: true,
+      render: (doc) =>
+        doc.expiresAt ? doc.expiresAt.toLocaleDateString("fr-FR") : "-",
+    },
+  ];
+
+  const certificationColumns: ColumnDef<Certification>[] = [
+    {
+      key: "status",
+      label: "Statut",
+      render: (cert) => {
+        const statusConfig = getStatusBadge(cert.status);
+        return <div className={`w-3 h-3 rounded-full ${statusConfig.color}`} />;
+      },
+    },
+    {
+      key: "type",
+      label: "Certification",
+      sortable: true,
+      render: (cert) => (
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-semibold truncate">
+            {getCertificationLabel(cert.type)}
+          </span>
+          {cert.verified && (
+            <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "number",
+      label: "Numéro",
+      render: (cert) => <span className="truncate">{cert.number}</span>,
+    },
+    {
+      key: "issuer",
+      label: "Émetteur",
+      render: (cert) => <span className="truncate">{cert.issuer}</span>,
+    },
+    {
+      key: "expiryDate",
+      label: "Date d'expiration",
+      sortable: true,
+      render: (cert) => {
+        const statusConfig = getStatusBadge(cert.status);
+        const daysUntilExpiry = Math.ceil(
+          (cert.expiryDate.getTime() - new Date().getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+        return (
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span>{cert.expiryDate.toLocaleDateString("fr-FR")}</span>
+              <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+            </div>
+            {cert.status !== "expired" && daysUntilExpiry <= 90 && (
+              <span className="text-xs text-orange-600 font-medium">
+                {daysUntilExpiry} jours restants
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
   const handleCNAPSAccess = () => {
     // Open CNAPS DRACAR system
     window.open(
@@ -171,57 +275,26 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    {doc.type === "id-card" || doc.type === "health-card" ? (
-                      <Image className="h-5 w-5 text-primary" />
-                    ) : (
-                      <FileText className="h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold">{doc.name}</h4>
-                      {doc.verified && (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      )}
-                    </div>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span>
-                        Ajouté le {doc.uploadedAt.toLocaleDateString("fr-FR")}
-                      </span>
-                      {doc.expiresAt && (
-                        <>
-                          <span>•</span>
-                          <span>
-                            Expire le{" "}
-                            {doc.expiresAt.toLocaleDateString("fr-FR")}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+          <DataTable
+            data={documents}
+            columns={documentColumns}
+            searchKeys={["name", "type"]}
+            searchPlaceholder="Rechercher un document..."
+            itemsPerPage={10}
+            actions={() => (
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon">
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
-            ))}
-          </div>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -262,67 +335,36 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {certifications.map((cert) => {
-              const statusConfig = getStatusBadge(cert.status);
-              const daysUntilExpiry = Math.ceil(
-                (cert.expiryDate.getTime() - new Date().getTime()) /
-                  (1000 * 60 * 60 * 24),
-              );
-
-              return (
-                <div
-                  key={cert.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-3 h-3 rounded-full ${statusConfig.color}`}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">
-                          {getCertificationLabel(cert.type)}
-                        </h4>
-                        <Badge variant={statusConfig.variant}>
-                          {statusConfig.label}
-                        </Badge>
-                        {cert.verified && (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        )}
-                      </div>
-                      <div className="flex gap-4 text-sm text-muted-foreground">
-                        <span>N° {cert.number}</span>
-                        <span>•</span>
-                        <span>Émis par {cert.issuer}</span>
-                        <span>•</span>
-                        <span>
-                          Expire le{" "}
-                          {cert.expiryDate.toLocaleDateString("fr-FR")}
-                        </span>
-                        {cert.status !== "expired" && daysUntilExpiry <= 90 && (
-                          <>
-                            <span>•</span>
-                            <span className="text-orange-600 font-medium">
-                              {daysUntilExpiry} jours restants
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <DataTable
+            data={certifications}
+            columns={certificationColumns}
+            searchKeys={["type", "number", "issuer"]}
+            searchPlaceholder="Rechercher une certification..."
+            itemsPerPage={10}
+            filters={[
+              {
+                key: "status",
+                label: "Statut",
+                options: [
+                  { value: "all", label: "Tous" },
+                  { value: "valid", label: "Valide" },
+                  { value: "expiring-soon", label: "Expire bientôt" },
+                  { value: "expired", label: "Expiré" },
+                  { value: "pending-renewal", label: "À renouveler" },
+                ],
+              },
+            ]}
+            actions={() => (
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon">
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          />
         </CardContent>
       </Card>
     </div>

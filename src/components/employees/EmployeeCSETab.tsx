@@ -16,6 +16,7 @@ import {
   Plus,
 } from "lucide-react";
 import type { Employee, CSERole } from "@/lib/types";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
 interface EmployeeCSETabProps {
   employee: Employee;
@@ -96,6 +97,72 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
       hours: 2,
       reason: "Consultation documents sociaux",
       validated: false,
+    },
+  ];
+
+  const delegationColumns: ColumnDef<(typeof delegationHistory)[0]>[] = [
+    {
+      key: "icon",
+      label: "",
+      render: () => (
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <Clock className="h-5 w-5 text-primary" />
+        </div>
+      ),
+    },
+    {
+      key: "reason",
+      label: "Motif",
+      sortable: true,
+      render: (entry) => (
+        <div className="space-y-1 min-w-0">
+          <span className="font-semibold truncate block">{entry.reason}</span>
+        </div>
+      ),
+    },
+    {
+      key: "date",
+      label: "Date",
+      sortable: true,
+      render: (entry) => (
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3 w-3" />
+          <span>{entry.date.toLocaleDateString("fr-FR")}</span>
+        </div>
+      ),
+    },
+    {
+      key: "hours",
+      label: "Heures",
+      sortable: true,
+      render: (entry) => (
+        <span className="font-medium">{entry.hours} heures</span>
+      ),
+    },
+    {
+      key: "validated",
+      label: "Statut",
+      sortable: true,
+      render: (entry) => (
+        <div>
+          {entry.validated ? (
+            <Badge variant="default">
+              <CheckCircle className="mr-1 h-3 w-3" />
+              Validé
+            </Badge>
+          ) : (
+            <Badge variant="secondary">
+              <AlertCircle className="mr-1 h-3 w-3" />
+              En attente
+            </Badge>
+          )}
+          {entry.validated && entry.validatedBy && (
+            <div className="text-xs text-muted-foreground mt-1">
+              par {entry.validatedBy}
+            </div>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -268,49 +335,25 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {delegationHistory.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <Clock className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">{entry.reason}</h4>
-                          {entry.validated ? (
-                            <Badge variant="default">
-                              <CheckCircle className="mr-1 h-3 w-3" />
-                              Validé
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">
-                              <AlertCircle className="mr-1 h-3 w-3" />
-                              En attente
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {entry.date.toLocaleDateString("fr-FR")}
-                          </span>
-                          <span>•</span>
-                          <span className="font-medium">
-                            {entry.hours} heures
-                          </span>
-                          {entry.validated && entry.validatedBy && (
-                            <>
-                              <span>•</span>
-                              <span>Validé par {entry.validatedBy}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              <DataTable
+                data={delegationHistory}
+                columns={delegationColumns}
+                searchKeys={["reason"]}
+                searchPlaceholder="Rechercher une déclaration..."
+                itemsPerPage={10}
+                filters={[
+                  {
+                    key: "validated",
+                    label: "Statut",
+                    options: [
+                      { value: "all", label: "Tous" },
+                      { value: "true", label: "Validé" },
+                      { value: "false", label: "En attente" },
+                    ],
+                  },
+                ]}
+                actions={(entry) => (
+                  <>
                     {!entry.validated && (
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm">
@@ -321,9 +364,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                         </Button>
                       </div>
                     )}
-                  </div>
-                ))}
-              </div>
+                  </>
+                )}
+              />
             </CardContent>
           </Card>
 

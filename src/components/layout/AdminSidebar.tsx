@@ -32,7 +32,7 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Salariés",
-        url: "/admin/employees",
+        url: "/admin/dashboard/employees",
         icon: Users,
       },
       {
@@ -54,17 +54,17 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Demandes d'absence",
-        url: "/admin/time-management",
+        url: "/admin/dashboard/time-management",
         icon: Calendar,
       },
       {
         title: "Heures travaillées",
-        url: "/admin/time-management/worked-hours",
+        url: "/admin/dashboard/time-management/worked-hours",
         icon: Clock,
       },
       {
         title: "Heures CSE",
-        url: "/admin/time-management/cse-hours",
+        url: "/admin/dashboard/time-management/cse-hours",
         icon: ClipboardList,
       },
     ],

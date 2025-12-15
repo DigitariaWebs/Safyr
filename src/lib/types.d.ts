@@ -8,6 +8,7 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   category: EmailTemplateCategory;
+  tags: string[];
   lastModified: string;
 }
 
@@ -16,6 +17,7 @@ export interface EmailTemplateFormData {
   subject: string;
   body: string;
   category: EmailTemplateCategory;
+  tags: string[];
 }
 
 export type EmailTemplateCategory =

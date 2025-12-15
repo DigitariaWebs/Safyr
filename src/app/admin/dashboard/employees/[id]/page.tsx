@@ -19,6 +19,7 @@ import {
   Package,
   Users,
   Shield,
+  Send,
 } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import { getEmployeeById } from "@/data/employees";
@@ -31,6 +32,7 @@ import {
   EmployeeCSETab,
   EmployeeCNAPSTab,
 } from "@/components/employees";
+import { useSendEmail } from "@/hooks/useSendEmail";
 
 export default function EmployeeDetailPage({
   params,
@@ -42,6 +44,7 @@ export default function EmployeeDetailPage({
   const isEditMode = searchParams.get("edit") === "true";
   const [activeTab, setActiveTab] = useState("info");
   const employee = getEmployeeById(id);
+  const { openEmailModal } = useSendEmail();
 
   if (!employee) {
     return (
@@ -99,9 +102,9 @@ export default function EmployeeDetailPage({
   const statusConfig = getStatusBadge(employee.status);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 max-w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/employees">
             <ArrowLeft className="h-4 w-4" />
@@ -115,25 +118,36 @@ export default function EmployeeDetailPage({
             {employee.position} • {employee.employeeNumber}
           </p>
         </div>
-        {!isEditMode && (
-          <Button asChild>
-            <Link href={`/admin/employees/${employee.id}?edit=true`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Modifier
-            </Link>
-          </Button>
-        )}
-        {isEditMode && (
-          <Button asChild variant="outline">
-            <Link href={`/admin/employees/${employee.id}`}>Annuler</Link>
-          </Button>
-        )}
+        <div className="flex gap-2 flex-wrap">
+          {!isEditMode && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => openEmailModal([employee])}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Envoyer un email
+              </Button>
+              <Button asChild>
+                <Link href={`/admin/employees/${employee.id}?edit=true`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Modifier
+                </Link>
+              </Button>
+            </>
+          )}
+          {isEditMode && (
+            <Button asChild variant="outline">
+              <Link href={`/admin/employees/${employee.id}`}>Annuler</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Employee Overview Card */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-6 flex-wrap">
             <Avatar className="h-24 w-24">
               <AvatarImage src={employee.photo} alt={employee.firstName} />
               <AvatarFallback className="text-2xl">
@@ -142,7 +156,7 @@ export default function EmployeeDetailPage({
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="flex-1 grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-0">
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${statusConfig.color}`} />
                 <div>
@@ -202,7 +216,7 @@ export default function EmployeeDetailPage({
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -223,7 +237,7 @@ export default function EmployeeDetailPage({
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-100">
+      <div className="min-h-100 max-w-full overflow-x-hidden">
         {activeTab === "info" && (
           <EmployeeInfoTab employee={employee} isEditMode={isEditMode} />
         )}

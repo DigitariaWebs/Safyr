@@ -50,6 +50,7 @@ import {
 import type { Employee } from "@/lib/types";
 import type { EmployeeFormData } from "@/lib/types";
 import { mockEmployees, mockStats } from "@/data/employees";
+import { useSendEmail } from "@/hooks/useSendEmail";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
@@ -63,6 +64,7 @@ export default function EmployeesPage() {
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(
     null,
   );
+  const { openEmailModal } = useSendEmail();
   const [isNewEmployeeModalOpen, setIsNewEmployeeModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [newEmployeeData, setNewEmployeeData] = useState<EmployeeFormData>({
@@ -131,7 +133,9 @@ export default function EmployeesPage() {
   };
 
   const handleBulkEmail = () => {
-    console.log("Send email to:", selectedEmployees);
+    openEmailModal(selectedEmployees, () => {
+      setSelectedEmployees([]);
+    });
   };
 
   const handleClearSelection = () => {

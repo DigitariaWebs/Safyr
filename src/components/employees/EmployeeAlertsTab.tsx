@@ -16,6 +16,7 @@ import {
   BellOff,
 } from "lucide-react";
 import type { Employee, ExpirationAlert } from "@/lib/types";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
 interface EmployeeAlertsTabProps {
   employee: Employee;
@@ -146,6 +147,101 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
   const highAlerts = alerts.filter((a) => a.severity === "high");
   const pendingAlerts = alerts.filter((a) => a.status === "pending");
 
+  const alertColumns: ColumnDef<ExpirationAlert>[] = [
+    {
+      key: "severity",
+      label: "Gravité",
+      sortable: true,
+      render: (alert) => {
+        const severityConfig = getSeverityConfig(alert.severity);
+        const SeverityIcon = severityConfig.icon;
+        return (
+          <div className="flex items-center gap-2">
+            <div
+              className={`p-2 bg-white dark:bg-gray-900 rounded-lg ${severityConfig.color}`}
+            >
+              <SeverityIcon className="h-5 w-5" />
+            </div>
+            <Badge variant={severityConfig.badgeVariant}>
+              {severityConfig.label}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      key: "documentName",
+      label: "Document",
+      sortable: true,
+      render: (alert) => {
+        const statusConfig = getStatusBadge(alert.status);
+        const StatusIcon = statusConfig.icon;
+        return (
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-semibold truncate">
+                {alert.documentName}
+              </span>
+              <Badge variant={statusConfig.variant} className="shrink-0">
+                <StatusIcon className="mr-1 h-3 w-3" />
+                {statusConfig.label}
+              </Badge>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: "expiryDate",
+      label: "Date d'expiration",
+      sortable: true,
+      render: (alert) => (
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span>{alert.expiryDate.toLocaleDateString("fr-FR")}</span>
+        </div>
+      ),
+    },
+    {
+      key: "daysUntilExpiry",
+      label: "Temps restant",
+      sortable: true,
+      render: (alert) => (
+        <div
+          className={`flex items-center gap-2 ${
+            alert.daysUntilExpiry < 0
+              ? "text-red-600 font-semibold"
+              : alert.daysUntilExpiry < 30
+                ? "text-orange-600 font-semibold"
+                : ""
+          }`}
+        >
+          <Clock className="h-4 w-4" />
+          {formatDaysRemaining(alert.daysUntilExpiry)}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Statut",
+      sortable: true,
+      render: (alert) => {
+        return (
+          <div className="text-xs text-muted-foreground">
+            {alert.status === "acknowledged" && alert.acknowledgedAt && (
+              <div>
+                Pris en compte le{" "}
+                {alert.acknowledgedAt.toLocaleDateString("fr-FR")}
+                <br />
+                par {alert.acknowledgedBy}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Alert Stats */}
@@ -206,123 +302,66 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
           <CardTitle>Alertes d&apos;expiration</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {alerts.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
-                  Aucune alerte active
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Tous les documents sont à jour
-                </p>
-              </div>
-            ) : (
-              alerts
-                .sort((a, b) => {
-                  // Sort by severity (critical first) then by days until expiry
-                  const severityOrder = {
-                    critical: 0,
-                    high: 1,
-                    medium: 2,
-                    low: 3,
-                  };
-                  const severityDiff =
-                    severityOrder[a.severity] - severityOrder[b.severity];
-                  if (severityDiff !== 0) return severityDiff;
-                  return a.daysUntilExpiry - b.daysUntilExpiry;
-                })
-                .map((alert) => {
-                  const severityConfig = getSeverityConfig(alert.severity);
-                  const statusConfig = getStatusBadge(alert.status);
-                  const SeverityIcon = severityConfig.icon;
-                  const StatusIcon = statusConfig.icon;
-
-                  return (
-                    <div
-                      key={alert.id}
-                      className={`p-4 border rounded-lg ${severityConfig.bgColor} ${severityConfig.borderColor}`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div
-                            className={`p-2 bg-white dark:bg-gray-900 rounded-lg ${severityConfig.color}`}
-                          >
-                            <SeverityIcon className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold">
-                                {alert.documentName}
-                              </h4>
-                              <Badge variant={severityConfig.badgeVariant}>
-                                {severityConfig.label}
-                              </Badge>
-                              <Badge variant={statusConfig.variant}>
-                                <StatusIcon className="mr-1 h-3 w-3" />
-                                {statusConfig.label}
-                              </Badge>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-4 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">
-                                    Expire le:{" "}
-                                  </span>
-                                  <span className="font-medium">
-                                    {alert.expiryDate.toLocaleDateString(
-                                      "fr-FR",
-                                    )}
-                                  </span>
-                                </div>
-                                <div
-                                  className={`flex items-center gap-2 ${
-                                    alert.daysUntilExpiry < 0
-                                      ? "text-red-600 font-semibold"
-                                      : alert.daysUntilExpiry < 30
-                                        ? "text-orange-600 font-semibold"
-                                        : ""
-                                  }`}
-                                >
-                                  <Clock className="h-4 w-4" />
-                                  {formatDaysRemaining(alert.daysUntilExpiry)}
-                                </div>
-                              </div>
-
-                              {alert.status === "acknowledged" &&
-                                alert.acknowledgedAt && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Pris en compte le{" "}
-                                    {alert.acknowledgedAt.toLocaleDateString(
-                                      "fr-FR",
-                                    )}{" "}
-                                    par {alert.acknowledgedBy}
-                                  </div>
-                                )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          {alert.status === "pending" && (
-                            <Button variant="outline" size="sm">
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Accuser réception
-                            </Button>
-                          )}
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Renouveler
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-            )}
-          </div>
+          {alerts.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                Aucune alerte active
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Tous les documents sont à jour
+              </p>
+            </div>
+          ) : (
+            <DataTable
+              data={alerts}
+              columns={alertColumns}
+              searchKeys={["documentName", "type"]}
+              searchPlaceholder="Rechercher une alerte..."
+              itemsPerPage={10}
+              filters={[
+                {
+                  key: "severity",
+                  label: "Gravité",
+                  options: [
+                    { value: "all", label: "Tous" },
+                    { value: "critical", label: "Critique" },
+                    { value: "high", label: "Urgent" },
+                    { value: "medium", label: "Attention" },
+                    { value: "low", label: "Information" },
+                  ],
+                },
+                {
+                  key: "status",
+                  label: "Statut",
+                  options: [
+                    { value: "all", label: "Tous" },
+                    { value: "pending", label: "En attente" },
+                    { value: "acknowledged", label: "Pris en compte" },
+                    { value: "resolved", label: "Résolu" },
+                  ],
+                },
+              ]}
+              actions={(alert) => (
+                <div className="flex gap-2">
+                  {alert.status === "pending" && (
+                    <Button variant="outline" size="sm">
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Accuser réception
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Renouveler
+                  </Button>
+                </div>
+              )}
+              rowClassName={(alert) => {
+                const severityConfig = getSeverityConfig(alert.severity);
+                return `${severityConfig.bgColor} ${severityConfig.borderColor}`;
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 

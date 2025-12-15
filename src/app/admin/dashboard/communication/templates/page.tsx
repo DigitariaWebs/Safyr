@@ -28,6 +28,7 @@ import {
   EmailTemplateFormData,
   EmailTemplateCategoryOption,
 } from "@/lib/types";
+import { mockEmailTemplates } from "@/data/email-templates";
 
 const TEMPLATE_CATEGORIES: EmailTemplateCategoryOption[] = [
   { value: "rh", label: "RH Général" },
@@ -40,43 +41,9 @@ const TEMPLATE_CATEGORIES: EmailTemplateCategoryOption[] = [
   { value: "autre", label: "Autre" },
 ];
 
-const mockTemplates: EmailTemplate[] = [
-  {
-    id: "1",
-    name: "Convocation entretien",
-    subject: "Convocation à un entretien",
-    body: "Bonjour {{prenom}} {{nom}},\n\nNous vous prions de bien vouloir vous présenter le {{date}} à {{heure}} pour un entretien.\n\nCordialement,\nLe service RH",
-    category: "rh",
-    lastModified: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Confirmation embauche",
-    subject: "Confirmation de votre embauche",
-    body: "Bonjour {{prenom}},\n\nNous avons le plaisir de vous confirmer votre embauche au poste de {{poste}}.\n\nCordialement,\nLe service RH",
-    category: "recrutement",
-    lastModified: "2024-01-14",
-  },
-  {
-    id: "3",
-    name: "Rappel formation SSIAP",
-    subject: "Rappel : Formation SSIAP à venir",
-    body: "Bonjour {{prenom}},\n\nVotre certification SSIAP expire le {{date_expiration}}. Merci de vous inscrire à une session de recyclage.\n\nCordialement,\nLe service Formation",
-    category: "formation",
-    lastModified: "2024-01-10",
-  },
-  {
-    id: "4",
-    name: "Validation congés",
-    subject: "Validation de votre demande de congés",
-    body: "Bonjour {{prenom}},\n\nVotre demande de congés du {{date_debut}} au {{date_fin}} a été validée.\n\nCordialement,\nLe service RH",
-    category: "conges",
-    lastModified: "2024-01-08",
-  },
-];
-
 export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<EmailTemplate[]>(mockTemplates);
+  const [templates, setTemplates] =
+    useState<EmailTemplate[]>(mockEmailTemplates);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(
@@ -90,11 +57,14 @@ export default function TemplatesPage() {
     subject: "",
     body: "",
     category: "rh",
+    tags: [],
   });
+  const [tagInput, setTagInput] = useState("");
 
   const handleCreate = () => {
     setEditingTemplate(null);
-    setFormData({ name: "", subject: "", body: "", category: "rh" });
+    setFormData({ name: "", subject: "", body: "", category: "rh", tags: [] });
+    setTagInput("");
     setIsDialogOpen(true);
   };
 
@@ -105,7 +75,9 @@ export default function TemplatesPage() {
       subject: template.subject,
       body: template.body,
       category: template.category,
+      tags: template.tags,
     });
+    setTagInput("");
     setIsDialogOpen(true);
   };
 
@@ -131,6 +103,7 @@ export default function TemplatesPage() {
                 subject: formData.subject,
                 body: formData.body,
                 category: formData.category,
+                tags: formData.tags,
                 lastModified: new Date().toISOString().split("T")[0],
               }
             : t,
@@ -143,6 +116,7 @@ export default function TemplatesPage() {
         subject: formData.subject,
         body: formData.body,
         category: formData.category,
+        tags: formData.tags,
         lastModified: new Date().toISOString().split("T")[0],
       };
       setTemplates([...templates, newTemplate]);
@@ -179,6 +153,24 @@ export default function TemplatesPage() {
       sortable: true,
       render: (template) => (
         <Badge variant="outline">{getCategoryLabel(template.category)}</Badge>
+      ),
+    },
+    {
+      key: "tags",
+      label: "Tags",
+      render: (template) => (
+        <div className="flex flex-wrap gap-1">
+          {template.tags.slice(0, 2).map((tag) => (
+            <Badge key={tag} variant="secondary" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+          {template.tags.length > 2 && (
+            <Badge variant="secondary" className="text-xs">
+              +{template.tags.length - 2}
+            </Badge>
+          )}
+        </div>
       ),
     },
     {
@@ -329,6 +321,69 @@ export default function TemplatesPage() {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="tags">Tags</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  id="tags"
+                  placeholder="Ajouter un tag"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && tagInput.trim()) {
+                      e.preventDefault();
+                      if (!formData.tags.includes(tagInput.trim())) {
+                        setFormData({
+                          ...formData,
+                          tags: [...formData.tags, tagInput.trim()],
+                        });
+                      }
+                      setTagInput("");
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (
+                      tagInput.trim() &&
+                      !formData.tags.includes(tagInput.trim())
+                    ) {
+                      setFormData({
+                        ...formData,
+                        tags: [...formData.tags, tagInput.trim()],
+                      });
+                      setTagInput("");
+                    }
+                  }}
+                >
+                  Ajouter
+                </Button>
+              </div>
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="gap-1 cursor-pointer"
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          tags: formData.tags.filter((t) => t !== tag),
+                        })
+                      }
+                    >
+                      {tag}
+                      <span className="ml-1">×</span>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="body">Corps du message</Label>
             <Textarea
               id="body"
@@ -341,7 +396,9 @@ export default function TemplatesPage() {
             />
             <p className="text-xs text-muted-foreground">
               Variables disponibles : {`{{prenom}}`}, {`{{nom}}`}, {`{{email}}`}
-              , {`{{poste}}`}, {`{{date}}`}, etc.
+              , {`{{telephone}}`}, {`{{poste}}`}, {`{{departement}}`},{" "}
+              {`{{numero_employe}}`}, {`{{date_embauche}}`}, {`{{adresse}}`},{" "}
+              {`{{ville}}`}, {`{{code_postal}}`}, {`{{pays}}`}
             </p>
           </div>
         </div>
@@ -377,6 +434,27 @@ export default function TemplatesPage() {
                     {previewTemplate.subject}
                   </p>
                 </div>
+                {previewTemplate.tags.length > 0 && (
+                  <>
+                    <div className="h-px bg-border" />
+                    <div>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Tags :
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {previewTemplate.tags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="h-px bg-border" />
                 <div>
                   <span className="text-xs font-medium text-muted-foreground">
@@ -395,7 +473,15 @@ export default function TemplatesPage() {
                   .replace(/\{\{prenom\}\}/g, "Jean")
                   .replace(/\{\{nom\}\}/g, "Dupont")
                   .replace(/\{\{email\}\}/g, "jean.dupont@exemple.fr")
+                  .replace(/\{\{telephone\}\}/g, "06 12 34 56 78")
                   .replace(/\{\{poste\}\}/g, "Agent de sécurité")
+                  .replace(/\{\{departement\}\}/g, "Sécurité")
+                  .replace(/\{\{numero_employe\}\}/g, "EMP-2024-001")
+                  .replace(/\{\{date_embauche\}\}/g, "01/03/2024")
+                  .replace(/\{\{adresse\}\}/g, "123 Rue de la République")
+                  .replace(/\{\{ville\}\}/g, "Paris")
+                  .replace(/\{\{code_postal\}\}/g, "75001")
+                  .replace(/\{\{pays\}\}/g, "France")
                   .replace(/\{\{date\}\}/g, "15/01/2024")
                   .replace(/\{\{heure\}\}/g, "14h30")
                   .replace(/\{\{date_debut\}\}/g, "01/02/2024")

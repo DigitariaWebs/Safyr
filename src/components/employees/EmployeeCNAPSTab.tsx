@@ -19,6 +19,7 @@ import {
   Clock,
 } from "lucide-react";
 import type { Employee, CNAPSAccess } from "@/lib/types";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
 interface EmployeeCNAPSTabProps {
   employee: Employee;
@@ -121,6 +122,59 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
   };
 
   const statusConfig = cnapsData ? getStatusBadge(cnapsData.status) : null;
+
+  const verificationColumns: ColumnDef<(typeof verificationHistory)[0]>[] = [
+    {
+      key: "status",
+      label: "Statut",
+      sortable: true,
+      render: (verification) => {
+        const config = getStatusBadge(verification.status);
+        return (
+          <div className="flex items-center gap-2">
+            <config.icon
+              className={`h-5 w-5 text-${config.color.split("-")[1]}-600`}
+            />
+            <Badge variant={config.variant}>{config.label}</Badge>
+          </div>
+        );
+      },
+    },
+    {
+      key: "date",
+      label: "Date",
+      sortable: true,
+      render: (verification) => (
+        <span className="text-sm">
+          {verification.date.toLocaleDateString("fr-FR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "notes",
+      label: "Notes",
+      render: (verification) => (
+        <span className="text-sm truncate block max-w-md">
+          {verification.notes}
+        </span>
+      ),
+    },
+    {
+      key: "checkedBy",
+      label: "Vérifié par",
+      render: (verification) => (
+        <span className="text-xs text-muted-foreground">
+          {verification.checkedBy}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -266,41 +320,26 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
           <CardTitle>Historique des vérifications</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {verificationHistory.map((verification) => {
-              const statusConfig = getStatusBadge(verification.status);
-              return (
-                <div
-                  key={verification.id}
-                  className="flex items-start gap-3 p-3 border rounded-lg"
-                >
-                  <statusConfig.icon
-                    className={`h-5 w-5 mt-0.5 text-${statusConfig.color.split("-")[1]}-600`}
-                  />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={statusConfig.variant} className="text-xs">
-                        {statusConfig.label}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {verification.date.toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-sm">{verification.notes}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Vérifié par: {verification.checkedBy}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <DataTable
+            data={verificationHistory}
+            columns={verificationColumns}
+            searchKeys={["notes", "checkedBy"]}
+            searchPlaceholder="Rechercher dans l'historique..."
+            itemsPerPage={10}
+            filters={[
+              {
+                key: "status",
+                label: "Statut",
+                options: [
+                  { value: "all", label: "Tous" },
+                  { value: "valid", label: "Valide" },
+                  { value: "invalid", label: "Invalide" },
+                  { value: "pending", label: "En attente" },
+                  { value: "error", label: "Erreur" },
+                ],
+              },
+            ]}
+          />
         </CardContent>
       </Card>
 

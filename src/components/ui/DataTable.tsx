@@ -225,14 +225,11 @@ export function DataTable<T extends object>({
     paginatedData.every((item, index) =>
       selectedRows.has(getItemId(item, index)),
     );
-  const isSomeSelected = paginatedData.some((item, index) =>
-    selectedRows.has(getItemId(item, index)),
-  );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-full overflow-x-hidden">
       {/* Filters */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 flex-wrap gap-y-2">
         {(searchKey || searchKeys || getSearchValue) && (
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -322,7 +319,7 @@ export function DataTable<T extends object>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border overflow-x-auto">
+      <div className="rounded-md border overflow-x-auto w-full">
         <Table>
           <TableHeader>
             <TableRow>
