@@ -1,141 +1,141 @@
-# Spécification de la Plateforme RH Complète pour Entreprises de Sécurité
+# Specification of the Complete HR Platform for Security Companies
 
-## 1. Gestion administrative du personnel
-- [ ] Dossier salarié : CNI, CARTE VITALE, cv, photo, justificatif de domicile
-- [ ] Documents diplômes : CQP/APS, carte pro CNAPS, SSIAP, SST, VM
-- [ ] Accès direct au DRACAR du CNAPS
-- [ ] Contrat et Historique contractuel salarié (CDD, CDI, avenants)
-- [ ] Gestion du CSE / heures de délégation / élus
-- [ ] Suivi du matériel attribué (EPI, radios, clés…)
-- [ ] Signature dématérialisée des EPI (remise / restitution)
-- [ ] Alertes expirations : carte pro, SSIAP, VM, SST
-- [ ] Mise à jour état civil, coordonnées, RIB, etc.
+## 1. Personnel Administrative Management
+- [ ] Employee File: ID, HEALTH CARD, CV, photo, proof of address
+- [ ] Diploma Documents: CQP/APS, pro card CNAPS, SSIAP, SST, VM
+- [ ] Direct access to CNAPS DRACAR
+- [ ] Contract and Employee Contract History (CDD, CDI, amendments)
+- [ ] CSE Management / delegation hours / elected officials
+- [ ] Tracking of assigned equipment (PPE, radios, keys…)
+- [ ] Dematerialized signature of PPE (issuance / return)
+- [ ] Expiration alerts: pro card, SSIAP, VM, SST
+- [ ] Update civil status, contact details, bank details, etc.
 
-## 2. Communication RH
-- [ ] Envoi d’e-mails depuis la plateforme :
-  - [ ] salariés
+## 2. HR Communication
+- [ ] Sending emails from the platform:
+  - [ ] employees
   - [ ] clients
-  - [ ] partenaires (formation, médecine du travail…)
-- [ ] Bibliothèque de modèles d’e-mails RH
-- [ ] Archivage des communications dans les dossiers
-- [ ] Notifications push / SMS (option)
+  - [ ] partners (training, occupational medicine…)
+- [ ] Library of HR email templates
+- [ ] Archiving communications in files
+- [ ] Push notifications / SMS (option)
 
-## 3. Gestion du temps & absences
-- [ ] Congés, absences, arrêts maladie
-- [ ] Heures travaillées (pour paie uniquement)
-- [ ] Suivi complet des heures de délégation CSE / élus
-- [ ] Déclarations + validation RH
-- [ ] Export paie automatique
+## 3. Time Management & Absences
+- [ ] Vacations, absences, sick leaves
+- [ ] Worked hours (for payroll only)
+- [ ] Complete tracking of CSE delegation hours / elected officials
+- [ ] Declarations + HR validation
+- [ ] Automatic payroll export
 
-## 4. Préparation de la paie & analyses
-- [ ] Suivi des variables : primes, nuits, dimanches, fériés, indemnités
-- [ ] Indemnités (déplacement, panier, habillage…)
-- [ ] Analyses maintien de salaire (maladie, AT, maternité…)
-- [ ] Contrôle des anomalies paie
-- [ ] Coût du personnel :
-  - [ ] net imposable
-  - [ ] masse salariale
-  - [ ] charges salariales / patronales
-  - [ ] coût global employeur
-- [ ] Coût de revient par heure travaillée par salarié
-- [ ] Export Silae / Sage / autres logiciels
+## 4. Payroll Preparation & Analyses
+- [ ] Tracking of variables: bonuses, nights, Sundays, holidays, allowances
+- [ ] Allowances (travel, meal, dressing…)
+- [ ] Salary maintenance analyses (illness, AT, maternity…)
+- [ ] Payroll anomaly control
+- [ ] Personnel cost:
+  - [ ] taxable net
+  - [ ] payroll
+  - [ ] employee / employer contributions
+  - [ ] total employer cost
+- [ ] Cost per worked hour per employee
+- [ ] Export to Silae / Sage / other software
 
-## 5. Formations & habilitations
-- [ ] Suivi SSIAP 1/2/3
-- [ ] Suivi SST et recyclages
-- [ ] Suivi habilitations H0B0 / incendie
-- [ ] Plan annuel de formation
-- [ ] Alertes automatiques expirations
-- [ ] Budget formation & historique
+## 5. Training & Certifications
+- [ ] SSIAP 1/2/3 tracking
+- [ ] SST tracking and recycles
+- [ ] H0B0 / fire certifications tracking
+- [ ] Annual training plan
+- [ ] Automatic expiration alerts
+- [ ] Training budget & history
 
-## 6. Recrutement & intégration
-- [ ] Gestion des candidatures
-- [ ] Vérification dossier réglementaire (CNAPS + diplômes)
-- [ ] Création de contrats + signature électronique
-- [ ] Parcours d’intégration (documents, formations)
+## 6. Recruitment & Integration
+- [ ] Application management
+- [ ] Regulatory file verification (CNAPS + diplomas)
+- [ ] Contract creation + electronic signature
+- [ ] Integration path (documents, training)
 
-## 7. Discipline & juridique
-- [ ] Avertissements
-- [ ] Mises à pied
-- [ ] Procédures disciplinaires
-- [ ] Archivage des entretiens
-- [ ] Registre des sanctions (registre légal intégré)
+## 7. Discipline & Legal
+- [ ] Warnings
+- [ ] Suspensions
+- [ ] Disciplinary procedures
+- [ ] Interview archiving
+- [ ] Sanctions register (integrated legal register)
 
-## 8. Entretiens & performance
-- [ ] Entretiens professionnels obligatoires
-- [ ] Entretiens annuels
-- [ ] Objectifs et évolution interne
-- [ ] Suivi CSE si pertinent
+## 8. Interviews & Performance
+- [ ] Mandatory professional interviews
+- [ ] Annual interviews
+- [ ] Objectives and internal evolution
+- [ ] CSE tracking if relevant
 
-## 9. Notes de frais & indemnités
-- [ ] Dépenses déclarées via app
-- [ ] Validation manager / RH
-- [ ] Export en paie
-- [ ] Historique complet
+## 9. Expense Reports & Allowances
+- [ ] Expenses declared via app
+- [ ] Manager / HR validation
+- [ ] Export to payroll
+- [ ] Complete history
 
-## 10. Registres légaux
-- [ ] Tous les registres obligatoires intégrés :
-  - [ ] Registre du personnel
-  - [ ] Registre des sanctions
-  - [ ] Registre des accidents de travail
-  - [ ] Registre unique des formations
-  - [ ] Registre entrées / sorties CDD
-- [ ] Export PDF conforme inspection du travail / CNAPS
+## 10. Legal Registers
+- [ ] All mandatory registers integrated:
+  - [ ] Personnel register
+  - [ ] Sanctions register
+  - [ ] Work accident register
+  - [ ] Unique training register
+  - [ ] CDD entries / exits register
+- [ ] PDF export compliant with labor inspection / CNAPS
 
-## 11. Workflows & demandes RH
-- [ ] Demande d’attestations
-- [ ] Demande de documents
-- [ ] Demande de changement RIB, adresse, état civil
-- [ ] Historique + statut (en cours / validé / refusé)
-- [ ] Automatisation possible selon règles RH
+## 11. Workflows & HR Requests
+- [ ] Certificate requests
+- [ ] Document requests
+- [ ] Bank details change requests, address, civil status
+- [ ] History + status (in progress / validated / refused)
+- [ ] Possible automation according to HR rules
 
-## 12. Dématérialisation & signatures électroniques
-- [ ] Signature eIDAS des contrats
-- [ ] Signature des sanctions disciplinaires
-- [ ] Signature EPI / matériel
-- [ ] Accusés de réception électroniques
-- [ ] Validation interne RH sécurisée
+## 12. Dematerialization & Electronic Signatures
+- [ ] eIDAS signature of contracts
+- [ ] Signature of disciplinary sanctions
+- [ ] PPE / equipment signature
+- [ ] Electronic acknowledgments of receipt
+- [ ] Secure internal HR validation
 
-## 13. Médecine du travail (module ajouté)
-- [ ] Suivi complet VM, VIP, pré-reprise, reprise
-- [ ] Alertes automatiques
-- [ ] Fiches d’aptitude archivées
-- [ ] Historique médical réglementaire
-- [ ] Liaison avec l'organisme médical (mail auto)
+## 13. Occupational Medicine (added module)
+- [ ] Complete VM, VIP, pre-resumption, resumption tracking
+- [ ] Automatic alerts
+- [ ] Archived fitness certificates
+- [ ] Regulatory medical history
+- [ ] Link with medical organization (auto mail)
 
-## 14. Offboarding / fin de contrat (module ajouté)
-- [ ] Gestion du préavis
-- [ ] Check-list restitution matériel
-- [ ] Génération documents obligatoires :
-  - [ ] certificat de travail
-  - [ ] attestation Pôle Emploi
-  - [ ] reçu pour solde de tout compte
-- [ ] Export paie
-- [ ] Archivage dossier
+## 14. Offboarding / End of Contract (added module)
+- [ ] Notice period management
+- [ ] Equipment return checklist
+- [ ] Generation of mandatory documents:
+  - [ ] work certificate
+  - [ ] Pôle Emploi certificate
+  - [ ] receipt for final settlement
+- [ ] Payroll export
+- [ ] File archiving
 
-## 15. Bilan social automatisé (très complet)
-- [ ] Données générées automatiquement :
-  - [ ] Répartition salariés (âge, sexe, ancienneté)
-  - [ ] CDI / CDD / apprentis
-  - [ ] Turnover (entrées, sorties)
-  - [ ] Absences (AT, maladie, congés)
-  - [ ] Masse salariale brute / nette
-  - [ ] Charges patronales / salariales
-  - [ ] Comparatif N vs N-1
-  - [ ] Écarts salariaux H/F
-  - [ ] Dépenses formation
-  - [ ] Coût global du personnel
-  - [ ] Coût horaire moyen
+## 15. Automated Social Report (very complete)
+- [ ] Automatically generated data:
+  - [ ] Employee distribution (age, gender, seniority)
+  - [ ] CDI / CDD / apprentices
+  - [ ] Turnover (entries, exits)
+  - [ ] Absences (AT, illness, vacations)
+  - [ ] Gross / net payroll
+  - [ ] Employer / employee contributions
+  - [ ] N vs N-1 comparison
+  - [ ] Gender pay gaps
+  - [ ] Training expenses
+  - [ ] Total personnel cost
+  - [ ] Average hourly cost
 
-## 16. Dashboard RH & KPI avancés
-- [ ] Taux de conformité habilitations
-- [ ] Heures de délégation
-- [ ] Taux d’absentéisme
-- [ ] Coût de revient par salarié
-- [ ] Masse salariale évolutive
-- [ ] Charges employeur
+## 16. HR Dashboard & Advanced KPIs
+- [ ] Certification compliance rate
+- [ ] Delegation hours
+- [ ] Absenteeism rate
+- [ ] Cost per employee
+- [ ] Evolving payroll
+- [ ] Employer charges
 - [ ] Turnover
-- [ ] Index égalité H/F
-- [ ] Prévisionnel RH
-- [ ] Analyse du maintien de salaire
-- [ ] KPI recrutement (délai, coût, réussite)
+- [ ] Gender equality index
+- [ ] HR forecast
+- [ ] Salary maintenance analysis
+- [ ] Recruitment KPIs (delay, cost, success)
