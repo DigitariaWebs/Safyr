@@ -30,7 +30,7 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Salariés",
-        url: "/admin/dashboard/employees",
+        url: "/admin/employees",
         icon: Users,
       },
       {

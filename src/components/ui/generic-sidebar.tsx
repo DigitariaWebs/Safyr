@@ -170,9 +170,9 @@ export function GenericSidebar({
           // When sidebar is collapsed, only show items (no sections)
           if (!isExpanded) {
             return (
-              <SidebarGroup key={section.label} className="py-0">
+              <SidebarGroup key={section.label} className="p-0">
                 <SidebarGroupContent>
-                  <SidebarMenu className="gap-0.5">
+                  <SidebarMenu className="gap-0.5 items-center">
                     {section.items.map((item) => {
                       const isActive = pathname === item.url;
                       return (
@@ -185,7 +185,7 @@ export function GenericSidebar({
                               className={cn(
                                 "w-full text-sm font-medium rounded-lg",
                                 "opacity-50 cursor-not-allowed",
-                                "text-muted-foreground",
+                                "text-muted-foreground"
                               )}
                             >
                               <item.icon className="size-4 shrink-0" />
@@ -202,7 +202,7 @@ export function GenericSidebar({
                                   "bg-primary text-primary-foreground",
                                   "shadow-sm",
                                   "hover:bg-primary/90",
-                                ],
+                                ]
                               )}
                             >
                               <Link
@@ -212,7 +212,7 @@ export function GenericSidebar({
                                 <item.icon
                                   className={cn(
                                     "size-4 shrink-0 transition-colors",
-                                    isActive && "text-muted-foreground",
+                                    isActive && "text-muted-foreground"
                                   )}
                                 />
                               </Link>
