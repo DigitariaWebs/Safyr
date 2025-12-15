@@ -12,11 +12,12 @@
 - [x] Update civil status, contact details, bank details, etc.
 
 ## 2. HR Communication
+
 - [ ] Sending emails from the platform:
   - [ ] employees
   - [ ] clients
   - [ ] partners (training, occupational medicine…)
-- [ ] Library of HR email templates
+- [x] Library of HR email templates
 - [ ] Archiving communications in files
 - [ ] Push notifications / SMS (option)
 
@@ -28,6 +29,7 @@
 - [x] Automatic payroll export
 
 ## 4. Payroll Preparation & Analyses
+
 - [ ] Tracking of variables: bonuses, nights, Sundays, holidays, allowances
 - [ ] Allowances (travel, meal, dressing…)
 - [ ] Salary maintenance analyses (illness, AT, maternity…)
@@ -41,6 +43,7 @@
 - [ ] Export to Silae / Sage / other software
 
 ## 5. Training & Certifications
+
 - [ ] SSIAP 1/2/3 tracking
 - [ ] SST tracking and recycles
 - [ ] H0B0 / fire certifications tracking
@@ -49,12 +52,14 @@
 - [ ] Training budget & history
 
 ## 6. Recruitment & Integration
+
 - [ ] Application management
 - [ ] Regulatory file verification (CNAPS + diplomas)
 - [ ] Contract creation + electronic signature
 - [ ] Integration path (documents, training)
 
 ## 7. Discipline & Legal
+
 - [ ] Warnings
 - [ ] Suspensions
 - [ ] Disciplinary procedures
@@ -62,18 +67,21 @@
 - [ ] Sanctions register (integrated legal register)
 
 ## 8. Interviews & Performance
+
 - [ ] Mandatory professional interviews
 - [ ] Annual interviews
 - [ ] Objectives and internal evolution
 - [ ] CSE tracking if relevant
 
 ## 9. Expense Reports & Allowances
+
 - [ ] Expenses declared via app
 - [ ] Manager / HR validation
 - [ ] Export to payroll
 - [ ] Complete history
 
 ## 10. Legal Registers
+
 - [ ] All mandatory registers integrated:
   - [ ] Personnel register
   - [ ] Sanctions register
@@ -83,6 +91,7 @@
 - [ ] PDF export compliant with labor inspection / CNAPS
 
 ## 11. Workflows & HR Requests
+
 - [ ] Certificate requests
 - [ ] Document requests
 - [ ] Bank details change requests, address, civil status
@@ -90,6 +99,7 @@
 - [ ] Possible automation according to HR rules
 
 ## 12. Dematerialization & Electronic Signatures
+
 - [ ] eIDAS signature of contracts
 - [ ] Signature of disciplinary sanctions
 - [ ] PPE / equipment signature
@@ -97,6 +107,7 @@
 - [ ] Secure internal HR validation
 
 ## 13. Occupational Medicine (added module)
+
 - [ ] Complete VM, VIP, pre-resumption, resumption tracking
 - [ ] Automatic alerts
 - [ ] Archived fitness certificates
@@ -104,6 +115,7 @@
 - [ ] Link with medical organization (auto mail)
 
 ## 14. Offboarding / End of Contract (added module)
+
 - [ ] Notice period management
 - [ ] Equipment return checklist
 - [ ] Generation of mandatory documents:
@@ -114,6 +126,7 @@
 - [ ] File archiving
 
 ## 15. Automated Social Report (very complete)
+
 - [ ] Automatically generated data:
   - [ ] Employee distribution (age, gender, seniority)
   - [ ] CDI / CDD / apprentices
@@ -128,6 +141,7 @@
   - [ ] Average hourly cost
 
 ## 16. HR Dashboard & Advanced KPIs
+
 - [ ] Certification compliance rate
 - [ ] Delegation hours
 - [ ] Absenteeism rate

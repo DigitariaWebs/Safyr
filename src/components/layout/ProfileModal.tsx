@@ -9,6 +9,7 @@ import {
   Shield,
   ChevronRight,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
   Sheet,
@@ -29,33 +30,33 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
   const menuItems = [
     {
       icon: User,
-      label: "Profile",
-      description: "Manage your personal information",
-      onClick: () => console.log("Profile clicked"),
+      label: "Profil",
+      description: "Gérer vos informations personnelles",
+      href: "/profil",
     },
     {
       icon: Settings,
-      label: "Preferences",
-      description: "Customize your experience",
-      onClick: () => console.log("Preferences clicked"),
+      label: "Préférences",
+      description: "Personnalisez votre expérience",
+      href: "/preferences",
     },
     {
       icon: Globe,
-      label: "Language",
-      description: "Change language settings",
-      onClick: () => console.log("Language clicked"),
+      label: "Langue",
+      description: "Changer les paramètres de langue",
+      href: "/langue",
     },
     {
       icon: Bell,
       label: "Notifications",
-      description: "Configure notification preferences",
-      onClick: () => console.log("Notifications clicked"),
+      description: "Configurer les préférences de notification",
+      href: "/notifications",
     },
     {
       icon: Shield,
-      label: "Security",
-      description: "Manage security settings",
-      onClick: () => console.log("Security clicked"),
+      label: "Sécurité",
+      description: "Gérer les paramètres de sécurité",
+      href: "/securite",
     },
   ];
 
@@ -78,7 +79,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                 john.doe@safyr.com
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Administrator
+                Administrateur
               </p>
             </div>
           </div>
@@ -88,20 +89,21 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
           <div className="space-y-1">
             {menuItems.map((item, index) => (
               <React.Fragment key={item.label}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3 h-auto p-3 hover:bg-accent"
-                  onClick={item.onClick}
-                >
-                  <item.icon className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex-1 text-left">
-                    <div className="font-medium text-sm">{item.label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.description}
+                <Link href={item.href} onClick={() => onOpenChange(false)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 h-auto p-4 hover:bg-accent min-h-16"
+                  >
+                    <item.icon className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 text-left">
+                      <div className="font-medium text-sm">{item.label}</div>
+                      <div className="text-xs text-muted-foreground wrap-break-words">
+                        {item.description}
+                      </div>
                     </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Button>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </Link>
                 {index < menuItems.length - 1 && <Separator className="my-1" />}
               </React.Fragment>
             ))}

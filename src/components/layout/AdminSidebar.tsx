@@ -8,6 +8,7 @@ import {
   Wallet,
   Shield,
   Settings,
+  Mail,
   Calendar,
   Clock,
 } from "lucide-react";
@@ -67,6 +68,16 @@ const navigationSections: MenuSection[] = [
         url: "/admin/time-management/cse-hours",
         icon: ClipboardList,
         disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Communication RH",
+    items: [
+      {
+        title: "Modèles d'emails",
+        url: "/admin/dashboard/communication/templates",
+        icon: Mail,
       },
     ],
   },
