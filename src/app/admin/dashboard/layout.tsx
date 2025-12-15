@@ -31,22 +31,22 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AdminSidebar />
         <SidebarInset className="overflow-x-hidden">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <span className="text-sm font-light text-muted-foreground">
-                Admin Panel
-              </span>
+          <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border/30 bg-background/80 backdrop-blur-xl">
+            <div className="flex items-center gap-3 px-4">
+              <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
+              <Separator orientation="vertical" className="h-4 bg-border/50" />
             </div>
-            <div className="ml-auto flex items-center gap-4 px-4">
+            <div className="ml-auto flex items-center gap-3 px-4">
+              <button className="px-4 py-1.5 text-sm font-light text-muted-foreground hover:text-foreground border border-border/50 rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all">
+                Conteurs
+              </button>
               <button
                 onClick={() => setProfileModalOpen(true)}
-                className="flex items-center gap-2 hover:bg-accent rounded-full p-1 transition-colors"
+                className="flex items-center gap-2 hover:ring-2 hover:ring-primary/30 rounded-full p-0.5 transition-all"
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 ring-2 ring-border/50">
                   <AvatarImage src="/avatars/admin.jpg" alt="Admin" />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
                     JD
                   </AvatarFallback>
                 </Avatar>
