@@ -17,7 +17,7 @@ import {
   Car,
   FileSignature,
 } from "lucide-react";
-import type { Employee, Equipment } from "@/types/employee";
+import type { Employee, Equipment } from "@/lib/types";
 
 interface EmployeeEquipmentTabProps {
   employee: Employee;

@@ -4,7 +4,7 @@ import type {
   CSEDelegationHours,
   AbsenceSummary,
   TimeManagementStats,
-} from "@/types/time-management";
+} from "@/lib/types";
 
 export const mockTimeOffRequests: TimeOffRequest[] = [
   {
@@ -286,7 +286,7 @@ export const mockTimeManagementStats: TimeManagementStats = {
     .length,
   totalAbsenceDays: mockTimeOffRequests.reduce(
     (sum, r) => sum + r.totalDays,
-    0
+    0,
   ),
   averageResponseTime: 24, // hours
   employeesOnLeave: 2,
@@ -297,10 +297,10 @@ export function getTimeOffRequestById(id: string): TimeOffRequest | undefined {
 }
 
 export function getTimeOffRequestsByEmployee(
-  employeeId: string
+  employeeId: string,
 ): TimeOffRequest[] {
   return mockTimeOffRequests.filter(
-    (request) => request.employeeId === employeeId
+    (request) => request.employeeId === employeeId,
   );
 }
 

@@ -20,7 +20,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-import type { TimeOffRequest } from "@/types/time-management";
+import type { TimeOffRequest } from "@/lib/types";
 import { getTimeOffRequestById } from "@/data/time-management";
 
 export default function TimeOffDetailPage({
@@ -52,10 +52,26 @@ export default function TimeOffDetailPage({
 
   const getStatusBadge = (status: TimeOffRequest["status"]) => {
     const variants = {
-      pending: { variant: "secondary" as const, label: "En attente", icon: Clock },
-      approved: { variant: "default" as const, label: "Approuvé", icon: CheckCircle },
-      rejected: { variant: "destructive" as const, label: "Refusé", icon: XCircle },
-      cancelled: { variant: "outline" as const, label: "Annulé", icon: XCircle },
+      pending: {
+        variant: "secondary" as const,
+        label: "En attente",
+        icon: Clock,
+      },
+      approved: {
+        variant: "default" as const,
+        label: "Approuvé",
+        icon: CheckCircle,
+      },
+      rejected: {
+        variant: "destructive" as const,
+        label: "Refusé",
+        icon: XCircle,
+      },
+      cancelled: {
+        variant: "outline" as const,
+        label: "Annulé",
+        icon: XCircle,
+      },
     };
     return variants[status];
   };
@@ -104,7 +120,10 @@ export default function TimeOffDetailPage({
             {getTypeLabel(request.type)} - {request.employeeName}
           </p>
         </div>
-        <Badge variant={statusConfig.variant} className="flex items-center gap-1">
+        <Badge
+          variant={statusConfig.variant}
+          className="flex items-center gap-1"
+        >
           <StatusIcon className="h-3 w-3" />
           {statusConfig.label}
         </Badge>
@@ -127,7 +146,9 @@ export default function TimeOffDetailPage({
                   <label className="text-sm font-medium text-muted-foreground">
                     Type de demande
                   </label>
-                  <p className="mt-1 font-medium">{getTypeLabel(request.type)}</p>
+                  <p className="mt-1 font-medium">
+                    {getTypeLabel(request.type)}
+                  </p>
                 </div>
 
                 <div>
@@ -216,7 +237,9 @@ export default function TimeOffDetailPage({
                   </label>
                   <Textarea
                     value={validationComment}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setValidationComment(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setValidationComment(e.target.value)
+                    }
                     placeholder="Ajouter un commentaire..."
                     className="mt-2"
                     rows={3}
@@ -257,8 +280,8 @@ export default function TimeOffDetailPage({
                   <div className="flex items-center gap-2">
                     <StatusIcon className="h-4 w-4" />
                     <span className="font-medium">
-                      {request.status === "approved" ? "Approuvé" : "Refusé"} par{" "}
-                      {request.validatedBy}
+                      {request.status === "approved" ? "Approuvé" : "Refusé"}{" "}
+                      par {request.validatedBy}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -314,7 +337,12 @@ export default function TimeOffDetailPage({
                   <span className="text-muted-foreground">Département:</span>
                   <p className="font-medium">{request.department}</p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-3" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-3"
+                  asChild
+                >
                   <Link href={`/admin/employees/${request.employeeId}`}>
                     Voir le profil
                   </Link>
@@ -339,7 +367,9 @@ export default function TimeOffDetailPage({
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground">Dernière mise à jour:</span>
+                <span className="text-muted-foreground">
+                  Dernière mise à jour:
+                </span>
                 <p className="font-medium">
                   {request.updatedAt.toLocaleDateString("fr-FR")}
                 </p>

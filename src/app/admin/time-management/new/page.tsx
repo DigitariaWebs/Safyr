@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, Calendar } from "lucide-react";
-import type { TimeOffRequest } from "@/types/time-management";
+import type { TimeOffRequest } from "@/lib/types";
 
 export default function NewTimeOffRequestPage() {
   const router = useRouter();
@@ -22,7 +22,9 @@ export default function NewTimeOffRequestPage() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

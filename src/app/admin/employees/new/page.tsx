@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Save, User } from "lucide-react";
-import type { Employee } from "@/types/employee";
+import type { Employee } from "@/lib/types";
 
 export default function NewEmployeePage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function NewEmployeePage() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

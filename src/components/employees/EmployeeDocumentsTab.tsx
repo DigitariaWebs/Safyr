@@ -14,7 +14,7 @@ import {
   CheckCircle,
   ExternalLink,
 } from "lucide-react";
-import type { Employee, Document, Certification } from "@/types/employee";
+import type { Employee, Document, Certification } from "@/lib/types";
 
 interface EmployeeDocumentsTabProps {
   employee: Employee;
@@ -155,7 +155,7 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
     window.open(
       "https://www.cnaps-securite.fr/service-dracar/",
       "_blank",
-      "noopener,noreferrer"
+      "noopener,noreferrer",
     );
   };
 
@@ -180,7 +180,7 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     {doc.type === "id-card" || doc.type === "health-card" ? (
-                      <Image className="h-5 w-5 text-primary" alt="" />
+                      <Image className="h-5 w-5 text-primary" />
                     ) : (
                       <FileText className="h-5 w-5 text-primary" />
                     )}
@@ -267,7 +267,7 @@ export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
               const statusConfig = getStatusBadge(cert.status);
               const daysUntilExpiry = Math.ceil(
                 (cert.expiryDate.getTime() - new Date().getTime()) /
-                  (1000 * 60 * 60 * 24)
+                  (1000 * 60 * 60 * 24),
               );
 
               return (

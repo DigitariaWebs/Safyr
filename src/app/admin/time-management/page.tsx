@@ -17,8 +17,11 @@ import {
   Users,
   Download,
 } from "lucide-react";
-import type { TimeOffRequest } from "@/types/time-management";
-import { mockTimeOffRequests, mockTimeManagementStats } from "@/data/time-management";
+import type { TimeOffRequest } from "@/lib/types";
+import {
+  mockTimeOffRequests,
+  mockTimeManagementStats,
+} from "@/data/time-management";
 
 export default function TimeManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,10 +30,26 @@ export default function TimeManagementPage() {
 
   const getStatusBadge = (status: TimeOffRequest["status"]) => {
     const variants = {
-      pending: { variant: "secondary" as const, label: "En attente", icon: Clock },
-      approved: { variant: "default" as const, label: "Approuvé", icon: CheckCircle },
-      rejected: { variant: "destructive" as const, label: "Refusé", icon: XCircle },
-      cancelled: { variant: "outline" as const, label: "Annulé", icon: XCircle },
+      pending: {
+        variant: "secondary" as const,
+        label: "En attente",
+        icon: Clock,
+      },
+      approved: {
+        variant: "default" as const,
+        label: "Approuvé",
+        icon: CheckCircle,
+      },
+      rejected: {
+        variant: "destructive" as const,
+        label: "Refusé",
+        icon: XCircle,
+      },
+      cancelled: {
+        variant: "outline" as const,
+        label: "Annulé",
+        icon: XCircle,
+      },
     };
     return variants[status];
   };
@@ -51,12 +70,15 @@ export default function TimeManagementPage() {
 
   const filteredRequests = requests.filter((request) => {
     const matchesSearch = searchQuery
-      ? request.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ? request.employeeName
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         request.employeeNumber.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
-    
-    const matchesStatus = statusFilter === "all" || request.status === statusFilter;
-    
+
+    const matchesStatus =
+      statusFilter === "all" || request.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -65,7 +87,9 @@ export default function TimeManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Temps & Absences</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Temps & Absences
+          </h1>
           <p className="text-muted-foreground">
             Gestion des congés, absences et heures travaillées
           </p>
@@ -88,7 +112,9 @@ export default function TimeManagementPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockTimeManagementStats.totalRequests}</div>
+            <div className="text-2xl font-bold">
+              {mockTimeManagementStats.totalRequests}
+            </div>
             <p className="text-xs text-muted-foreground">
               {mockTimeManagementStats.totalAbsenceDays} jours au total
             </p>
@@ -101,7 +127,9 @@ export default function TimeManagementPage() {
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockTimeManagementStats.pendingRequests}</div>
+            <div className="text-2xl font-bold">
+              {mockTimeManagementStats.pendingRequests}
+            </div>
             <p className="text-xs text-muted-foreground">
               Temps moyen: {mockTimeManagementStats.averageResponseTime}h
             </p>
@@ -114,9 +142,16 @@ export default function TimeManagementPage() {
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockTimeManagementStats.approvedRequests}</div>
+            <div className="text-2xl font-bold">
+              {mockTimeManagementStats.approvedRequests}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {((mockTimeManagementStats.approvedRequests / mockTimeManagementStats.totalRequests) * 100).toFixed(0)}% du total
+              {(
+                (mockTimeManagementStats.approvedRequests /
+                  mockTimeManagementStats.totalRequests) *
+                100
+              ).toFixed(0)}
+              % du total
             </p>
           </CardContent>
         </Card>
@@ -129,7 +164,9 @@ export default function TimeManagementPage() {
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockTimeManagementStats.employeesOnLeave}</div>
+            <div className="text-2xl font-bold">
+              {mockTimeManagementStats.employeesOnLeave}
+            </div>
             <p className="text-xs text-muted-foreground">
               Actuellement en congé
             </p>
@@ -182,7 +219,9 @@ export default function TimeManagementPage() {
             {filteredRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold">Aucune demande trouvée</h3>
+                <h3 className="text-lg font-semibold">
+                  Aucune demande trouvée
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Essayez de modifier vos critères de recherche
                 </p>
@@ -192,7 +231,7 @@ export default function TimeManagementPage() {
                 {filteredRequests.map((request) => {
                   const statusConfig = getStatusBadge(request.status);
                   const StatusIcon = statusConfig.icon;
-                  
+
                   return (
                     <Link
                       key={request.id}
@@ -200,16 +239,26 @@ export default function TimeManagementPage() {
                       className="flex items-center gap-4 py-4 transition-colors hover:bg-muted/50 rounded-lg px-4"
                     >
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={`/avatars/employee-${request.employeeId}.jpg`} />
+                        <AvatarImage
+                          src={`/avatars/employee-${request.employeeId}.jpg`}
+                        />
                         <AvatarFallback>
-                          {request.employeeName.split(' ').map(n => n[0]).join('')}
+                          {request.employeeName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold">{request.employeeName}</h3>
-                          <Badge variant={statusConfig.variant} className="flex items-center gap-1">
+                          <h3 className="font-semibold">
+                            {request.employeeName}
+                          </h3>
+                          <Badge
+                            variant={statusConfig.variant}
+                            className="flex items-center gap-1"
+                          >
                             <StatusIcon className="h-3 w-3" />
                             {statusConfig.label}
                           </Badge>
@@ -222,13 +271,15 @@ export default function TimeManagementPage() {
                           <span>{request.department}</span>
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
                         <div className="font-medium">
-                          {request.startDate.toLocaleDateString("fr-FR")} - {request.endDate.toLocaleDateString("fr-FR")}
+                          {request.startDate.toLocaleDateString("fr-FR")} -{" "}
+                          {request.endDate.toLocaleDateString("fr-FR")}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {request.totalDays} jour{request.totalDays > 1 ? 's' : ''}
+                          {request.totalDays} jour
+                          {request.totalDays > 1 ? "s" : ""}
                         </div>
                       </div>
                     </Link>

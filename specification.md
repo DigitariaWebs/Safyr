@@ -1,6 +1,7 @@
 # Specification of the Complete HR Platform for Security Companies
 
 ## 1. Personnel Administrative Management
+
 - [x] Employee File: ID, HEALTH CARD, CV, photo, proof of address
 - [x] Diploma Documents: CQP/APS, pro card CNAPS, SSIAP, SST, VM
 - [x] Direct access to CNAPS DRACAR
@@ -22,6 +23,7 @@
 - [ ] Push notifications / SMS (option)
 
 ## 3. Time Management & Absences
+
 - [x] Vacations, absences, sick leaves
 - [x] Worked hours (for payroll only)
 - [x] Complete tracking of CSE delegation hours / elected officials

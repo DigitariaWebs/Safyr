@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -27,24 +33,31 @@ export default function CSEHoursPage() {
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
   const [sessionFormData, setSessionFormData] = useState({
     employeeId: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     duration: 0,
-    type: "meeting" as "meeting" | "employee_reception" | "inquiry" | "training",
+    type: "meeting" as
+      | "meeting"
+      | "employee_reception"
+      | "inquiry"
+      | "training",
     description: "",
   });
 
   const filteredMembers = mockCSEDelegationHours.filter((member) =>
-    member.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
+    member.employeeName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalAllocated = mockCSEDelegationHours.reduce(
     (sum, m) => sum + m.allocatedHours,
-    0
+    0,
   );
-  const totalUsed = mockCSEDelegationHours.reduce((sum, m) => sum + m.usedHours, 0);
+  const totalUsed = mockCSEDelegationHours.reduce(
+    (sum, m) => sum + m.usedHours,
+    0,
+  );
   const totalSessions = mockCSEDelegationHours.reduce(
     (sum, m) => sum + m.sessions.length,
-    0
+    0,
   );
 
   const getSessionTypeLabel = (type: string) => {
@@ -72,7 +85,9 @@ export default function CSEHoursPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Heures de Délégation CSE</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Heures de Délégation CSE
+          </h1>
           <p className="text-muted-foreground">
             Suivi complet des heures des élus et délégués du personnel
           </p>
@@ -91,14 +106,18 @@ export default function CSEHoursPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockCSEDelegationHours.length}</div>
+            <div className="text-2xl font-bold">
+              {mockCSEDelegationHours.length}
+            </div>
             <p className="text-xs text-muted-foreground">Actifs ce mois</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Heures Allouées</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Heures Allouées
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -109,7 +128,9 @@ export default function CSEHoursPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Heures Utilisées</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Heures Utilisées
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -150,7 +171,8 @@ export default function CSEHoursPage() {
       {/* CSE Members List */}
       <div className="space-y-6">
         {filteredMembers.map((member) => {
-          const usagePercentage = (member.usedHours / member.allocatedHours) * 100;
+          const usagePercentage =
+            (member.usedHours / member.allocatedHours) * 100;
           const isNearLimit = usagePercentage >= 80;
 
           return (
@@ -254,7 +276,7 @@ export default function CSEHoursPage() {
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {new Date(session.date).toLocaleDateString(
-                                "fr-FR"
+                                "fr-FR",
                               )}
                             </span>
                             <span className="flex items-center gap-1">
@@ -266,7 +288,7 @@ export default function CSEHoursPage() {
                             <p className="text-xs text-green-700">
                               Validé par {session.validatedBy} le{" "}
                               {new Date(
-                                session.validatedAt!
+                                session.validatedAt!,
                               ).toLocaleDateString("fr-FR")}
                             </p>
                           )}
@@ -313,7 +335,7 @@ export default function CSEHoursPage() {
               setIsNewSessionModalOpen(false);
               setSessionFormData({
                 employeeId: "",
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toISOString().split("T")[0],
                 duration: 0,
                 type: "meeting",
                 description: "",
@@ -341,10 +363,15 @@ export default function CSEHoursPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {mockEmployees
-                    .filter(employee => employee.department === "Management" || employee.position.includes("CSE"))
+                    .filter(
+                      (employee) =>
+                        employee.department === "Management" ||
+                        employee.position.includes("CSE"),
+                    )
                     .map((employee) => (
                       <SelectItem key={employee.id} value={employee.id}>
-                        {employee.firstName} {employee.lastName} - {employee.employeeNumber}
+                        {employee.firstName} {employee.lastName} -{" "}
+                        {employee.employeeNumber}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -357,7 +384,10 @@ export default function CSEHoursPage() {
                 type="date"
                 value={sessionFormData.date}
                 onChange={(e) =>
-                  setSessionFormData({ ...sessionFormData, date: e.target.value })
+                  setSessionFormData({
+                    ...sessionFormData,
+                    date: e.target.value,
+                  })
                 }
               />
             </div>
@@ -368,16 +398,22 @@ export default function CSEHoursPage() {
               <Label htmlFor="session-type">Type de séance</Label>
               <Select
                 value={sessionFormData.type}
-                onValueChange={(value: "meeting" | "employee_reception" | "inquiry" | "training") =>
-                  setSessionFormData({ ...sessionFormData, type: value })
-                }
+                onValueChange={(
+                  value:
+                    | "meeting"
+                    | "employee_reception"
+                    | "inquiry"
+                    | "training",
+                ) => setSessionFormData({ ...sessionFormData, type: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="meeting">Réunion</SelectItem>
-                  <SelectItem value="employee_reception">Réception salariés</SelectItem>
+                  <SelectItem value="employee_reception">
+                    Réception salariés
+                  </SelectItem>
                   <SelectItem value="inquiry">Enquête</SelectItem>
                   <SelectItem value="training">Formation</SelectItem>
                 </SelectContent>
@@ -395,7 +431,10 @@ export default function CSEHoursPage() {
                 step="0.5"
                 value={sessionFormData.duration}
                 onChange={(e) =>
-                  setSessionFormData({ ...sessionFormData, duration: parseFloat(e.target.value) || 0 })
+                  setSessionFormData({
+                    ...sessionFormData,
+                    duration: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -408,7 +447,10 @@ export default function CSEHoursPage() {
               placeholder="Décrivez l'objet de la séance..."
               value={sessionFormData.description}
               onChange={(e) =>
-                setSessionFormData({ ...sessionFormData, description: e.target.value })
+                setSessionFormData({
+                  ...sessionFormData,
+                  description: e.target.value,
+                })
               }
               rows={3}
             />
@@ -417,10 +459,33 @@ export default function CSEHoursPage() {
           <div className="rounded-lg bg-muted p-4">
             <h4 className="font-medium mb-2">Récapitulatif</h4>
             <div className="text-sm space-y-1">
-              <div>Élu CSE: <strong>{sessionFormData.employeeId ? mockEmployees.find(e => e.id === sessionFormData.employeeId)?.firstName + " " + mockEmployees.find(e => e.id === sessionFormData.employeeId)?.lastName : "Non sélectionné"}</strong></div>
-              <div>Date: <strong>{new Date(sessionFormData.date).toLocaleDateString("fr-FR")}</strong></div>
-              <div>Type: <strong>{getSessionTypeLabel(sessionFormData.type)}</strong></div>
-              <div>Durée: <strong>{sessionFormData.duration}h</strong></div>
+              <div>
+                Élu CSE:{" "}
+                <strong>
+                  {sessionFormData.employeeId
+                    ? mockEmployees.find(
+                        (e) => e.id === sessionFormData.employeeId,
+                      )?.firstName +
+                      " " +
+                      mockEmployees.find(
+                        (e) => e.id === sessionFormData.employeeId,
+                      )?.lastName
+                    : "Non sélectionné"}
+                </strong>
+              </div>
+              <div>
+                Date:{" "}
+                <strong>
+                  {new Date(sessionFormData.date).toLocaleDateString("fr-FR")}
+                </strong>
+              </div>
+              <div>
+                Type:{" "}
+                <strong>{getSessionTypeLabel(sessionFormData.type)}</strong>
+              </div>
+              <div>
+                Durée: <strong>{sessionFormData.duration}h</strong>
+              </div>
             </div>
           </div>
         </div>

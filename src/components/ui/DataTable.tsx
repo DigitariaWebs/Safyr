@@ -66,6 +66,10 @@ interface DataTableProps<T> {
   itemsPerPage?: number;
   actions?: (item: T) => React.ReactNode;
   rowClassName?: (item: T) => string;
+  selectable?: boolean;
+  onSelectionChange?: (selectedItems: T[]) => void;
+  getRowId?: (item: T) => string;
+  onRowClick?: (item: T) => void;
 }
 
 export function DataTable<T extends object>({
@@ -79,6 +83,10 @@ export function DataTable<T extends object>({
   itemsPerPage = 10,
   actions,
   rowClassName,
+  selectable = false,
+  onSelectionChange,
+  getRowId,
+  onRowClick,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
@@ -97,6 +105,7 @@ export function DataTable<T extends object>({
   );
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const filteredData = data.filter((item) => {
     // Search filter
@@ -167,6 +176,58 @@ export function DataTable<T extends object>({
   );
 
   const visibleColumnDefs = columns.filter((col) => visibleColumns[col.key]);
+
+  const getItemId = (item: T, index: number): string => {
+    if (getRowId) return getRowId(item);
+    if ("id" in item && typeof item.id === "string") return item.id;
+    return String(index);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(
+        paginatedData.map((item, index) => getItemId(item, index)),
+      );
+      setSelectedRows(allIds);
+      if (onSelectionChange) {
+        onSelectionChange(paginatedData);
+      }
+    } else {
+      setSelectedRows(new Set());
+      if (onSelectionChange) {
+        onSelectionChange([]);
+      }
+    }
+  };
+
+  const handleSelectRow = (item: T, index: number, checked: boolean) => {
+    const itemId = getItemId(item, index);
+    const newSelectedRows = new Set(selectedRows);
+
+    if (checked) {
+      newSelectedRows.add(itemId);
+    } else {
+      newSelectedRows.delete(itemId);
+    }
+
+    setSelectedRows(newSelectedRows);
+
+    if (onSelectionChange) {
+      const selectedItems = paginatedData.filter((item, idx) =>
+        newSelectedRows.has(getItemId(item, idx)),
+      );
+      onSelectionChange(selectedItems);
+    }
+  };
+
+  const isAllSelected =
+    paginatedData.length > 0 &&
+    paginatedData.every((item, index) =>
+      selectedRows.has(getItemId(item, index)),
+    );
+  const isSomeSelected = paginatedData.some((item, index) =>
+    selectedRows.has(getItemId(item, index)),
+  );
 
   return (
     <div className="space-y-4">
@@ -265,6 +326,16 @@ export function DataTable<T extends object>({
         <Table>
           <TableHeader>
             <TableRow>
+              {selectable && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className="data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-primary-foreground"
+                  />
+                </TableHead>
+              )}
               {visibleColumnDefs.map((col) => (
                 <TableHead
                   key={col.key}
@@ -302,34 +373,75 @@ export function DataTable<T extends object>({
             {paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={visibleColumnDefs.length + (actions ? 1 : 0)}
+                  colSpan={
+                    visibleColumnDefs.length +
+                    (actions ? 1 : 0) +
+                    (selectable ? 1 : 0)
+                  }
                   className="text-center py-8 text-muted-foreground"
                 >
                   No data found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((item, index) => (
-                <TableRow key={index} className={rowClassName?.(item)}>
-                  {visibleColumnDefs.map((col) => (
-                    <TableCell
-                      key={col.key}
-                      className={
-                        col.key === columns[0].key ? "font-medium" : ""
+              paginatedData.map((item, index) => {
+                const itemId = getItemId(item, index);
+                const isSelected = selectedRows.has(itemId);
+
+                return (
+                  <TableRow
+                    key={itemId}
+                    className={rowClassName?.(item)}
+                    data-state={isSelected ? "selected" : undefined}
+                    onClick={(e) => {
+                      // Prevent row click when clicking checkboxes or buttons
+                      const target = e.target as HTMLElement;
+                      if (
+                        target.closest("button") ||
+                        target.closest('[role="checkbox"]') ||
+                        target.tagName === "INPUT"
+                      ) {
+                        return;
                       }
-                    >
-                      {col.render
-                        ? col.render(item)
-                        : String((item as Record<string, unknown>)[col.key])}
-                    </TableCell>
-                  ))}
-                  {actions && (
-                    <TableCell className="text-right">
-                      {actions(item)}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
+                      onRowClick?.(item);
+                    }}
+                    style={onRowClick ? { cursor: "pointer" } : undefined}
+                  >
+                    {selectable && (
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) =>
+                            handleSelectRow(item, index, !!checked)
+                          }
+                          aria-label="Select row"
+                          className="data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-primary-foreground"
+                        />
+                      </TableCell>
+                    )}
+                    {visibleColumnDefs.map((col) => (
+                      <TableCell
+                        key={col.key}
+                        className={
+                          col.key === columns[0].key ? "font-medium" : ""
+                        }
+                      >
+                        {col.render
+                          ? col.render(item)
+                          : String((item as Record<string, unknown>)[col.key])}
+                      </TableCell>
+                    ))}
+                    {actions && (
+                      <TableCell
+                        className="text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {actions(item)}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

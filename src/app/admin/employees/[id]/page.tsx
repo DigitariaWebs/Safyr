@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,7 +20,7 @@ import {
   Users,
   Shield,
 } from "lucide-react";
-import type { Employee } from "@/types/employee";
+import type { Employee } from "@/lib/types";
 import { getEmployeeById } from "@/data/employees";
 import {
   EmployeeInfoTab,
@@ -31,21 +32,15 @@ import {
   EmployeeCNAPSTab,
 } from "@/components/employees";
 
-type TabType =
-  | "info"
-  | "documents"
-  | "contracts"
-  | "equipment"
-  | "alerts"
-  | "cse";
-
 export default function EmployeeDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = React.use(params);
-  const [activeTab, setActiveTab] = useState<TabType>("info");
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("edit") === "true";
+  const [activeTab, setActiveTab] = useState("info");
   const employee = getEmployeeById(id);
 
   if (!employee) {
@@ -120,10 +115,19 @@ export default function EmployeeDetailPage({
             {employee.position} • {employee.employeeNumber}
           </p>
         </div>
-        <Button>
-          <Edit className="mr-2 h-4 w-4" />
-          Modifier
-        </Button>
+        {!isEditMode && (
+          <Button asChild>
+            <Link href={`/admin/employees/${employee.id}?edit=true`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Modifier
+            </Link>
+          </Button>
+        )}
+        {isEditMode && (
+          <Button asChild variant="outline">
+            <Link href={`/admin/employees/${employee.id}`}>Annuler</Link>
+          </Button>
+        )}
       </div>
 
       {/* Employee Overview Card */}
@@ -220,7 +224,9 @@ export default function EmployeeDetailPage({
 
       {/* Tab Content */}
       <div className="min-h-100">
-        {activeTab === "info" && <EmployeeInfoTab employee={employee} />}
+        {activeTab === "info" && (
+          <EmployeeInfoTab employee={employee} isEditMode={isEditMode} />
+        )}
         {activeTab === "documents" && (
           <EmployeeDocumentsTab employee={employee} />
         )}

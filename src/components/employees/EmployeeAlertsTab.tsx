@@ -15,7 +15,7 @@ import {
   Bell,
   BellOff,
 } from "lucide-react";
-import type { Employee, ExpirationAlert } from "@/types/employee";
+import type { Employee, ExpirationAlert } from "@/lib/types";
 
 interface EmployeeAlertsTabProps {
   employee: Employee;
@@ -273,7 +273,7 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
                                   </span>
                                   <span className="font-medium">
                                     {alert.expiryDate.toLocaleDateString(
-                                      "fr-FR"
+                                      "fr-FR",
                                     )}
                                   </span>
                                 </div>
@@ -296,7 +296,7 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
                                   <div className="text-xs text-muted-foreground">
                                     Pris en compte le{" "}
                                     {alert.acknowledgedAt.toLocaleDateString(
-                                      "fr-FR"
+                                      "fr-FR",
                                     )}{" "}
                                     par {alert.acknowledgedBy}
                                   </div>

@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import {
   Clock,
@@ -28,7 +34,7 @@ export default function WorkedHoursPage() {
   const [isDeclareModalOpen, setIsDeclareModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     employeeId: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     regularHours: 0,
     overtimeHours: 0,
     nightHours: 0,
@@ -50,11 +56,11 @@ export default function WorkedHoursPage() {
   const totalPending = mockWorkedHours.filter((h) => !h.validated).length;
   const totalRegularHours = mockWorkedHours.reduce(
     (sum, h) => sum + h.regularHours,
-    0
+    0,
   );
   const totalOvertimeHours = mockWorkedHours.reduce(
     (sum, h) => sum + h.overtimeHours,
-    0
+    0,
   );
 
   return (
@@ -246,7 +252,7 @@ export default function WorkedHoursPage() {
                       <p className="text-sm text-green-800">
                         Validé par <strong>{hours.validatedBy}</strong> le{" "}
                         {new Date(hours.validatedAt!).toLocaleDateString(
-                          "fr-FR"
+                          "fr-FR",
                         )}
                       </p>
                     </div>
@@ -304,7 +310,7 @@ export default function WorkedHoursPage() {
               setIsDeclareModalOpen(false);
               setFormData({
                 employeeId: "",
-                date: new Date().toISOString().split('T')[0],
+                date: new Date().toISOString().split("T")[0],
                 regularHours: 0,
                 overtimeHours: 0,
                 nightHours: 0,
@@ -335,7 +341,8 @@ export default function WorkedHoursPage() {
                 <SelectContent>
                   {mockEmployees.map((employee) => (
                     <SelectItem key={employee.id} value={employee.id}>
-                      {employee.firstName} {employee.lastName} - {employee.employeeNumber}
+                      {employee.firstName} {employee.lastName} -{" "}
+                      {employee.employeeNumber}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -367,12 +374,18 @@ export default function WorkedHoursPage() {
                 step="0.5"
                 value={formData.regularHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, regularHours: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    regularHours: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="overtimeHours" className="flex items-center gap-2">
+              <Label
+                htmlFor="overtimeHours"
+                className="flex items-center gap-2"
+              >
                 <Clock className="h-4 w-4 text-blue-600" />
                 Heures supplémentaires
               </Label>
@@ -383,7 +396,10 @@ export default function WorkedHoursPage() {
                 step="0.5"
                 value={formData.overtimeHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, overtimeHours: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    overtimeHours: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -402,7 +418,10 @@ export default function WorkedHoursPage() {
                 step="0.5"
                 value={formData.nightHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, nightHours: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    nightHours: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -418,7 +437,10 @@ export default function WorkedHoursPage() {
                 step="0.5"
                 value={formData.sundayHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, sundayHours: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    sundayHours: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -434,7 +456,10 @@ export default function WorkedHoursPage() {
                 step="0.5"
                 value={formData.holidayHours}
                 onChange={(e) =>
-                  setFormData({ ...formData, holidayHours: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    holidayHours: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -443,8 +468,27 @@ export default function WorkedHoursPage() {
           <div className="rounded-lg bg-muted p-4">
             <h4 className="font-medium mb-2">Récapitulatif</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>Total heures: <strong>{formData.regularHours + formData.overtimeHours + formData.nightHours + formData.sundayHours + formData.holidayHours}h</strong></div>
-              <div>À majorer: <strong className="text-blue-600">{formData.overtimeHours + formData.nightHours + formData.sundayHours + formData.holidayHours}h</strong></div>
+              <div>
+                Total heures:{" "}
+                <strong>
+                  {formData.regularHours +
+                    formData.overtimeHours +
+                    formData.nightHours +
+                    formData.sundayHours +
+                    formData.holidayHours}
+                  h
+                </strong>
+              </div>
+              <div>
+                À majorer:{" "}
+                <strong className="text-blue-600">
+                  {formData.overtimeHours +
+                    formData.nightHours +
+                    formData.sundayHours +
+                    formData.holidayHours}
+                  h
+                </strong>
+              </div>
             </div>
           </div>
         </div>

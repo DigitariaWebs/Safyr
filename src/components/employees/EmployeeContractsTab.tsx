@@ -15,7 +15,7 @@ import {
   Clock,
   Edit,
 } from "lucide-react";
-import type { Employee, Contract } from "@/types/employee";
+import type { Employee, Contract } from "@/lib/types";
 
 interface EmployeeContractsTabProps {
   employee: Employee;
@@ -155,7 +155,9 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant={typeConfig.variant}>{typeConfig.label}</Badge>
+                    <Badge variant={typeConfig.variant}>
+                      {typeConfig.label}
+                    </Badge>
                     <Badge variant={statusConfig.variant}>
                       {statusConfig.label}
                     </Badge>
@@ -228,7 +230,8 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
                   <div className="flex items-center gap-2 text-sm">
                     <FileText className="h-4 w-4 text-green-600" />
                     <span className="font-medium text-green-700 dark:text-green-400">
-                      Contrat signé le {contract.signedAt.toLocaleDateString("fr-FR")}
+                      Contrat signé le{" "}
+                      {contract.signedAt.toLocaleDateString("fr-FR")}
                     </span>
                   </div>
                 </div>

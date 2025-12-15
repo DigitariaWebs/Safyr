@@ -15,7 +15,7 @@ import {
   CheckCircle,
   Plus,
 } from "lucide-react";
-import type { Employee, CSERole } from "@/types/employee";
+import type { Employee, CSERole } from "@/lib/types";
 
 interface EmployeeCSETabProps {
   employee: Employee;
@@ -61,7 +61,8 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
     return config[role];
   };
 
-  const usagePercentage = (displayRole.usedHours / displayRole.delegationHours) * 100;
+  const usagePercentage =
+    (displayRole.usedHours / displayRole.delegationHours) * 100;
 
   // Mock delegation hours history
   const delegationHistory = [

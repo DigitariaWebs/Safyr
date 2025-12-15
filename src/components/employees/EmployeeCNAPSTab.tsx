@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import {
@@ -19,7 +18,7 @@ import {
   Eye,
   Clock,
 } from "lucide-react";
-import type { Employee, CNAPSAccess } from "@/types/employee";
+import type { Employee, CNAPSAccess } from "@/lib/types";
 
 interface EmployeeCNAPSTabProps {
   employee: Employee;
@@ -65,30 +64,29 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
     setShowVerificationModal(true);
 
     // Simulate API call to CNAPS DRACAR
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Mock verification result
-    const newVerification = {
-      id: Date.now().toString(),
-      date: new Date(),
-      status: "valid" as const,
-      checkedBy: "admin@safyr.com",
-      notes: "Vérification automatique - Carte valide",
-    };
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     setIsVerifying(false);
-    setCnapsData(prev => prev ? {
-      ...prev,
-      lastChecked: new Date(),
-      status: "valid"
-    } : null);
+    setCnapsData((prev) =>
+      prev
+        ? {
+            ...prev,
+            lastChecked: new Date(),
+            status: "valid",
+          }
+        : null,
+    );
   };
 
   const handleOpenDRACAR = () => {
     if (cnapsData?.dracarLink) {
       window.open(cnapsData.dracarLink, "_blank", "noopener,noreferrer");
     } else {
-      window.open("https://www.cnaps-securite.fr/service-dracar/", "_blank", "noopener,noreferrer");
+      window.open(
+        "https://www.cnaps-securite.fr/service-dracar/",
+        "_blank",
+        "noopener,noreferrer",
+      );
     }
   };
 
@@ -141,14 +139,17 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
                 <div className="flex items-center gap-3">
                   {statusConfig && (
                     <>
-                      <statusConfig.icon className={`h-5 w-5 text-${statusConfig.color.split('-')[1]}-600`} />
+                      <statusConfig.icon
+                        className={`h-5 w-5 text-${statusConfig.color.split("-")[1]}-600`}
+                      />
                       <Badge variant={statusConfig.variant}>
                         {statusConfig.label}
                       </Badge>
                     </>
                   )}
                   <span className="text-sm text-muted-foreground">
-                    Dernière vérification: {cnapsData.lastChecked?.toLocaleDateString("fr-FR", {
+                    Dernière vérification:{" "}
+                    {cnapsData.lastChecked?.toLocaleDateString("fr-FR", {
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric",
@@ -164,10 +165,16 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
                     onClick={handleVerifyCNAPS}
                     disabled={isVerifying}
                   >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isVerifying ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`mr-2 h-4 w-4 ${isVerifying ? "animate-spin" : ""}`}
+                    />
                     {isVerifying ? "Vérification..." : "Vérifier"}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleOpenDRACAR}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenDRACAR}
+                  >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Ouvrir DRACAR
                   </Button>
@@ -180,7 +187,9 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
                   <p className="text-lg font-mono">{cnapsData.cnapsNumber}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Statut de la carte</Label>
+                  <Label className="text-sm font-medium">
+                    Statut de la carte
+                  </Label>
                   <p className="text-lg">Professionnelle active</p>
                 </div>
               </div>
@@ -191,7 +200,11 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
               <p className="mt-2 text-sm text-muted-foreground">
                 Aucune donnée CNAPS trouvée pour cet employé
               </p>
-              <Button className="mt-4" onClick={handleVerifyCNAPS} disabled={isVerifying}>
+              <Button
+                className="mt-4"
+                onClick={handleVerifyCNAPS}
+                disabled={isVerifying}
+              >
                 <Search className="mr-2 h-4 w-4" />
                 {isVerifying ? "Recherche..." : "Rechercher dans DRACAR"}
               </Button>
@@ -209,19 +222,27 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Type d'agent</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Type d&apos;agent
+                </Label>
                 <p className="font-medium">Agent de sécurité</p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Catégorie</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Catégorie
+                </Label>
                 <p className="font-medium">A - Surveillance humaine</p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date de délivrance</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Date de délivrance
+                </Label>
                 <p className="font-medium">15/01/2024</p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Date d'expiration</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Date d&apos;expiration
+                </Label>
                 <p className="font-medium">10/01/2025</p>
               </div>
             </div>
@@ -253,7 +274,9 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
                   key={verification.id}
                   className="flex items-start gap-3 p-3 border rounded-lg"
                 >
-                  <statusConfig.icon className={`h-5 w-5 mt-0.5 text-${statusConfig.color.split('-')[1]}-600`} />
+                  <statusConfig.icon
+                    className={`h-5 w-5 mt-0.5 text-${statusConfig.color.split("-")[1]}-600`}
+                  />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <Badge variant={statusConfig.variant} className="text-xs">
@@ -289,8 +312,8 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
         <CardContent>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Accédez directement au système CNAPS DRACAR pour consulter ou mettre à jour
-              les informations de cet employé.
+              Accédez directement au système CNAPS DRACAR pour consulter ou
+              mettre à jour les informations de cet employé.
             </p>
 
             <div className="flex gap-2">
@@ -358,7 +381,8 @@ export function EmployeeCNAPSTab({ employee }: EmployeeCNAPSTabProps) {
                 </p>
               </div>
               <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                La carte professionnelle CNAPS-2024-001234 est valide jusqu'au 10/01/2025.
+                La carte professionnelle CNAPS-2024-001234 est valide
+                jusqu&apos;au 10/01/2025.
               </p>
             </div>
           )}

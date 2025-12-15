@@ -4,57 +4,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit, Save, X } from "lucide-react";
-import type { Employee } from "@/types/employee";
-import { useState } from "react";
+import { Save } from "lucide-react";
+import type { Employee } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface EmployeeInfoTabProps {
   employee: Employee;
+  isEditMode?: boolean;
 }
 
-export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export function EmployeeInfoTab({
+  employee,
+  isEditMode = false,
+}: EmployeeInfoTabProps) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(isEditMode);
   const [formData, setFormData] = useState(employee);
+
+  useEffect(() => {
+    setIsEditing(isEditMode);
+  }, [isEditMode]);
 
   const handleSave = () => {
     // TODO: Implement API call to update employee
     console.log("Saving employee data:", formData);
-    setIsEditing(false);
+    router.push(`/admin/employees/${employee.id}`);
   };
 
   const handleCancel = () => {
     setFormData(employee);
-    setIsEditing(false);
+    router.push(`/admin/employees/${employee.id}`);
   };
 
   return (
     <div className="space-y-6">
       {/* Personal Information */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>Informations personnelles</CardTitle>
-          {!isEditing ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Modifier
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                <X className="mr-2 h-4 w-4" />
-                Annuler
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                <Save className="mr-2 h-4 w-4" />
-                Enregistrer
-              </Button>
-            </div>
-          )}
         </CardHeader>
+
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
@@ -66,6 +56,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, firstName: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -78,6 +69,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, lastName: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -118,6 +110,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, nationality: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -142,6 +135,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
           </div>
@@ -165,6 +159,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, email: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -177,6 +172,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -192,6 +188,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -207,6 +204,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -225,6 +223,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
           </div>
@@ -253,6 +252,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -271,6 +271,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -289,6 +290,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
           </div>
@@ -330,6 +332,7 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, position: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
 
@@ -342,11 +345,25 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                   setFormData({ ...formData, department: e.target.value })
                 }
                 disabled={!isEditing}
+                readOnly={!isEditing}
               />
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Save/Cancel Buttons */}
+      {isEditing && (
+        <div className="flex justify-end gap-4 sticky bottom-0 bg-background py-4 border-t">
+          <Button variant="outline" onClick={handleCancel}>
+            Annuler
+          </Button>
+          <Button onClick={handleSave}>
+            <Save className="mr-2 h-4 w-4" />
+            Enregistrer
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
