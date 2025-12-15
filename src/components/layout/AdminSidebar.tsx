@@ -9,6 +9,7 @@ import {
   Wallet,
   Shield,
   Settings,
+  Mail,
 } from "lucide-react";
 
 import { GenericSidebar, MenuSection } from "@/components/ui/generic-sidebar";
@@ -57,6 +58,16 @@ const navigationSections: MenuSection[] = [
         title: "Heures CSE",
         url: "/admin/dashboard/cse-hours",
         icon: ClipboardList,
+      },
+    ],
+  },
+  {
+    label: "Communication RH",
+    items: [
+      {
+        title: "Modèles d'emails",
+        url: "/admin/dashboard/communication/templates",
+        icon: Mail,
       },
     ],
   },
