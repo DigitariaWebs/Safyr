@@ -17,12 +17,11 @@ import {
   FileWarning,
   Download,
 } from "lucide-react";
-import type { Employee, EmployeeFilters } from "@/types/employee";
+import type { Employee } from "@/types/employee";
 import { mockEmployees, mockStats } from "@/data/employees";
 
 export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<EmployeeFilters>({});
   const [employees] = useState<Employee[]>(mockEmployees);
 
   const getStatusBadge = (status: Employee["status"]) => {
@@ -92,7 +91,8 @@ export default function EmployeesPage() {
           <CardContent>
             <div className="text-2xl font-bold">{mockStats.active}</div>
             <p className="text-xs text-muted-foreground">
-              {((mockStats.active / mockStats.total) * 100).toFixed(1)}% du total
+              {((mockStats.active / mockStats.total) * 100).toFixed(1)}% du
+              total
             </p>
           </CardContent>
         </Card>
@@ -122,10 +122,10 @@ export default function EmployeesPage() {
             <FileWarning className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.pendingContracts}</div>
-            <p className="text-xs text-muted-foreground">
-              Signatures requises
-            </p>
+            <div className="text-2xl font-bold">
+              {mockStats.pendingContracts}
+            </div>
+            <p className="text-xs text-muted-foreground">Signatures requises</p>
           </CardContent>
         </Card>
       </div>
@@ -178,7 +178,10 @@ export default function EmployeesPage() {
                     className="flex items-center gap-4 py-4 transition-colors hover:bg-muted/50 rounded-lg px-4"
                   >
                     <Avatar>
-                      <AvatarImage src={employee.photo} alt={employee.firstName} />
+                      <AvatarImage
+                        src={employee.photo}
+                        alt={employee.firstName}
+                      />
                       <AvatarFallback>
                         {employee.firstName[0]}
                         {employee.lastName[0]}

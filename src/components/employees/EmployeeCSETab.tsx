@@ -109,7 +109,7 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                 Pas de rôle CSE assigné
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Cet employé n'a pas de fonction au sein du CSE
+                Cet employé n&apos;a pas de fonction au sein du CSE
               </p>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -166,7 +166,8 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                     </p>
                     {displayRole.isElected && displayRole.electionDate && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Élu le {displayRole.electionDate.toLocaleDateString("fr-FR")}
+                        Élu le{" "}
+                        {displayRole.electionDate.toLocaleDateString("fr-FR")}
                       </p>
                     )}
                   </div>
@@ -190,7 +191,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
           {/* Delegation Hours Usage */}
           <Card>
             <CardHeader>
-              <CardTitle>Consommation des heures de délégation (Mois en cours)</CardTitle>
+              <CardTitle>
+                Consommation des heures de délégation (Mois en cours)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -210,7 +213,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                   <div className="p-4 border rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="h-4 w-4 text-orange-600" />
-                      <span className="text-sm font-medium">Heures utilisées</span>
+                      <span className="text-sm font-medium">
+                        Heures utilisées
+                      </span>
                     </div>
                     <div className="text-2xl font-bold text-orange-600">
                       {displayRole.usedHours}h
@@ -220,7 +225,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                   <div className="p-4 border rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium">Heures restantes</span>
+                      <span className="text-sm font-medium">
+                        Heures restantes
+                      </span>
                     </div>
                     <div className="text-2xl font-bold text-green-600">
                       {displayRole.remainingHours}h
@@ -231,7 +238,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span>Progression</span>
-                    <span className="font-medium">{usagePercentage.toFixed(0)}%</span>
+                    <span className="font-medium">
+                      {usagePercentage.toFixed(0)}%
+                    </span>
                   </div>
                   <Progress value={usagePercentage} className="h-2" />
                   {usagePercentage >= 90 && (
@@ -289,7 +298,9 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                             {entry.date.toLocaleDateString("fr-FR")}
                           </span>
                           <span>•</span>
-                          <span className="font-medium">{entry.hours} heures</span>
+                          <span className="font-medium">
+                            {entry.hours} heures
+                          </span>
                           {entry.validated && entry.validatedBy && (
                             <>
                               <span>•</span>
@@ -325,9 +336,10 @@ export function EmployeeCSETab({ employee }: EmployeeCSETabProps) {
                     Gestion CSE
                   </h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Le Comité Social et Économique (CSE) bénéficie d'heures de
-                    délégation pour exercer ses missions. Ces heures sont suivies
-                    mensuellement et validées par l'administration RH.
+                    Le Comité Social et Économique (CSE) bénéficie d&apos;heures
+                    de délégation pour exercer ses missions. Ces heures sont
+                    suivies mensuellement et validées par l&apos;administration
+                    RH.
                   </p>
                   <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1 list-disc list-inside">
                     <li>Réunions CSE et préparation</li>

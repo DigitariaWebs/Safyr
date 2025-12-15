@@ -23,7 +23,7 @@ interface EmployeeEquipmentTabProps {
   employee: Employee;
 }
 
-export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
+export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
   const [equipment] = useState<Equipment[]>([
     {
       id: "1",
@@ -203,7 +203,9 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total historique</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total historique
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{equipment.length}</div>
@@ -275,7 +277,8 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                         )}
                         <div className="flex gap-4 text-xs text-muted-foreground">
                           <span>
-                            Assigné le {item.assignedAt.toLocaleDateString("fr-FR")}
+                            Assigné le{" "}
+                            {item.assignedAt.toLocaleDateString("fr-FR")}
                           </span>
                           <span>•</span>
                           <span>État: {getConditionLabel(item.condition)}</span>
@@ -392,9 +395,9 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                 Signature électronique des équipements
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Chaque attribution et retour d'équipement est signé
-                numériquement par l'employé. Les signatures sont horodatées et
-                sécurisées pour garantir la traçabilité complète.
+                Chaque attribution et retour d&apos;équipement est signé
+                numériquement par l&apos;employé. Les signatures sont horodatées
+                et sécurisées pour garantir la traçabilité complète.
               </p>
             </div>
           </div>

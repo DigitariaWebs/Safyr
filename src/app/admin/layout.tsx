@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { Separator } from "@/components/ui/separator";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileModal } from "@/components/layout/ProfileModal";
 
 export default function AdminLayout({
@@ -35,7 +35,12 @@ export default function AdminLayout({
               onClick={() => setProfileModalOpen(true)}
               className="flex items-center gap-2 hover:bg-accent rounded-full p-1 transition-colors"
             >
-              <Avatar size="sm" fallback="JD" />
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/avatars/admin.jpg" alt="Admin" />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  JD
+                </AvatarFallback>
+              </Avatar>
             </button>
           </div>
         </header>

@@ -11,7 +11,6 @@ import {
   Trash2,
   FileText,
   Image,
-  AlertCircle,
   CheckCircle,
   ExternalLink,
 } from "lucide-react";
@@ -21,7 +20,7 @@ interface EmployeeDocumentsTabProps {
   employee: Employee;
 }
 
-export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
+export function EmployeeDocumentsTab({}: EmployeeDocumentsTabProps) {
   const [documents] = useState<Document[]>([
     {
       id: "1",
@@ -112,7 +111,11 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
 
   const getStatusBadge = (status: Certification["status"]) => {
     const config = {
-      valid: { variant: "default" as const, label: "Valide", color: "bg-green-500" },
+      valid: {
+        variant: "default" as const,
+        label: "Valide",
+        color: "bg-green-500",
+      },
       expired: {
         variant: "destructive" as const,
         label: "Expiré",
@@ -197,7 +200,8 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
                         <>
                           <span>•</span>
                           <span>
-                            Expire le {doc.expiresAt.toLocaleDateString("fr-FR")}
+                            Expire le{" "}
+                            {doc.expiresAt.toLocaleDateString("fr-FR")}
                           </span>
                         </>
                       )}
@@ -235,8 +239,8 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
               <div>
                 <h4 className="font-semibold">Vérification CNAPS</h4>
                 <p className="text-sm text-muted-foreground">
-                  Accéder au système DRACAR pour vérifier la validité de la carte
-                  professionnelle
+                  Accéder au système DRACAR pour vérifier la validité de la
+                  carte professionnelle
                 </p>
               </div>
             </div>
@@ -293,7 +297,8 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
                         <span>Émis par {cert.issuer}</span>
                         <span>•</span>
                         <span>
-                          Expire le {cert.expiryDate.toLocaleDateString("fr-FR")}
+                          Expire le{" "}
+                          {cert.expiryDate.toLocaleDateString("fr-FR")}
                         </span>
                         {cert.status !== "expired" && daysUntilExpiry <= 90 && (
                           <>

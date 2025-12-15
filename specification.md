@@ -21,11 +21,11 @@
 - [ ] Push notifications / SMS (option)
 
 ## 3. Time Management & Absences
-- [ ] Vacations, absences, sick leaves
-- [ ] Worked hours (for payroll only)
-- [ ] Complete tracking of CSE delegation hours / elected officials
-- [ ] Declarations + HR validation
-- [ ] Automatic payroll export
+- [x] Vacations, absences, sick leaves
+- [x] Worked hours (for payroll only)
+- [x] Complete tracking of CSE delegation hours / elected officials
+- [x] Declarations + HR validation
+- [x] Automatic payroll export
 
 ## 4. Payroll Preparation & Analyses
 - [ ] Tracking of variables: bonuses, nights, Sundays, holidays, allowances

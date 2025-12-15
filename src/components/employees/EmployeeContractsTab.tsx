@@ -15,13 +15,13 @@ import {
   Clock,
   Edit,
 } from "lucide-react";
-import type { Employee, Contract, ContractAmendment } from "@/types/employee";
+import type { Employee, Contract } from "@/types/employee";
 
 interface EmployeeContractsTabProps {
   employee: Employee;
 }
 
-export function EmployeeContractsTab({ employee }: EmployeeContractsTabProps) {
+export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
   const [contracts] = useState<Contract[]>([
     {
       id: "1",

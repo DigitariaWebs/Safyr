@@ -130,18 +130,6 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
     return config[status];
   };
 
-  const getAlertTypeLabel = (type: ExpirationAlert["type"]) => {
-    const labels = {
-      "pro-card": "Carte Professionnelle",
-      ssiap: "SSIAP",
-      vm: "Visite Médicale",
-      sst: "SST",
-      contract: "Contrat",
-      certification: "Certification",
-    };
-    return labels[type] || type;
-  };
-
   const formatDaysRemaining = (days: number) => {
     if (days < 0) {
       return `Expiré depuis ${Math.abs(days)} jours`;
@@ -200,7 +188,7 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              En attente d'action
+              En attente d&apos;action
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -215,7 +203,7 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
       {/* Alerts List */}
       <Card>
         <CardHeader>
-          <CardTitle>Alertes d'expiration</CardTitle>
+          <CardTitle>Alertes d&apos;expiration</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -233,7 +221,12 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
               alerts
                 .sort((a, b) => {
                   // Sort by severity (critical first) then by days until expiry
-                  const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+                  const severityOrder = {
+                    critical: 0,
+                    high: 1,
+                    medium: 2,
+                    low: 3,
+                  };
                   const severityDiff =
                     severityOrder[a.severity] - severityOrder[b.severity];
                   if (severityDiff !== 0) return severityDiff;
@@ -279,7 +272,9 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
                                     Expire le:{" "}
                                   </span>
                                   <span className="font-medium">
-                                    {alert.expiryDate.toLocaleDateString("fr-FR")}
+                                    {alert.expiryDate.toLocaleDateString(
+                                      "fr-FR"
+                                    )}
                                   </span>
                                 </div>
                                 <div
@@ -345,7 +340,9 @@ export function EmployeeAlertsTab({ employee }: EmployeeAlertsTabProps) {
                 suivants :
               </p>
               <ul className="text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1 list-disc list-inside">
-                <li>Critique: Document expiré ou expire dans moins de 7 jours</li>
+                <li>
+                  Critique: Document expiré ou expire dans moins de 7 jours
+                </li>
                 <li>Urgent: Expire dans moins de 30 jours</li>
                 <li>Attention: Expire dans moins de 90 jours</li>
               </ul>

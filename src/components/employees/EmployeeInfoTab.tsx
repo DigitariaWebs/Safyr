@@ -34,7 +34,11 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Informations personnelles</CardTitle>
           {!isEditing ? (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+            >
               <Edit className="mr-2 h-4 w-4" />
               Modifier
             </Button>
@@ -214,7 +218,10 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    address: { ...formData.address, postalCode: e.target.value },
+                    address: {
+                      ...formData.address,
+                      postalCode: e.target.value,
+                    },
                   })
                 }
                 disabled={!isEditing}
@@ -239,7 +246,10 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    bankDetails: { ...formData.bankDetails, iban: e.target.value },
+                    bankDetails: {
+                      ...formData.bankDetails,
+                      iban: e.target.value,
+                    },
                   })
                 }
                 disabled={!isEditing}
@@ -254,7 +264,10 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    bankDetails: { ...formData.bankDetails, bic: e.target.value },
+                    bankDetails: {
+                      ...formData.bankDetails,
+                      bic: e.target.value,
+                    },
                   })
                 }
                 disabled={!isEditing}
@@ -285,17 +298,21 @@ export function EmployeeInfoTab({ employee }: EmployeeInfoTabProps) {
       {/* Employment Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Informations d'emploi</CardTitle>
+          <CardTitle>Informations d&apos;emploi</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="employeeNumber">N° Employé</Label>
-              <Input id="employeeNumber" value={formData.employeeNumber} disabled />
+              <Input
+                id="employeeNumber"
+                value={formData.employeeNumber}
+                disabled
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="hireDate">Date d'embauche</Label>
+              <Label htmlFor="hireDate">Date d&apos;embauche</Label>
               <Input
                 id="hireDate"
                 type="date"

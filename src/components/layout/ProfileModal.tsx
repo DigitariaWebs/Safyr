@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -64,7 +64,12 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
       <SheetContent side="right" className="w-80 p-0">
         <SheetHeader className="p-6 pb-4">
           <div className="flex items-center gap-4">
-            <Avatar size="lg" fallback="JD" />
+            <Avatar className="h-16 w-16">
+              <AvatarImage src="/avatars/admin.jpg" alt="John Doe" />
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                JD
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1">
               <SheetTitle className="text-left text-lg font-semibold">
                 John Doe

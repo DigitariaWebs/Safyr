@@ -3,10 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
   Edit,
@@ -17,7 +15,6 @@ import {
   Building,
   AlertTriangle,
   FileText,
-  ShieldCheck,
   Package,
   Users,
 } from "lucide-react";
@@ -32,7 +29,13 @@ import {
   EmployeeCSETab,
 } from "@/components/employees";
 
-type TabType = "info" | "documents" | "contracts" | "equipment" | "alerts" | "cse";
+type TabType =
+  | "info"
+  | "documents"
+  | "contracts"
+  | "equipment"
+  | "alerts"
+  | "cse";
 
 export default function EmployeeDetailPage({
   params,
@@ -47,7 +50,9 @@ export default function EmployeeDetailPage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
         <h1 className="text-2xl font-bold mb-2">Employé non trouvé</h1>
-        <p className="text-muted-foreground mb-4">L'employé avec l'ID {id} n'existe pas.</p>
+        <p className="text-muted-foreground mb-4">
+          L&apos;employé avec l&apos;ID {id} n&apos;existe pas.
+        </p>
         <Button asChild>
           <Link href="/admin/employees">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -69,10 +74,26 @@ export default function EmployeeDetailPage({
 
   const getStatusBadge = (status: Employee["status"]) => {
     const variants = {
-      active: { variant: "default" as const, label: "Actif", color: "bg-green-500" },
-      inactive: { variant: "secondary" as const, label: "Inactif", color: "bg-gray-500" },
-      suspended: { variant: "destructive" as const, label: "Suspendu", color: "bg-red-500" },
-      terminated: { variant: "outline" as const, label: "Terminé", color: "bg-gray-400" },
+      active: {
+        variant: "default" as const,
+        label: "Actif",
+        color: "bg-green-500",
+      },
+      inactive: {
+        variant: "secondary" as const,
+        label: "Inactif",
+        color: "bg-gray-500",
+      },
+      suspended: {
+        variant: "destructive" as const,
+        label: "Suspendu",
+        color: "bg-red-500",
+      },
+      terminated: {
+        variant: "outline" as const,
+        label: "Terminé",
+        color: "bg-gray-400",
+      },
     };
     return variants[status];
   };
@@ -150,7 +171,9 @@ export default function EmployeeDetailPage({
               <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Date d'embauche</p>
+                  <p className="text-sm text-muted-foreground">
+                    Date d&apos;embauche
+                  </p>
                   <p className="font-medium">
                     {employee.hireDate.toLocaleDateString("fr-FR")}
                   </p>
@@ -195,9 +218,15 @@ export default function EmployeeDetailPage({
       {/* Tab Content */}
       <div className="min-h-100">
         {activeTab === "info" && <EmployeeInfoTab employee={employee} />}
-        {activeTab === "documents" && <EmployeeDocumentsTab employee={employee} />}
-        {activeTab === "contracts" && <EmployeeContractsTab employee={employee} />}
-        {activeTab === "equipment" && <EmployeeEquipmentTab employee={employee} />}
+        {activeTab === "documents" && (
+          <EmployeeDocumentsTab employee={employee} />
+        )}
+        {activeTab === "contracts" && (
+          <EmployeeContractsTab employee={employee} />
+        )}
+        {activeTab === "equipment" && (
+          <EmployeeEquipmentTab employee={employee} />
+        )}
         {activeTab === "alerts" && <EmployeeAlertsTab employee={employee} />}
         {activeTab === "cse" && <EmployeeCSETab employee={employee} />}
       </div>
