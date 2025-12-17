@@ -50,18 +50,17 @@ export function ModuleNavigationBar({
   collapsible = true,
 }: ModuleNavigationBarProps) {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("moduleNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("moduleNavCollapsed", String(isCollapsed));
+    const saved = localStorage.getItem("moduleNavCollapsed");
+    if (saved === "true") {
+      setIsCollapsed(true);
     }
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem("moduleNavCollapsed", String(isCollapsed));
   }, [isCollapsed]);
 
   const isActiveItem = (item: NavItem) => {

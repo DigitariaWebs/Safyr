@@ -429,3 +429,190 @@ export interface TimeOffFilters {
   startDate?: Date;
   endDate?: Date;
 }
+
+// ============================================================================
+// PAYROLL PREPARATION & ANALYSES TYPES
+// ============================================================================
+
+export interface PayrollVariable {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  period: string; // e.g., "2024-12"
+  type: PayrollVariableType;
+  amount: number;
+  currency: string;
+  description?: string;
+  validated: boolean;
+  validatedBy?: string;
+  validatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type PayrollVariableType =
+  | "bonus"
+  | "night_shift"
+  | "sunday_shift"
+  | "holiday_shift"
+  | "travel_allowance"
+  | "meal_allowance"
+  | "dressing_allowance"
+  | "other_allowance";
+
+export interface Allowance {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: AllowanceType;
+  amount: number;
+  currency: string;
+  frequency: "monthly" | "daily" | "one-time";
+  startDate: Date;
+  endDate?: Date;
+  description?: string;
+  validated: boolean;
+  validatedBy?: string;
+  validatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type AllowanceType =
+  | "travel"
+  | "meal"
+  | "dressing"
+  | "transport"
+  | "housing"
+  | "phone"
+  | "other";
+
+export interface SalaryMaintenance {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: SalaryMaintenanceType;
+  startDate: Date;
+  endDate?: Date;
+  dailyRate: number;
+  totalDays: number;
+  totalAmount: number;
+  currency: string;
+  medicalCertificate?: string; // File URL
+  status: "active" | "completed" | "pending";
+  validated: boolean;
+  validatedBy?: string;
+  validatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type SalaryMaintenanceType =
+  | "illness"
+  | "work_accident"
+  | "maternity"
+  | "paternity"
+  | "family_event"
+  | "other";
+
+export interface PersonnelCost {
+  employeeId: string;
+  employeeName: string;
+  period: string;
+  grossSalary: number;
+  netSalary: number;
+  taxableNet: number;
+  employeeContributions: number;
+  employerContributions: number;
+  totalEmployerCost: number;
+  currency: string;
+  workedHours: number;
+  costPerHour: number;
+  allowances: number;
+  bonuses: number;
+  maintenance: number;
+  totalCost: number;
+}
+
+export interface PayrollAnomaly {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: PayrollAnomalyType;
+  description: string;
+  severity: "low" | "medium" | "high" | "critical";
+  period: string;
+  expectedValue?: number;
+  actualValue?: number;
+  currency?: string;
+  status: "open" | "investigating" | "resolved" | "dismissed";
+  resolvedBy?: string;
+  resolvedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type PayrollAnomalyType =
+  | "missing_hours"
+  | "incorrect_rate"
+  | "duplicate_payment"
+  | "missing_allowance"
+  | "contribution_error"
+  | "tax_calculation_error"
+  | "other";
+
+export interface PayrollExportConfig {
+  id: string;
+  name: string;
+  software: "silae" | "sage" | "other";
+  format: "csv" | "xlsx" | "xml" | "json";
+  mapping: Record<string, string>; // Field mapping for export
+  delimiter?: string;
+  includeHeaders: boolean;
+  dateFormat: string;
+  currencyFormat: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PayrollAnalysis {
+  period: string;
+  totalEmployees: number;
+  totalGrossPayroll: number;
+  totalNetPayroll: number;
+  totalEmployerContributions: number;
+  totalEmployeeContributions: number;
+  totalPersonnelCost: number;
+  averageCostPerEmployee: number;
+  averageCostPerHour: number;
+  currency: string;
+  breakdowns: {
+    byDepartment: Record<string, PersonnelCostSummary>;
+    byContractType: Record<string, PersonnelCostSummary>;
+    byAllowanceType: Record<string, number>;
+  };
+  anomalies: PayrollAnomaly[];
+  createdAt: Date;
+}
+
+export interface PersonnelCostSummary {
+  employeeCount: number;
+  totalGross: number;
+  totalNet: number;
+  totalEmployerCost: number;
+  averageCostPerEmployee: number;
+  averageCostPerHour: number;
+}
+
+export interface PayrollStats {
+  totalVariables: number;
+  pendingValidations: number;
+  anomaliesCount: number;
+  totalPersonnelCost: number;
+  averageCostPerEmployee: number;
+  currency: string;
+  lastExportDate?: Date;
+  nextPayrollDate?: Date;
+}

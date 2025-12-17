@@ -32,16 +32,16 @@
 
 ## 4. Payroll Preparation & Analyses
 
-- [ ] Tracking of variables: bonuses, nights, Sundays, holidays, allowances
-- [ ] Allowances (travel, meal, dressing…)
+- [x] Tracking of variables: bonuses, nights, Sundays, holidays, allowances
+- [x] Allowances (travel, meal, dressing…)
 - [ ] Salary maintenance analyses (illness, AT, maternity…)
-- [ ] Payroll anomaly control
-- [ ] Personnel cost:
-  - [ ] taxable net
-  - [ ] payroll
-  - [ ] employee / employer contributions
-  - [ ] total employer cost
-- [ ] Cost per worked hour per employee
+- [x] Payroll anomaly control
+- [x] Personnel cost:
+  - [x] taxable net
+  - [x] payroll
+  - [x] employee / employer contributions
+  - [x] total employer cost
+- [x] Cost per worked hour per employee
 - [ ] Export to Silae / Sage / other software
 
 ## 5. Training & Certifications

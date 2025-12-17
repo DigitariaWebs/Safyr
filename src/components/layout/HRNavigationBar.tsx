@@ -19,6 +19,7 @@ import {
   Settings,
   Award,
   BarChart3,
+  Mail,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -72,7 +73,6 @@ const navItems: NavItem[] = [
       {
         label: "Variables de paie",
         href: "/dashboard/hr/payroll/variables",
-        disabled: true,
       },
       {
         label: "Indemnités et frais",
@@ -82,12 +82,10 @@ const navItems: NavItem[] = [
       {
         label: "Contrôle paie",
         href: "/dashboard/hr/payroll/control",
-        disabled: true,
       },
       {
         label: "Coût salarié / heure",
         href: "/dashboard/hr/payroll/cost-per-hour",
-        disabled: true,
       },
       {
         label: "Exports paie",
@@ -319,6 +317,16 @@ const navItems: NavItem[] = [
         label: "Prévisionnel RH",
         href: "/dashboard/hr/kpi/forecast",
         disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Communication",
+    icon: Mail,
+    children: [
+      {
+        label: "Modèles d'emails",
+        href: "/dashboard/hr/communication/templates",
       },
     ],
   },
