@@ -1,4 +1,77 @@
 // ============================================================================
+// RECRUITMENT & INTEGRATION TYPES
+// ============================================================================
+
+export interface JobApplication {
+  id: string;
+  applicantName: string;
+  email: string;
+  phone: string;
+  position: string;
+  cv?: string; // File URL
+  coverLetter?: string; // File URL
+  status: "pending" | "reviewed" | "interviewed" | "accepted" | "rejected";
+  appliedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RegulatoryVerification {
+  id: string;
+  applicationId: string;
+  cnapsVerified: boolean;
+  diplomasVerified: boolean;
+  cnapsNumber?: string;
+  diplomaFiles: string[]; // File URLs
+  verifiedAt?: Date;
+  verifiedBy?: string;
+  status: "pending" | "verified" | "rejected";
+  rejectionReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OnboardingTask {
+  id: string;
+  employeeId: string;
+  task: string; // e.g., "Upload ID", "Complete training"
+  category: "documents" | "training" | "equipment" | "other";
+  status: "pending" | "completed";
+  dueDate?: Date;
+  completedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OnboardingPath {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  tasks: OnboardingTask[];
+  startDate: Date;
+  completionDate?: Date;
+  status: "in-progress" | "completed";
+  progress: number; // Percentage
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RecruitmentStats {
+  totalApplications: number;
+  pendingApplications: number;
+  acceptedApplications: number;
+  rejectedApplications: number;
+  totalVerifications: number;
+  pendingVerifications: number;
+  completedOnboardings: number;
+  inProgressOnboardings: number;
+}
+
+// ============================================================================
 // EMAIL TEMPLATE TYPES
 // ============================================================================
 

@@ -55,10 +55,10 @@
 
 ## 6. Recruitment & Integration
 
-- [ ] Application management
-- [ ] Regulatory file verification (CNAPS + diplomas)
-- [ ] Contract creation + electronic signature
-- [ ] Integration path (documents, training)
+- [x] Application management
+- [x] Regulatory file verification (CNAPS + diplomas)
+- [x] Contract creation + electronic signature
+- [x] Integration path (documents, training)
 
 ## 7. Discipline & Legal
 

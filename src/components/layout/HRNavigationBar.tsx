@@ -127,22 +127,22 @@ const navItems: NavItem[] = [
       {
         label: "Candidatures",
         href: "/dashboard/hr/recruitment/applications",
-        disabled: true,
+        disabled: false,
       },
       {
         label: "Vérifications réglementaires",
         href: "/dashboard/hr/recruitment/verifications",
-        disabled: true,
+        disabled: false,
       },
       {
         label: "Création & signature",
         href: "/dashboard/hr/recruitment/contracts",
-        disabled: true,
+        disabled: false,
       },
       {
         label: "Parcours d'intégration",
         href: "/dashboard/hr/recruitment/onboarding",
-        disabled: true,
+        disabled: false,
       },
     ],
   },
