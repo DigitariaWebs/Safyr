@@ -7,10 +7,29 @@ import {
   ClipboardList,
   Wallet,
   Shield,
-  Settings,
   Mail,
   Calendar,
   Clock,
+  FileText,
+  UserCheck,
+  AlertTriangle,
+  MessageSquare,
+  Briefcase,
+  Stethoscope,
+  BookOpen,
+  FileCheck,
+  GitBranch,
+  CalendarRange,
+  FileSearch,
+  GraduationCap,
+  BarChart3,
+  Bell,
+  Wrench,
+  Package,
+  TrendingUp,
+  Award,
+  Scale,
+  FilePenLine,
 } from "lucide-react";
 
 import { GenericSidebar, MenuSection } from "@/components/ui/generic-sidebar";
@@ -18,33 +37,39 @@ import Image from "next/image";
 
 const navigationSections: MenuSection[] = [
   {
-    label: "Tableau de bord",
+    label: "RH",
     items: [
       {
         title: "Vue d'ensemble",
-        url: "/admin/dashboard",
+        url: "/dashboard/hr",
         icon: Home,
       },
     ],
   },
   {
-    label: "Gestion du Personnel",
+    label: "Salariés",
     items: [
       {
-        title: "Salariés",
-        url: "/admin/dashboard/employees",
+        title: "Dossiers salariés",
+        url: "/dashboard/hr/employees",
         icon: Users,
       },
       {
-        title: "Contrats",
-        url: "/admin/dashboard/contracts",
-        icon: ClipboardList,
+        title: "Contrats & avenants",
+        url: "/dashboard/hr/contracts",
+        icon: FileText,
         disabled: true,
       },
       {
-        title: "Documents",
-        url: "/admin/dashboard/documents",
+        title: "Documents réglementaires",
+        url: "/dashboard/hr/regulatory-documents",
         icon: Shield,
+        disabled: true,
+      },
+      {
+        title: "Matériel & EPI",
+        url: "/dashboard/hr/equipment",
+        icon: Package,
         disabled: true,
       },
     ],
@@ -53,45 +78,64 @@ const navigationSections: MenuSection[] = [
     label: "Temps & Absences",
     items: [
       {
-        title: "Demandes d'absence",
-        url: "/admin/dashboard/time-management",
+        title: "Congés",
+        url: "/dashboard/hr/time-management/leaves",
         icon: Calendar,
       },
       {
+        title: "Absences",
+        url: "/dashboard/hr/time-management",
+        icon: CalendarRange,
+      },
+      {
+        title: "Arrêts maladie",
+        url: "/dashboard/hr/time-management/sick-leaves",
+        icon: Stethoscope,
+        disabled: true,
+      },
+      {
         title: "Heures travaillées",
-        url: "/admin/dashboard/time-management/worked-hours",
+        url: "/dashboard/hr/time-management/worked-hours",
         icon: Clock,
       },
       {
         title: "Heures CSE",
-        url: "/admin/dashboard/time-management/cse-hours",
-        icon: ClipboardList,
+        url: "/dashboard/hr/time-management/cse-hours",
+        icon: Users,
       },
     ],
   },
   {
-    label: "Communication RH",
+    label: "Paie & Coûts",
     items: [
       {
-        title: "Modèles d'emails",
-        url: "/admin/dashboard/communication/templates",
-        icon: Mail,
-      },
-    ],
-  },
-  {
-    label: "Paie & Finance",
-    items: [
-      {
-        title: "Préparation paie",
-        url: "/admin/dashboard/payroll",
+        title: "Variables de paie",
+        url: "/dashboard/hr/payroll/variables",
         icon: Wallet,
         disabled: true,
       },
       {
-        title: "Notes de frais",
-        url: "/admin/dashboard/expenses",
-        icon: ClipboardList,
+        title: "Indemnités et frais",
+        url: "/dashboard/hr/payroll/expenses",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Contrôle paie",
+        url: "/dashboard/hr/payroll/control",
+        icon: FileCheck,
+        disabled: true,
+      },
+      {
+        title: "Coût salarié / heure",
+        url: "/dashboard/hr/payroll/cost-per-hour",
+        icon: TrendingUp,
+        disabled: true,
+      },
+      {
+        title: "Exports paie",
+        url: "/dashboard/hr/payroll/exports",
+        icon: FileSearch,
         disabled: true,
       },
     ],
@@ -100,49 +144,432 @@ const navigationSections: MenuSection[] = [
     label: "Formations & Habilitations",
     items: [
       {
-        title: "SSIAP / SST",
-        url: "/admin/dashboard/certifications",
+        title: "SSIAP 1 / 2 / 3",
+        url: "/dashboard/hr/training/ssiap",
         icon: Shield,
         disabled: true,
       },
       {
-        title: "Plan de formation",
-        url: "/admin/dashboard/training-plan",
-        icon: ClipboardList,
+        title: "SST & recyclages",
+        url: "/dashboard/hr/training/sst",
+        icon: Briefcase,
+        disabled: true,
+      },
+      {
+        title: "Habilitations",
+        url: "/dashboard/hr/training/certifications",
+        icon: Award,
+        disabled: true,
+      },
+      {
+        title: "Plan & budget de formation",
+        url: "/dashboard/hr/training/plan",
+        icon: BookOpen,
+        disabled: true,
+      },
+      {
+        title: "Alertes d'expiration",
+        url: "/dashboard/hr/training/alerts",
+        icon: AlertTriangle,
         disabled: true,
       },
     ],
   },
   {
-    label: "Recrutement & Discipline",
+    label: "Recrutement & Intégration",
     items: [
       {
         title: "Candidatures",
-        url: "/admin/dashboard/recruitment",
+        url: "/dashboard/hr/recruitment/applications",
         icon: Users,
         disabled: true,
       },
       {
-        title: "Sanctions",
-        url: "/admin/dashboard/sanctions",
-        icon: Shield,
+        title: "Vérifications réglementaires",
+        url: "/dashboard/hr/recruitment/verifications",
+        icon: FileCheck,
+        disabled: true,
+      },
+      {
+        title: "Création & signature",
+        url: "/dashboard/hr/recruitment/contracts",
+        icon: FilePenLine,
+        disabled: true,
+      },
+      {
+        title: "Parcours d'intégration",
+        url: "/dashboard/hr/recruitment/onboarding",
+        icon: UserCheck,
         disabled: true,
       },
     ],
   },
   {
-    label: "Administration",
+    label: "Discipline & Juridique",
     items: [
       {
-        title: "Registres légaux",
-        url: "/admin/dashboard/legal-registers",
+        title: "Avertissements",
+        url: "/dashboard/hr/discipline/warnings",
+        icon: AlertTriangle,
+        disabled: true,
+      },
+      {
+        title: "Sanctions",
+        url: "/dashboard/hr/discipline/sanctions",
+        icon: Scale,
+        disabled: true,
+      },
+      {
+        title: "Procédures disciplinaires",
+        url: "/dashboard/hr/discipline/procedures",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Registre des sanctions",
+        url: "/dashboard/hr/discipline/register",
+        icon: BookOpen,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Entretiens & Performance",
+    items: [
+      {
+        title: "Entretiens annuels",
+        url: "/dashboard/hr/interviews/annual",
+        icon: MessageSquare,
+        disabled: true,
+      },
+      {
+        title: "Entretiens professionnels",
+        url: "/dashboard/hr/interviews/professional",
+        icon: Briefcase,
+        disabled: true,
+      },
+      {
+        title: "Objectifs & évolution",
+        url: "/dashboard/hr/interviews/objectives",
+        icon: TrendingUp,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Médecine du travail",
+    items: [
+      {
+        title: "Visites médicales",
+        url: "/dashboard/hr/occupational-health/visits",
+        icon: Stethoscope,
+        disabled: true,
+      },
+      {
+        title: "Fiches d'aptitude",
+        url: "/dashboard/hr/occupational-health/aptitude",
+        icon: FileCheck,
+        disabled: true,
+      },
+      {
+        title: "Alertes",
+        url: "/dashboard/hr/occupational-health/alerts",
+        icon: Bell,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Offboarding",
+    items: [
+      {
+        title: "Préavis",
+        url: "/dashboard/hr/offboarding/notice",
+        icon: Calendar,
+        disabled: true,
+      },
+      {
+        title: "Restitution matériel",
+        url: "/dashboard/hr/offboarding/equipment",
+        icon: Package,
+        disabled: true,
+      },
+      {
+        title: "Documents de fin",
+        url: "/dashboard/hr/offboarding/documents",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Archivage",
+        url: "/dashboard/hr/offboarding/archive",
+        icon: BookOpen,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Registres légaux",
+    items: [
+      {
+        title: "Registre du personnel",
+        url: "/dashboard/hr/legal-registers/personnel",
+        icon: Users,
+        disabled: true,
+      },
+      {
+        title: "Accidents du travail",
+        url: "/dashboard/hr/legal-registers/accidents",
+        icon: AlertTriangle,
+        disabled: true,
+      },
+      {
+        title: "Formations",
+        url: "/dashboard/hr/legal-registers/trainings",
+        icon: GraduationCap,
+        disabled: true,
+      },
+      {
+        title: "Exports réglementaires",
+        url: "/dashboard/hr/legal-registers/exports",
+        icon: FileSearch,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Workflows & Signatures",
+    items: [
+      {
+        title: "Demandes RH",
+        url: "/dashboard/hr/workflows/requests",
+        icon: GitBranch,
+        disabled: true,
+      },
+      {
+        title: "Dématérialisation",
+        url: "/dashboard/hr/workflows/digitalization",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Signatures électroniques",
+        url: "/dashboard/hr/workflows/signatures",
+        icon: FilePenLine,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Exploitation",
+    items: [
+      {
+        title: "Planning agents",
+        url: "/dashboard/hr/operations/planning",
+        icon: Calendar,
+        disabled: true,
+      },
+      {
+        title: "Affectations sites",
+        url: "/dashboard/hr/operations/assignments",
+        icon: Users,
+        disabled: true,
+      },
+      {
+        title: "Heures terrain",
+        url: "/dashboard/hr/operations/field-hours",
+        icon: Clock,
+        disabled: true,
+      },
+      {
+        title: "Liaison paie",
+        url: "/dashboard/hr/operations/payroll-link",
+        icon: Wallet,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Appels d'Offres",
+    items: [
+      {
+        title: "Accès plateformes AO",
+        url: "/dashboard/hr/tenders/platforms",
+        icon: FileSearch,
+        disabled: true,
+      },
+      {
+        title: "Veille appels d'offres",
+        url: "/dashboard/hr/tenders/monitoring",
+        icon: Bell,
+        disabled: true,
+      },
+      {
+        title: "Dossiers de réponse",
+        url: "/dashboard/hr/tenders/responses",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Modèles de dossiers",
+        url: "/dashboard/hr/tenders/templates",
         icon: ClipboardList,
         disabled: true,
       },
       {
-        title: "Paramètres",
-        url: "/admin/dashboard/settings",
-        icon: Settings,
+        title: "Suivi & historique",
+        url: "/dashboard/hr/tenders/tracking",
+        icon: BarChart3,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Formation & Financement",
+    items: [
+      {
+        title: "Plan de formation",
+        url: "/dashboard/hr/training-finance/plan",
+        icon: BookOpen,
+        disabled: true,
+      },
+      {
+        title: "Dossiers AKTO / OPCO",
+        url: "/dashboard/hr/training-finance/akto",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Suivi des financements",
+        url: "/dashboard/hr/training-finance/funding",
+        icon: Wallet,
+        disabled: true,
+      },
+      {
+        title: "Historique",
+        url: "/dashboard/hr/training-finance/history",
+        icon: Clock,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Pilotage",
+    items: [
+      {
+        title: "KPI RH",
+        url: "/dashboard/hr/kpi/hr",
+        icon: BarChart3,
+        disabled: true,
+      },
+      {
+        title: "Conformité CNAPS",
+        url: "/dashboard/hr/kpi/cnaps",
+        icon: Shield,
+        disabled: true,
+      },
+      {
+        title: "Turnover",
+        url: "/dashboard/hr/kpi/turnover",
+        icon: TrendingUp,
+        disabled: true,
+      },
+      {
+        title: "Absentéisme",
+        url: "/dashboard/hr/kpi/absenteeism",
+        icon: CalendarRange,
+        disabled: true,
+      },
+      {
+        title: "Masse salariale",
+        url: "/dashboard/hr/kpi/payroll-mass",
+        icon: Wallet,
+        disabled: true,
+      },
+      {
+        title: "Prévisionnel RH",
+        url: "/dashboard/hr/kpi/forecast",
+        icon: TrendingUp,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Notifications",
+    items: [
+      {
+        title: "Alertes réglementaires",
+        url: "/dashboard/hr/notifications/regulatory",
+        icon: AlertTriangle,
+        disabled: true,
+      },
+      {
+        title: "Alertes RH",
+        url: "/dashboard/hr/notifications/hr",
+        icon: Bell,
+        disabled: true,
+      },
+      {
+        title: "Alertes Appels d'Offres",
+        url: "/dashboard/hr/notifications/tenders",
+        icon: FileSearch,
+        disabled: true,
+      },
+      {
+        title: "Historique",
+        url: "/dashboard/hr/notifications/history",
+        icon: Clock,
+        disabled: true,
+      },
+    ],
+  },
+  {
+    label: "Communication RH",
+    items: [
+      {
+        title: "Modèles d'emails",
+        url: "/dashboard/hr/communication/templates",
+        icon: Mail,
+      },
+    ],
+  },
+  {
+    label: "Paramètres",
+    items: [
+      {
+        title: "Utilisateurs & rôles",
+        url: "/dashboard/hr/settings/users",
+        icon: Users,
+        disabled: true,
+      },
+      {
+        title: "Droits d'accès",
+        url: "/dashboard/hr/settings/access",
+        icon: Shield,
+        disabled: true,
+      },
+      {
+        title: "Modèles",
+        url: "/dashboard/hr/settings/templates",
+        icon: FileText,
+        disabled: true,
+      },
+      {
+        title: "Connecteurs",
+        url: "/dashboard/hr/settings/connectors",
+        icon: Wrench,
+        disabled: true,
+      },
+      {
+        title: "Automatisations",
+        url: "/dashboard/hr/settings/automations",
+        icon: GitBranch,
+        disabled: true,
+      },
+      {
+        title: "Archivage légal",
+        url: "/dashboard/hr/settings/archiving",
+        icon: BookOpen,
         disabled: true,
       },
     ],
@@ -150,7 +577,7 @@ const navigationSections: MenuSection[] = [
 ];
 
 const logoContent = (
-  <Link href="/admin/dashboard">
+  <Link href="/dashboard">
     <div className="flex h-8 w-8 items-center justify-center rounded-lg">
       <Image src="/favicon.png" alt="Safyr Logo" width={256} height={256} />
     </div>
@@ -159,7 +586,7 @@ const logoContent = (
 
 const headerContent = (
   <Link
-    href="/admin/dashboard"
+    href="/dashboard"
     className="flex items-center gap-2 transition-all duration-200"
   >
     <Image

@@ -780,7 +780,7 @@ export default function TimeManagementPage() {
               </div>
               <Button variant="outline" size="sm" asChild>
                 <Link
-                  href={`/admin/dashboard/employees/${selectedRequest.employeeId}`}
+                  href={`/dashboard/hr/employees/${selectedRequest.employeeId}`}
                 >
                   Voir le profil
                 </Link>
