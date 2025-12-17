@@ -2,6 +2,111 @@
 // EMAIL TEMPLATE TYPES
 // ============================================================================
 
+// ============================================================================
+// TRAINING & CERTIFICATIONS TYPES
+// ============================================================================
+
+export interface TrainingCertification {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: CertificationType;
+  level?: string; // for SSIAP 1/2/3
+  number: string;
+  issueDate: Date;
+  expiryDate: Date;
+  issuer: string;
+  fileUrl?: string;
+  status:
+    | "valid"
+    | "expired"
+    | "expiring-soon"
+    | "pending-renewal"
+    | "acknowledged";
+  lastRenewalDate?: Date;
+  nextRenewalDate?: Date;
+  validated: boolean;
+  validatedBy?: string;
+  validatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type CertificationType =
+  | "SSIAP1"
+  | "SSIAP2"
+  | "SSIAP3"
+  | "SST"
+  | "H0B0"
+  | "FIRE"
+  | "OTHER";
+
+export interface TrainingSession {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  certificationType: CertificationType;
+  sessionDate: Date;
+  duration: number;
+  trainer: string;
+  result: "passed" | "failed" | "pending";
+  certificateNumber?: string;
+  expiryDate?: Date;
+  cost?: number;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrainingPlan {
+  id: string;
+  title: string;
+  description?: string;
+  plannedDate: Date;
+  duration: number; // hours
+  participants: string[]; // employeeIds
+  trainer?: string;
+  location?: string;
+  budget: number;
+  currency: string;
+  status: "planned" | "confirmed" | "completed" | "cancelled";
+  actualDate?: Date;
+  actualDuration?: number;
+  actualCost?: number;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrainingBudget {
+  year: number;
+  totalBudget: number;
+  usedBudget: number;
+  remainingBudget: number;
+  currency: string;
+  breakdown: {
+    byType: Record<CertificationType, number>;
+    byDepartment: Record<string, number>;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrainingStats {
+  totalCertifications: number;
+  validCertifications: number;
+  expiredCertifications: number;
+  expiringSoon: number;
+  complianceRate: number; // percentage
+  totalTrainingHours: number;
+  totalTrainingCost: number;
+  currency: string;
+}
+
+// ============================================================================
+// EMAIL TEMPLATE TYPES
+// ============================================================================
+
 export interface EmailTemplate {
   id: string;
   name: string;

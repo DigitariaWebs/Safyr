@@ -101,27 +101,22 @@ const navItems: NavItem[] = [
       {
         label: "SSIAP 1 / 2 / 3",
         href: "/dashboard/hr/training/ssiap",
-        disabled: true,
       },
       {
         label: "SST & recyclages",
         href: "/dashboard/hr/training/sst",
-        disabled: true,
       },
       {
         label: "Habilitations",
         href: "/dashboard/hr/training/certifications",
-        disabled: true,
       },
       {
         label: "Plan & budget de formation",
         href: "/dashboard/hr/training/plan",
-        disabled: true,
       },
       {
         label: "Alertes d'expiration",
         href: "/dashboard/hr/training/alerts",
-        disabled: true,
       },
     ],
   },

@@ -46,12 +46,12 @@
 
 ## 5. Training & Certifications
 
-- [ ] SSIAP 1/2/3 tracking
-- [ ] SST tracking and recycles
-- [ ] H0B0 / fire certifications tracking
-- [ ] Annual training plan
-- [ ] Automatic expiration alerts
-- [ ] Training budget & history
+- [x] SSIAP 1/2/3 tracking
+- [x] SST tracking and recycles
+- [x] H0B0 / fire certifications tracking
+- [x] Annual training plan
+- [x] Automatic expiration alerts
+- [x] Training budget & history
 
 ## 6. Recruitment & Integration
 
