@@ -72,6 +72,14 @@ export interface RecruitmentStats {
   inProgressOnboardings: number;
 }
 
+export interface RecruitmentKPIs {
+  successRate: number; // percentage of accepted applications
+  averageDelay: number; // days from application to hire
+  totalCost: number; // total recruitment cost
+  costPerHire: number; // average cost per successful hire
+  currency: string;
+}
+
 // ============================================================================
 // EMAIL TEMPLATE TYPES
 // ============================================================================
@@ -228,6 +236,7 @@ export interface Employee {
   dateOfBirth: Date;
   placeOfBirth: string;
   nationality: string;
+  gender: "male" | "female" | "other";
 
   // Civil Status
   civilStatus: "single" | "married" | "divorced" | "widowed" | "civil-union";
@@ -284,6 +293,7 @@ export interface EmployeeFormData {
   dateOfBirth: string;
   placeOfBirth: string;
   nationality: string;
+  gender: Employee["gender"];
   civilStatus: Employee["civilStatus"];
   children: number;
   street: string;

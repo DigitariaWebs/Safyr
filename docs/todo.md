@@ -62,11 +62,11 @@
 
 ## 7. Discipline & Legal
 
-- [ ] Warnings
-- [ ] Suspensions
-- [ ] Disciplinary procedures
-- [ ] Interview archiving
-- [ ] Sanctions register (integrated legal register)
+- [x] Warnings
+- [x] Suspensions
+- [x] Disciplinary procedures
+- [x] Interview archiving
+- [x] Sanctions register (integrated legal register)
 
 ## 8. Interviews & Performance
 
@@ -144,14 +144,14 @@
 
 ## 16. HR Dashboard & Advanced KPIs
 
-- [ ] Certification compliance rate
-- [ ] Delegation hours
-- [ ] Absenteeism rate
-- [ ] Cost per employee
-- [ ] Evolving payroll
-- [ ] Employer charges
-- [ ] Turnover
-- [ ] Gender equality index
-- [ ] HR forecast
-- [ ] Salary maintenance analysis
-- [ ] Recruitment KPIs (delay, cost, success)
+- [x] Certification compliance rate
+- [x] Delegation hours
+- [x] Absenteeism rate
+- [x] Cost per employee
+- [x] Evolving payroll
+- [x] Employer charges
+- [x] Turnover
+- [x] Gender equality index
+- [x] HR forecast
+- [x] Salary maintenance analysis
+- [x] Recruitment KPIs (delay, cost, success)

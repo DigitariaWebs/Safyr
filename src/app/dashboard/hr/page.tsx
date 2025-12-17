@@ -13,6 +13,12 @@ import {
   Award,
   Briefcase,
   ChevronRight,
+  Target,
+  DollarSign,
+  Scale,
+  BarChart3,
+  Activity,
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -487,6 +493,359 @@ function PayrollWidget({ isLoading }: { isLoading: boolean }) {
   );
 }
 
+function DelegationHoursWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Clock className="h-4 w-4 text-blue-500" />
+          Heures de délégation CSE
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">156h</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              utilisées
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Allouées</p>
+              <p className="text-lg font-light">200h</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Restantes</p>
+              <p className="text-lg font-light text-emerald-400">44h</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4 text-emerald-400" />
+            <span className="text-emerald-400">78% utilisé</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CostPerEmployeeWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-green-500" />
+          Coût par employé
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">2,850€</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              moy./mois
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4 text-red-400" />
+            <span className="text-red-400">+4.2%</span>
+            <span className="text-muted-foreground">vs mois dernier</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Salaire brut</p>
+              <p className="text-lg font-light">2,150€</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Charges</p>
+              <p className="text-lg font-light">700€</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmployerChargesWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Briefcase className="h-4 w-4 text-purple-500" />
+          Charges patronales
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">28.5%</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              du salaire brut
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4 text-orange-400" />
+            <span className="text-orange-400">+0.3%</span>
+            <span className="text-muted-foreground">vs année dernière</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Total mensuel</p>
+              <p className="text-lg font-light">81K€</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Par employé</p>
+              <p className="text-lg font-light">700€</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function GenderEqualityWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Scale className="h-4 w-4 text-pink-500" />
+          Index égalité H/F
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">87/100</span>
+            <span className="ml-2 text-sm text-muted-foreground">points</span>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Objectif: 85/100</span>
+              <span className="text-emerald-400">+2 points</span>
+            </div>
+            <Progress value={87} className="h-2" />
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Femmes</p>
+              <p className="text-lg font-light">42%</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Écart salarial</p>
+              <p className="text-lg font-light text-emerald-400">2.1%</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HRForecastWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-indigo-500" />
+          Prévisions RH
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">+8</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              embauches prévues
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Départs prévus</p>
+              <p className="text-lg font-light text-red-400">-3</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Croissance</p>
+              <p className="text-lg font-light text-emerald-400">+2.7%</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Activity className="h-4 w-4 text-blue-400" />
+            <span className="text-blue-400">Budget formation: 45K€</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SalaryMaintenanceWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Target className="h-4 w-4 text-orange-500" />
+          Maintien salaire
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">12</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              cas actifs
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Maladie</p>
+              <p className="text-lg font-light">8</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">AT/MP</p>
+              <p className="text-lg font-light">4</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4 text-red-400" />
+            <span className="text-red-400">Coût: 28K€/mois</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RecruitmentKPIsWidget({ isLoading }: { isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-20 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <UserPlus className="h-4 w-4 text-teal-500" />
+          KPIs Recrutement
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <span className="text-4xl font-light tracking-tight">78%</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              taux de succès
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+            <div>
+              <p className="text-xs text-muted-foreground">Délai moyen</p>
+              <p className="text-lg font-light">24 jours</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Coût/embauche</p>
+              <p className="text-lg font-light">3,200€</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <TrendingUp className="h-4 w-4 text-emerald-400" />
+            <span className="text-emerald-400">+5% vs trimestre dernier</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
@@ -573,13 +932,22 @@ export default function HRDashboardPage() {
         <TurnoverWidget isLoading={isLoading} />
         <ComplianceWidget isLoading={isLoading} />
 
+        <DelegationHoursWidget isLoading={isLoading} />
+        <CostPerEmployeeWidget isLoading={isLoading} />
+        <EmployerChargesWidget isLoading={isLoading} />
+        <GenderEqualityWidget isLoading={isLoading} />
+
         <div className="md:col-span-2">
           <TrainingWidget isLoading={isLoading} />
         </div>
         <AlertsWidget isLoading={isLoading} />
         <PendingRequestsWidget isLoading={isLoading} />
 
+        <HRForecastWidget isLoading={isLoading} />
+        <SalaryMaintenanceWidget isLoading={isLoading} />
+        <RecruitmentKPIsWidget isLoading={isLoading} />
         <PayrollWidget isLoading={isLoading} />
+
         <QuickActionsWidget isLoading={isLoading} />
       </div>
     </div>

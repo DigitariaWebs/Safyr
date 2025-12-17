@@ -75,6 +75,7 @@ export default function EmployeesPage() {
     dateOfBirth: "",
     placeOfBirth: "",
     nationality: "Française",
+    gender: "male",
     civilStatus: "single",
     children: 0,
     street: "",
@@ -193,6 +194,7 @@ export default function EmployeesPage() {
       dateOfBirth: new Date(newEmployeeData.dateOfBirth),
       placeOfBirth: newEmployeeData.placeOfBirth,
       nationality: newEmployeeData.nationality,
+      gender: newEmployeeData.gender,
       civilStatus: newEmployeeData.civilStatus,
       children: newEmployeeData.children,
       address: {
@@ -230,6 +232,7 @@ export default function EmployeesPage() {
       dateOfBirth: "",
       placeOfBirth: "",
       nationality: "Française",
+      gender: "male",
       civilStatus: "single",
       children: 0,
       street: "",
@@ -873,6 +876,7 @@ export default function EmployeesPage() {
               dateOfBirth: "",
               placeOfBirth: "",
               nationality: "Française",
+              gender: "male",
               civilStatus: "single",
               children: 0,
               street: "",
@@ -994,6 +998,24 @@ export default function EmployeesPage() {
                         handleNewEmployeeChange("nationality", e.target.value)
                       }
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Genre</Label>
+                    <Select
+                      value={newEmployeeData.gender}
+                      onValueChange={(value) =>
+                        handleNewEmployeeChange("gender", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Homme</SelectItem>
+                        <SelectItem value="female">Femme</SelectItem>
+                        <SelectItem value="other">Autre</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="civilStatus">Situation familiale</Label>

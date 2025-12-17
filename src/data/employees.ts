@@ -11,6 +11,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1990-05-15"),
     placeOfBirth: "Paris",
     nationality: "Française",
+    gender: "male",
     civilStatus: "married",
     children: 2,
     address: {
@@ -46,6 +47,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1985-08-20"),
     placeOfBirth: "Lyon",
     nationality: "Française",
+    gender: "female",
     civilStatus: "single",
     address: {
       street: "45 Avenue des Champs",
@@ -80,6 +82,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1992-03-12"),
     placeOfBirth: "Marseille",
     nationality: "Française",
+    gender: "male",
     civilStatus: "married",
     children: 1,
     address: {
@@ -115,6 +118,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1988-11-25"),
     placeOfBirth: "Toulouse",
     nationality: "Française",
+    gender: "female",
     civilStatus: "divorced",
     children: 2,
     address: {
@@ -150,6 +154,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1995-07-08"),
     placeOfBirth: "Nice",
     nationality: "Française",
+    gender: "male",
     civilStatus: "single",
     address: {
       street: "56 Promenade des Anglais",
@@ -184,6 +189,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1991-04-18"),
     placeOfBirth: "Nantes",
     nationality: "Française",
+    gender: "female",
     civilStatus: "married",
     children: 3,
     address: {
@@ -219,6 +225,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1987-12-30"),
     placeOfBirth: "Bordeaux",
     nationality: "Française",
+    gender: "male",
     civilStatus: "single",
     address: {
       street: "34 Cours de l'Intendance",
@@ -253,6 +260,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1993-09-05"),
     placeOfBirth: "Lille",
     nationality: "Française",
+    gender: "female",
     civilStatus: "married",
     address: {
       street: "67 Rue Nationale",
@@ -287,6 +295,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1989-06-22"),
     placeOfBirth: "Strasbourg",
     nationality: "Française",
+    gender: "male",
     civilStatus: "single",
     address: {
       street: "23 Place Kléber",
@@ -321,6 +330,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1994-02-14"),
     placeOfBirth: "Montpellier",
     nationality: "Française",
+    gender: "female",
     civilStatus: "single",
     address: {
       street: "90 Rue Foch",
@@ -355,6 +365,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1986-10-10"),
     placeOfBirth: "Paris",
     nationality: "Française",
+    gender: "male",
     civilStatus: "married",
     children: 1,
     address: {
@@ -390,6 +401,7 @@ export const mockEmployees: Employee[] = [
     dateOfBirth: new Date("1990-01-28"),
     placeOfBirth: "Rennes",
     nationality: "Française",
+    gender: "female",
     civilStatus: "divorced",
     address: {
       street: "42 Rue de la Liberté",
