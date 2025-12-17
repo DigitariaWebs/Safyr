@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ const mockApplications: JobApplication[] = [
   },
   {
     id: "3",
+    employeeId: "3",
     applicantName: "Sophie Leroy",
     email: "sophie.leroy@email.com",
     phone: "+33123456791",
@@ -246,7 +248,16 @@ export default function ApplicationsPage() {
       label: "Candidat",
       render: (app: JobApplication) => (
         <div>
-          <div className="font-medium">{app.applicantName}</div>
+          {app.employeeId ? (
+            <Link
+              href={`/dashboard/hr/employees/${app.employeeId}`}
+              className="font-medium hover:underline"
+            >
+              {app.applicantName}
+            </Link>
+          ) : (
+            <div className="font-medium">{app.applicantName}</div>
+          )}
           <div className="text-sm text-muted-foreground">{app.email}</div>
         </div>
       ),

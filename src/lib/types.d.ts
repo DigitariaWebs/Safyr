@@ -4,6 +4,7 @@
 
 export interface JobApplication {
   id: string;
+  employeeId?: string;
   applicantName: string;
   email: string;
   phone: string;
@@ -353,6 +354,7 @@ export interface Certification {
 
 export interface Contract {
   id: string;
+  employeeId?: string;
   type: "CDI" | "CDD" | "INTERIM" | "APPRENTICESHIP" | "INTERNSHIP";
   startDate: Date;
   endDate?: Date;
@@ -793,4 +795,85 @@ export interface PayrollStats {
   currency: string;
   lastExportDate?: Date;
   nextPayrollDate?: Date;
+}
+
+// Discipline & Legal Types
+export interface Warning {
+  id: string;
+  employeeId: string;
+  date: Date;
+  reason: string;
+  description: string;
+  issuedBy: string;
+  status: "active" | "lifted";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Suspension {
+  id: string;
+  employeeId: string;
+  startDate: Date;
+  endDate: Date;
+  reason: string;
+  description: string;
+  issuedBy: string;
+  status: "active" | "completed";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DisciplinaryProcedure {
+  id: string;
+  employeeId: string;
+  startDate: Date;
+  steps: DisciplinaryStep[];
+  currentStep: number;
+  status: "ongoing" | "completed" | "cancelled";
+  documents: string[]; // file URLs
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DisciplinaryStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completedAt?: Date;
+}
+
+export interface Interview {
+  id: string;
+  employeeId: string;
+  type: "professional" | "annual";
+  date: Date;
+  interviewer: string;
+  notes: string;
+  objectives: string[];
+  status: "scheduled" | "completed" | "cancelled";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Sanction {
+  id: string;
+  employeeId: string;
+  date: Date;
+  type: string;
+  reason: string;
+  description: string;
+  issuedBy: string;
+  severity: "minor" | "major" | "severe";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SanctionsRegister {
+  id: string;
+  employeeId: string;
+  sanctions: Sanction[];
+  totalWarnings: number;
+  totalSuspensions: number;
+  lastUpdated: Date;
 }

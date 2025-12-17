@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -249,7 +250,16 @@ export default function ContractsPage() {
       label: "Poste",
       render: (contract: Contract) => (
         <div>
-          <div className="font-medium">{contract.position}</div>
+          {contract.employeeId ? (
+            <Link
+              href={`/dashboard/hr/employees/${contract.employeeId}`}
+              className="font-medium hover:underline"
+            >
+              {contract.position}
+            </Link>
+          ) : (
+            <div className="font-medium">{contract.position}</div>
+          )}
           <div className="text-sm text-muted-foreground">
             {contract.department}
           </div>

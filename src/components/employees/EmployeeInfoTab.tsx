@@ -29,12 +29,12 @@ export function EmployeeInfoTab({
   const handleSave = () => {
     // TODO: Implement API call to update employee
     console.log("Saving employee data:", formData);
-    router.push(`/admin/employees/${employee.id}`);
+    router.push(`/dashboard/hr/employees/${employee.id}`);
   };
 
   const handleCancel = () => {
     setFormData(employee);
-    router.push(`/admin/employees/${employee.id}`);
+    router.push(`/dashboard/hr/employees/${employee.id}`);
   };
 
   return (

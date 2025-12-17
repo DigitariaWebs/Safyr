@@ -226,6 +226,7 @@ export default function VerificationsPage() {
       label: "Candidature",
       render: (verif: RegulatoryVerification) => (
         <div>
+          {/* TODO: If application has employeeId, link to employee profile instead */}
           <div className="font-medium">Candidature #{verif.applicationId}</div>
           <div className="text-sm text-muted-foreground">
             {verif.cnapsNumber || "Numéro CNAPS manquant"}

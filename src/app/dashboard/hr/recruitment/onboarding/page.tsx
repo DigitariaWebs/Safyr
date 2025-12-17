@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -356,7 +357,12 @@ export default function OnboardingPage() {
       label: "Employé",
       render: (path: OnboardingPath) => (
         <div>
-          <div className="font-medium">{path.employeeName}</div>
+          <Link
+            href={`/dashboard/hr/employees/${path.employeeId}`}
+            className="font-medium hover:underline"
+          >
+            {path.employeeName}
+          </Link>
           <div className="text-sm text-muted-foreground">
             Début: {path.startDate.toLocaleDateString("fr-FR")}
           </div>

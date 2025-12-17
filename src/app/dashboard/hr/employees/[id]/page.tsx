@@ -20,6 +20,7 @@ import {
   Users,
   Shield,
   Send,
+  Gavel,
 } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import { getEmployeeById } from "@/data/employees";
@@ -31,6 +32,7 @@ import {
   EmployeeAlertsTab,
   EmployeeCSETab,
   EmployeeCNAPSTab,
+  EmployeeDisciplineTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
 
@@ -54,7 +56,7 @@ export default function EmployeeDetailPage({
           L&apos;employé avec l&apos;ID {id} n&apos;existe pas.
         </p>
         <Button asChild>
-          <Link href="/admin/employees">
+          <Link href="/dashboard/hr/employees">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour à la liste
           </Link>
@@ -69,6 +71,7 @@ export default function EmployeeDetailPage({
     { id: "contracts" as const, label: "Contrats", icon: FileText },
     { id: "equipment" as const, label: "Équipements", icon: Package },
     { id: "alerts" as const, label: "Alertes", icon: AlertTriangle },
+    { id: "discipline" as const, label: "Discipline", icon: Gavel },
     { id: "cse" as const, label: "CSE", icon: Users },
     { id: "cnaps" as const, label: "CNAPS", icon: Shield },
   ];
@@ -106,7 +109,7 @@ export default function EmployeeDetailPage({
       {/* Header */}
       <div className="flex items-center gap-4 flex-wrap">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/admin/employees">
+          <Link href="/dashboard/hr/employees">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -129,7 +132,7 @@ export default function EmployeeDetailPage({
                 Envoyer un email
               </Button>
               <Button asChild>
-                <Link href={`/admin/employees/${employee.id}?edit=true`}>
+                <Link href={`/dashboard/hr/employees/${employee.id}?edit=true`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Modifier
                 </Link>
@@ -138,7 +141,9 @@ export default function EmployeeDetailPage({
           )}
           {isEditMode && (
             <Button asChild variant="outline">
-              <Link href={`/admin/employees/${employee.id}`}>Annuler</Link>
+              <Link href={`/dashboard/hr/employees/${employee.id}`}>
+                Annuler
+              </Link>
             </Button>
           )}
         </div>
@@ -251,6 +256,9 @@ export default function EmployeeDetailPage({
           <EmployeeEquipmentTab employee={employee} />
         )}
         {activeTab === "alerts" && <EmployeeAlertsTab employee={employee} />}
+        {activeTab === "discipline" && (
+          <EmployeeDisciplineTab employee={employee} />
+        )}
         {activeTab === "cse" && <EmployeeCSETab employee={employee} />}
         {activeTab === "cnaps" && <EmployeeCNAPSTab employee={employee} />}
       </div>

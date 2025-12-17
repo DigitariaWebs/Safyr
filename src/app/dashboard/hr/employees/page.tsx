@@ -546,7 +546,7 @@ export default function EmployeesPage() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/admin/employees/${employee.id}?edit=true`}
+                  href={`/dashboard/hr/employees/${employee.id}?edit=true`}
                   className="flex items-center gap-2"
                 >
                   <Pencil className="h-4 w-4" />
@@ -586,7 +586,7 @@ export default function EmployeesPage() {
             ? {
                 label: "Voir le profil complet",
                 onClick: () => {
-                  window.location.href = `/admin/employees/${selectedEmployee.id}`;
+                  window.location.href = `/dashboard/hr/employees/${selectedEmployee.id}`;
                 },
                 icon: <ExternalLink className="h-4 w-4" />,
               }

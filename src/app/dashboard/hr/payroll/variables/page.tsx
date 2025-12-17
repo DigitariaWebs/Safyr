@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -265,7 +266,14 @@ export default function PayrollVariablesPage() {
       sortValue: (variable) => variable.employeeName,
       render: (variable) => (
         <div>
-          <div className="font-medium">{variable.employeeName}</div>
+          <div className="font-medium">
+            <Link
+              href={`/dashboard/hr/employees/${variable.employeeId}`}
+              className="text-primary hover:underline"
+            >
+              {variable.employeeName}
+            </Link>
+          </div>
           <div className="text-sm text-muted-foreground">
             {variable.employeeId}
           </div>
@@ -509,7 +517,12 @@ export default function PayrollVariablesPage() {
               <div>
                 <Label className="text-sm font-medium">Employé</Label>
                 <p className="text-sm text-muted-foreground">
-                  {selectedVariable.employeeName}
+                  <Link
+                    href={`/dashboard/hr/employees/${selectedVariable.employeeId}`}
+                    className="text-primary hover:underline"
+                  >
+                    {selectedVariable.employeeName}
+                  </Link>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {selectedVariable.employeeId}
