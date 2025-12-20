@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,20 +31,11 @@ import {
   Receipt,
   Euro,
   CheckCircle,
-  XCircle,
   Clock,
 } from "lucide-react";
 import { ExpenseReport, ExpenseItem } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
-
-// Mock employees for selection
-const mockEmployees = [
-  { id: "1", name: "Marie Dupont" },
-  { id: "2", name: "Jean Martin" },
-  { id: "3", name: "Sophie Leroy" },
-  { id: "4", name: "Pierre Durand" },
-];
 
 // Mock data - replace with API call
 const mockExpenseReports: ExpenseReport[] = [
@@ -313,7 +303,7 @@ export default function ExpenseReportsPage() {
   const updateItem = (
     index: number,
     field: keyof Omit<ExpenseItem, "id">,
-    value: any,
+    value: ExpenseItem[keyof Omit<ExpenseItem, "id">],
   ) => {
     const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -548,7 +538,7 @@ export default function ExpenseReportsPage() {
                         <Label>Catégorie *</Label>
                         <Select
                           value={item.category}
-                          onValueChange={(value: any) =>
+                          onValueChange={(value: string) =>
                             updateItem(index, "category", value)
                           }
                         >

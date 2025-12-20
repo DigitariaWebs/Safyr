@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -155,7 +153,7 @@ const categoryLabels = {
 };
 
 export default function ExpenseHistoryPage() {
-  const [expenses, setExpenses] = useState<ExpenseReport[]>(
+  const [expenses] = useState<ExpenseReport[]>(
     mockHistoricalExpenses,
   );
   const [filterEmployee, setFilterEmployee] = useState<string>("all");
@@ -277,7 +275,7 @@ export default function ExpenseHistoryPage() {
         <div>
           <h1 className="text-3xl font-bold">Historique des Notes de Frais</h1>
           <p className="text-muted-foreground">
-            Consultez l'historique complet des notes de frais
+            Consultez l&apos;historique complet des notes de frais
           </p>
         </div>
         <Button onClick={handleExport}>

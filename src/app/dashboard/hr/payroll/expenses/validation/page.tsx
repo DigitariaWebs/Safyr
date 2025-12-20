@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -504,7 +502,7 @@ export default function ExpenseValidationPage() {
 
             {reviewingExpense.notes && (
               <div>
-                <Label>Notes de l'employé</Label>
+                <Label>Notes de l&apos;employé</Label>
                 <p className="text-sm whitespace-pre-wrap">
                   {reviewingExpense.notes}
                 </p>
