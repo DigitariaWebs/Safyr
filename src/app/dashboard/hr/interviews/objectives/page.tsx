@@ -138,7 +138,11 @@ export default function ObjectivesPage() {
     employeeId: "",
     title: "",
     description: "",
-    category: "performance" as "performance" | "development" | "career" | "skills",
+    category: "performance" as
+      | "performance"
+      | "development"
+      | "career"
+      | "skills",
     targetDate: "",
     progress: 0,
     status: "active" as "active" | "completed" | "cancelled",
@@ -255,7 +259,8 @@ export default function ObjectivesPage() {
     {
       key: "targetDate",
       label: "Date cible",
-      render: (objective: Objective) => objective.targetDate.toLocaleDateString("fr-FR"),
+      render: (objective: Objective) =>
+        objective.targetDate.toLocaleDateString("fr-FR"),
     },
     {
       key: "progress",
@@ -312,13 +317,16 @@ export default function ObjectivesPage() {
 
   // Calculate stats
   const activeObjectives = objectives.filter((o) => o.status === "active");
-  const completedObjectives = objectives.filter((o) => o.status === "completed");
-  const averageProgress = activeObjectives.length > 0
-    ? Math.round(
-        activeObjectives.reduce((sum, o) => sum + o.progress, 0) /
-          activeObjectives.length,
-      )
-    : 0;
+  const completedObjectives = objectives.filter(
+    (o) => o.status === "completed",
+  );
+  const averageProgress =
+    activeObjectives.length > 0
+      ? Math.round(
+          activeObjectives.reduce((sum, o) => sum + o.progress, 0) /
+            activeObjectives.length,
+        )
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -513,9 +521,7 @@ export default function ObjectivesPage() {
           </div>
 
           <div>
-            <Label htmlFor="progress">
-              Progression ({formData.progress}%)
-            </Label>
+            <Label htmlFor="progress">Progression ({formData.progress}%)</Label>
             <Input
               id="progress"
               type="range"
@@ -645,9 +651,12 @@ export default function ObjectivesPage() {
             )}
 
             <div className="text-xs text-muted-foreground">
-              <p>Créé le {viewingObjective.createdAt.toLocaleDateString("fr-FR")}</p>
               <p>
-                Mis à jour le {viewingObjective.updatedAt.toLocaleDateString("fr-FR")}
+                Créé le {viewingObjective.createdAt.toLocaleDateString("fr-FR")}
+              </p>
+              <p>
+                Mis à jour le{" "}
+                {viewingObjective.updatedAt.toLocaleDateString("fr-FR")}
               </p>
             </div>
           </div>

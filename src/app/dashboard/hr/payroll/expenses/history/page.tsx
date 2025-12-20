@@ -155,8 +155,9 @@ const categoryLabels = {
 };
 
 export default function ExpenseHistoryPage() {
-  const [expenses, setExpenses] =
-    useState<ExpenseReport[]>(mockHistoricalExpenses);
+  const [expenses, setExpenses] = useState<ExpenseReport[]>(
+    mockHistoricalExpenses,
+  );
   const [filterEmployee, setFilterEmployee] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterMonth, setFilterMonth] = useState<string>("all");
@@ -184,7 +185,9 @@ export default function ExpenseHistoryPage() {
   }
 
   if (filterStatus !== "all") {
-    filteredExpenses = filteredExpenses.filter((e) => e.status === filterStatus);
+    filteredExpenses = filteredExpenses.filter(
+      (e) => e.status === filterStatus,
+    );
   }
 
   if (filterMonth !== "all") {
@@ -221,7 +224,9 @@ export default function ExpenseHistoryPage() {
       render: (expense: ExpenseReport) => (
         <div className="flex items-center gap-1">
           <Euro className="h-4 w-4 text-muted-foreground" />
-          <span className="font-semibold">{expense.totalAmount.toFixed(2)} €</span>
+          <span className="font-semibold">
+            {expense.totalAmount.toFixed(2)} €
+          </span>
         </div>
       ),
     },
@@ -294,9 +299,7 @@ export default function ExpenseHistoryPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total notes
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total notes</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -316,9 +319,7 @@ export default function ExpenseHistoryPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Montant moyen
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Montant moyen</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -409,8 +410,9 @@ export default function ExpenseHistoryPage() {
                 <Label>Employé</Label>
                 <p className="text-sm font-medium">
                   {
-                    mockEmployees.find((e) => e.id === viewingExpense.employeeId)
-                      ?.name
+                    mockEmployees.find(
+                      (e) => e.id === viewingExpense.employeeId,
+                    )?.name
                   }
                 </p>
               </div>

@@ -240,9 +240,7 @@ export default function ExpenseValidationPage() {
         return (
           <div>
             <div className="font-medium">{employee?.name || "N/A"}</div>
-            <div className="text-sm text-muted-foreground">
-              {expense.title}
-            </div>
+            <div className="text-sm text-muted-foreground">{expense.title}</div>
           </div>
         );
       },
@@ -261,7 +259,9 @@ export default function ExpenseValidationPage() {
       render: (expense: ExpenseReport) => (
         <div className="flex items-center gap-1">
           <Euro className="h-4 w-4 text-muted-foreground" />
-          <span className="font-semibold">{expense.totalAmount.toFixed(2)} €</span>
+          <span className="font-semibold">
+            {expense.totalAmount.toFixed(2)} €
+          </span>
         </div>
       ),
     },
@@ -360,9 +360,7 @@ export default function ExpenseValidationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              À exporter
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">À exporter</CardTitle>
             <Download className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -381,9 +379,7 @@ export default function ExpenseValidationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total du mois
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total du mois</CardTitle>
             <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -516,9 +512,7 @@ export default function ExpenseValidationPage() {
             )}
 
             <div className="bg-orange-500/10 dark:bg-orange-400/10 border border-orange-500/50 dark:border-orange-400/50 rounded-lg p-4">
-              <Label htmlFor="rejectionReason">
-                Motif de rejet (si rejet)
-              </Label>
+              <Label htmlFor="rejectionReason">Motif de rejet (si rejet)</Label>
               <Textarea
                 id="rejectionReason"
                 value={rejectionReason}

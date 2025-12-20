@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useReducer, useRef } from "react";
+import { rectSortingStrategy } from "@dnd-kit/sortable";
 import {
   Users,
   TrendingUp,
@@ -19,17 +20,50 @@ import {
   BarChart3,
   Activity,
   UserPlus,
+  Settings,
+  ChevronUp,
+  ChevronDown,
+  GripVertical,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 function EmployeeStatsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -42,7 +76,7 @@ function EmployeeStatsWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
@@ -78,7 +112,7 @@ function EmployeeStatsWidget({ isLoading }: { isLoading: boolean }) {
 function AbsenceWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -91,7 +125,7 @@ function AbsenceWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Calendar className="h-4 w-4 text-orange-500" />
@@ -130,7 +164,7 @@ function AbsenceWidget({ isLoading }: { isLoading: boolean }) {
 function TurnoverWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -142,7 +176,7 @@ function TurnoverWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -174,7 +208,7 @@ function TurnoverWidget({ isLoading }: { isLoading: boolean }) {
 function ComplianceWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -186,7 +220,7 @@ function ComplianceWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Shield className="h-4 w-4 text-emerald-500" />
@@ -221,7 +255,7 @@ function ComplianceWidget({ isLoading }: { isLoading: boolean }) {
 function TrainingWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -239,7 +273,7 @@ function TrainingWidget({ isLoading }: { isLoading: boolean }) {
   ];
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
@@ -305,7 +339,7 @@ function TrainingWidget({ isLoading }: { isLoading: boolean }) {
 function AlertsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -341,7 +375,7 @@ function AlertsWidget({ isLoading }: { isLoading: boolean }) {
   ];
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
@@ -385,7 +419,7 @@ function AlertsWidget({ isLoading }: { isLoading: boolean }) {
 function PendingRequestsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -403,7 +437,7 @@ function PendingRequestsWidget({ isLoading }: { isLoading: boolean }) {
   ];
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
@@ -447,7 +481,7 @@ function PendingRequestsWidget({ isLoading }: { isLoading: boolean }) {
 function PayrollWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -459,7 +493,7 @@ function PayrollWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-primary" />
@@ -496,7 +530,7 @@ function PayrollWidget({ isLoading }: { isLoading: boolean }) {
 function DelegationHoursWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -508,7 +542,7 @@ function DelegationHoursWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Clock className="h-4 w-4 text-blue-500" />
@@ -546,7 +580,7 @@ function DelegationHoursWidget({ isLoading }: { isLoading: boolean }) {
 function CostPerEmployeeWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -558,7 +592,7 @@ function CostPerEmployeeWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-green-500" />
@@ -597,7 +631,7 @@ function CostPerEmployeeWidget({ isLoading }: { isLoading: boolean }) {
 function EmployerChargesWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -609,7 +643,7 @@ function EmployerChargesWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-purple-500" />
@@ -648,7 +682,7 @@ function EmployerChargesWidget({ isLoading }: { isLoading: boolean }) {
 function GenderEqualityWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -660,7 +694,7 @@ function GenderEqualityWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Scale className="h-4 w-4 text-pink-500" />
@@ -699,7 +733,7 @@ function GenderEqualityWidget({ isLoading }: { isLoading: boolean }) {
 function HRForecastWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -711,7 +745,7 @@ function HRForecastWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-indigo-500" />
@@ -749,7 +783,7 @@ function HRForecastWidget({ isLoading }: { isLoading: boolean }) {
 function SalaryMaintenanceWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -761,7 +795,7 @@ function SalaryMaintenanceWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <Target className="h-4 w-4 text-orange-500" />
@@ -799,7 +833,7 @@ function SalaryMaintenanceWidget({ isLoading }: { isLoading: boolean }) {
 function RecruitmentKPIsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -811,7 +845,7 @@ function RecruitmentKPIsWidget({ isLoading }: { isLoading: boolean }) {
   }
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
           <UserPlus className="h-4 w-4 text-teal-500" />
@@ -849,7 +883,7 @@ function RecruitmentKPIsWidget({ isLoading }: { isLoading: boolean }) {
 function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
     return (
-      <Card className="glass-card border-border/40">
+      <Card className="glass-card border-border/40 h-full">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-32" />
         </CardHeader>
@@ -879,7 +913,7 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   ];
 
   return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all">
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground">
           Actions rapides
@@ -907,49 +941,564 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   );
 }
 
+type WidgetConfig = {
+  id: string;
+  name: string;
+  component: React.ComponentType<{ isLoading: boolean }>;
+  visible: boolean;
+  span?: string;
+};
+
+type SavedWidgetConfig = Pick<WidgetConfig, "id" | "name" | "visible" | "span">;
+
+function SortableItem({
+  config,
+  index,
+  toggleVisibility,
+  moveUp,
+  moveDown,
+  total,
+}: {
+  config: WidgetConfig;
+  index: number;
+  toggleVisibility: (id: string) => void;
+  moveUp: (index: number) => void;
+  moveDown: (index: number) => void;
+  total: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: config.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between"
+    >
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          {...attributes}
+          {...listeners}
+          className="cursor-grab"
+        >
+          <GripVertical className="h-4 w-4" />
+        </Button>
+        <Checkbox
+          id={config.id}
+          checked={config.visible}
+          onCheckedChange={() => toggleVisibility(config.id)}
+        />
+        <label htmlFor={config.id} className="text-sm">
+          {config.name}
+        </label>
+      </div>
+      <div className="flex space-x-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => moveUp(index)}
+          disabled={index === 0}
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => moveDown(index)}
+          disabled={index === total - 1}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function SortableWidget({
+  config,
+  isLoading,
+  isEditMode,
+  toggleVisibility,
+}: {
+  config: WidgetConfig;
+  isLoading: boolean;
+  isEditMode: boolean;
+  toggleVisibility: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: config.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const Component = config.component;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(config.span || "", "h-full relative")}
+    >
+      <Component isLoading={isLoading} />
+      {isEditMode && (
+        <div className="absolute top-2 right-2 flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleVisibility(config.id)}
+            className="bg-background/80 rounded shadow h-6 w-6 p-0"
+          >
+            <Eye className="h-3 w-3" />
+          </Button>
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab bg-background/80 rounded p-1 shadow h-6 w-6 flex items-center justify-center"
+          >
+            <GripVertical className="h-3 w-3" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const defaultWidgetConfigs: WidgetConfig[] = [
+  {
+    id: "employeeStats",
+    name: "Effectif Total",
+    component: EmployeeStatsWidget,
+    visible: true,
+  },
+  {
+    id: "absence",
+    name: "Taux d'Absentéisme",
+    component: AbsenceWidget,
+    visible: true,
+  },
+  {
+    id: "turnover",
+    name: "Turnover",
+    component: TurnoverWidget,
+    visible: true,
+  },
+  {
+    id: "compliance",
+    name: "Conformité CNAPS",
+    component: ComplianceWidget,
+    visible: true,
+  },
+  {
+    id: "delegationHours",
+    name: "Heures de délégation CSE",
+    component: DelegationHoursWidget,
+    visible: true,
+  },
+  {
+    id: "costPerEmployee",
+    name: "Coût par employé",
+    component: CostPerEmployeeWidget,
+    visible: true,
+  },
+  {
+    id: "employerCharges",
+    name: "Charges patronales",
+    component: EmployerChargesWidget,
+    visible: true,
+  },
+  {
+    id: "genderEquality",
+    name: "Index égalité H/F",
+    component: GenderEqualityWidget,
+    visible: true,
+  },
+  {
+    id: "training",
+    name: "Formations & Habilitations",
+    component: TrainingWidget,
+    visible: true,
+    span: "md:col-span-2",
+  },
+  { id: "alerts", name: "Alertes RH", component: AlertsWidget, visible: true },
+  {
+    id: "pendingRequests",
+    name: "Demandes en attente",
+    component: PendingRequestsWidget,
+    visible: true,
+  },
+  {
+    id: "hrForecast",
+    name: "Prévisions RH",
+    component: HRForecastWidget,
+    visible: true,
+  },
+  {
+    id: "salaryMaintenance",
+    name: "Maintien salaire",
+    component: SalaryMaintenanceWidget,
+    visible: true,
+  },
+  {
+    id: "recruitmentKPIs",
+    name: "KPIs Recrutement",
+    component: RecruitmentKPIsWidget,
+    visible: true,
+  },
+  {
+    id: "payroll",
+    name: "Masse Salariale",
+    component: PayrollWidget,
+    visible: true,
+  },
+  {
+    id: "quickActions",
+    name: "Actions rapides",
+    component: QuickActionsWidget,
+    visible: true,
+  },
+];
+
+type WidgetAction =
+  | { type: "load"; payload: WidgetConfig[] }
+  | { type: "toggle"; payload: string }
+  | { type: "reorder"; payload: { oldIndex: number; newIndex: number } }
+  | { type: "move"; payload: { activeId: string; overId: string } };
+
+function widgetReducer(
+  state: WidgetConfig[],
+  action: WidgetAction,
+): WidgetConfig[] {
+  switch (action.type) {
+    case "load":
+      return action.payload;
+    case "toggle":
+      return state.map((config: WidgetConfig) =>
+        config.id === action.payload
+          ? { ...config, visible: !config.visible }
+          : config,
+      );
+    case "reorder":
+      return arrayMove(state, action.payload.oldIndex, action.payload.newIndex);
+    case "move":
+      const { activeId, overId } = action.payload;
+      const activeIndex = state.findIndex(
+        (c: WidgetConfig) => c.id === activeId,
+      );
+      const overIndex = state.findIndex((c: WidgetConfig) => c.id === overId);
+      return arrayMove(state, activeIndex, overIndex);
+    default:
+      return state;
+  }
+}
+
 export default function HRDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [widgetConfigs, dispatch] = useReducer(
+    widgetReducer,
+    defaultWidgetConfigs,
+  );
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const gridSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!hasLoadedRef.current) {
+      const saved = localStorage.getItem("hr-dashboard-config");
+      if (saved) {
+        try {
+          const savedConfigs: SavedWidgetConfig[] = JSON.parse(saved);
+          let loadedConfigs = savedConfigs
+            .map((saved: SavedWidgetConfig) => {
+              const defaultConfig = defaultWidgetConfigs.find(
+                (d: WidgetConfig) => d.id === saved.id,
+              );
+              return defaultConfig ? { ...defaultConfig, ...saved } : null;
+            })
+            .filter(Boolean) as WidgetConfig[];
+          const missingDefaults = defaultWidgetConfigs.filter(
+            (defaultConfig: WidgetConfig) =>
+              savedConfigs.every(
+                (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
+              ),
+          );
+          loadedConfigs = [...loadedConfigs, ...missingDefaults];
+          dispatch({ type: "load", payload: loadedConfigs });
+        } catch (e) {
+          console.error("Error loading dashboard config:", e);
+        }
+      }
+      hasLoadedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    const toSave: SavedWidgetConfig[] = widgetConfigs.map((config) => ({
+      id: config.id,
+      name: config.name,
+      visible: config.visible,
+      span: config.span,
+    }));
+    localStorage.setItem("hr-dashboard-config", JSON.stringify(toSave));
+  }, [widgetConfigs]);
+
+  const toggleVisibility = (id: string) => {
+    dispatch({ type: "toggle", payload: id });
+  };
+
+  const moveUp = (index: number) => {
+    if (index > 0) {
+      dispatch({
+        type: "reorder",
+        payload: { oldIndex: index, newIndex: index - 1 },
+      });
+    }
+  };
+
+  const moveDown = (index: number) => {
+    if (index < widgetConfigs.length - 1) {
+      dispatch({
+        type: "reorder",
+        payload: { oldIndex: index, newIndex: index + 1 },
+      });
+    }
+  };
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      dispatch({
+        type: "move",
+        payload: { activeId: active.id as string, overId: over.id as string },
+      });
+    }
+  }
+
+  function handleGridDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeConfig = widgetConfigs.find((c) => c.id === activeId);
+    const overConfig = widgetConfigs.find((c) => c.id === overId);
+
+    if (!activeConfig || !overConfig) return;
+
+    const isActiveVisible = activeConfig.visible;
+    const isOverVisible = overConfig.visible;
+
+    if (isActiveVisible === isOverVisible) {
+      // reorder within same group
+      dispatch({ type: "move", payload: { activeId, overId } });
+    } else {
+      // move between groups - first toggle visibility, then reorder
+      dispatch({ type: "toggle", payload: activeId });
+      // After toggle, the state updates, then reorder
+      setTimeout(() => {
+        dispatch({ type: "move", payload: { activeId, overId } });
+      }, 0);
+    }
+  }
+
+  const visibleWidgets = widgetConfigs.filter((config) => config.visible);
+  const hiddenWidgets = widgetConfigs.filter((config) => !config.visible);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-3xl font-light tracking-tight">
-          Tableau de bord RH
-        </h1>
-        <p className="mt-2 text-sm font-light text-muted-foreground">
-          Vue d&apos;ensemble des indicateurs clés RH
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <EmployeeStatsWidget isLoading={isLoading} />
-        <AbsenceWidget isLoading={isLoading} />
-        <TurnoverWidget isLoading={isLoading} />
-        <ComplianceWidget isLoading={isLoading} />
-
-        <DelegationHoursWidget isLoading={isLoading} />
-        <CostPerEmployeeWidget isLoading={isLoading} />
-        <EmployerChargesWidget isLoading={isLoading} />
-        <GenderEqualityWidget isLoading={isLoading} />
-
-        <div className="md:col-span-2">
-          <TrainingWidget isLoading={isLoading} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-3xl font-light tracking-tight">
+            Tableau de bord RH
+          </h1>
+          <p className="mt-2 text-sm font-light text-muted-foreground">
+            Vue d&apos;ensemble des indicateurs clés RH
+          </p>
         </div>
-        <AlertsWidget isLoading={isLoading} />
-        <PendingRequestsWidget isLoading={isLoading} />
-
-        <HRForecastWidget isLoading={isLoading} />
-        <SalaryMaintenanceWidget isLoading={isLoading} />
-        <RecruitmentKPIsWidget isLoading={isLoading} />
-        <PayrollWidget isLoading={isLoading} />
-
-        <QuickActionsWidget isLoading={isLoading} />
+        <div className="flex gap-2">
+          {isEditMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditMode(false)}
+            >
+              Quitter Édition
+            </Button>
+          )}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Personnaliser
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Personnaliser le tableau de bord</DialogTitle>
+              </DialogHeader>
+              <Button
+                variant={isEditMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setIsEditMode(!isEditMode);
+                  setIsDialogOpen(false);
+                }}
+                className="mb-4"
+              >
+                <GripVertical className="h-4 w-4 mr-2" />
+                {isEditMode ? "Quitter Édition" : "Mode Édition"}
+              </Button>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={widgetConfigs.map((config) => config.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-4">
+                    {widgetConfigs.map(
+                      (config: WidgetConfig, index: number) => (
+                        <SortableItem
+                          key={config.id}
+                          config={config}
+                          index={index}
+                          toggleVisibility={toggleVisibility}
+                          moveUp={moveUp}
+                          moveDown={moveDown}
+                          total={widgetConfigs.length}
+                        />
+                      ),
+                    )}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {isEditMode ? (
+        <DndContext
+          sensors={gridSensors}
+          collisionDetection={closestCenter}
+          onDragStart={(event) => setActiveId(event.active.id as string)}
+          onDragEnd={(event) => {
+            setActiveId(null);
+            handleGridDragEnd(event);
+          }}
+        >
+          <SortableContext
+            items={visibleWidgets.map((config) => config.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {visibleWidgets.map((config: WidgetConfig) => (
+                <SortableWidget
+                  key={config.id}
+                  config={config}
+                  isLoading={isLoading}
+                  isEditMode={isEditMode}
+                  toggleVisibility={toggleVisibility}
+                />
+              ))}
+            </div>
+          </SortableContext>
+
+          {hiddenWidgets.length > 0 && (
+            <>
+              <Separator className="my-6" />
+              <div>
+                <h2 className="text-sm font-light text-muted-foreground mb-4">
+                  Widgets masqués
+                </h2>
+                <SortableContext
+                  items={hiddenWidgets.map((config) => config.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {hiddenWidgets.map((config: WidgetConfig) => (
+                      <SortableWidget
+                        key={config.id}
+                        config={config}
+                        isLoading={isLoading}
+                        isEditMode={isEditMode}
+                        toggleVisibility={toggleVisibility}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+            </>
+          )}
+          <DragOverlay>
+            {activeId ? (
+              <div className="rotate-3 opacity-90">
+                <SortableWidget
+                  config={widgetConfigs.find((c) => c.id === activeId)!}
+                  isLoading={isLoading}
+                  isEditMode={isEditMode}
+                  toggleVisibility={toggleVisibility}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {visibleWidgets.map((config: WidgetConfig) => {
+            const Component = config.component;
+            return (
+              <div key={config.id} className={cn(config.span || "", "h-full")}>
+                <Component isLoading={isLoading} />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

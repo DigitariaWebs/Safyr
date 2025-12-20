@@ -31,8 +31,8 @@ export default function InterviewsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Gestion des entretiens annuels d&apos;évaluation de la performance et
-              fixation des objectifs pour l&apos;année suivante.
+              Gestion des entretiens annuels d&apos;évaluation de la performance
+              et fixation des objectifs pour l&apos;année suivante.
             </p>
             <Link href="/dashboard/hr/interviews/annual">
               <Button className="w-full">Accéder</Button>
@@ -67,8 +67,8 @@ export default function InterviewsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Suivi des objectifs individuels, perspectives d&apos;évolution interne
-              et développement des compétences.
+              Suivi des objectifs individuels, perspectives d&apos;évolution
+              interne et développement des compétences.
             </p>
             <Link href="/dashboard/hr/interviews/objectives">
               <Button className="w-full">Accéder</Button>
@@ -87,10 +87,10 @@ export default function InterviewsPage() {
             <div>
               <p className="font-semibold text-sm">Entretien annuel</p>
               <p className="text-sm text-muted-foreground">
-                L&apos;entretien annuel permet d&apos;évaluer la performance de l&apos;employé
-                sur l&apos;année écoulée et de fixer les objectifs pour l&apos;année
-                suivante. C&apos;est un moment d&apos;échange entre le manager et
-                l&apos;employé.
+                L&apos;entretien annuel permet d&apos;évaluer la performance de
+                l&apos;employé sur l&apos;année écoulée et de fixer les
+                objectifs pour l&apos;année suivante. C&apos;est un moment
+                d&apos;échange entre le manager et l&apos;employé.
               </p>
             </div>
           </div>
@@ -102,10 +102,10 @@ export default function InterviewsPage() {
                 Entretien professionnel (obligatoire)
               </p>
               <p className="text-sm text-muted-foreground">
-                L&apos;entretien professionnel est une obligation légale qui doit
-                avoir lieu tous les 2 ans. Il porte sur les perspectives
-                d&apos;évolution professionnelle du salarié, notamment en termes de
-                qualifications et d&apos;emploi.
+                L&apos;entretien professionnel est une obligation légale qui
+                doit avoir lieu tous les 2 ans. Il porte sur les perspectives
+                d&apos;évolution professionnelle du salarié, notamment en termes
+                de qualifications et d&apos;emploi.
               </p>
             </div>
           </div>
@@ -138,7 +138,8 @@ export default function InterviewsPage() {
             <li className="flex items-start gap-2">
               <span className="text-blue-600 mt-0.5">•</span>
               <span>
-                Planifier les entretiens annuels au moins 2 semaines à l&apos;avance
+                Planifier les entretiens annuels au moins 2 semaines à
+                l&apos;avance
               </span>
             </li>
             <li className="flex items-start gap-2">

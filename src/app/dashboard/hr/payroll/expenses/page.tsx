@@ -205,7 +205,9 @@ export default function ExpenseReportsPage() {
 
   const handleEdit = (expense: ExpenseReport) => {
     if (expense.status !== "draft" && expense.status !== "rejected") {
-      alert("Seuls les brouillons et les notes de frais rejetées peuvent être modifiés.");
+      alert(
+        "Seuls les brouillons et les notes de frais rejetées peuvent être modifiés.",
+      );
       return;
     }
     setEditingExpense(expense);
@@ -340,7 +342,9 @@ export default function ExpenseReportsPage() {
       render: (expense: ExpenseReport) => (
         <div className="flex items-center gap-1">
           <Euro className="h-4 w-4 text-muted-foreground" />
-          <span className="font-semibold">{expense.totalAmount.toFixed(2)} €</span>
+          <span className="font-semibold">
+            {expense.totalAmount.toFixed(2)} €
+          </span>
         </div>
       ),
     },
@@ -399,8 +403,12 @@ export default function ExpenseReportsPage() {
 
   // Calculate stats
   const draftCount = myExpenses.filter((e) => e.status === "draft").length;
-  const submittedCount = myExpenses.filter((e) => e.status === "submitted").length;
-  const approvedCount = myExpenses.filter((e) => e.status === "approved").length;
+  const submittedCount = myExpenses.filter(
+    (e) => e.status === "submitted",
+  ).length;
+  const approvedCount = myExpenses.filter(
+    (e) => e.status === "approved",
+  ).length;
   const totalApprovedAmount = myExpenses
     .filter((e) => e.status === "approved" || e.status === "paid")
     .reduce((sum, e) => sum + e.totalAmount, 0);
@@ -453,7 +461,9 @@ export default function ExpenseReportsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total approuvé</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total approuvé
+            </CardTitle>
             <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -479,7 +489,9 @@ export default function ExpenseReportsPage() {
         onOpenChange={setIsCreateModalOpen}
         type="form"
         title={
-          editingExpense ? "Modifier la note de frais" : "Nouvelle note de frais"
+          editingExpense
+            ? "Modifier la note de frais"
+            : "Nouvelle note de frais"
         }
         size="xl"
         actions={{

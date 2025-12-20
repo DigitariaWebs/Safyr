@@ -131,8 +131,7 @@ export default function AnnualInterviewsPage() {
       date: interview.date.toISOString().split("T")[0],
       interviewer: interview.interviewer,
       notes: interview.notes,
-      objectives:
-        interview.objectives.length > 0 ? interview.objectives : [""],
+      objectives: interview.objectives.length > 0 ? interview.objectives : [""],
       status: interview.status,
     });
     setDocumentFile(null);
@@ -145,11 +144,7 @@ export default function AnnualInterviewsPage() {
   };
 
   const handleDelete = (interviewId: string) => {
-    if (
-      confirm(
-        "Êtes-vous sûr de vouloir supprimer cet entretien annuel ?",
-      )
-    ) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cet entretien annuel ?")) {
       setInterviews(interviews.filter((i) => i.id !== interviewId));
     }
   };
@@ -228,7 +223,8 @@ export default function AnnualInterviewsPage() {
     {
       key: "date",
       label: "Date",
-      render: (interview: Interview) => interview.date.toLocaleDateString("fr-FR"),
+      render: (interview: Interview) =>
+        interview.date.toLocaleDateString("fr-FR"),
     },
     {
       key: "interviewer",
@@ -247,7 +243,8 @@ export default function AnnualInterviewsPage() {
     {
       key: "objectives",
       label: "Objectifs",
-      render: (interview: Interview) => `${interview.objectives.length} objectif(s)`,
+      render: (interview: Interview) =>
+        `${interview.objectives.length} objectif(s)`,
     },
     {
       key: "actions",
@@ -356,7 +353,9 @@ export default function AnnualInterviewsPage() {
           </div>
 
           <div>
-            <Label htmlFor="interviewer">Responsable de l&apos;entretien *</Label>
+            <Label htmlFor="interviewer">
+              Responsable de l&apos;entretien *
+            </Label>
             <Input
               id="interviewer"
               value={formData.interviewer}
@@ -439,9 +438,7 @@ export default function AnnualInterviewsPage() {
               id="document"
               type="file"
               accept=".pdf"
-              onChange={(e) =>
-                setDocumentFile(e.target.files?.[0] || null)
-              }
+              onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
             />
           </div>
         </div>
@@ -460,9 +457,8 @@ export default function AnnualInterviewsPage() {
             <div>
               <Label>Employé</Label>
               <p className="text-sm">
-                {mockEmployees.find(
-                  (e) => e.id === viewingInterview.employeeId,
-                )?.name || "N/A"}
+                {mockEmployees.find((e) => e.id === viewingInterview.employeeId)
+                  ?.name || "N/A"}
               </p>
             </div>
 
@@ -505,20 +501,21 @@ export default function AnnualInterviewsPage() {
               </div>
             )}
 
-            {viewingInterview.documents && viewingInterview.documents.length > 0 && (
-              <div>
-                <Label>Documents</Label>
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <a
-                    href={viewingInterview.documents[0]}
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Voir le document
-                  </a>
+            {viewingInterview.documents &&
+              viewingInterview.documents.length > 0 && (
+                <div>
+                  <Label>Documents</Label>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <a
+                      href={viewingInterview.documents[0]}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Voir le document
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         )}
       </Modal>

@@ -116,8 +116,7 @@ const statusColors = {
 } as const;
 
 export default function ProfessionalInterviewsPage() {
-  const [interviews, setInterviews] =
-    useState<Interview[]>(mockInterviews);
+  const [interviews, setInterviews] = useState<Interview[]>(mockInterviews);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingInterview, setEditingInterview] = useState<Interview | null>(
@@ -162,8 +161,7 @@ export default function ProfessionalInterviewsPage() {
       date: interview.date.toISOString().split("T")[0],
       interviewer: interview.interviewer,
       notes: interview.notes,
-      objectives:
-        interview.objectives.length > 0 ? interview.objectives : [""],
+      objectives: interview.objectives.length > 0 ? interview.objectives : [""],
       status: interview.status,
     });
     setDocumentFile(null);
@@ -259,7 +257,8 @@ export default function ProfessionalInterviewsPage() {
     {
       key: "date",
       label: "Date",
-      render: (interview: Interview) => interview.date.toLocaleDateString("fr-FR"),
+      render: (interview: Interview) =>
+        interview.date.toLocaleDateString("fr-FR"),
     },
     {
       key: "interviewer",
@@ -278,7 +277,8 @@ export default function ProfessionalInterviewsPage() {
     {
       key: "objectives",
       label: "Objectifs",
-      render: (interview: Interview) => `${interview.objectives.length} objectif(s)`,
+      render: (interview: Interview) =>
+        `${interview.objectives.length} objectif(s)`,
     },
     {
       key: "actions",
@@ -457,7 +457,9 @@ export default function ProfessionalInterviewsPage() {
           </div>
 
           <div>
-            <Label htmlFor="interviewer">Responsable de l&apos;entretien *</Label>
+            <Label htmlFor="interviewer">
+              Responsable de l&apos;entretien *
+            </Label>
             <Input
               id="interviewer"
               value={formData.interviewer}
@@ -542,9 +544,7 @@ export default function ProfessionalInterviewsPage() {
               id="document"
               type="file"
               accept=".pdf"
-              onChange={(e) =>
-                setDocumentFile(e.target.files?.[0] || null)
-              }
+              onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
             />
           </div>
         </div>
@@ -563,9 +563,8 @@ export default function ProfessionalInterviewsPage() {
             <div>
               <Label>Employé</Label>
               <p className="text-sm">
-                {mockEmployees.find(
-                  (e) => e.id === viewingInterview.employeeId,
-                )?.name || "N/A"}
+                {mockEmployees.find((e) => e.id === viewingInterview.employeeId)
+                  ?.name || "N/A"}
               </p>
             </div>
 
