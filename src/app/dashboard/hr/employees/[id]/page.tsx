@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Edit,
@@ -35,6 +36,7 @@ import {
   EmployeeDisciplineTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
+import { cn } from "@/lib/utils";
 
 export default function EmployeeDetailPage({
   params,
@@ -105,163 +107,172 @@ export default function EmployeeDetailPage({
   const statusConfig = getStatusBadge(employee.status);
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-full overflow-x-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/hr/employees">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {employee.firstName} {employee.lastName}
-          </h1>
-          <p className="text-muted-foreground">
-            {employee.position} • {employee.employeeNumber}
-          </p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {!isEditMode && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => openEmailModal([employee])}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Envoyer un email
-              </Button>
-              <Button asChild>
-                <Link href={`/dashboard/hr/employees/${employee.id}?edit=true`}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Modifier
-                </Link>
-              </Button>
-            </>
-          )}
-          {isEditMode && (
-            <Button asChild variant="outline">
-              <Link href={`/dashboard/hr/employees/${employee.id}`}>
-                Annuler
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Employee Overview Card */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-6 flex-wrap">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={employee.photo} alt={employee.firstName} />
-              <AvatarFallback className="text-2xl">
-                {employee.firstName[0]}
-                {employee.lastName[0]}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1 grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-0">
-              <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${statusConfig.color}`} />
-                <div>
-                  <p className="text-sm text-muted-foreground">Statut</p>
-                  <p className="font-medium">{statusConfig.label}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium text-sm">{employee.email}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Téléphone</p>
-                  <p className="font-medium">{employee.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Building className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Département</p>
-                  <p className="font-medium">{employee.department}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Date d&apos;embauche
-                  </p>
-                  <p className="font-medium">
-                    {employee.hireDate.toLocaleDateString("fr-FR")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Localisation</p>
-                  <p className="font-medium">
-                    {employee.address.city}, {employee.address.postalCode}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs */}
-      <div className="flex gap-2 border-b overflow-x-auto">
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="sticky top-0 z-10 items-center gap-1 px-6 py-2 overflow-x-auto w-full bg-muted rounded-none">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            <TabsTrigger
+              className={cn(
+                "flex items-center gap-2 p-3 text-sm rounded-lg transition-all whitespace-nowrap font-medium border-0",
                 activeTab === tab.id
-                  ? "border-primary text-primary font-medium"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                  : "text-foreground hover:bg-accent hover:text-foreground",
+              )}
+              key={tab.id}
+              value={tab.id}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 mr-2" />
               {tab.label}
-            </button>
+            </TabsTrigger>
           );
         })}
-      </div>
+      </TabsList>
+      <div className="p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard/hr/employees">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight">
+              {employee.firstName} {employee.lastName}
+            </h1>
+            <p className="text-muted-foreground">
+              {employee.position} • {employee.employeeNumber}
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {!isEditMode && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => openEmailModal([employee])}
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Envoyer un email
+                </Button>
+                <Button asChild>
+                  <Link
+                    href={`/dashboard/hr/employees/${employee.id}?edit=true`}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier
+                  </Link>
+                </Button>
+              </>
+            )}
+            {isEditMode && (
+              <Button asChild variant="outline">
+                <Link href={`/dashboard/hr/employees/${employee.id}`}>
+                  Annuler
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
 
-      {/* Tab Content */}
-      <div className="min-h-100 max-w-full overflow-x-hidden">
-        {activeTab === "info" && (
+        {/* Employee Overview Card */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-6 flex-wrap">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={employee.photo} alt={employee.firstName} />
+                <AvatarFallback className="text-2xl">
+                  {employee.firstName[0]}
+                  {employee.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 grid gap-4 md:grid-cols-2 lg:grid-cols-3 min-w-0">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-2 h-2 rounded-full ${statusConfig.color}`}
+                  />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Statut</p>
+                    <p className="font-medium">{statusConfig.label}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium text-sm">{employee.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Téléphone</p>
+                    <p className="font-medium">{employee.phone}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Département</p>
+                    <p className="font-medium">{employee.department}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Date d&apos;embauche
+                    </p>
+                    <p className="font-medium">
+                      {employee.hireDate.toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Localisation
+                    </p>
+                    <p className="font-medium">
+                      {employee.address.city}, {employee.address.postalCode}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <TabsContent value="info">
           <EmployeeInfoTab employee={employee} isEditMode={isEditMode} />
-        )}
-        {activeTab === "documents" && (
+        </TabsContent>
+        <TabsContent value="documents">
           <EmployeeDocumentsTab employee={employee} />
-        )}
-        {activeTab === "contracts" && (
+        </TabsContent>
+        <TabsContent value="contracts">
           <EmployeeContractsTab employee={employee} />
-        )}
-        {activeTab === "equipment" && (
+        </TabsContent>
+        <TabsContent value="equipment">
           <EmployeeEquipmentTab employee={employee} />
-        )}
-        {activeTab === "alerts" && <EmployeeAlertsTab employee={employee} />}
-        {activeTab === "discipline" && (
+        </TabsContent>
+        <TabsContent value="alerts">
+          <EmployeeAlertsTab employee={employee} />
+        </TabsContent>
+        <TabsContent value="discipline">
           <EmployeeDisciplineTab employee={employee} />
-        )}
-        {activeTab === "cse" && <EmployeeCSETab employee={employee} />}
-        {activeTab === "cnaps" && <EmployeeCNAPSTab employee={employee} />}
+        </TabsContent>
+        <TabsContent value="cse">
+          <EmployeeCSETab employee={employee} />
+        </TabsContent>
+        <TabsContent value="cnaps">
+          <EmployeeCNAPSTab employee={employee} />
+        </TabsContent>
       </div>
-    </div>
+    </Tabs>
   );
 }

@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   FileWarning,
-  UserX,
   Gavel,
   Eye,
   CheckCircle,
@@ -16,7 +15,6 @@ import {
 import type {
   Employee,
   Warning,
-  Suspension,
   DisciplinaryProcedure,
   Sanction,
 } from "@/lib/types";
@@ -41,21 +39,6 @@ export function EmployeeDisciplineTab({
       status: "active",
       createdAt: new Date("2024-01-15"),
       updatedAt: new Date("2024-01-15"),
-    },
-  ]);
-
-  const [suspensions] = useState<Suspension[]>([
-    {
-      id: "1",
-      employeeId: employee.id,
-      startDate: new Date("2024-01-15"),
-      endDate: new Date("2024-01-20"),
-      reason: "Comportement inapproprié",
-      description: "Incident grave avec un client",
-      issuedBy: "Alice Dubois",
-      status: "completed",
-      createdAt: new Date("2024-01-15"),
-      updatedAt: new Date("2024-01-20"),
     },
   ]);
 
@@ -116,7 +99,7 @@ export function EmployeeDisciplineTab({
 
   const getStatusBadge = (
     status: string,
-    type: "warning" | "suspension" | "procedure",
+    type: "warning" | "procedure",
   ): {
     variant: "default" | "destructive" | "outline" | "secondary";
     label: string;
@@ -125,10 +108,6 @@ export function EmployeeDisciplineTab({
       warning: {
         active: { variant: "destructive" as const, label: "Active" },
         lifted: { variant: "secondary" as const, label: "Levée" },
-      },
-      suspension: {
-        active: { variant: "destructive" as const, label: "En cours" },
-        completed: { variant: "secondary" as const, label: "Terminée" },
       },
       procedure: {
         ongoing: { variant: "default" as const, label: "En cours" },
@@ -191,44 +170,6 @@ export function EmployeeDisciplineTab({
       render: () => (
         <Button variant="outline" size="sm" asChild>
           <Link href="/dashboard/hr/discipline/warnings">
-            <Eye className="mr-2 h-4 w-4" />
-            Voir
-          </Link>
-        </Button>
-      ),
-    },
-  ];
-
-  const suspensionColumns: ColumnDef<Suspension>[] = [
-    {
-      key: "startDate",
-      label: "Début",
-      render: (suspension) => suspension.startDate.toLocaleDateString("fr-FR"),
-    },
-    {
-      key: "endDate",
-      label: "Fin",
-      render: (suspension) => suspension.endDate.toLocaleDateString("fr-FR"),
-    },
-    {
-      key: "reason",
-      label: "Motif",
-      render: (suspension) => suspension.reason,
-    },
-    {
-      key: "status",
-      label: "Statut",
-      render: (suspension) => {
-        const config = getStatusBadge(suspension.status, "suspension");
-        return <Badge variant={config.variant}>{config.label}</Badge>;
-      },
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: () => (
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/hr/discipline/suspensions">
             <Eye className="mr-2 h-4 w-4" />
             Voir
           </Link>
@@ -312,7 +253,7 @@ export function EmployeeDisciplineTab({
   return (
     <div className="space-y-6">
       {/* Discipline Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -324,21 +265,6 @@ export function EmployeeDisciplineTab({
             <div className="text-2xl font-bold">{warnings.length}</div>
             <p className="text-xs text-muted-foreground">
               {warnings.filter((w) => w.status === "active").length} actif(s)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <UserX className="h-4 w-4 text-red-600" />
-              Suspensions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{suspensions.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {suspensions.filter((s) => s.status === "active").length} en cours
             </p>
           </CardContent>
         </Card>
@@ -397,34 +323,6 @@ export function EmployeeDisciplineTab({
               columns={warningColumns}
               searchKeys={["reason", "description"]}
               searchPlaceholder="Rechercher des avertissements..."
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Suspensions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserX className="h-5 w-5 text-red-600" />
-            Suspensions ({suspensions.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {suspensions.length === 0 ? (
-            <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucune suspension</h3>
-              <p className="text-sm text-muted-foreground">
-                Cet employé n&apos;a jamais été suspendu
-              </p>
-            </div>
-          ) : (
-            <DataTable
-              data={suspensions}
-              columns={suspensionColumns}
-              searchKeys={["reason", "description"]}
-              searchPlaceholder="Rechercher des suspensions..."
             />
           )}
         </CardContent>
@@ -503,12 +401,7 @@ export function EmployeeDisciplineTab({
                   Nouvel avertissement
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/hr/discipline/suspensions">
-                  <UserX className="mr-2 h-4 w-4" />
-                  Nouvelle suspension
-                </Link>
-              </Button>
+
               <Button variant="outline" asChild>
                 <Link href="/dashboard/hr/discipline/disciplinary-procedures">
                   <Gavel className="mr-2 h-4 w-4" />

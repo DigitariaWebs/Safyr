@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   ModuleNavigationBar,
   NavItem,
@@ -350,21 +351,21 @@ const navItems: NavItem[] = [
 ];
 
 interface HRNavigationBarProps {
-  onProfileClick: () => void;
+  isCollapsed: boolean;
+  showNav?: boolean;
 }
 
-export function HRNavigationBar({ onProfileClick }: HRNavigationBarProps) {
+export function HRNavigationBar({
+  isCollapsed,
+  showNav = true,
+}: HRNavigationBarProps) {
   return (
     <ModuleNavigationBar
-      moduleTitle="Ressources Humaines"
       moduleIcon={Users}
       dashboardHref="/dashboard/hr"
       navItems={navItems}
-      onProfileClick={onProfileClick}
-      userInitials="JD"
-      userAvatar="/avatars/admin.jpg"
-      showConteurs={true}
-      collapsible={true}
+      isCollapsed={isCollapsed}
+      showNav={showNav}
     />
   );
 }
