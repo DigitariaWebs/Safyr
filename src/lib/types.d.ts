@@ -903,3 +903,38 @@ export interface SanctionsRegister {
   totalSuspensions: number;
   lastUpdated: Date;
 }
+
+// ============================================================================
+// EXPENSE REPORTS & ALLOWANCES TYPES
+// ============================================================================
+
+export interface ExpenseItem {
+  id: string;
+  category: "travel" | "meal" | "accommodation" | "fuel" | "parking" | "other";
+  description: string;
+  amount: number;
+  date: Date;
+  receipt?: string; // File URL
+  notes?: string;
+}
+
+export interface ExpenseReport {
+  id: string;
+  employeeId: string;
+  title: string;
+  items: ExpenseItem[];
+  totalAmount: number;
+  status: "draft" | "submitted" | "approved" | "rejected" | "paid";
+  submittedAt?: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  approvedBy?: string;
+  approvedAt?: Date;
+  rejectionReason?: string;
+  paymentDate?: Date;
+  exportedToPayroll: boolean;
+  exportedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

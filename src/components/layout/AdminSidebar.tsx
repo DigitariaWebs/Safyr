@@ -115,10 +115,22 @@ const navigationSections: MenuSection[] = [
         disabled: true,
       },
       {
-        title: "Indemnités et frais",
+        title: "Mes notes de frais",
         url: "/dashboard/hr/payroll/expenses",
         icon: FileText,
-        disabled: true,
+        disabled: false,
+      },
+      {
+        title: "Validation frais",
+        url: "/dashboard/hr/payroll/expenses/validation",
+        icon: FileCheck,
+        disabled: false,
+      },
+      {
+        title: "Historique frais",
+        url: "/dashboard/hr/payroll/expenses/history",
+        icon: Calendar,
+        disabled: false,
       },
       {
         title: "Contrôle paie",

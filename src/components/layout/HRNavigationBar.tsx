@@ -75,9 +75,19 @@ const navItems: NavItem[] = [
         href: "/dashboard/hr/payroll/variables",
       },
       {
-        label: "Indemnités et frais",
+        label: "Mes notes de frais",
         href: "/dashboard/hr/payroll/expenses",
-        disabled: true,
+        disabled: false,
+      },
+      {
+        label: "Validation frais",
+        href: "/dashboard/hr/payroll/expenses/validation",
+        disabled: false,
+      },
+      {
+        label: "Historique frais",
+        href: "/dashboard/hr/payroll/expenses/history",
+        disabled: false,
       },
       {
         label: "Contrôle paie",

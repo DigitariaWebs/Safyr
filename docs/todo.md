@@ -77,10 +77,10 @@
 
 ## 9. Expense Reports & Allowances
 
-- [ ] Expenses declared via app
-- [ ] Manager / HR validation
-- [ ] Export to payroll
-- [ ] Complete history
+- [x] Expenses declared via app
+- [x] Manager / HR validation
+- [x] Export to payroll
+- [x] Complete history
 
 ## 10. Legal Registers
 
