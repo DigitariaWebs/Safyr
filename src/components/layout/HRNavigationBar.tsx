@@ -179,17 +179,17 @@ const navItems: NavItem[] = [
       {
         label: "Entretiens annuels",
         href: "/dashboard/hr/interviews/annual",
-        disabled: true,
+        disabled: false,
       },
       {
         label: "Entretiens professionnels",
         href: "/dashboard/hr/interviews/professional",
-        disabled: true,
+        disabled: false,
       },
       {
         label: "Objectifs & évolution",
         href: "/dashboard/hr/interviews/objectives",
-        disabled: true,
+        disabled: false,
       },
     ],
   },

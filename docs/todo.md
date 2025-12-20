@@ -70,10 +70,10 @@
 
 ## 8. Interviews & Performance
 
-- [ ] Mandatory professional interviews
-- [ ] Annual interviews
-- [ ] Objectives and internal evolution
-- [ ] CSE tracking if relevant
+- [x] Mandatory professional interviews
+- [x] Annual interviews
+- [x] Objectives and internal evolution
+- [x] CSE tracking if relevant
 
 ## 9. Expense Reports & Allowances
 

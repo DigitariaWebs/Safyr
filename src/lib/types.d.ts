@@ -862,6 +862,22 @@ export interface Interview {
   notes: string;
   objectives: string[];
   status: "scheduled" | "completed" | "cancelled";
+  documents?: string[]; // file URLs
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Objective {
+  id: string;
+  employeeId: string;
+  title: string;
+  description: string;
+  category: "performance" | "development" | "career" | "skills";
+  targetDate: Date;
+  progress: number; // 0-100
+  status: "active" | "completed" | "cancelled";
+  relatedInterviewId?: string;
+  notes: string;
   createdAt: Date;
   updatedAt: Date;
 }
