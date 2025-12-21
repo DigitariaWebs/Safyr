@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Plus,
   Eye,
@@ -50,26 +50,38 @@ const employeeOptions = mockEmployees.map((employee) => ({
 }));
 
 // Mock data - replace with API call
+const standardSteps: DisciplinaryStep[] = [
+  {
+    id: "1",
+    title: "Mise en demeure",
+    description:
+      "Mise en demeure de justifier votre absence et de reprendre votre poste de travail",
+    completed: false,
+  },
+  {
+    id: "2",
+    title: "Convocation à entretien préalable",
+    description: "Convocation à un entretien préalable au licenciement",
+    completed: false,
+  },
+  {
+    id: "3",
+    title: "Notification de licenciement",
+    description: "Notification de la décision de licenciement",
+    completed: false,
+  },
+];
+
 const mockProcedures: DisciplinaryProcedure[] = [
   {
     id: "1",
     employeeId: "1",
     startDate: new Date("2024-01-15"),
-    steps: [
-      {
-        id: "1",
-        title: "Avertissement verbal",
-        description: "Discussion avec l'employé",
-        completed: true,
-        completedAt: new Date("2024-01-15"),
-      },
-      {
-        id: "2",
-        title: "Avertissement écrit",
-        description: "Envoi d'un avertissement écrit",
-        completed: false,
-      },
-    ],
+    steps: standardSteps.map((step) => ({
+      ...step,
+      completed: step.id === "1" ? true : false,
+      completedAt: step.id === "1" ? new Date("2024-01-15") : undefined,
+    })),
     currentStep: 1,
     status: "ongoing",
     documents: ["/files/avertissement_marie.pdf"],
@@ -80,29 +92,11 @@ const mockProcedures: DisciplinaryProcedure[] = [
     id: "2",
     employeeId: "2",
     startDate: new Date("2024-01-01"),
-    steps: [
-      {
-        id: "1",
-        title: "Enquête interne",
-        description: "Investigation des faits",
-        completed: true,
-        completedAt: new Date("2024-01-02"),
-      },
-      {
-        id: "2",
-        title: "Entretien disciplinaire",
-        description: "Rencontre avec l'employé",
-        completed: true,
-        completedAt: new Date("2024-01-03"),
-      },
-      {
-        id: "3",
-        title: "Décision finale",
-        description: "Prise de décision",
-        completed: true,
-        completedAt: new Date("2024-01-05"),
-      },
-    ],
+    steps: standardSteps.map((step) => ({
+      ...step,
+      completed: true,
+      completedAt: new Date("2024-01-05"),
+    })),
     currentStep: 3,
     status: "completed",
     documents: ["/files/procedure_jean.pdf"],
@@ -145,14 +139,7 @@ export default function DisciplinaryProceduresPage() {
     setFormData({
       employeeId: "",
       startDate: new Date().toISOString().split("T")[0],
-      steps: [
-        {
-          id: Date.now().toString(),
-          title: "",
-          description: "",
-          completed: false,
-        },
-      ],
+      steps: standardSteps.map((step) => ({ ...step })),
       status: "ongoing",
     });
     setDocumentFile(null);
@@ -164,7 +151,7 @@ export default function DisciplinaryProceduresPage() {
     setFormData({
       employeeId: procedure.employeeId,
       startDate: procedure.startDate.toISOString().split("T")[0],
-      steps: procedure.steps,
+      steps: procedure.steps.map((step) => ({ ...step })),
       status: procedure.status,
     });
     setDocumentFile(null);
@@ -248,37 +235,11 @@ export default function DisciplinaryProceduresPage() {
     }));
   };
 
-  const addStep = () => {
-    setFormData((prev) => ({
-      ...prev,
-      steps: [
-        ...prev.steps,
-        {
-          id: Date.now().toString(),
-          title: "",
-          description: "",
-          completed: false,
-        },
-      ],
-    }));
-  };
-
-  const removeStep = (stepId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      steps: prev.steps.filter((step) => step.id !== stepId),
-    }));
-  };
-
   const handleFileChange = (file: File | null) => {
     setDocumentFile(file);
   };
 
-  const isFormValid =
-    formData.employeeId &&
-    formData.startDate &&
-    formData.steps.length > 0 &&
-    formData.steps.every((step) => step.title && step.description);
+  const isFormValid = formData.employeeId && formData.startDate;
 
   const getEmployeeName = (employeeId: string) => {
     const employee = mockEmployees.find((e) => e.id === employeeId);
@@ -488,78 +449,37 @@ export default function DisciplinaryProceduresPage() {
 
           {/* Steps Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Étapes de la procédure *</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addStep}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter une étape
-              </Button>
-            </div>
+            <Label>Étapes de la procédure</Label>
             <div className="space-y-4">
               {formData.steps.map((step, index) => (
                 <div key={step.id} className="border rounded-lg p-4 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Étape {index + 1}</h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeStep(step.id)}
-                      disabled={formData.steps.length === 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Titre *</Label>
-                      <Input
-                        value={step.title}
-                        onChange={(e) =>
-                          handleStepChange(step.id, "title", e.target.value)
-                        }
-                        placeholder="Titre de l'étape"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Terminée</Label>
-                      <Select
-                        value={step.completed ? "true" : "false"}
-                        onValueChange={(value) =>
-                          handleStepChange(
-                            step.id,
-                            "completed",
-                            value === "true",
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="false">Non</SelectItem>
-                          <SelectItem value="true">Oui</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <h4 className="font-medium">
+                      Étape {index + 1}: {step.title}
+                    </h4>
                   </div>
                   <div className="space-y-2">
-                    <Label>Description *</Label>
-                    <Textarea
-                      value={step.description}
-                      onChange={(e) =>
-                        handleStepChange(step.id, "description", e.target.value)
+                    <Label>Description</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Terminée</Label>
+                    <Select
+                      value={step.completed ? "true" : "false"}
+                      onValueChange={(value) =>
+                        handleStepChange(step.id, "completed", value === "true")
                       }
-                      placeholder="Description de l'étape"
-                      rows={2}
-                      required
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="false">Non</SelectItem>
+                        <SelectItem value="true">Oui</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               ))}

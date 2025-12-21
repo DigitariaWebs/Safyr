@@ -15,11 +15,9 @@ import {
   MapPin,
   Calendar,
   Building,
-  AlertTriangle,
   FileText,
   Package,
   Users,
-  Shield,
   Send,
   Gavel,
 } from "lucide-react";
@@ -30,9 +28,7 @@ import {
   EmployeeDocumentsTab,
   EmployeeContractsTab,
   EmployeeEquipmentTab,
-  EmployeeAlertsTab,
   EmployeeCSETab,
-  EmployeeCNAPSTab,
   EmployeeDisciplineTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
@@ -72,10 +68,8 @@ export default function EmployeeDetailPage({
     { id: "documents" as const, label: "Documents", icon: FileText },
     { id: "contracts" as const, label: "Contrats", icon: FileText },
     { id: "equipment" as const, label: "Équipements", icon: Package },
-    { id: "alerts" as const, label: "Alertes", icon: AlertTriangle },
     { id: "discipline" as const, label: "Discipline", icon: Gavel },
     { id: "cse" as const, label: "CSE", icon: Users },
-    { id: "cnaps" as const, label: "CNAPS", icon: Shield },
   ];
 
   const getStatusBadge = (status: Employee["status"]) => {
@@ -260,17 +254,11 @@ export default function EmployeeDetailPage({
         <TabsContent value="equipment">
           <EmployeeEquipmentTab employee={employee} />
         </TabsContent>
-        <TabsContent value="alerts">
-          <EmployeeAlertsTab employee={employee} />
-        </TabsContent>
         <TabsContent value="discipline">
           <EmployeeDisciplineTab employee={employee} />
         </TabsContent>
         <TabsContent value="cse">
           <EmployeeCSETab employee={employee} />
-        </TabsContent>
-        <TabsContent value="cnaps">
-          <EmployeeCNAPSTab employee={employee} />
         </TabsContent>
       </div>
     </Tabs>
