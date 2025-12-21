@@ -1,4 +1,33 @@
 // ============================================================================
+// COMPANY TYPES
+// ============================================================================
+
+export interface Company {
+  id: string;
+  name: string;
+  legalForm: string;
+  siret: string;
+  vatNumber?: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  contact: {
+    phone: string;
+    email: string;
+    website?: string;
+  };
+  bankDetails: {
+    bankName: string;
+    iban: string;
+    bic: string;
+  };
+  // Add more fields as needed for complete company fiche
+}
+
+// ============================================================================
 // RECRUITMENT & INTEGRATION TYPES
 // ============================================================================
 

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/module-navigation-bar";
 import {
   Users,
+  Building2,
   Calendar,
   Wallet,
   UserCheck,
@@ -21,10 +22,16 @@ import {
   Award,
   BarChart3,
   Mail,
-  FilePenLine,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
+  {
+    label: "Entreprise",
+    icon: Building2,
+    children: [
+      { label: "Informations société", href: "/dashboard/hr/entreprise" },
+    ],
+  },
   {
     label: "Salariés",
     icon: Users,
