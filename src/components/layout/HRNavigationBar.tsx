@@ -258,22 +258,22 @@ const navItems: NavItem[] = [
       {
         label: "Registre du personnel",
         href: "/dashboard/hr/legal-registers/personnel",
-        disabled: true,
       },
       {
         label: "Accidents du travail",
-        href: "/dashboard/hr/legal-registers/accidents",
-        disabled: true,
+        href: "/dashboard/hr/legal-registers/work-accidents",
       },
       {
         label: "Formations",
-        href: "/dashboard/hr/legal-registers/trainings",
-        disabled: true,
+        href: "/dashboard/hr/legal-registers/training",
+      },
+      {
+        label: "Entrées/Sorties CDD",
+        href: "/dashboard/hr/legal-registers/cdd",
       },
       {
         label: "Exports réglementaires",
-        href: "/dashboard/hr/legal-registers/exports",
-        disabled: true,
+        href: "/dashboard/hr/legal-registers",
       },
     ],
   },

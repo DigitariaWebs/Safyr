@@ -938,3 +938,92 @@ export interface ExpenseReport {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// ============================================================================
+// LEGAL REGISTERS TYPES
+// ============================================================================
+
+export interface PersonnelRegisterEntry {
+  id: string;
+  employeeId: string;
+  registrationNumber: string;
+  entryDate: Date;
+  exitDate?: Date;
+  contractType: "CDI" | "CDD" | "apprentice" | "interim" | "other";
+  position: string;
+  qualification: string;
+  nationality: string;
+  birthDate: Date;
+  birthPlace: string;
+  socialSecurityNumber?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WorkAccident {
+  id: string;
+  employeeId: string;
+  accidentDate: Date;
+  accidentTime: string;
+  location: string;
+  description: string;
+  injuries: string;
+  witnesses?: string[];
+  medicalCertificate?: string; // File URL
+  declarationDate: Date;
+  declarationNumber?: string;
+  workStoppage: boolean;
+  workStoppageStart?: Date;
+  workStoppageEnd?: Date;
+  returnToWork?: Date;
+  severity: "minor" | "moderate" | "severe" | "fatal";
+  status: "declared" | "investigating" | "closed";
+  cpamNotified: boolean;
+  cpamNotificationDate?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TrainingRegisterEntry {
+  id: string;
+  employeeId: string;
+  trainingName: string;
+  trainingType: "SSIAP" | "SST" | "CQP" | "H0B0" | "fire" | "professional" | "regulatory" | "other";
+  trainingOrganization: string;
+  startDate: Date;
+  endDate: Date;
+  duration: number; // in hours
+  cost: number;
+  fundingSource: "company" | "opco" | "personal" | "other";
+  certificationObtained: boolean;
+  certificationDate?: Date;
+  certificationNumber?: string;
+  expirationDate?: Date;
+  certificate?: string; // File URL
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CDDRegisterEntry {
+  id: string;
+  employeeId: string;
+  contractNumber: string;
+  contractType: "CDD" | "apprentice" | "interim";
+  entryDate: Date;
+  exitDate?: Date;
+  expectedEndDate: Date;
+  actualEndDate?: Date;
+  position: string;
+  reason: "replacement" | "seasonal" | "temporary_increase" | "specific_project" | "other";
+  reasonDetails?: string;
+  renewalCount: number;
+  previousContractId?: string;
+  exitReason?: "end_of_contract" | "early_termination" | "conversion_to_cdi" | "dismissal" | "resignation" | "other";
+  exitReasonDetails?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

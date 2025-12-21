@@ -84,13 +84,13 @@
 
 ## 10. Legal Registers
 
-- [ ] All mandatory registers integrated:
-  - [ ] Personnel register
-  - [ ] Sanctions register
-  - [ ] Work accident register
-  - [ ] Unique training register
-  - [ ] CDD entries / exits register
-- [ ] PDF export compliant with labor inspection / CNAPS
+- [x] All mandatory registers integrated:
+  - [x] Personnel register
+  - [x] Sanctions register
+  - [x] Work accident register
+  - [x] Unique training register
+  - [x] CDD entries / exits register
+- [x] PDF export compliant with labor inspection / CNAPS
 
 ## 11. Workflows & HR Requests
 

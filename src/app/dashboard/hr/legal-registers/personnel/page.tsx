@@ -1,0 +1,774 @@
+"use client";
+
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Plus,
+  Eye,
+  Pencil,
+  Trash2,
+  Download,
+  MoreVertical,
+  Users,
+  FileText,
+  Calendar,
+  UserCheck,
+} from "lucide-react";
+import { PersonnelRegisterEntry } from "@/lib/types";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
+import { Modal } from "@/components/ui/modal";
+import Link from "next/link";
+
+// Mock employees
+const mockEmployees = [
+  { id: "1", name: "Marie Dupont" },
+  { id: "2", name: "Jean Martin" },
+  { id: "3", name: "Sophie Leroy" },
+  { id: "4", name: "Pierre Durand" },
+];
+
+// Mock data
+const mockPersonnelRegister: PersonnelRegisterEntry[] = [
+  {
+    id: "1",
+    employeeId: "1",
+    registrationNumber: "2024-001",
+    entryDate: new Date("2024-01-15"),
+    contractType: "CDI",
+    position: "Agent de sécurité",
+    qualification: "CQP APS",
+    nationality: "Française",
+    birthDate: new Date("1995-03-20"),
+    birthPlace: "Paris (75)",
+    socialSecurityNumber: "1 95 03 75 123 456 78",
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date("2024-01-15"),
+  },
+  {
+    id: "2",
+    employeeId: "2",
+    registrationNumber: "2024-002",
+    entryDate: new Date("2024-02-01"),
+    contractType: "CDI",
+    position: "Chef d'équipe",
+    qualification: "SSIAP 2",
+    nationality: "Française",
+    birthDate: new Date("1988-07-12"),
+    birthPlace: "Lyon (69)",
+    socialSecurityNumber: "1 88 07 69 234 567 89",
+    createdAt: new Date("2024-02-01"),
+    updatedAt: new Date("2024-02-01"),
+  },
+  {
+    id: "3",
+    employeeId: "3",
+    registrationNumber: "2024-003",
+    entryDate: new Date("2024-03-10"),
+    exitDate: new Date("2024-09-10"),
+    contractType: "CDD",
+    position: "Agent de sécurité",
+    qualification: "CQP APS",
+    nationality: "Française",
+    birthDate: new Date("1992-11-05"),
+    birthPlace: "Marseille (13)",
+    socialSecurityNumber: "2 92 11 13 345 678 90",
+    createdAt: new Date("2024-03-10"),
+    updatedAt: new Date("2024-09-10"),
+  },
+];
+
+const contractTypeLabels = {
+  CDI: "CDI",
+  CDD: "CDD",
+  apprentice: "Apprenti",
+  interim: "Intérim",
+  other: "Autre",
+};
+
+const contractTypeColors = {
+  CDI: "secondary",
+  CDD: "default",
+  apprentice: "default",
+  interim: "default",
+  other: "secondary",
+} as const;
+
+export default function PersonnelRegisterPage() {
+  const [entries, setEntries] = useState<PersonnelRegisterEntry[]>(
+    mockPersonnelRegister,
+  );
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<PersonnelRegisterEntry | null>(
+    null,
+  );
+  const [viewingEntry, setViewingEntry] = useState<PersonnelRegisterEntry | null>(
+    null,
+  );
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterContractType, setFilterContractType] = useState<string>("all");
+
+  const [formData, setFormData] = useState({
+    employeeId: "",
+    registrationNumber: "",
+    entryDate: "",
+    exitDate: "",
+    contractType: "CDI" as PersonnelRegisterEntry["contractType"],
+    position: "",
+    qualification: "",
+    nationality: "Française",
+    birthDate: "",
+    birthPlace: "",
+    socialSecurityNumber: "",
+    notes: "",
+  });
+
+  const getEmployeeName = (employeeId: string) => {
+    return mockEmployees.find((e) => e.id === employeeId)?.name || "N/A";
+  };
+
+  const handleCreate = () => {
+    setEditingEntry(null);
+    setFormData({
+      employeeId: "",
+      registrationNumber: "",
+      entryDate: "",
+      exitDate: "",
+      contractType: "CDI",
+      position: "",
+      qualification: "",
+      nationality: "Française",
+      birthDate: "",
+      birthPlace: "",
+      socialSecurityNumber: "",
+      notes: "",
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleEdit = (entry: PersonnelRegisterEntry) => {
+    setEditingEntry(entry);
+    setFormData({
+      employeeId: entry.employeeId,
+      registrationNumber: entry.registrationNumber,
+      entryDate: entry.entryDate.toISOString().split("T")[0],
+      exitDate: entry.exitDate
+        ? entry.exitDate.toISOString().split("T")[0]
+        : "",
+      contractType: entry.contractType,
+      position: entry.position,
+      qualification: entry.qualification,
+      nationality: entry.nationality,
+      birthDate: entry.birthDate.toISOString().split("T")[0],
+      birthPlace: entry.birthPlace,
+      socialSecurityNumber: entry.socialSecurityNumber || "",
+      notes: entry.notes || "",
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleView = (entry: PersonnelRegisterEntry) => {
+    setViewingEntry(entry);
+    setIsViewModalOpen(true);
+  };
+
+  const handleDelete = (entryId: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette entrée ?")) {
+      setEntries(entries.filter((e) => e.id !== entryId));
+    }
+  };
+
+  const handleSave = () => {
+    const entryData = {
+      employeeId: formData.employeeId,
+      registrationNumber: formData.registrationNumber,
+      entryDate: new Date(formData.entryDate),
+      exitDate: formData.exitDate ? new Date(formData.exitDate) : undefined,
+      contractType: formData.contractType,
+      position: formData.position,
+      qualification: formData.qualification,
+      nationality: formData.nationality,
+      birthDate: new Date(formData.birthDate),
+      birthPlace: formData.birthPlace,
+      socialSecurityNumber: formData.socialSecurityNumber || undefined,
+      notes: formData.notes || undefined,
+    };
+
+    if (editingEntry) {
+      setEntries(
+        entries.map((entry) =>
+          entry.id === editingEntry.id
+            ? {
+                ...entry,
+                ...entryData,
+                updatedAt: new Date(),
+              }
+            : entry,
+        ),
+      );
+    } else {
+      const newEntry: PersonnelRegisterEntry = {
+        id: Date.now().toString(),
+        ...entryData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setEntries([...entries, newEntry]);
+    }
+
+    setIsCreateModalOpen(false);
+  };
+
+  const handleExportPDF = () => {
+    alert(
+      "Export PDF du registre du personnel (conforme inspection du travail/CNAPS)...",
+    );
+  };
+
+  // Apply filters
+  let filteredEntries = entries;
+
+  if (filterStatus === "active") {
+    filteredEntries = filteredEntries.filter((e) => !e.exitDate);
+  } else if (filterStatus === "exited") {
+    filteredEntries = filteredEntries.filter((e) => e.exitDate);
+  }
+
+  if (filterContractType !== "all") {
+    filteredEntries = filteredEntries.filter(
+      (e) => e.contractType === filterContractType,
+    );
+  }
+
+  const columns: ColumnDef<PersonnelRegisterEntry>[] = [
+    {
+      key: "registrationNumber",
+      label: "N° d'enregistrement",
+      render: (entry: PersonnelRegisterEntry) => (
+        <div className="font-medium">{entry.registrationNumber}</div>
+      ),
+    },
+    {
+      key: "employeeId",
+      label: "Employé",
+      render: (entry: PersonnelRegisterEntry) => (
+        <Link
+          href={`/dashboard/hr/employees/${entry.employeeId}`}
+          className="hover:underline"
+        >
+          <div className="font-medium">{getEmployeeName(entry.employeeId)}</div>
+          <div className="text-sm text-muted-foreground">{entry.position}</div>
+        </Link>
+      ),
+    },
+    {
+      key: "contractType",
+      label: "Type de contrat",
+      render: (entry: PersonnelRegisterEntry) => (
+        <Badge variant={contractTypeColors[entry.contractType]}>
+          {contractTypeLabels[entry.contractType]}
+        </Badge>
+      ),
+    },
+    {
+      key: "entryDate",
+      label: "Date d'entrée",
+      render: (entry: PersonnelRegisterEntry) =>
+        entry.entryDate.toLocaleDateString("fr-FR"),
+    },
+    {
+      key: "exitDate",
+      label: "Date de sortie",
+      render: (entry: PersonnelRegisterEntry) =>
+        entry.exitDate ? (
+          <span className="text-muted-foreground">
+            {entry.exitDate.toLocaleDateString("fr-FR")}
+          </span>
+        ) : (
+          <Badge variant="secondary">En poste</Badge>
+        ),
+    },
+    {
+      key: "qualification",
+      label: "Qualification",
+      render: (entry: PersonnelRegisterEntry) => entry.qualification,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (entry: PersonnelRegisterEntry) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleView(entry)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Voir
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEdit(entry)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Modifier
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(entry.id)}
+              className="text-red-600"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+  // Calculate stats
+  const activeCount = entries.filter((e) => !e.exitDate).length;
+  const exitedCount = entries.filter((e) => e.exitDate).length;
+  const cdiCount = entries.filter((e) => e.contractType === "CDI" && !e.exitDate)
+    .length;
+  const cddCount = entries.filter((e) => e.contractType === "CDD" && !e.exitDate)
+    .length;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Registre du Personnel</h1>
+          <p className="text-muted-foreground">
+            Registre unique du personnel conforme à la réglementation
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleExportPDF} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Exporter PDF
+          </Button>
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle entrée
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{entries.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Enregistrements totaux
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En poste</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeCount}</div>
+            <p className="text-xs text-muted-foreground">Employés actifs</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">CDI</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{cdiCount}</div>
+            <p className="text-xs text-muted-foreground">Contrats CDI actifs</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">CDD</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{cddCount}</div>
+            <p className="text-xs text-muted-foreground">Contrats CDD actifs</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Registre ({filteredEntries.length})</CardTitle>
+            <div className="flex gap-2">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="active">En poste</SelectItem>
+                  <SelectItem value="exited">Sortis</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={filterContractType}
+                onValueChange={setFilterContractType}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Type de contrat" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="CDI">CDI</SelectItem>
+                  <SelectItem value="CDD">CDD</SelectItem>
+                  <SelectItem value="apprentice">Apprenti</SelectItem>
+                  <SelectItem value="interim">Intérim</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable columns={columns} data={filteredEntries} />
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Modal */}
+      <Modal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        type="form"
+        title={editingEntry ? "Modifier l'entrée" : "Nouvelle entrée"}
+        size="xl"
+        actions={{
+          primary: {
+            label: "Enregistrer",
+            onClick: handleSave,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCreateModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="employeeId">Employé *</Label>
+              <Select
+                value={formData.employeeId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, employeeId: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un employé" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockEmployees.map((employee) => (
+                    <SelectItem key={employee.id} value={employee.id}>
+                      {employee.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="registrationNumber">
+                N° d'enregistrement *
+              </Label>
+              <Input
+                id="registrationNumber"
+                value={formData.registrationNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, registrationNumber: e.target.value })
+                }
+                placeholder="Ex: 2024-001"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="contractType">Type de contrat *</Label>
+              <Select
+                value={formData.contractType}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    contractType: value as PersonnelRegisterEntry["contractType"],
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CDI">CDI</SelectItem>
+                  <SelectItem value="CDD">CDD</SelectItem>
+                  <SelectItem value="apprentice">Apprenti</SelectItem>
+                  <SelectItem value="interim">Intérim</SelectItem>
+                  <SelectItem value="other">Autre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="position">Poste *</Label>
+              <Input
+                id="position"
+                value={formData.position}
+                onChange={(e) =>
+                  setFormData({ ...formData, position: e.target.value })
+                }
+                placeholder="Ex: Agent de sécurité"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="qualification">Qualification *</Label>
+              <Input
+                id="qualification"
+                value={formData.qualification}
+                onChange={(e) =>
+                  setFormData({ ...formData, qualification: e.target.value })
+                }
+                placeholder="Ex: CQP APS"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="nationality">Nationalité *</Label>
+              <Input
+                id="nationality"
+                value={formData.nationality}
+                onChange={(e) =>
+                  setFormData({ ...formData, nationality: e.target.value })
+                }
+                placeholder="Ex: Française"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="birthDate">Date de naissance *</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={formData.birthDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, birthDate: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="birthPlace">Lieu de naissance *</Label>
+              <Input
+                id="birthPlace"
+                value={formData.birthPlace}
+                onChange={(e) =>
+                  setFormData({ ...formData, birthPlace: e.target.value })
+                }
+                placeholder="Ex: Paris (75)"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="entryDate">Date d'entrée *</Label>
+              <Input
+                id="entryDate"
+                type="date"
+                value={formData.entryDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, entryDate: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="exitDate">Date de sortie</Label>
+              <Input
+                id="exitDate"
+                type="date"
+                value={formData.exitDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, exitDate: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="socialSecurityNumber">
+              N° de sécurité sociale
+            </Label>
+            <Input
+              id="socialSecurityNumber"
+              value={formData.socialSecurityNumber}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  socialSecurityNumber: e.target.value,
+                })
+              }
+              placeholder="Ex: 1 95 03 75 123 456 78"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              rows={3}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* View Modal */}
+      <Modal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        type="details"
+        title="Détails de l'entrée"
+        size="lg"
+      >
+        {viewingEntry && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Employé</Label>
+                <p className="text-sm font-medium">
+                  {getEmployeeName(viewingEntry.employeeId)}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">
+                  N° d'enregistrement
+                </Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.registrationNumber}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Type de contrat</Label>
+                <div className="mt-1">
+                  <Badge variant={contractTypeColors[viewingEntry.contractType]}>
+                    {contractTypeLabels[viewingEntry.contractType]}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Poste</Label>
+                <p className="text-sm font-medium">{viewingEntry.position}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Qualification</Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.qualification}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Nationalité</Label>
+                <p className="text-sm font-medium">{viewingEntry.nationality}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Date de naissance</Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.birthDate.toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">
+                  Lieu de naissance
+                </Label>
+                <p className="text-sm font-medium">{viewingEntry.birthPlace}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Date d'entrée</Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.entryDate.toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Date de sortie</Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.exitDate
+                    ? viewingEntry.exitDate.toLocaleDateString("fr-FR")
+                    : "En poste"}
+                </p>
+              </div>
+            </div>
+
+            {viewingEntry.socialSecurityNumber && (
+              <div>
+                <Label className="text-muted-foreground">
+                  N° de sécurité sociale
+                </Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.socialSecurityNumber}
+                </p>
+              </div>
+            )}
+
+            {viewingEntry.notes && (
+              <div>
+                <Label className="text-muted-foreground">Notes</Label>
+                <p className="text-sm">{viewingEntry.notes}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
