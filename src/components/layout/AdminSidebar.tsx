@@ -30,7 +30,8 @@ import {
   Award,
   Scale,
   FilePenLine,
-  CreditCard,
+CreditCard,
+  PenTool,
 } from "lucide-react";
 
 import { GenericSidebar, MenuSection } from "@/components/ui/generic-sidebar";
@@ -352,7 +353,7 @@ const navigationSections: MenuSection[] = [
     ],
   },
   {
-    label: "Workflows & Signatures",
+    label: "Workflows & Demandes RH",
     items: [
       {
         title: "Vue d'ensemble",
@@ -379,16 +380,16 @@ const navigationSections: MenuSection[] = [
         disabled: false,
       },
       {
-        title: "Dématérialisation",
-        url: "/dashboard/hr/workflows/digitalization",
-        icon: FileText,
-        disabled: true,
-      },
-      {
         title: "Signatures électroniques",
         url: "/dashboard/hr/workflows/signatures",
+        icon: PenTool,
+        disabled: false,
+      },
+      {
+        title: "Gestion des signatures",
+        url: "/dashboard/hr/workflows/signatures/all",
         icon: FilePenLine,
-        disabled: true,
+        disabled: false,
       },
     ],
   },

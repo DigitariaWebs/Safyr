@@ -21,6 +21,7 @@ import {
   Award,
   BarChart3,
   Mail,
+  FilePenLine,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -302,19 +303,14 @@ const navItems: NavItem[] = [
         disabled: false,
       },
       {
-        label: "Règles d'automatisation",
-        href: "/dashboard/hr/workflows/automation",
-        disabled: true,
-      },
-      {
-        label: "Dématérialisation",
-        href: "/dashboard/hr/workflows/digitalization",
-        disabled: true,
-      },
-      {
         label: "Signatures électroniques",
         href: "/dashboard/hr/workflows/signatures",
-        disabled: true,
+        disabled: false,
+      },
+      {
+        label: "Gestion des signatures",
+        href: "/dashboard/hr/workflows/signatures/all",
+        disabled: false,
       },
     ],
   },

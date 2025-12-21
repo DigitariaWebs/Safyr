@@ -1242,3 +1242,122 @@ export interface WorkflowFilters {
   assignedTo?: string;
   search?: string;
 }
+
+// ============================================================================
+// ELECTRONIC SIGNATURES & DEMATERIALIZATION TYPES
+// ============================================================================
+
+export type SignatureType =
+  | "contract"
+  | "disciplinary_sanction"
+  | "equipment_delivery"
+  | "equipment_return"
+  | "acknowledgment"
+  | "hr_validation";
+
+export type SignatureStatus =
+  | "pending"
+  | "sent"
+  | "signed"
+  | "refused"
+  | "expired"
+  | "cancelled";
+
+export type SignatureMethod =
+  | "eidas"
+  | "simple"
+  | "advanced"
+  | "qualified";
+
+export interface SignatureParticipant {
+  id: string;
+  name: string;
+  email: string;
+  role: "signer" | "approver" | "observer";
+  signedAt?: Date;
+  signatureMethod?: SignatureMethod;
+  ipAddress?: string;
+  deviceInfo?: string;
+  refusalReason?: string;
+  status: "pending" | "signed" | "refused";
+}
+
+export interface SignatureDocument {
+  id: string;
+  name: string;
+  type: SignatureType;
+  documentUrl: string;
+  signedDocumentUrl?: string;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+export interface SignatureAuditEntry {
+  id: string;
+  timestamp: Date;
+  action: "created" | "sent" | "viewed" | "signed" | "refused" | "reminded" | "expired" | "cancelled" | "completed";
+  performedBy: string;
+  performedByName: string;
+  participantId?: string;
+  details?: string;
+  ipAddress?: string;
+  deviceInfo?: string;
+}
+
+export interface SignatureWorkflow {
+  id: string;
+  type: SignatureType;
+  title: string;
+  description?: string;
+  status: SignatureStatus;
+  documents: SignatureDocument[];
+  participants: SignatureParticipant[];
+  initiatedBy: string;
+  initiatedByName: string;
+  employeeId?: string;
+  employeeName?: string;
+  contractId?: string;
+  sanctionId?: string;
+  equipmentId?: string;
+  acknowledgmentType?: string;
+  requiresEidas: boolean;
+  signatureMethod: SignatureMethod;
+  sequentialSigning: boolean;
+  reminderEnabled: boolean;
+  reminderFrequency?: number;
+  sentAt?: Date;
+  completedAt?: Date;
+  lastReminderSent?: Date;
+  expiresAt?: Date;
+  auditTrail: SignatureAuditEntry[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SignatureStats {
+  totalWorkflows: number;
+  pendingSignatures: number;
+  completedSignatures: number;
+  refusedSignatures: number;
+  expiredSignatures: number;
+  contractSignatures: number;
+  sanctionSignatures: number;
+  equipmentSignatures: number;
+  acknowledgmentSignatures: number;
+  hrValidationSignatures: number;
+  averageCompletionTime: number;
+  completionRate: number;
+  signaturesThisWeek: number;
+  signaturesThisMonth: number;
+}
+
+export interface SignatureFilters {
+  status?: SignatureStatus[];
+  type?: SignatureType[];
+  signatureMethod?: SignatureMethod[];
+  employeeId?: string;
+  initiatedBy?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  search?: string;
+}

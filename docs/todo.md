@@ -102,11 +102,11 @@
 
 ## 12. Dematerialization & Electronic Signatures
 
-- [ ] eIDAS signature of contracts
-- [ ] Signature of disciplinary sanctions
-- [ ] PPE / equipment signature
-- [ ] Electronic acknowledgments of receipt
-- [ ] Secure internal HR validation
+- [x] eIDAS signature of contracts
+- [x] Signature of disciplinary sanctions
+- [x] PPE / equipment signature
+- [x] Electronic acknowledgments of receipt
+- [x] Secure internal HR validation
 
 ## 13. Occupational Medicine (added module)
 
