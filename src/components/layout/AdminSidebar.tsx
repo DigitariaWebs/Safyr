@@ -30,6 +30,7 @@ import {
   Award,
   Scale,
   FilePenLine,
+  CreditCard,
 } from "lucide-react";
 
 import { GenericSidebar, MenuSection } from "@/components/ui/generic-sidebar";
@@ -354,10 +355,28 @@ const navigationSections: MenuSection[] = [
     label: "Workflows & Signatures",
     items: [
       {
-        title: "Demandes RH",
+        title: "Vue d'ensemble",
         url: "/dashboard/hr/workflows/requests",
         icon: GitBranch,
-        disabled: true,
+        disabled: false,
+      },
+      {
+        title: "Demandes de certificats",
+        url: "/dashboard/hr/workflows/certificate",
+        icon: Award,
+        disabled: false,
+      },
+      {
+        title: "Demandes de documents",
+        url: "/dashboard/hr/workflows/document",
+        icon: FileText,
+        disabled: false,
+      },
+      {
+        title: "Changements d'informations",
+        url: "/dashboard/hr/workflows/bank-details",
+        icon: CreditCard,
+        disabled: false,
       },
       {
         title: "Dématérialisation",

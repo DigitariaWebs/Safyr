@@ -282,8 +282,28 @@ const navItems: NavItem[] = [
     icon: GitBranch,
     children: [
       {
-        label: "Demandes RH",
+        label: "Vue d'ensemble",
         href: "/dashboard/hr/workflows/requests",
+        disabled: false,
+      },
+      {
+        label: "Demandes de certificats",
+        href: "/dashboard/hr/workflows/certificate",
+        disabled: false,
+      },
+      {
+        label: "Demandes de documents",
+        href: "/dashboard/hr/workflows/document",
+        disabled: false,
+      },
+      {
+        label: "Changements d'informations",
+        href: "/dashboard/hr/workflows/bank-details",
+        disabled: false,
+      },
+      {
+        label: "Règles d'automatisation",
+        href: "/dashboard/hr/workflows/automation",
         disabled: true,
       },
       {

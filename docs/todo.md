@@ -94,11 +94,11 @@
 
 ## 11. Workflows & HR Requests
 
-- [ ] Certificate requests
-- [ ] Document requests
-- [ ] Bank details change requests, address, civil status
-- [ ] History + status (in progress / validated / refused)
-- [ ] Possible automation according to HR rules
+- [x] Certificate requests
+- [x] Document requests
+- [x] Bank details change requests, address, civil status
+- [x] History + status (in progress / validated / refused)
+- [ ] Possible automation according to HR rules (structure defined, implementation pending)
 
 ## 12. Dematerialization & Electronic Signatures
 

@@ -1027,3 +1027,218 @@ export interface CDDRegisterEntry {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// ============================================================================
+// WORKFLOWS & HR REQUESTS TYPES
+// ============================================================================
+
+export type HRRequestType =
+  | "certificate"
+  | "document"
+  | "bank_details"
+  | "address"
+  | "civil_status";
+
+export type HRRequestStatus =
+  | "pending"
+  | "in_progress"
+  | "validated"
+  | "refused"
+  | "cancelled";
+
+export type CertificateType =
+  | "employment"
+  | "salary"
+  | "work"
+  | "internship"
+  | "other";
+
+export type DocumentType =
+  | "payslip"
+  | "contract"
+  | "attestation"
+  | "tax_document"
+  | "social_security"
+  | "other";
+
+export interface RequestHistoryEntry {
+  id: string;
+  timestamp: Date;
+  action: "created" | "status_changed" | "comment_added" | "document_attached" | "assigned" | "completed";
+  status?: HRRequestStatus;
+  performedBy: string;
+  performedByName: string;
+  comment?: string;
+  attachments?: string[];
+}
+
+export interface HRRequest {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeNumber: string;
+  department: string;
+  type: HRRequestType;
+  status: HRRequestStatus;
+  submittedAt: Date;
+  processedAt?: Date;
+  processedBy?: string;
+  processedByName?: string;
+  validationComment?: string;
+  refusalReason?: string;
+  assignedTo?: string;
+  assignedToName?: string;
+  priority: "low" | "normal" | "high" | "urgent";
+  dueDate?: Date;
+  history: RequestHistoryEntry[];
+  attachments?: string[];
+  internalNotes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CertificateRequest extends Omit<HRRequest, "type"> {
+  type: "certificate";
+  certificateType: CertificateType;
+  reason: string;
+  quantity: number;
+  language: "fr" | "en";
+  deliveryMethod: "email" | "pickup" | "mail";
+  deliveryAddress?: string;
+  generatedCertificateUrl?: string;
+  generatedAt?: Date;
+}
+
+export interface DocumentRequest extends Omit<HRRequest, "type"> {
+  type: "document";
+  documentType: DocumentType;
+  documentDescription: string;
+  period?: string; // For payslips, e.g., "2024-12"
+  year?: number; // For tax documents, contracts
+  specificDetails?: string;
+  deliveryMethod: "email" | "pickup" | "mail";
+  deliveryAddress?: string;
+  documentUrl?: string;
+  providedAt?: Date;
+}
+
+export interface PersonalInfoChangeRequest extends Omit<HRRequest, "type"> {
+  type: "bank_details" | "address" | "civil_status";
+  changeType: "bank_details" | "address" | "civil_status";
+  
+  // Bank details change
+  currentBankDetails?: {
+    iban: string;
+    bic: string;
+    bankName: string;
+  };
+  newBankDetails?: {
+    iban: string;
+    bic: string;
+    bankName: string;
+  };
+  ribDocument?: string; // File URL
+
+  // Address change
+  currentAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  newAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  proofOfAddress?: string; // File URL
+
+  // Civil status change
+  currentCivilStatus?: Employee["civilStatus"];
+  newCivilStatus?: Employee["civilStatus"];
+  supportingDocuments?: string[]; // Marriage certificate, divorce decree, etc.
+  effectiveDate?: Date;
+
+  // Approval metadata
+  approvalRequired: boolean;
+  approvedBy?: string;
+  approvedByName?: string;
+  appliedToSystem: boolean;
+  appliedAt?: Date;
+}
+
+export interface AutomationRule {
+  id: string;
+  name: string;
+  description: string;
+  requestType: HRRequestType;
+  enabled: boolean;
+  
+  // Conditions
+  conditions: {
+    employeeTenureMinMonths?: number;
+    departmentWhitelist?: string[];
+    requestTypeWhitelist?: (CertificateType | DocumentType)[];
+    maxAmount?: number;
+    requiresManagerApproval?: boolean;
+  };
+
+  // Actions
+  actions: {
+    autoApprove?: boolean;
+    autoAssignTo?: string;
+    setPriority?: "low" | "normal" | "high" | "urgent";
+    sendNotificationTo?: string[];
+    addTags?: string[];
+  };
+
+  // Execution tracking
+  executionCount: number;
+  lastExecutedAt?: Date;
+  
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WorkflowStats {
+  totalRequests: number;
+  pendingRequests: number;
+  inProgressRequests: number;
+  validatedRequests: number;
+  refusedRequests: number;
+  cancelledRequests: number;
+  
+  // By type
+  certificateRequests: number;
+  documentRequests: number;
+  personalInfoChangeRequests: number;
+  
+  // Performance metrics
+  averageProcessingTime: number; // in hours
+  requestsByPriority: {
+    low: number;
+    normal: number;
+    high: number;
+    urgent: number;
+  };
+  
+  // Time-based
+  requestsThisWeek: number;
+  requestsThisMonth: number;
+  
+  oldestPendingRequest?: Date;
+}
+
+export interface WorkflowFilters {
+  status?: HRRequestStatus[];
+  type?: HRRequestType[];
+  priority?: ("low" | "normal" | "high" | "urgent")[];
+  employeeId?: string;
+  department?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  assignedTo?: string;
+  search?: string;
+}
