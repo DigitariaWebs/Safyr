@@ -14,6 +14,80 @@ import { Clock, Sun, Calendar, CheckCircle, XCircle, Plus } from "lucide-react";
 import { mockWorkedHours } from "@/data/time-management";
 import { mockEmployees } from "@/data/employees";
 
+const CategoryTable = ({
+  category,
+  hours,
+}: {
+  category: "supplementary" | "night" | "sunday" | "holiday";
+  hours: (typeof mockWorkedHours)[0];
+}) => {
+  const variants = [
+    {
+      label: "25%",
+      value: hours[`${category}Hours25`],
+    },
+    {
+      label: "50%",
+      value: hours[`${category}Hours50`],
+    },
+    {
+      label: "10%",
+      value:
+        category === "supplementary"
+          ? hours.complementaryHours10
+          : hours[`${category}Hours10`],
+    },
+  ];
+
+  const bgColor =
+    category === "supplementary"
+      ? "bg-green-50 dark:bg-green-950/10"
+      : category === "night"
+        ? "bg-purple-50 dark:bg-purple-950/10"
+        : category === "sunday"
+          ? "bg-orange-50 dark:bg-orange-950/10"
+          : "bg-red-50 dark:bg-red-950/10";
+
+  const getTextColor = (cat: string, label: string) => {
+    if (cat === "supplementary") {
+      if (label === "25%") return "text-green-600";
+      if (label === "50%") return "text-teal-600";
+      if (label === "10%") return "text-cyan-600";
+    } else if (cat === "night") {
+      if (label === "25%") return "text-purple-400";
+      if (label === "50%") return "text-purple-500";
+      if (label === "10%") return "text-purple-300";
+    } else if (cat === "sunday") {
+      if (label === "25%") return "text-orange-400";
+      if (label === "50%") return "text-orange-500";
+      if (label === "10%") return "text-orange-300";
+    } else if (cat === "holiday") {
+      if (label === "25%") return "text-red-400";
+      if (label === "50%") return "text-red-500";
+      if (label === "10%") return "text-red-300";
+    }
+    return "";
+  };
+
+  return (
+    <div className="text-xs flex gap-1">
+      {variants.map((variant) => (
+        <div
+          key={variant.label}
+          className={`flex flex-col items-center p-1 rounded ${bgColor} min-w-0 flex-1`}
+        >
+          <span className="text-xs text-gray-600">{variant.label}</span>
+          <span
+            className={`font-semibold ${getTextColor(category, variant.label)}`}
+          >
+            {variant.value}h
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function WorkedHoursPage() {
   const [isDeclareModalOpen, setIsDeclareModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -28,9 +102,21 @@ export default function WorkedHoursPage() {
     date: new Date().toISOString().split("T")[0],
     regularHours: 0,
     overtimeHours: 0,
+    supplementaryHours25: 0,
+    supplementaryHours50: 0,
+    complementaryHours10: 0,
     nightHours: 0,
+    nightHours25: 0,
+    nightHours50: 0,
+    nightHours10: 0,
     sundayHours: 0,
+    sundayHours25: 0,
+    sundayHours50: 0,
+    sundayHours10: 0,
     holidayHours: 0,
+    holidayHours25: 0,
+    holidayHours50: 0,
+    holidayHours10: 0,
   });
 
   // Filter employees based on search
@@ -80,8 +166,17 @@ export default function WorkedHoursPage() {
     (sum, h) => sum + h.regularHours,
     0,
   );
-  const totalOvertimeHours = mockWorkedHours.reduce(
-    (sum, h) => sum + h.overtimeHours,
+
+  const totalSupplementaryHours25 = mockWorkedHours.reduce(
+    (sum, h) => sum + (h.supplementaryHours25 || 0),
+    0,
+  );
+  const totalSupplementaryHours50 = mockWorkedHours.reduce(
+    (sum, h) => sum + (h.supplementaryHours50 || 0),
+    0,
+  );
+  const totalComplementaryHours10 = mockWorkedHours.reduce(
+    (sum, h) => sum + (h.complementaryHours10 || 0),
     0,
   );
 
@@ -121,13 +216,19 @@ export default function WorkedHoursPage() {
       ),
     },
     {
-      key: "overtimeHours",
-      label: "Heures supp.",
+      key: "supplementaryHours",
+      label: "Heures supplémentaires",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold text-blue-600">
-          {hours.overtimeHours}h
-        </span>
+        <div className="text-xs space-y-1">
+          <div className="flex justify-between items-center p-1 rounded bg-blue-50 dark:bg-blue-950/20">
+            <span className="text-gray-600">Base:</span>
+            <span className="font-semibold text-blue-600">
+              {hours.overtimeHours}h
+            </span>
+          </div>
+          <CategoryTable category="supplementary" hours={hours} />
+        </div>
       ),
     },
     {
@@ -135,9 +236,15 @@ export default function WorkedHoursPage() {
       label: "Heures nuit",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold text-purple-600">
-          {hours.nightHours}h
-        </span>
+        <div className="text-xs space-y-1">
+          <div className="flex justify-between items-center p-1 rounded bg-purple-50 dark:bg-purple-950/20">
+            <span className="text-gray-600">Base:</span>
+            <span className="font-semibold text-purple-600">
+              {hours.nightHours}h
+            </span>
+          </div>
+          <CategoryTable category="night" hours={hours} />
+        </div>
       ),
     },
     {
@@ -145,9 +252,15 @@ export default function WorkedHoursPage() {
       label: "Dimanche",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold text-orange-600">
-          {hours.sundayHours}h
-        </span>
+        <div className="text-xs space-y-1">
+          <div className="flex justify-between items-center p-1 rounded bg-orange-50 dark:bg-orange-950/20">
+            <span className="text-gray-600">Base:</span>
+            <span className="font-semibold text-orange-600">
+              {hours.sundayHours}h
+            </span>
+          </div>
+          <CategoryTable category="sunday" hours={hours} />
+        </div>
       ),
     },
     {
@@ -155,9 +268,15 @@ export default function WorkedHoursPage() {
       label: "Jours fériés",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold text-red-600">
-          {hours.holidayHours}h
-        </span>
+        <div className="text-xs space-y-1">
+          <div className="flex justify-between items-center p-1 rounded bg-red-50 dark:bg-red-950/20">
+            <span className="text-gray-600">Base:</span>
+            <span className="font-semibold text-red-600">
+              {hours.holidayHours}h
+            </span>
+          </div>
+          <CategoryTable category="holiday" hours={hours} />
+        </div>
       ),
     },
     {
@@ -198,7 +317,7 @@ export default function WorkedHoursPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-7">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -233,8 +352,81 @@ export default function WorkedHoursPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalOvertimeHours}h</div>
-            <p className="text-xs text-muted-foreground">À majorer</p>
+            <div className="text-2xl font-bold text-blue-600">
+              {totalSupplementaryHours25 +
+                totalSupplementaryHours50 +
+                totalComplementaryHours10}
+              h
+            </div>
+            <p className="text-xs text-muted-foreground">Toutes majorations</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Heures de Nuit
+            </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {mockWorkedHours.reduce(
+                (sum, h) =>
+                  sum +
+                  h.nightHours +
+                  (h.nightHours25 || 0) +
+                  (h.nightHours50 || 0) +
+                  (h.nightHours10 || 0),
+                0,
+              )}
+              h
+            </div>
+            <p className="text-xs text-muted-foreground">Toutes variantes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Dimanche</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {mockWorkedHours.reduce(
+                (sum, h) =>
+                  sum +
+                  h.sundayHours +
+                  (h.sundayHours25 || 0) +
+                  (h.sundayHours50 || 0) +
+                  (h.sundayHours10 || 0),
+                0,
+              )}
+              h
+            </div>
+            <p className="text-xs text-muted-foreground">Toutes variantes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Jours Fériés</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {mockWorkedHours.reduce(
+                (sum, h) =>
+                  sum +
+                  h.holidayHours +
+                  (h.holidayHours25 || 0) +
+                  (h.holidayHours50 || 0) +
+                  (h.holidayHours10 || 0),
+                0,
+              )}
+              h
+            </div>
+            <p className="text-xs text-muted-foreground">Toutes variantes</p>
           </CardContent>
         </Card>
 
@@ -289,9 +481,21 @@ export default function WorkedHoursPage() {
               date: new Date().toISOString().split("T")[0],
               regularHours: 0,
               overtimeHours: 0,
+              supplementaryHours25: 0,
+              supplementaryHours50: 0,
+              complementaryHours10: 0,
               nightHours: 0,
+              nightHours25: 0,
+              nightHours50: 0,
+              nightHours10: 0,
               sundayHours: 0,
+              sundayHours25: 0,
+              sundayHours50: 0,
+              sundayHours10: 0,
               holidayHours: 0,
+              holidayHours25: 0,
+              holidayHours50: 0,
+              holidayHours10: 0,
             });
             setEmployeeSearch("");
             setIsEmployeeDropdownOpen(false);
@@ -310,12 +514,23 @@ export default function WorkedHoursPage() {
                 date: new Date().toISOString().split("T")[0],
                 regularHours: 0,
                 overtimeHours: 0,
+                supplementaryHours25: 0,
+                supplementaryHours50: 0,
+                complementaryHours10: 0,
                 nightHours: 0,
+                nightHours25: 0,
+                nightHours50: 0,
+                nightHours10: 0,
                 sundayHours: 0,
+                sundayHours25: 0,
+                sundayHours50: 0,
+                sundayHours10: 0,
                 holidayHours: 0,
+                holidayHours25: 0,
+                holidayHours50: 0,
+                holidayHours10: 0,
               });
               setEmployeeSearch("");
-              setIsEmployeeDropdownOpen(false);
               setIsDeclareModalOpen(false);
             },
           },
@@ -436,6 +651,57 @@ export default function WorkedHoursPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="supplementaryHours25">Heures supp. 25%</Label>
+              <Input
+                id="supplementaryHours25"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.supplementaryHours25}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    supplementaryHours25: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supplementaryHours50">Heures supp. 50%</Label>
+              <Input
+                id="supplementaryHours50"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.supplementaryHours50}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    supplementaryHours50: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="complementaryHours10">Heures comp. 10%</Label>
+              <Input
+                id="complementaryHours10"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.complementaryHours10}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    complementaryHours10: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="nightHours">Heures de nuit</Label>
               <Input
                 id="nightHours"
@@ -481,6 +747,159 @@ export default function WorkedHoursPage() {
                   setFormData({
                     ...formData,
                     holidayHours: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nightHours25">Heures nuit 25%</Label>
+              <Input
+                id="nightHours25"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.nightHours25}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nightHours25: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nightHours50">Heures nuit 50%</Label>
+              <Input
+                id="nightHours50"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.nightHours50}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nightHours50: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nightHours10">Heures nuit 10%</Label>
+              <Input
+                id="nightHours10"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.nightHours10}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nightHours10: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sundayHours25">Dimanche 25%</Label>
+              <Input
+                id="sundayHours25"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.sundayHours25}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sundayHours25: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sundayHours50">Dimanche 50%</Label>
+              <Input
+                id="sundayHours50"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.sundayHours50}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sundayHours50: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sundayHours10">Dimanche 10%</Label>
+              <Input
+                id="sundayHours10"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.sundayHours10}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sundayHours10: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="holidayHours25">Jours fériés 25%</Label>
+              <Input
+                id="holidayHours25"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.holidayHours25}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    holidayHours25: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="holidayHours50">Jours fériés 50%</Label>
+              <Input
+                id="holidayHours50"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.holidayHours50}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    holidayHours50: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="holidayHours10">Jours fériés 10%</Label>
+              <Input
+                id="holidayHours10"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.holidayHours10}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    holidayHours10: parseFloat(e.target.value),
                   })
                 }
               />
@@ -575,38 +994,79 @@ export default function WorkedHoursPage() {
             </div>
 
             {/* Hours Breakdown */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <h4 className="font-medium">D&eacute;tail des heures</h4>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                  <span className="text-sm">Heures normales</span>
-                  <span className="font-semibold">
-                    {selectedHours.regularHours}h
-                  </span>
+
+              {/* Regular & Supplementary Hours */}
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-muted-foreground">
+                  Heures normales et supplémentaires
+                </h5>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between items-center rounded bg-muted/30 p-2">
+                    <span className="text-gray-600">Normales:</span>
+                    <span className="font-semibold">
+                      {selectedHours.regularHours}h
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 rounded bg-blue-50 dark:bg-blue-950/20">
+                    <span className="text-gray-600">Supplémentaires:</span>
+                    <span className="font-semibold text-blue-600">
+                      {selectedHours.overtimeHours}h
+                    </span>
+                  </div>
+                  <CategoryTable
+                    category="supplementary"
+                    hours={selectedHours}
+                  />
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                  <span className="text-sm">Heures supplémentaires</span>
-                  <span className="font-semibold text-blue-600">
-                    {selectedHours.overtimeHours}h
-                  </span>
+              </div>
+
+              {/* Night Hours */}
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-muted-foreground">
+                  Heures de nuit
+                </h5>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between items-center p-2 rounded bg-purple-50 dark:bg-purple-950/20">
+                    <span className="text-gray-600">Base:</span>
+                    <span className="font-semibold text-purple-600">
+                      {selectedHours.nightHours}h
+                    </span>
+                  </div>
+                  <CategoryTable category="night" hours={selectedHours} />
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20">
-                  <span className="text-sm">Heures de nuit</span>
-                  <span className="font-semibold text-purple-600">
-                    {selectedHours.nightHours}h
-                  </span>
+              </div>
+
+              {/* Sunday Hours */}
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-muted-foreground">
+                  Dimanche
+                </h5>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between items-center p-2 rounded bg-orange-50 dark:bg-orange-950/20">
+                    <span className="text-gray-600">Base:</span>
+                    <span className="font-semibold text-orange-600">
+                      {selectedHours.sundayHours}h
+                    </span>
+                  </div>
+                  <CategoryTable category="sunday" hours={selectedHours} />
                 </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
-                  <span className="text-sm">Dimanche</span>
-                  <span className="font-semibold text-orange-600">
-                    {selectedHours.sundayHours}h
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-lg bg-red-50 dark:bg-red-950/20 md:col-span-2">
-                  <span className="text-sm">Jours fériés</span>
-                  <span className="font-semibold text-red-600">
-                    {selectedHours.holidayHours}h
-                  </span>
+              </div>
+
+              {/* Holiday Hours */}
+              <div className="space-y-2">
+                <h5 className="text-sm font-medium text-muted-foreground">
+                  Jours fériés
+                </h5>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between items-center p-2 rounded bg-red-50 dark:bg-red-950/20">
+                    <span className="text-gray-600">Base:</span>
+                    <span className="font-semibold text-red-600">
+                      {selectedHours.holidayHours}h
+                    </span>
+                  </div>
+                  <CategoryTable category="holiday" hours={selectedHours} />
                 </div>
               </div>
             </div>

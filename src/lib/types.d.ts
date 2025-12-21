@@ -527,9 +527,21 @@ export interface WorkedHours {
   date: Date;
   regularHours: number;
   overtimeHours: number;
+  supplementaryHours25: number; // 25% increase
+  supplementaryHours50: number; // 50% increase
+  complementaryHours10: number; // 10% for part-time employees
   nightHours: number;
+  nightHours25: number; // Night hours with 25% increase
+  nightHours50: number; // Night hours with 50% increase
+  nightHours10: number; // Night hours with 10% increase
   sundayHours: number;
+  sundayHours25: number; // Sunday hours with 25% increase
+  sundayHours50: number; // Sunday hours with 50% increase
+  sundayHours10: number; // Sunday hours with 10% increase
   holidayHours: number;
+  holidayHours25: number; // Holiday hours with 25% increase
+  holidayHours50: number; // Holiday hours with 50% increase
+  holidayHours10: number; // Holiday hours with 10% increase
   totalHours: number;
   validated: boolean;
   validatedBy?: string;
@@ -990,7 +1002,15 @@ export interface TrainingRegisterEntry {
   id: string;
   employeeId: string;
   trainingName: string;
-  trainingType: "SSIAP" | "SST" | "CQP" | "H0B0" | "fire" | "professional" | "regulatory" | "other";
+  trainingType:
+    | "SSIAP"
+    | "SST"
+    | "CQP"
+    | "H0B0"
+    | "fire"
+    | "professional"
+    | "regulatory"
+    | "other";
   trainingOrganization: string;
   startDate: Date;
   endDate: Date;
@@ -1017,11 +1037,22 @@ export interface CDDRegisterEntry {
   expectedEndDate: Date;
   actualEndDate?: Date;
   position: string;
-  reason: "replacement" | "seasonal" | "temporary_increase" | "specific_project" | "other";
+  reason:
+    | "replacement"
+    | "seasonal"
+    | "temporary_increase"
+    | "specific_project"
+    | "other";
   reasonDetails?: string;
   renewalCount: number;
   previousContractId?: string;
-  exitReason?: "end_of_contract" | "early_termination" | "conversion_to_cdi" | "dismissal" | "resignation" | "other";
+  exitReason?:
+    | "end_of_contract"
+    | "early_termination"
+    | "conversion_to_cdi"
+    | "dismissal"
+    | "resignation"
+    | "other";
   exitReasonDetails?: string;
   notes?: string;
   createdAt: Date;
@@ -1064,7 +1095,13 @@ export type DocumentType =
 export interface RequestHistoryEntry {
   id: string;
   timestamp: Date;
-  action: "created" | "status_changed" | "comment_added" | "document_attached" | "assigned" | "completed";
+  action:
+    | "created"
+    | "status_changed"
+    | "comment_added"
+    | "document_attached"
+    | "assigned"
+    | "completed";
   status?: HRRequestStatus;
   performedBy: string;
   performedByName: string;
@@ -1125,7 +1162,7 @@ export interface DocumentRequest extends Omit<HRRequest, "type"> {
 export interface PersonalInfoChangeRequest extends Omit<HRRequest, "type"> {
   type: "bank_details" | "address" | "civil_status";
   changeType: "bank_details" | "address" | "civil_status";
-  
+
   // Bank details change
   currentBankDetails?: {
     iban: string;
@@ -1174,7 +1211,7 @@ export interface AutomationRule {
   description: string;
   requestType: HRRequestType;
   enabled: boolean;
-  
+
   // Conditions
   conditions: {
     employeeTenureMinMonths?: number;
@@ -1196,7 +1233,7 @@ export interface AutomationRule {
   // Execution tracking
   executionCount: number;
   lastExecutedAt?: Date;
-  
+
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -1209,12 +1246,12 @@ export interface WorkflowStats {
   validatedRequests: number;
   refusedRequests: number;
   cancelledRequests: number;
-  
+
   // By type
   certificateRequests: number;
   documentRequests: number;
   personalInfoChangeRequests: number;
-  
+
   // Performance metrics
   averageProcessingTime: number; // in hours
   requestsByPriority: {
@@ -1223,11 +1260,11 @@ export interface WorkflowStats {
     high: number;
     urgent: number;
   };
-  
+
   // Time-based
   requestsThisWeek: number;
   requestsThisMonth: number;
-  
+
   oldestPendingRequest?: Date;
 }
 
@@ -1263,11 +1300,7 @@ export type SignatureStatus =
   | "expired"
   | "cancelled";
 
-export type SignatureMethod =
-  | "eidas"
-  | "simple"
-  | "advanced"
-  | "qualified";
+export type SignatureMethod = "eidas" | "simple" | "advanced" | "qualified";
 
 export interface SignatureParticipant {
   id: string;
@@ -1295,7 +1328,16 @@ export interface SignatureDocument {
 export interface SignatureAuditEntry {
   id: string;
   timestamp: Date;
-  action: "created" | "sent" | "viewed" | "signed" | "refused" | "reminded" | "expired" | "cancelled" | "completed";
+  action:
+    | "created"
+    | "sent"
+    | "viewed"
+    | "signed"
+    | "refused"
+    | "reminded"
+    | "expired"
+    | "cancelled"
+    | "completed";
   performedBy: string;
   performedByName: string;
   participantId?: string;

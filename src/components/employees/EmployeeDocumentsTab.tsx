@@ -12,7 +12,7 @@ import {
   Eye,
   Trash2,
   FileText,
-  Image,
+  Image as ImageIcon,
   CheckCircle,
   ExternalLink,
   AlertTriangle,
@@ -176,7 +176,7 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
       render: (doc) => (
         <div className="p-2 bg-primary/10 rounded-lg">
           {doc.type === "id-card" || doc.type === "health-card" ? (
-            <Image className="h-5 w-5 text-primary" />
+            <ImageIcon className="h-5 w-5 text-primary" />
           ) : (
             <FileText className="h-5 w-5 text-primary" />
           )}

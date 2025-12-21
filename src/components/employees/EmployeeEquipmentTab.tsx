@@ -4,6 +4,15 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Package,
   Plus,
@@ -16,6 +25,8 @@ import {
   Shield,
   Car,
   FileSignature,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import type { Employee, Equipment } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -24,8 +35,8 @@ interface EmployeeEquipmentTabProps {
   employee: Employee;
 }
 
-export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
-  const [equipment] = useState<Equipment[]>([
+export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
+  const [equipment, setEquipment] = useState<Equipment[]>([
     {
       id: "1",
       name: "Gilet pare-balles",
@@ -117,6 +128,64 @@ export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
     },
   ]);
 
+  // Available equipment pool (mock data)
+  const [availableEquipment] = useState<Equipment[]>([
+    {
+      id: "6",
+      name: "Gilet pare-balles supplémentaire",
+      type: "PPE",
+      serialNumber: "PPE-2024-001235",
+      description: "Gilet pare-balles niveau IIIA - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "7",
+      name: "Radio Icom IC-F2000",
+      type: "RADIO",
+      serialNumber: "ICOM-2024-001236",
+      description: "Radio portable Icom IC-F2000 - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "8",
+      name: "Trousseau de clés - Bâtiment B",
+      type: "KEYS",
+      serialNumber: "KEY-B-456",
+      description: "Accès Bâtiment B - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "good",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "9",
+      name: "Badge d'accès neuf",
+      type: "BADGE",
+      serialNumber: "BADGE-001237",
+      description: "Badge RFID multi-sites - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+  ]);
+
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
+  const [returnEquipmentId, setReturnEquipmentId] = useState<string>("");
+  const [detailsEquipmentId, setDetailsEquipmentId] = useState<string>("");
+  const [returnCondition, setReturnCondition] =
+    useState<Equipment["condition"]>("good");
+  const [returnNotes, setReturnNotes] = useState<string>("");
+
   const getEquipmentIcon = (type: Equipment["type"]) => {
     const icons = {
       PPE: Shield,
@@ -186,6 +255,62 @@ export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
 
   const assignedEquipment = equipment.filter((eq) => eq.status === "assigned");
   const returnedEquipment = equipment.filter((eq) => eq.status === "returned");
+
+  const handleAssignEquipment = () => {
+    if (!selectedEquipmentId) return;
+
+    const equipmentToAssign = availableEquipment.find(
+      (eq) => eq.id === selectedEquipmentId,
+    );
+    if (!equipmentToAssign) return;
+
+    const newEquipment: Equipment = {
+      ...equipmentToAssign,
+      assignedAt: new Date(),
+      assignedBy: "admin@safyr.com", // In real app, get from current user
+      status: "assigned",
+      issuanceSignature: {
+        signedAt: new Date(),
+        signedBy: `${employee.firstName} ${employee.lastName}`,
+        signatureData: "simulated_signature", // In real app, get actual signature
+        ipAddress: "192.168.1.100",
+      },
+    };
+
+    setEquipment((prev) => [...prev, newEquipment]);
+    setShowAssignModal(false);
+    setSelectedEquipmentId("");
+  };
+
+  const handleReturnEquipment = () => {
+    if (!returnEquipmentId) return;
+
+    setEquipment((prev) =>
+      prev.map((eq) => {
+        if (eq.id === returnEquipmentId) {
+          return {
+            ...eq,
+            returnedAt: new Date(),
+            returnedBy: "admin@safyr.com", // In real app, get from current user
+            status: "returned",
+            condition: returnCondition,
+            notes: returnNotes || eq.notes,
+            returnSignature: {
+              signedAt: new Date(),
+              signedBy: `${employee.firstName} ${employee.lastName}`,
+              signatureData: "simulated_signature", // In real app, get actual signature
+            },
+          };
+        }
+        return eq;
+      }),
+    );
+
+    setShowReturnModal(false);
+    setReturnEquipmentId("");
+    setReturnCondition("good");
+    setReturnNotes("");
+  };
 
   const equipmentColumns: ColumnDef<Equipment>[] = [
     {
@@ -367,7 +492,7 @@ export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Équipements actuellement assignés</CardTitle>
-          <Button>
+          <Button onClick={() => setShowAssignModal(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Assigner équipement
           </Button>
@@ -411,13 +536,27 @@ export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
                   ],
                 },
               ]}
-              actions={() => (
+              actions={(item) => (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setDetailsEquipmentId(item.id);
+                      setShowDetailsModal(true);
+                    }}
+                  >
                     <Eye className="mr-2 h-4 w-4" />
                     Détails
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setReturnEquipmentId(item.id);
+                      setShowReturnModal(true);
+                    }}
+                  >
                     <FileSignature className="mr-2 h-4 w-4" />
                     Retour
                   </Button>
@@ -469,6 +608,362 @@ export function EmployeeEquipmentTab({}: EmployeeEquipmentTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Assign Equipment Modal */}
+      <Modal
+        open={showAssignModal}
+        onOpenChange={setShowAssignModal}
+        type="form"
+        title="Assigner un équipement"
+        description={`Sélectionnez un équipement à assigner à ${employee.firstName} ${employee.lastName}`}
+        actions={{
+          primary: {
+            label: "Assigner",
+            onClick: handleAssignEquipment,
+            disabled: !selectedEquipmentId,
+            icon: <UserCheck className="h-4 w-4" />,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setShowAssignModal(false);
+              setSelectedEquipmentId("");
+            },
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="equipment-select">Équipement disponible</Label>
+            <Select
+              value={selectedEquipmentId}
+              onValueChange={setSelectedEquipmentId}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sélectionnez un équipement..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableEquipment.map((eq) => (
+                  <SelectItem key={eq.id} value={eq.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{eq.name}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {getEquipmentTypeLabel(eq.type)}
+                      </Badge>
+                      {eq.serialNumber && (
+                        <span className="text-xs text-muted-foreground">
+                          ({eq.serialNumber})
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedEquipmentId && (
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium mb-2">Détails de l&apos;équipement</h4>
+              {(() => {
+                const eq = availableEquipment.find(
+                  (e) => e.id === selectedEquipmentId,
+                );
+                return eq ? (
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <strong>Nom:</strong> {eq.name}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {getEquipmentTypeLabel(eq.type)}
+                    </p>
+                    <p>
+                      <strong>État:</strong> {getConditionLabel(eq.condition)}
+                    </p>
+                    {eq.description && (
+                      <p>
+                        <strong>Description:</strong> {eq.description}
+                      </p>
+                    )}
+                    {eq.serialNumber && (
+                      <p>
+                        <strong>N° série:</strong> {eq.serialNumber}
+                      </p>
+                    )}
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Return Equipment Modal */}
+      <Modal
+        open={showReturnModal}
+        onOpenChange={setShowReturnModal}
+        type="form"
+        title="Retour d'équipement"
+        description="Confirmer le retour de l'équipement et son état"
+        actions={{
+          primary: {
+            label: "Confirmer le retour",
+            onClick: handleReturnEquipment,
+            variant: "destructive",
+            icon: <UserX className="h-4 w-4" />,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setShowReturnModal(false);
+              setReturnEquipmentId("");
+              setReturnCondition("good");
+              setReturnNotes("");
+            },
+          },
+        }}
+      >
+        <div className="space-y-4">
+          {returnEquipmentId && (
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium mb-2">Équipement à retourner</h4>
+              {(() => {
+                const eq = equipment.find((e) => e.id === returnEquipmentId);
+                return eq ? (
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <strong>Nom:</strong> {eq.name}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {getEquipmentTypeLabel(eq.type)}
+                    </p>
+                    {eq.serialNumber && (
+                      <p>
+                        <strong>N° série:</strong> {eq.serialNumber}
+                      </p>
+                    )}
+                    <p>
+                      <strong>Assigné le:</strong>{" "}
+                      {eq.assignedAt.toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="condition-select">État de retour</Label>
+            <Select
+              value={returnCondition}
+              onValueChange={(value: Equipment["condition"]) =>
+                setReturnCondition(value)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="new">Neuf</SelectItem>
+                <SelectItem value="good">Bon état</SelectItem>
+                <SelectItem value="fair">État moyen</SelectItem>
+                <SelectItem value="poor">Mauvais état</SelectItem>
+                <SelectItem value="damaged">Endommagé</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="return-notes">Notes (optionnel)</Label>
+            <textarea
+              id="return-notes"
+              className="w-full min-h-20 p-3 border rounded-md resize-none"
+              placeholder="Ajouter des notes sur l'état de l'équipement..."
+              value={returnNotes}
+              onChange={(e) => setReturnNotes(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Equipment Details Modal */}
+      <Modal
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        type="details"
+        title="Détails de l'équipement"
+        description="Informations complètes sur l'équipement"
+        actions={{
+          secondary: {
+            label: "Fermer",
+            onClick: () => {
+              setShowDetailsModal(false);
+              setDetailsEquipmentId("");
+            },
+          },
+        }}
+      >
+        <div className="space-y-6">
+          {detailsEquipmentId &&
+            (() => {
+              const eq = equipment.find((e) => e.id === detailsEquipmentId);
+              return eq ? (
+                <div className="space-y-4">
+                  {/* Basic Information */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Nom</Label>
+                      <p className="text-sm">{eq.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Type</Label>
+                      <p className="text-sm">
+                        {getEquipmentTypeLabel(eq.type)}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">N° série</Label>
+                      <p className="text-sm">{eq.serialNumber || "N/A"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">État</Label>
+                      <p className="text-sm">
+                        {getConditionLabel(eq.condition)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {eq.description && (
+                    <div>
+                      <Label className="text-sm font-medium">Description</Label>
+                      <p className="text-sm">{eq.description}</p>
+                    </div>
+                  )}
+
+                  {/* Assignment Information */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Date d&apos;assignation
+                      </Label>
+                      <p className="text-sm">
+                        {eq.assignedAt.toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Assigné par</Label>
+                      <p className="text-sm">{eq.assignedBy}</p>
+                    </div>
+                  </div>
+
+                  {/* Return Information */}
+                  {eq.returnedAt && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">
+                          Date de retour
+                        </Label>
+                        <p className="text-sm">
+                          {eq.returnedAt.toLocaleDateString("fr-FR")}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">
+                          Retourné par
+                        </Label>
+                        <p className="text-sm">{eq.returnedBy}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <div>
+                    <Label className="text-sm font-medium">Statut</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      {(() => {
+                        const statusConfig = getStatusBadge(eq.status);
+                        const StatusIcon = statusConfig.icon;
+                        return (
+                          <Badge variant={statusConfig.variant}>
+                            <StatusIcon className="mr-1 h-3 w-3" />
+                            {statusConfig.label}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  {eq.notes && (
+                    <div>
+                      <Label className="text-sm font-medium">Notes</Label>
+                      <p className="text-sm">{eq.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Signature Information */}
+                  {eq.issuanceSignature && (
+                    <div className="border-t pt-4">
+                      <Label className="text-sm font-medium">
+                        Signature d&apos;émission
+                      </Label>
+                      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Signé le
+                          </Label>
+                          <p>
+                            {eq.issuanceSignature.signedAt.toLocaleDateString(
+                              "fr-FR",
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Signé par
+                          </Label>
+                          <p>{eq.issuanceSignature.signedBy}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Return Signature */}
+                  {eq.returnSignature && (
+                    <div className="border-t pt-4">
+                      <Label className="text-sm font-medium">
+                        Signature de retour
+                      </Label>
+                      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Signé le
+                          </Label>
+                          <p>
+                            {eq.returnSignature.signedAt.toLocaleDateString(
+                              "fr-FR",
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">
+                            Signé par
+                          </Label>
+                          <p>{eq.returnSignature.signedBy}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground">
+                  Équipement non trouvé
+                </p>
+              );
+            })()}
+        </div>
+      </Modal>
     </div>
   );
 }
