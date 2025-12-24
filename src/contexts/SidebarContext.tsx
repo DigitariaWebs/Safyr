@@ -14,21 +14,23 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("collapsed");
-  const [isHidden, setIsHidden] = useState(false);
-
-  useEffect(() => {
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("dashboardSidebarMode");
       if (savedMode === "expanded" || savedMode === "collapsed") {
-        setSidebarMode(savedMode);
-      }
-      const savedHidden = localStorage.getItem("dashboardSidebarHidden");
-      if (savedHidden === "true") {
-        setIsHidden(true);
+        return savedMode;
       }
     }
-  }, []);
+    return "collapsed";
+  });
+  
+  const [isHidden, setIsHidden] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedHidden = localStorage.getItem("dashboardSidebarHidden");
+      return savedHidden === "true";
+    }
+    return false;
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {

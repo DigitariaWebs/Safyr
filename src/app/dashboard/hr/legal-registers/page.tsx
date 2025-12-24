@@ -157,7 +157,7 @@ export default function LegalRegistersExportPage() {
           <CardContent>
             <div className="text-2xl font-bold">{selectedRegisters.size}</div>
             <p className="text-xs text-muted-foreground">
-              Pour l'export en cours
+              Pour l&apos;export en cours
             </p>
           </CardContent>
         </Card>
@@ -245,7 +245,7 @@ export default function LegalRegistersExportPage() {
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
                 <p>
-                  Exports conformes aux exigences de l'inspection du travail
+                  Exports conformes aux exigences de l&apos;inspection du travail
                 </p>
               </div>
               <div className="flex items-start gap-2">
@@ -269,7 +269,7 @@ export default function LegalRegistersExportPage() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Options d'export</CardTitle>
+              <CardTitle>Options d&apos;export</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -352,7 +352,7 @@ export default function LegalRegistersExportPage() {
                 disabled={selectedRegisters.size === 0}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Générer l'export
+                Générer l&apos;export
               </Button>
             </CardContent>
           </Card>

@@ -34,7 +34,6 @@ import {
   Download,
   Send,
   CheckCircle,
-  XCircle,
   Clock,
   PenTool,
 } from "lucide-react";
@@ -70,7 +69,7 @@ const statusColors: Record<SignatureStatus, "default" | "secondary" | "destructi
 const pageConfig: Record<SignatureType, {
   title: string;
   description: string;
-  icon: any;
+  icon: React.ElementType;
   createLabel: string;
 }> = {
   contract: {
@@ -111,8 +110,7 @@ const pageConfig: Record<SignatureType, {
   },
 };
 
-export default function SignatureTypePage({ params }: { params: { type: SignatureType } }) {
-  const signatureType: SignatureType = "contract"; // Default for demo, would come from route param
+export default function SignatureTypePage() {
   const [activeTab, setActiveTab] = useState<SignatureType>("contract");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);

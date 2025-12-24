@@ -573,7 +573,7 @@ export default function WorkAccidentsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="accidentDate">Date de l'accident *</Label>
+              <Label htmlFor="accidentDate">Date de l&apos;accident *</Label>
               <Input
                 id="accidentDate"
                 type="date"
@@ -585,7 +585,7 @@ export default function WorkAccidentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="accidentTime">Heure de l'accident *</Label>
+              <Label htmlFor="accidentTime">Heure de l&apos;accident *</Label>
               <Input
                 id="accidentTime"
                 type="time"
@@ -598,7 +598,7 @@ export default function WorkAccidentsPage() {
           </div>
 
           <div>
-            <Label htmlFor="location">Lieu de l'accident *</Label>
+            <Label htmlFor="location">Lieu de l&apos;accident *</Label>
             <Input
               id="location"
               value={formData.location}
@@ -610,7 +610,7 @@ export default function WorkAccidentsPage() {
           </div>
 
           <div>
-            <Label htmlFor="description">Description de l'accident *</Label>
+            <Label htmlFor="description">Description de l&apos;accident *</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -844,7 +844,7 @@ export default function WorkAccidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-muted-foreground">
-                  Date de l'accident
+                  Date de l&apos;accident
                 </Label>
                 <p className="text-sm font-medium">
                   {viewingAccident.accidentDate.toLocaleDateString("fr-FR")} à{" "}

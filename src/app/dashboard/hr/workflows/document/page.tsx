@@ -30,7 +30,6 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  AlertCircle,
 } from "lucide-react";
 import { DocumentRequest, DocumentType, HRRequestStatus } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -186,9 +185,6 @@ export default function DocumentRequestsPage() {
     priority: "normal" as "low" | "normal" | "high" | "urgent",
   });
 
-  const getEmployeeName = (employeeId: string) => {
-    return mockEmployees.find((e) => e.id === employeeId)?.name || "N/A";
-  };
 
   const handleCreate = () => {
     setEditingRequest(null);

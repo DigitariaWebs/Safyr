@@ -739,7 +739,7 @@ export default function TrainingRegisterPage() {
               </div>
 
               <div>
-                <Label htmlFor="expirationDate">Date d'expiration</Label>
+                <Label htmlFor="expirationDate">Date d&apos;expiration</Label>
                 <Input
                   id="expirationDate"
                   type="date"
@@ -869,7 +869,7 @@ export default function TrainingRegisterPage() {
                 {viewingTraining.expirationDate && (
                   <div>
                     <Label className="text-muted-foreground">
-                      Date d'expiration
+                      Date d&apos;expiration
                     </Label>
                     <p className="text-sm font-medium">
                       {viewingTraining.expirationDate.toLocaleDateString(

@@ -169,9 +169,6 @@ export default function CertificateRequestsPage() {
     priority: "normal" as "low" | "normal" | "high" | "urgent",
   });
 
-  const getEmployeeName = (employeeId: string) => {
-    return mockEmployees.find((e) => e.id === employeeId)?.name || "N/A";
-  };
 
   const handleCreate = () => {
     setEditingRequest(null);
@@ -573,7 +570,7 @@ export default function CertificateRequestsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="employment">Certificat d'emploi</SelectItem>
+                <SelectItem value="employment">Certificat d&apos;emploi</SelectItem>
                 <SelectItem value="salary">Certificat de salaire</SelectItem>
                 <SelectItem value="work">Certificat de travail</SelectItem>
                 <SelectItem value="internship">Attestation de stage</SelectItem>
@@ -597,7 +594,7 @@ export default function CertificateRequestsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="quantity">Nombre d'exemplaires *</Label>
+              <Label htmlFor="quantity">Nombre d&apos;exemplaires *</Label>
               <Input
                 id="quantity"
                 type="number"

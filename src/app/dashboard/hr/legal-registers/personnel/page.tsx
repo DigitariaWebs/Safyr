@@ -345,7 +345,6 @@ export default function PersonnelRegisterPage() {
 
   // Calculate stats
   const activeCount = entries.filter((e) => !e.exitDate).length;
-  const exitedCount = entries.filter((e) => e.exitDate).length;
   const cdiCount = entries.filter((e) => e.contractType === "CDI" && !e.exitDate)
     .length;
   const cddCount = entries.filter((e) => e.contractType === "CDD" && !e.exitDate)
@@ -502,7 +501,7 @@ export default function PersonnelRegisterPage() {
 
             <div>
               <Label htmlFor="registrationNumber">
-                N° d'enregistrement *
+                N° d&apos;enregistrement *
               </Label>
               <Input
                 id="registrationNumber"
@@ -607,7 +606,7 @@ export default function PersonnelRegisterPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="entryDate">Date d'entrée *</Label>
+              <Label htmlFor="entryDate">Date d&apos;entrée *</Label>
               <Input
                 id="entryDate"
                 type="date"
@@ -681,7 +680,7 @@ export default function PersonnelRegisterPage() {
               </div>
               <div>
                 <Label className="text-muted-foreground">
-                  N° d'enregistrement
+                  N° d&apos;enregistrement
                 </Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.registrationNumber}
@@ -734,7 +733,7 @@ export default function PersonnelRegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date d'entrée</Label>
+                <Label className="text-muted-foreground">Date d&apos;entrée</Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.entryDate.toLocaleDateString("fr-FR")}
                 </p>

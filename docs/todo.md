@@ -1,4 +1,4 @@
-# Specification of the Complete HR Platform for Security Companies
+# A/PLATEFORME RH COMPLÈTE POUR ENTREPRISES DE SÉCURITÉ
 
 ## 1. Personnel Administrative Management
 
@@ -155,3 +155,132 @@
 - [x] HR forecast
 - [x] Salary maintenance analysis
 - [x] Recruitment KPIs (delay, cost, success)
+
+# B/CAHIER DES CHARGES – MODULE MAIN COURANTE DIGITALE
+
+## 1. Saisie & Gestion des Événements
+
+- [x] Application mobile agent
+- [x] PC Sécurité
+- [x] Tablette
+- [x] Scan QR code de la zone de ronde
+- [x] Événements courants (entrée/sortie, visiteurs…)
+- [x] Incidents (intrusion, panne, comportement suspect, intervention sanitaire incendie…)
+- [x] Actions (levée de doute, fermeture porte, ronde)
+- [x] Contrôles (température, alarmes, badge…)
+- [x] Photos
+- [x] Vidéos
+- [x] Note vocale
+- [x] Géolocalisation
+- [x] Horodatage automatique
+- [x] Enregistrement du site + position
+- [x] Agent responsable
+- [x] Signature numérique
+- [x] Statut (en cours, résolu, reporté)
+
+## 2. Workflow de Validation & Supervision
+
+- [ ] L'agent crée un événement
+- [ ] Le superviseur valide / commente / modifie (si besoin)
+- [ ] Notification client immédiate (événements critiques)
+- [ ] Rapport automatique quotidien client
+- [ ] Résumé hebdomadaire client
+- [ ] Classement automatique par site
+- [ ] Classement automatique par client
+- [ ] Classement automatique par type d'incident
+- [ ] Classement automatique par gravité
+- [ ] Classement automatique par zone
+- [ ] Tag manuel ou automatique
+
+## 3. Notifications & Alertes
+
+- [ ] Incidents graves
+- [ ] Tentatives d'effraction
+- [ ] Détection incendie
+- [ ] Evénements critiques (médical, agression…)
+- [ ] Absence de ronde
+- [ ] Inactivité prolongée
+- [ ] Alertes PC Sécurité
+- [ ] Alertes responsable site / superviseur
+- [ ] Alertes client (option)
+- [ ] Alertes responsable RH
+
+## 4. Connexion Planning & RH
+
+- [ ] Vérification automatique : agent affecté au site peut saisir
+- [ ] Journalisation des rondes (planning → main courante)
+- [ ] Contrôle de présence agent (badgeuse / photo → main courante)
+- [ ] Transmission automatique incidents impliquant un agent
+- [ ] Transmission automatique demandes d'explication
+- [ ] Transmission automatique éloges / félicitations
+- [ ] Traçabilité accident de travail
+- [ ] Génération automatique dossier "Suivi disciplinaire RH"
+
+## 5. Portail Clients
+
+- [ ] Consultation temps réel tous les événements du jour
+- [ ] Filtres : site / période / type incident / agent
+- [ ] Statistiques instantanées
+- [ ] Niveau de criticité
+- [ ] Export PDF journalier
+- [ ] Rapport hebdomadaire automatique PDF
+- [ ] Rapport mensuel (nombre d'événements, typologie, time-to-resolution, comparatif N/N-1)
+- [ ] Messagerie interne client ↔ PC sécurité
+
+## 6. Portail Agents
+
+- [ ] Accès aux événements liés à leur poste
+- [ ] Accès restreint (RGPD)
+- [ ] Consultation de leurs actions / interventions
+- [ ] Saisie nouvelle main courante
+- [ ] Upload photo/vidéo depuis mobile
+- [ ] Système de ticket interne
+- [ ] Messagerie interne pour instructions
+
+## 7. Dashboard KPI & Statistiques
+
+- [ ] Nombre d'incidents / site / période
+- [ ] Typologie des incidents
+- [ ] Heures entre détection & résolution
+- [ ] Nombre de visiteurs
+- [ ] Nombre de rondes effectuées
+- [ ] Temps moyen entre deux rondes
+- [ ] Zones le plus souvent impactées
+- [ ] Taux d'incidents résolus
+- [ ] Incidents critiques vs incidents mineurs
+- [ ] Agents impliqués dans incidents
+- [ ] Incidents HSE / SST
+- [ ] Historique par agent
+- [ ] Indicateurs qualité prestation
+- [ ] Performance sécurité
+- [ ] Qualité du service rendu
+- [ ] Analyse des pics d'incidents
+- [ ] Comparaison N/N-1
+- [ ] Analyse multi-sites
+
+## 8. Sécurité & Technique
+
+- [ ] Stockage crypté
+- [ ] Journalisation infalsifiable
+- [ ] Sauvegardes automatiques
+- [ ] Traçabilité complète (audit log)
+- [ ] API REST pour intégration CRM
+- [ ] API REST pour systèmes d'alarme
+- [ ] API REST pour vidéosurveillance
+- [ ] API REST pour logiciels comptables
+- [ ] API REST pour logiciels clients (SI)
+- [ ] Authentification forte (2FA)
+- [ ] Accès par rôle (agent, superviseur, client, admin)
+- [ ] Chiffrement AES256
+- [ ] RGPD compliant
+- [ ] Masquage automatique des données sensibles
+
+## 9. Export, Reporting & Archivage
+
+- [ ] Exports PDF
+- [ ] Exports Excel
+- [ ] Exports CSV
+- [ ] Archivage légal 10 ans
+- [ ] Recherche multicritère avancée
+- [ ] Génération automatique des rapports clients
+- [ ] Rapports paramétrables par client / site

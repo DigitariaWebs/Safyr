@@ -20,10 +20,8 @@ import {
   Heart,
   Clock,
   CheckCircle,
-  XCircle,
   AlertCircle,
   TrendingUp,
-  Plus,
   Download,
   Settings,
 } from "lucide-react";
@@ -142,7 +140,7 @@ const requestTypeLabels: Record<string, string> = {
   civil_status: "Statut civil",
 };
 
-const requestTypeIcons: Record<string, any> = {
+const requestTypeIcons: Record<string, React.ElementType> = {
   certificate: Award,
   document: FileText,
   bank_details: CreditCard,
@@ -386,7 +384,7 @@ export default function WorkflowsRequestsPage() {
           <Card className="cursor-pointer transition-colors hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Changements d'informations
+                Changements d&apos;informations
               </CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>

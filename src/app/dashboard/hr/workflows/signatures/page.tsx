@@ -19,10 +19,6 @@ import {
   FileCheck,
   Clock,
   CheckCircle,
-  XCircle,
-  Send,
-  AlertTriangle,
-  Plus,
   Download,
   PenTool,
 } from "lucide-react";

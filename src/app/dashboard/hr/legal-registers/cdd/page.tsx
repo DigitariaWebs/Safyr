@@ -567,7 +567,7 @@ export default function CDDRegisterPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="entryDate">Date d'entrée *</Label>
+              <Label htmlFor="entryDate">Date d&apos;entrée *</Label>
               <Input
                 id="entryDate"
                 type="date"
@@ -800,7 +800,7 @@ export default function CDDRegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date d'entrée</Label>
+                <Label className="text-muted-foreground">Date d&apos;entrée</Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.entryDate.toLocaleDateString("fr-FR")}
                 </p>

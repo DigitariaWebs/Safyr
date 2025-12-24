@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Users,
   Calendar,
-  FileText,
   Wallet,
   Building2,
   MapPin,
@@ -18,6 +17,7 @@ import {
   Package,
   ChevronLeft,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";
@@ -46,8 +46,8 @@ const modules: Module[] = [
   {
     name: "Main Courante",
     href: "/dashboard/logbook",
-    icon: FileText,
-    disabled: true,
+    icon: BookOpen,
+    disabled: false,
   },
   {
     name: "Géolocalisation",

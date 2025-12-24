@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import {
@@ -438,7 +437,7 @@ export default function PersonalInfoChangePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Changements d'Informations Personnelles</h1>
+          <h1 className="text-3xl font-bold">Changements d&apos;Informations Personnelles</h1>
           <p className="text-muted-foreground">
             Gestion des demandes de modification de coordonnées bancaires, adresse et statut civil
           </p>
@@ -543,7 +542,7 @@ export default function PersonalInfoChangePage() {
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Demandes de changement d'adresse</CardTitle>
+              <CardTitle>Demandes de changement d&apos;adresse</CardTitle>
             </CardHeader>
             <CardContent>
               <DataTable columns={createColumns("address")} data={addressRequests} />
@@ -575,7 +574,7 @@ export default function PersonalInfoChangePage() {
         type="form"
         title={`Nouvelle demande de changement${
           activeTab === "bank_details" ? " de coordonnées bancaires" :
-          activeTab === "address" ? " d'adresse" : " de statut civil"
+          activeTab === "address" ? " d&apos;adresse" : " de statut civil"
         }`}
         size="lg"
         actions={{
@@ -668,7 +667,7 @@ export default function PersonalInfoChangePage() {
                 </Select>
               </div>
               <div>
-                <Label>Date d'effet</Label>
+                <Label>Date d&apos;effet</Label>
                 <Input type="date" value={formData.effectiveDate} onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })} />
               </div>
               <div>
