@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { mockBillingClients, BillingClient } from "@/data/billing-clients";
 
@@ -485,12 +484,13 @@ export default function BillingClientsPage() {
                       value={formData.planningVolumes?.[index]?.site || ""}
                       onChange={(e) => {
                         const volumes = formData.planningVolumes || [];
-                        volumes[index] = {
-                          ...volumes[index],
+                        const newVolumes = [...volumes];
+                        newVolumes[index] = {
+                          ...newVolumes[index],
                           site: e.target.value,
-                          monthlyHours: volumes[index]?.monthlyHours || 0,
+                          monthlyHours: newVolumes[index]?.monthlyHours || 0,
                         };
-                        setFormData({ ...formData, planningVolumes: volumes });
+                        setFormData({ ...formData, planningVolumes: newVolumes });
                       }}
                     />
                     <Input
@@ -499,12 +499,13 @@ export default function BillingClientsPage() {
                       value={formData.planningVolumes?.[index]?.monthlyHours || ""}
                       onChange={(e) => {
                         const volumes = formData.planningVolumes || [];
-                        volumes[index] = {
-                          ...volumes[index],
-                          site: volumes[index]?.site || `Site ${index + 1}`,
+                        const newVolumes = [...volumes];
+                        newVolumes[index] = {
+                          ...newVolumes[index],
+                          site: newVolumes[index]?.site || `Site ${index + 1}`,
                           monthlyHours: parseInt(e.target.value) || 0,
                         };
-                        setFormData({ ...formData, planningVolumes: volumes });
+                        setFormData({ ...formData, planningVolumes: newVolumes });
                       }}
                     />
                   </div>

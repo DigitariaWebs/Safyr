@@ -1355,72 +1355,72 @@
 
 ## 2. Génération Automatique des Factures
 
-- [ ] Source de données : Planning (heures planifiées)
-- [ ] Source de données : Géolocalisation / Main courante (heures réalisées)
-- [ ] Source de données : Paie (heures validées)
-- [ ] Source de données : RH (affectations agents)
-- [ ] Génération automatique des factures par client
-- [ ] Génération automatique des factures par site
-- [ ] Génération automatique des factures par période
-- [ ] Facturation : heures normales
-- [ ] Facturation : heures supplémentaires
-- [ ] Facturation : remplacements
-- [ ] Gestion des écarts (prévu / réalisé)
-- [ ] Prévisualisation et validation avant émission
+- [x] Source de données : Planning (heures planifiées)
+- [x] Source de données : Géolocalisation / Main courante (heures réalisées)
+- [x] Source de données : Paie (heures validées)
+- [x] Source de données : RH (affectations agents)
+- [x] Génération automatique des factures par client
+- [x] Génération automatique des factures par site
+- [x] Génération automatique des factures par période
+- [x] Facturation : heures normales
+- [x] Facturation : heures supplémentaires
+- [x] Facturation : remplacements
+- [x] Gestion des écarts (prévu / réalisé)
+- [x] Prévisualisation et validation avant émission
 
 ## 3. Gestion des Ajustements & Exceptions
 
-- [ ] Ajustements manuels encadrés
-- [ ] Justification obligatoire des écarts
-- [ ] Historique des modifications
-- [ ] Gestion des avoirs
-- [ ] Refacturation exceptionnelle
+- [x] Ajustements manuels encadrés
+- [x] Justification obligatoire des écarts
+- [x] Historique des modifications
+- [x] Gestion des avoirs
+- [x] Refacturation exceptionnelle
 
 ## 4. Facturation Liée à la Paie
 
-- [ ] Alignement facturation ↔ paie : heures payées = heures facturables
-- [ ] Identification des écarts paie / facturation
-- [ ] Analyse de la rentabilité par mission
-- [ ] Intégration des coûts : masse salariale
-- [ ] Intégration des coûts : charges sociales
+- [x] Alignement facturation ↔ paie : heures payées = heures facturables
+- [x] Identification des écarts paie / facturation
+- [x] Analyse de la rentabilité par mission
+- [x] Intégration des coûts : masse salariale
+- [x] Intégration des coûts : charges sociales
 
 ## 5. Gestion de la TVA & Conformité Fiscale
 
-- [ ] Paramétrage TVA par client ou prestation
-- [ ] Gestion multi-taux
-- [ ] Calcul automatique HT / TVA / TTC
-- [ ] Exports fiscaux
-- [ ] Conformité légale
-- [ ] Conformité avec la nouvelle réglementation facturation électronique
+- [x] Paramétrage TVA par client ou prestation
+- [x] Gestion multi-taux
+- [x] Calcul automatique HT / TVA / TTC
+- [x] Exports fiscaux
+- [x] Conformité légale
+- [x] Conformité avec la nouvelle réglementation facturation électronique
 
 ## 6. Émission & Diffusion des Factures
 
-- [ ] Numérotation automatique
-- [ ] Génération PDF
-- [ ] Envoi par e-mail
-- [ ] Mise à disposition sur portail client (si activé)
-- [ ] Archivage légal
-- [ ] Gestion des relances clients
+- [x] Numérotation automatique
+- [x] Génération PDF
+- [x] Envoi par e-mail
+- [x] Mise à disposition sur portail client (si activé)
+- [x] Archivage légal
+- [x] Gestion des relances clients
 
 ## 7. Intégration avec la Comptabilité
 
-- [ ] Génération automatique des écritures : ventes
-- [ ] Génération automatique des écritures : TVA collectée
-- [ ] Génération automatique des écritures : avoirs
-- [ ] Synchronisation avec journaux comptables
-- [ ] Suivi des encours clients
-- [ ] Préparation du FEC
+- [x] Génération automatique des écritures : ventes
+- [x] Génération automatique des écritures : TVA collectée
+- [x] Génération automatique des écritures : avoirs
+- [x] Synchronisation avec journaux comptables
+- [x] Suivi des encours clients
+- [x] Préparation du FEC
 
 ## 8. Dashboard & KPI Facturation
 
-- [ ] KPI : Chiffre d'affaires par client
-- [ ] KPI : Chiffre d'affaires par site
-- [ ] KPI : Chiffre d'affaires par prestation
-- [ ] KPI : Évolution CA N / N-1
-- [ ] KPI : Heures facturées vs réalisées
-- [ ] KPI : Marge brute par mission
-- [ ] KPI : Taux d'écart planning / facturation
-- [ ] KPI : Rentabilité client
-- [ ] Graphiques dynamiques
-- [ ] Filtres par période
-- [ ] Exports Excel / PDF
+- [x] KPI : Chiffre d'affaires par client
+- [x] KPI : Chiffre d'affaires par site
+- [x] KPI : Chiffre d'affaires par prestation
+- [x] KPI : Évolution CA N / N-1
+- [x] KPI : Heures facturées vs réalisées
+- [x] KPI : Marge brute par mission
+- [x] KPI : Taux d'écart planning / facturation
+- [x] KPI : Rentabilité client
+- [x] Graphiques dynamiques
+- [x] Filtres par période
+- [x] Exports Excel / PDF

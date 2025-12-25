@@ -1,7 +1,7 @@
 "use client";
 
 import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
-import { Users, FileText, DollarSign, TrendingUp, Settings } from "lucide-react";
+import { Users, FileText, CreditCard, Receipt, Wallet, Calculator, TrendingUp, Settings } from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -13,25 +13,36 @@ const navItems: NavItem[] = [
     label: "Factures",
     href: "/dashboard/billing/invoices",
     icon: FileText,
-    disabled: true,
+  },
+  {
+    label: "Ajustements",
+    href: "/dashboard/billing/adjustments",
+    icon: Settings,
+  },
+  {
+    label: "Avoirs",
+    href: "/dashboard/billing/credits",
+    icon: CreditCard,
   },
   {
     label: "TVA",
     href: "/dashboard/billing/vat",
-    icon: DollarSign,
-    disabled: true,
+    icon: Receipt,
+  },
+  {
+    label: "Paie",
+    href: "/dashboard/billing/payroll",
+    icon: Wallet,
+  },
+  {
+    label: "Comptabilité",
+    href: "/dashboard/billing/accounting",
+    icon: Calculator,
   },
   {
     label: "KPI",
     href: "/dashboard/billing/kpi",
     icon: TrendingUp,
-    disabled: true,
-  },
-  {
-    label: "Configuration",
-    href: "/dashboard/billing/settings",
-    icon: Settings,
-    disabled: true,
   },
 ];
 
