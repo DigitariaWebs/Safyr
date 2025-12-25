@@ -328,14 +328,14 @@
 
 ## 1. Géolocalisation Temps Réel (Live Tracking)
 
-- [ ] Localisation des agents toutes les X secondes (paramétrable)
-- [ ] Affichage sur carte (Google Maps / OpenStreetMap)
-- [ ] Position + direction + vitesse
-- [ ] Filtre par badge/site/client/mission
-- [ ] Dernière position si hors ligne
-- [ ] Visible par PC sécurité
-- [ ] Visible par superviseurs
-- [ ] Visible par client (selon droits)
+- [x] Localisation des agents toutes les X secondes (paramétrable)
+- [x] Affichage sur carte (Google Maps / OpenStreetMap)
+- [x] Position + direction + vitesse
+- [x] Filtre par badge/site/client/mission
+- [x] Dernière position si hors ligne
+- [x] Visible par PC sécurité
+- [x] Visible par superviseurs
+- [x] Visible par client (selon droits)
 
 ## 2. Zones Géo-Fencées
 
@@ -473,20 +473,20 @@
 
 ## 1. Paramétrage Légal & Conventionnel
 
-- [ ] Paramétrage des conventions collectives (IDCC 1351, 4127… – sécurité privée)
-- [ ] Paramétrage IDCC 1351
-- [ ] Paramétrage IDCC 3199
-- [ ] Paramétrage vers d'autres conventions
-- [ ] Gestion des classifications, coefficients, niveaux
-- [ ] Paramétrage des grilles indemnité d'entretien
-- [ ] Paramétrage prime panier
-- [ ] Paramétrage prime nuit
-- [ ] Paramétrage prime dimanche/jours fériés
-- [ ] Rémunérations minimales conventionnelles
-- [ ] Règles des heures supplémentaires
-- [ ] Règles d'amplitude, coupures, majorations
-- [ ] Taux AT/MP
-- [ ] Taux retraite, prévoyance et mutuelle
+- [x] Paramétrage des conventions collectives (IDCC 1351, 4127… – sécurité privée)
+- [x] Paramétrage IDCC 1351
+- [x] Paramétrage IDCC 3199
+- [x] Paramétrage vers d'autres conventions
+- [x] Gestion des classifications, coefficients, niveaux
+- [x] Paramétrage des grilles indemnité d'entretien
+- [x] Paramétrage prime panier
+- [x] Paramétrage prime nuit
+- [x] Paramétrage prime dimanche/jours fériés
+- [x] Rémunérations minimales conventionnelles
+- [x] Règles des heures supplémentaires
+- [x] Règles d'amplitude, coupures, majorations
+- [x] Taux AT/MP
+- [x] Taux retraite, prévoyance et mutuelle
 
 ## 2. Paramétrage Entreprise & Salarié
 
@@ -645,9 +645,11 @@
 
 ## 1. Plan Comptable & Paramétrage
 
-- [ ] Support du PCG France
+- [x] Support du PCG France
 - [ ] Export possible vers d'autres référentiels
-- [ ] Paramétrage des comptes : classes, journaux, sections analytiques
+- [x] Paramétrage des comptes : classes
+- [ ] Paramétrage des comptes : journaux
+- [ ] Paramétrage des comptes : sections analytiques
 - [ ] Plans analytiques multi-niveaux (agence, client, site, agent…)
 - [ ] Paramétrage des centres de coût liés aux équipes RH / Missions
 
@@ -773,18 +775,18 @@
 
 ## 1. Types de Documents Pris en Charge
 
-- [ ] Factures fournisseurs
-- [ ] Avoirs
-- [ ] Dépenses diverses
-- [ ] Notes de frais
-- [ ] Devis / contrats clients
-- [ ] Relevés bancaires (PDF)
-- [ ] Justificatifs de paiement
-- [ ] Bordereaux
-- [ ] Arrêts maladie
-- [ ] Justificatifs d'absence
-- [ ] Fiches mutuelle / prévoyance
-- [ ] Contrats et avenants (mise en GED)
+- [x] Factures fournisseurs
+- [x] Avoirs
+- [x] Dépenses diverses
+- [x] Notes de frais
+- [x] Devis / contrats clients
+- [x] Relevés bancaires (PDF)
+- [x] Justificatifs de paiement
+- [x] Bordereaux
+- [x] Arrêts maladie
+- [x] Justificatifs d'absence
+- [x] Fiches mutuelle / prévoyance
+- [x] Contrats et avenants (mise en GED)
 
 ## 2. Téléversement des Documents
 
@@ -890,13 +892,13 @@
 
 ## 1. Gestion des Agents
 
-- [ ] Consultation de la fiche agent (horaires contractuels, habilitations, compétences)
-- [ ] Gestion des disponibilités (absences, congés, maladies)
-- [ ] Restrictions horaires (plages légales, amplitude maximale, pauses)
-- [ ] Historique de l'activité planifiée
-- [ ] Synchronisation avec RH : contrats, habilitations, congés, absences
-- [ ] Export vers Paie : heures théoriques et heures supplémentaires selon planning
-- [ ] Connexion Géolocalisation : état de présence en temps réel
+- [x] Consultation de la fiche agent (horaires contractuels, habilitations, compétences)
+- [x] Gestion des disponibilités (absences, congés, maladies)
+- [x] Restrictions horaires (plages légales, amplitude maximale, pauses)
+- [x] Historique de l'activité planifiée
+- [x] Synchronisation avec RH : contrats, habilitations, congés, absences
+- [x] Export vers Paie : heures théoriques et heures supplémentaires selon planning
+- [x] Connexion Géolocalisation : état de présence en temps réel
 
 ## 2. Gestion des Sites et Postes
 
@@ -991,22 +993,22 @@
 
 ## 1. Référentiel Équipements
 
-- [ ] Gestion uniformes (pantalons, vestes, parkas, chemises, Polo, t-shirt…)
-- [ ] Gestion Équipements de Protection Individuelle (EPI)
-- [ ] Gestion matériel opérationnel (radio, lampe, téléphone)
-- [ ] Gestion badges, cartes d'accès
+- [x] Gestion uniformes (pantalons, vestes, parkas, chemises, Polo, t-shirt…)
+- [x] Gestion Équipements de Protection Individuelle (EPI)
+- [x] Gestion matériel opérationnel (radio, lampe, téléphone)
+- [x] Gestion badges, cartes d'accès
 - [ ] Gestion armement réglementé (si autorisé)
 - [ ] Gestion véhicules légers (optionnel)
-- [ ] Gestion consommables (gants, piles)
-- [ ] Code article / SKU
-- [ ] Catégorie
-- [ ] Marque / modèle
-- [ ] Numéro de série
-- [ ] Taille (si applicable)
+- [x] Gestion consommables (gants, piles)
+- [x] Code article / SKU
+- [x] Catégorie
+- [x] Marque / modèle
+- [x] Numéro de série
+- [x] Taille (si applicable)
 - [ ] Date d'achat
-- [ ] Fournisseur
+- [x] Fournisseur
 - [ ] Durée de vie estimée
-- [ ] Statut (en stock, attribué, perdu, HS, réformé)
+- [x] Statut (en stock, attribué, perdu, HS, réformé)
 
 ## 2. Gestion des Stocks
 
@@ -1249,13 +1251,13 @@
 
 ## 1. Connexion aux Établissements Bancaires
 
-- [ ] Connexion multi-banques et multi-comptes
+- [x] Connexion multi-banques et multi-comptes
 - [ ] Import automatique des relevés bancaires via API bancaires (agrégateurs)
 - [ ] Import automatique des relevés bancaires via fichiers OFX / CAMT / CSV
 - [ ] Fréquence paramétrable (quotidienne, hebdomadaire)
-- [ ] Gestion des comptes courants
-- [ ] Gestion des comptes de dépôt
-- [ ] Gestion des comptes de caution (si applicable)
+- [x] Gestion des comptes courants
+- [x] Gestion des comptes de dépôt
+- [x] Gestion des comptes de caution (si applicable)
 
 ## 2. Gestion des Flux Bancaires
 
@@ -1336,20 +1338,20 @@
 
 ## 1. Référentiel Clients & Contrats
 
-- [ ] Gestion des clients (multi-sites, multi-contrats)
-- [ ] Paramétrage des contrats : type de prestation (gardiennage, rondes, événementiel)
-- [ ] Paramétrage des contrats : période contractuelle
-- [ ] Paramétrage des contrats : volumes horaires
-- [ ] Paramétrage des contrats : taux horaires
-- [ ] Majoration : nuit
-- [ ] Majoration : dimanche
-- [ ] Majoration : jours fériés
-- [ ] Indexation contractuelle
-- [ ] Conditions de facturation : mensuelle
-- [ ] Conditions de facturation : forfaitaire
-- [ ] Conditions de facturation : à l'heure réelle
-- [ ] Connexion RH : typologie des agents affectés
-- [ ] Connexion Planning : volumes contractuels
+- [x] Gestion des clients (multi-sites, multi-contrats)
+- [x] Paramétrage des contrats : type de prestation (gardiennage, rondes, événementiel)
+- [x] Paramétrage des contrats : période contractuelle
+- [x] Paramétrage des contrats : volumes horaires
+- [x] Paramétrage des contrats : taux horaires
+- [x] Majoration : nuit
+- [x] Majoration : dimanche
+- [x] Majoration : jours fériés
+- [x] Indexation contractuelle
+- [x] Conditions de facturation : mensuelle
+- [x] Conditions de facturation : forfaitaire
+- [x] Conditions de facturation : à l'heure réelle
+- [x] Connexion RH : typologie des agents affectés
+- [x] Connexion Planning : volumes contractuels
 
 ## 2. Génération Automatique des Factures
 
