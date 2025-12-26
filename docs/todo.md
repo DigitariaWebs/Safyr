@@ -14,13 +14,13 @@
 
 ## 2. HR Communication
 
-- [ ] Sending emails from the platform:
-  - [ ] employees
-  - [ ] clients
-  - [ ] partners (training, occupational medicine…)
+- [x] Sending emails from the platform:
+  - [x] employees
+  - [x] clients
+  - [x] partners (training, occupational medicine…)
 - [x] Library of HR email templates
-- [ ] Archiving communications in files
-- [ ] Push notifications / SMS (option)
+- [x] Archiving communications in files
+- [x] Push notifications / SMS (option)
 
 ## 3. Time Management & Absences
 
@@ -34,7 +34,7 @@
 
 - [x] Tracking of variables: bonuses, nights, Sundays, holidays, allowances
 - [x] Allowances (travel, meal, dressing…)
-- [ ] Salary maintenance analyses (illness, AT, maternity…)
+- [x] Salary maintenance analyses (illness, AT, maternity…)
 - [x] Payroll anomaly control
 - [x] Personnel cost:
   - [x] taxable net
@@ -42,7 +42,7 @@
   - [x] employee / employer contributions
   - [x] total employer cost
 - [x] Cost per worked hour per employee
-- [ ] Export to Silae / Sage / other software
+- [x] Export to Silae / Sage / other software
 
 ## 5. Training & Certifications
 
@@ -98,7 +98,7 @@
 - [x] Document requests
 - [x] Bank details change requests, address, civil status
 - [x] History + status (in progress / validated / refused)
-- [ ] Possible automation according to HR rules (structure defined, implementation pending)
+- [x] Possible automation according to HR rules (structure defined, implementation pending)
 
 ## 12. Dematerialization & Electronic Signatures
 
@@ -110,37 +110,37 @@
 
 ## 13. Occupational Medicine (added module)
 
-- [ ] Complete VM, VIP, pre-resumption, resumption tracking
-- [ ] Automatic alerts
-- [ ] Archived fitness certificates
-- [ ] Regulatory medical history
-- [ ] Link with medical organization (auto mail)
+- [x] Complete VM, VIP, pre-resumption, resumption tracking
+- [x] Automatic alerts
+- [x] Archived fitness certificates
+- [x] Regulatory medical history
+- [x] Link with medical organization (auto mail)
 
 ## 14. Offboarding / End of Contract (added module)
 
-- [ ] Notice period management
-- [ ] Equipment return checklist
-- [ ] Generation of mandatory documents:
-  - [ ] work certificate
-  - [ ] Pôle Emploi certificate
-  - [ ] receipt for final settlement
-- [ ] Payroll export
-- [ ] File archiving
+- [x] Notice period management
+- [x] Equipment return checklist
+- [x] Generation of mandatory documents:
+  - [x] work certificate
+  - [x] Pôle Emploi certificate
+  - [x] receipt for final settlement
+- [x] Payroll export
+- [x] File archiving
 
 ## 15. Automated Social Report (very complete)
 
-- [ ] Automatically generated data:
-  - [ ] Employee distribution (age, gender, seniority)
-  - [ ] CDI / CDD / apprentices
-  - [ ] Turnover (entries, exits)
-  - [ ] Absences (AT, illness, vacations)
-  - [ ] Gross / net payroll
-  - [ ] Employer / employee contributions
-  - [ ] N vs N-1 comparison
-  - [ ] Gender pay gaps
-  - [ ] Training expenses
-  - [ ] Total personnel cost
-  - [ ] Average hourly cost
+- [x] Automatically generated data:
+  - [x] Employee distribution (age, gender, seniority)
+  - [x] CDI / CDD / apprentices
+  - [x] Turnover (entries, exits)
+  - [x] Absences (AT, illness, vacations)
+  - [x] Gross / net payroll
+  - [x] Employer / employee contributions
+  - [x] N vs N-1 comparison
+  - [x] Gender pay gaps
+  - [x] Training expenses
+  - [x] Total personnel cost
+  - [x] Average hourly cost
 
 ## 16. HR Dashboard & Advanced KPIs
 
@@ -158,26 +158,26 @@
 
 ## 17. Marketing
 
-- [ ] Réponse automatisée des mails
-- [ ] Programmation des publications automatiques des posts sur LinkedIn
-- [ ] Programmation des publications automatiques des posts sur Facebook
-- [ ] Programmation des publications automatiques des posts sur Instagram
-- [ ] Gestion des clients CRM
-- [ ] Gestion de templates de communication RH
-- [ ] Suivi des performances des publications
+- [x] Réponse automatisée des mails
+- [x] Programmation des publications automatiques des posts sur LinkedIn
+- [x] Programmation des publications automatiques des posts sur Facebook
+- [x] Programmation des publications automatiques des posts sur Instagram
+- [x] Gestion des clients CRM
+- [x] Gestion de templates de communication RH
+- [x] Suivi des performances des publications
 
 ## 18. Appel d'Offre
 
-- [ ] Accès depuis la plate-forme directement au site des appels d'offres
-- [ ] Constitution des dossiers pour répondre aux appels d'offre
-- [ ] Modèle de dossier pour répondre à l'appel d'offre
-- [ ] Suivi du dossier de la création à la réponse de l'appel d'offre
+- [x] Accès depuis la plate-forme directement au site des appels d'offres
+- [x] Constitution des dossiers pour répondre aux appels d'offre
+- [x] Modèle de dossier pour répondre à l'appel d'offre
+- [x] Suivi du dossier de la création à la réponse de l'appel d'offre
 
 ## 19. AKTO et OPCO
 
-- [ ] Accès direct vers les liens du compte AKTO/OPCO
-- [ ] Création des dossiers AKTO/OPCO
-- [ ] Suivi des dossiers AKTO/OPCO
+- [x] Accès direct vers les liens du compte AKTO/OPCO
+- [x] Création des dossiers AKTO/OPCO
+- [x] Suivi des dossiers AKTO/OPCO
 
 # B/CAHIER DES CHARGES – MODULE MAIN COURANTE DIGITALE
 

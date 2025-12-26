@@ -17,11 +17,12 @@ import {
   UserX,
   BookOpen,
   GitBranch,
-  Bell,
-  Settings,
   Award,
   BarChart3,
   Mail,
+  Megaphone,
+  FileText,
+  GraduationCap,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -86,17 +87,14 @@ const navItems: NavItem[] = [
       {
         label: "Mes notes de frais",
         href: "/dashboard/hr/payroll/expenses",
-        disabled: false,
       },
       {
         label: "Validation frais",
         href: "/dashboard/hr/payroll/expenses/validation",
-        disabled: false,
       },
       {
         label: "Historique frais",
         href: "/dashboard/hr/payroll/expenses/history",
-        disabled: false,
       },
       {
         label: "Contrôle paie",
@@ -107,9 +105,12 @@ const navItems: NavItem[] = [
         href: "/dashboard/hr/payroll/cost-per-hour",
       },
       {
-        label: "Exports paie",
-        href: "/dashboard/hr/payroll/exports",
-        disabled: true,
+        label: "Maintien de salaire",
+        href: "/dashboard/hr/payroll/maintenance-analysis",
+      },
+      {
+        label: "Export Silae/Sage",
+        href: "/dashboard/hr/payroll/export-config",
       },
     ],
   },
@@ -146,22 +147,18 @@ const navItems: NavItem[] = [
       {
         label: "Candidatures",
         href: "/dashboard/hr/recruitment/applications",
-        disabled: false,
       },
       {
         label: "Vérifications réglementaires",
         href: "/dashboard/hr/recruitment/verifications",
-        disabled: false,
       },
       {
         label: "Création & signature",
         href: "/dashboard/hr/recruitment/contracts",
-        disabled: false,
       },
       {
         label: "Parcours d'intégration",
         href: "/dashboard/hr/recruitment/onboarding",
-        disabled: false,
       },
     ],
   },
@@ -172,22 +169,18 @@ const navItems: NavItem[] = [
       {
         label: "Avertissements",
         href: "/dashboard/hr/discipline/warnings",
-        disabled: false,
       },
       {
         label: "Suspensions",
         href: "/dashboard/hr/discipline/suspensions",
-        disabled: false,
       },
       {
         label: "Procédures disciplinaires",
         href: "/dashboard/hr/discipline/disciplinary-procedures",
-        disabled: false,
       },
       {
         label: "Registre des sanctions",
         href: "/dashboard/hr/discipline/sanctions-register",
-        disabled: false,
       },
     ],
   },
@@ -198,17 +191,14 @@ const navItems: NavItem[] = [
       {
         label: "Entretiens annuels",
         href: "/dashboard/hr/interviews/annual",
-        disabled: false,
       },
       {
         label: "Entretiens professionnels",
         href: "/dashboard/hr/interviews/professional",
-        disabled: false,
       },
       {
         label: "Objectifs & évolution",
         href: "/dashboard/hr/interviews/objectives",
-        disabled: false,
       },
     ],
   },
@@ -217,19 +207,8 @@ const navItems: NavItem[] = [
     icon: Stethoscope,
     children: [
       {
-        label: "Visites médicales",
-        href: "/dashboard/hr/occupational-health/visits",
-        disabled: true,
-      },
-      {
-        label: "Fiches d'aptitude",
-        href: "/dashboard/hr/occupational-health/aptitude",
-        disabled: true,
-      },
-      {
-        label: "Alertes",
-        href: "/dashboard/hr/occupational-health/alerts",
-        disabled: true,
+        label: "Médecine du travail",
+        href: "/dashboard/hr/occupational-medicine",
       },
     ],
   },
@@ -238,24 +217,8 @@ const navItems: NavItem[] = [
     icon: UserX,
     children: [
       {
-        label: "Préavis",
-        href: "/dashboard/hr/offboarding/notice",
-        disabled: true,
-      },
-      {
-        label: "Restitution matériel",
-        href: "/dashboard/hr/offboarding/equipment",
-        disabled: true,
-      },
-      {
-        label: "Documents de fin",
-        href: "/dashboard/hr/offboarding/documents",
-        disabled: true,
-      },
-      {
-        label: "Archivage",
-        href: "/dashboard/hr/offboarding/archive",
-        disabled: true,
+        label: "Fin de contrat",
+        href: "/dashboard/hr/offboarding",
       },
     ],
   },
@@ -292,32 +255,30 @@ const navItems: NavItem[] = [
       {
         label: "Vue d'ensemble",
         href: "/dashboard/hr/workflows/requests",
-        disabled: false,
       },
       {
         label: "Demandes de certificats",
         href: "/dashboard/hr/workflows/certificate",
-        disabled: false,
       },
       {
         label: "Demandes de documents",
         href: "/dashboard/hr/workflows/document",
-        disabled: false,
       },
       {
         label: "Changements d'informations",
         href: "/dashboard/hr/workflows/bank-details",
-        disabled: false,
       },
       {
         label: "Signatures électroniques",
         href: "/dashboard/hr/workflows/signatures",
-        disabled: false,
       },
       {
         label: "Gestion des signatures",
         href: "/dashboard/hr/workflows/signatures/all",
-        disabled: false,
+      },
+      {
+        label: "Automatisation",
+        href: "/dashboard/hr/workflows/automation",
       },
     ],
   },
@@ -325,28 +286,11 @@ const navItems: NavItem[] = [
     label: "Pilotage",
     icon: BarChart3,
     children: [
-      { label: "KPI RH", href: "/dashboard/hr/kpi/hr", disabled: true },
       {
-        label: "Conformité CNAPS",
-        href: "/dashboard/hr/kpi/cnaps",
-        disabled: true,
+        label: "Bilan social",
+        href: "/dashboard/hr/social-report",
       },
-      { label: "Turnover", href: "/dashboard/hr/kpi/turnover", disabled: true },
-      {
-        label: "Absentéisme",
-        href: "/dashboard/hr/kpi/absenteeism",
-        disabled: true,
-      },
-      {
-        label: "Masse salariale",
-        href: "/dashboard/hr/kpi/payroll-mass",
-        disabled: true,
-      },
-      {
-        label: "Prévisionnel RH",
-        href: "/dashboard/hr/kpi/forecast",
-        disabled: true,
-      },
+      { label: "KPI RH", href: "/dashboard/hr" },
     ],
   },
   {
@@ -357,19 +301,34 @@ const navItems: NavItem[] = [
         label: "Modèles d'emails",
         href: "/dashboard/hr/communication/templates",
       },
+      {
+        label: "Envoi d'emails",
+        href: "/dashboard/hr/communication/send-email",
+      },
+      {
+        label: "Archives",
+        href: "/dashboard/hr/communication/archives",
+      },
+      {
+        label: "Notifications & SMS",
+        href: "/dashboard/hr/communication/notifications",
+      },
     ],
   },
   {
-    label: "Notifications",
-    icon: Bell,
-    href: "/dashboard/hr/notifications/hr",
-    disabled: true,
+    label: "Marketing",
+    icon: Megaphone,
+    href: "/dashboard/hr/marketing",
   },
   {
-    label: "Paramètres",
-    icon: Settings,
-    href: "/dashboard/hr/settings",
-    disabled: true,
+    label: "Appels d'Offre",
+    icon: FileText,
+    href: "/dashboard/hr/tenders",
+  },
+  {
+    label: "AKTO & OPCO",
+    icon: GraduationCap,
+    href: "/dashboard/hr/akto-opco",
   },
 ];
 

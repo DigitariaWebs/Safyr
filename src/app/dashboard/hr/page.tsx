@@ -25,6 +25,10 @@ import {
   ChevronDown,
   GripVertical,
   Eye,
+  Mail,
+  Megaphone,
+  GraduationCap,
+  UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -383,7 +387,7 @@ function AlertsWidget({ isLoading }: { isLoading: boolean }) {
             Alertes RH
           </CardTitle>
           <Link
-            href="/dashboard/hr/notifications/hr"
+            href="/dashboard/hr/communication/notifications"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             Voir tout
@@ -902,13 +906,38 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
     },
     {
       label: "Voir congés",
-      href: "/dashboard/hr/time-management/leaves",
+      href: "/dashboard/hr/time-management",
       icon: Calendar,
     },
     {
-      label: "Exports paie",
-      href: "/dashboard/hr/payroll/exports",
+      label: "Bilan social",
+      href: "/dashboard/hr/social-report",
+      icon: BarChart3,
+    },
+    {
+      label: "Marketing",
+      href: "/dashboard/hr/marketing",
+      icon: Megaphone,
+    },
+    {
+      label: "Appels d'offre",
+      href: "/dashboard/hr/tenders",
       icon: FileText,
+    },
+    {
+      label: "AKTO & OPCO",
+      href: "/dashboard/hr/akto-opco",
+      icon: GraduationCap,
+    },
+    {
+      label: "Fin de contrat",
+      href: "/dashboard/hr/offboarding",
+      icon: UserX,
+    },
+    {
+      label: "Communication",
+      href: "/dashboard/hr/communication/send-email",
+      icon: Mail,
     },
   ];
 
@@ -920,7 +949,7 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
@@ -929,9 +958,9 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
                 href={action.href}
                 className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group"
               >
-                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                 <span className="text-sm flex-1">{action.label}</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
               </Link>
             );
           })}
@@ -1133,7 +1162,6 @@ const defaultWidgetConfigs: WidgetConfig[] = [
     name: "Formations & Habilitations",
     component: TrainingWidget,
     visible: true,
-    span: "md:col-span-2",
   },
   { id: "alerts", name: "Alertes RH", component: AlertsWidget, visible: true },
   {
@@ -1171,6 +1199,7 @@ const defaultWidgetConfigs: WidgetConfig[] = [
     name: "Actions rapides",
     component: QuickActionsWidget,
     visible: true,
+    span: "md:col-span-2 lg:col-span-4",
   },
 ];
 
@@ -1488,15 +1517,72 @@ export default function HRDashboardPage() {
           </DragOverlay>
         </DndContext>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {visibleWidgets.map((config: WidgetConfig) => {
-            const Component = config.component;
-            return (
-              <div key={config.id} className={cn(config.span || "", "h-full")}>
-                <Component isLoading={isLoading} />
-              </div>
-            );
-          })}
+        <div className="space-y-6">
+          {/* Top Row - Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {visibleWidgets
+              .filter((config) => 
+                ["employeeStats", "turnover", "compliance", "payroll"].includes(config.id)
+              )
+              .map((config: WidgetConfig) => {
+                const Component = config.component;
+                return (
+                  <div key={config.id} className="h-full">
+                    <Component isLoading={isLoading} />
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Second Row - Training & Alerts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visibleWidgets
+              .filter((config) => 
+                ["training", "alerts", "pendingRequests"].includes(config.id)
+              )
+              .map((config: WidgetConfig) => {
+                const Component = config.component;
+                return (
+                  <div key={config.id} className="h-full">
+                    <Component isLoading={isLoading} />
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Third Row - Detailed Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {visibleWidgets
+              .filter((config) => 
+                !["employeeStats", "turnover", "compliance", "payroll", "training", "alerts", "pendingRequests", "quickActions"].includes(config.id)
+              )
+              .map((config: WidgetConfig) => {
+                const Component = config.component;
+                return (
+                  <div key={config.id} className={cn(config.span || "", "h-full")}>
+                    <Component isLoading={isLoading} />
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Bottom Row - Quick Actions */}
+          {visibleWidgets
+            .filter((config) => config.id === "quickActions")
+            .length > 0 && (
+            <div className="grid grid-cols-1 gap-4">
+              {visibleWidgets
+                .filter((config) => config.id === "quickActions")
+                .map((config: WidgetConfig) => {
+                  const Component = config.component;
+                  return (
+                    <div key={config.id} className="h-full">
+                      <Component isLoading={isLoading} />
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
       )}
     </div>

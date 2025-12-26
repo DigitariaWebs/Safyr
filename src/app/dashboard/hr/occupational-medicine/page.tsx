@@ -1,0 +1,499 @@
+"use client";
+
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Plus, AlertCircle, CheckCircle, Clock } from "lucide-react";
+
+interface MedicalVisit {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  type: "VM" | "VIP" | "Pré-reprise" | "Reprise";
+  status: "À planifier" | "Planifiée" | "Effectuée" | "En retard";
+  scheduledDate?: string;
+  completedDate?: string;
+  nextVisitDate?: string;
+  fitness: "Apte" | "Apte avec réserves" | "Inapte temporaire" | "Inapte" | "-";
+  doctor: string;
+  organization: string;
+  restrictions?: string;
+  documents?: string[];
+  alertSent: boolean;
+}
+
+const mockVisits: MedicalVisit[] = [
+  {
+    id: "1",
+    employeeId: "emp1",
+    employeeName: "Jean Dupont",
+    type: "VM",
+    status: "Effectuée",
+    scheduledDate: "2024-11-15",
+    completedDate: "2024-11-15",
+    nextVisitDate: "2026-11-15",
+    fitness: "Apte",
+    doctor: "Dr. Martin",
+    organization: "Médecine du Travail Paris",
+    documents: ["certificat_aptitude_2024.pdf"],
+    alertSent: false,
+  },
+  {
+    id: "2",
+    employeeId: "emp2",
+    employeeName: "Marie Martin",
+    type: "VIP",
+    status: "À planifier",
+    fitness: "-",
+    doctor: "",
+    organization: "Médecine du Travail Paris",
+    alertSent: true,
+  },
+  {
+    id: "3",
+    employeeId: "emp3",
+    employeeName: "Sophie Bernard",
+    type: "Reprise",
+    status: "Planifiée",
+    scheduledDate: "2024-12-28",
+    fitness: "-",
+    doctor: "Dr. Dubois",
+    organization: "Médecine du Travail Paris",
+    alertSent: false,
+  },
+  {
+    id: "4",
+    employeeId: "emp4",
+    employeeName: "Pierre Legrand",
+    type: "VM",
+    status: "En retard",
+    scheduledDate: "2024-11-30",
+    fitness: "-",
+    doctor: "",
+    organization: "Médecine du Travail Paris",
+    alertSent: true,
+  },
+];
+
+export default function OccupationalMedicinePage() {
+  const [visits, setVisits] = useState<MedicalVisit[]>(mockVisits);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState<MedicalVisit | null>(null);
+  const [formData, setFormData] = useState({
+    employeeName: "",
+    type: "VM" as MedicalVisit["type"],
+    scheduledDate: "",
+    doctor: "",
+    organization: "Médecine du Travail Paris",
+  });
+
+  const toSchedule = visits.filter((v) => v.status === "À planifier").length;
+  const overdue = visits.filter((v) => v.status === "En retard").length;
+  const completed = visits.filter((v) => v.status === "Effectuée").length;
+
+  const columns: ColumnDef<MedicalVisit>[] = [
+    {
+      key: "employeeName",
+      label: "Employé",
+      sortable: true,
+    },
+    {
+      key: "type",
+      label: "Type",
+      render: (visit) => {
+        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+          "VM": "default",
+          "VIP": "secondary",
+          "Pré-reprise": "outline",
+          "Reprise": "outline",
+        };
+        return <Badge variant={variants[visit.type]}>{visit.type}</Badge>;
+      },
+    },
+    {
+      key: "status",
+      label: "Statut",
+      render: (visit) => {
+        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+          "À planifier": "outline",
+          "Planifiée": "default",
+          "Effectuée": "secondary",
+          "En retard": "destructive",
+        };
+        return <Badge variant={variants[visit.status]}>{visit.status}</Badge>;
+      },
+    },
+    {
+      key: "scheduledDate",
+      label: "Date prévue",
+      render: (visit) =>
+        visit.scheduledDate ? new Date(visit.scheduledDate).toLocaleDateString("fr-FR") : "-",
+    },
+    {
+      key: "fitness",
+      label: "Aptitude",
+      render: (visit) => {
+        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+          "Apte": "default",
+          "Apte avec réserves": "secondary",
+          "Inapte temporaire": "destructive",
+          "Inapte": "destructive",
+          "-": "outline",
+        };
+        return <Badge variant={variants[visit.fitness]}>{visit.fitness}</Badge>;
+      },
+    },
+    {
+      key: "organization",
+      label: "Organisme",
+      render: (visit) => <span className="text-sm">{visit.organization}</span>,
+    },
+    {
+      key: "alertSent",
+      label: "Alerte",
+      render: (visit) => (
+        visit.alertSent ? (
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+        ) : null
+      ),
+    },
+  ];
+
+  const handleCreate = () => {
+    setFormData({
+      employeeName: "",
+      type: "VM",
+      scheduledDate: "",
+      doctor: "",
+      organization: "Médecine du Travail Paris",
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleSave = () => {
+    const newVisit: MedicalVisit = {
+      id: (visits.length + 1).toString(),
+      employeeId: `emp${visits.length + 1}`,
+      employeeName: formData.employeeName,
+      type: formData.type,
+      status: formData.scheduledDate ? "Planifiée" : "À planifier",
+      scheduledDate: formData.scheduledDate || undefined,
+      fitness: "-",
+      doctor: formData.doctor,
+      organization: formData.organization,
+      alertSent: false,
+    };
+    setVisits([...visits, newVisit]);
+    setIsCreateModalOpen(false);
+  };
+
+  const handleRowClick = (visit: MedicalVisit) => {
+    setSelectedVisit(visit);
+    setIsViewModalOpen(true);
+  };
+
+  const handleSendAlert = (visitId: string) => {
+    setVisits(
+      visits.map((v) => (v.id === visitId ? { ...v, alertSent: true } : v))
+    );
+    alert("Alerte envoyée à l'employé et l'organisme de médecine du travail");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Médecine du Travail</h1>
+          <p className="text-muted-foreground">
+            Suivi complet des visites médicales (VM, VIP, reprise, pré-reprise)
+          </p>
+        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Planifier une visite
+        </Button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">À planifier</CardTitle>
+            <Clock className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{toSchedule}</div>
+            <p className="text-xs text-muted-foreground">Visites à organiser</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En retard</CardTitle>
+            <AlertCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{overdue}</div>
+            <p className="text-xs text-muted-foreground">Visites dépassées</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Effectuées</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{completed}</div>
+            <p className="text-xs text-muted-foreground">Cette année</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Alertes envoyées</CardTitle>
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {visits.filter((v) => v.alertSent).length}
+            </div>
+            <p className="text-xs text-muted-foreground">Ce mois</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <DataTable
+        data={visits}
+        columns={columns}
+        searchKey="employeeName"
+        searchPlaceholder="Rechercher un employé..."
+        onRowClick={handleRowClick}
+      />
+
+      {/* Create Modal */}
+      <Modal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        type="form"
+        title="Planifier une visite médicale"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Créer",
+            onClick: handleSave,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCreateModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="employeeName">Employé</Label>
+            <Input
+              id="employeeName"
+              value={formData.employeeName}
+              onChange={(e) =>
+                setFormData({ ...formData, employeeName: e.target.value })
+              }
+              placeholder="Nom de l'employé"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="type">Type de visite</Label>
+            <Select
+              value={formData.type}
+              onValueChange={(value) =>
+                setFormData({ ...formData, type: value as MedicalVisit["type"] })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="VM">Visite Médicale (VM)</SelectItem>
+                <SelectItem value="VIP">Visite Initiale Périodique (VIP)</SelectItem>
+                <SelectItem value="Pré-reprise">Visite de Pré-reprise</SelectItem>
+                <SelectItem value="Reprise">Visite de Reprise</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="organization">Organisme</Label>
+            <Input
+              id="organization"
+              value={formData.organization}
+              onChange={(e) =>
+                setFormData({ ...formData, organization: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="doctor">Médecin (optionnel)</Label>
+            <Input
+              id="doctor"
+              value={formData.doctor}
+              onChange={(e) =>
+                setFormData({ ...formData, doctor: e.target.value })
+              }
+              placeholder="Dr. ..."
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="scheduledDate">Date prévue (optionnel)</Label>
+            <Input
+              id="scheduledDate"
+              type="date"
+              value={formData.scheduledDate}
+              onChange={(e) =>
+                setFormData({ ...formData, scheduledDate: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* View Modal */}
+      <Modal
+        open={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        type="details"
+        title="Détails de la visite médicale"
+        size="lg"
+        actions={{
+          secondary: {
+            label: "Fermer",
+            onClick: () => setIsViewModalOpen(false),
+          },
+        }}
+      >
+        {selectedVisit && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Employé</Label>
+                <p className="text-sm font-medium">{selectedVisit.employeeName}</p>
+              </div>
+              <div>
+                <Label>Type</Label>
+                <Badge variant="default">{selectedVisit.type}</Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Statut</Label>
+                <Badge variant="secondary">{selectedVisit.status}</Badge>
+              </div>
+              <div>
+                <Label>Aptitude</Label>
+                <Badge variant="default">{selectedVisit.fitness}</Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Date prévue</Label>
+                <p className="text-sm font-medium">
+                  {selectedVisit.scheduledDate
+                    ? new Date(selectedVisit.scheduledDate).toLocaleDateString("fr-FR")
+                    : "Non planifiée"}
+                </p>
+              </div>
+              {selectedVisit.completedDate && (
+                <div>
+                  <Label>Date d&apos;exécution</Label>
+                  <p className="text-sm font-medium">
+                    {new Date(selectedVisit.completedDate).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {selectedVisit.nextVisitDate && (
+              <div>
+                <Label>Prochaine visite</Label>
+                <p className="text-sm font-medium">
+                  {new Date(selectedVisit.nextVisitDate).toLocaleDateString("fr-FR")}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <Label>Organisme</Label>
+              <p className="text-sm font-medium">{selectedVisit.organization}</p>
+            </div>
+
+            {selectedVisit.doctor && (
+              <div>
+                <Label>Médecin</Label>
+                <p className="text-sm font-medium">{selectedVisit.doctor}</p>
+              </div>
+            )}
+
+            {selectedVisit.restrictions && (
+              <div>
+                <Label>Restrictions / Observations</Label>
+                <p className="text-sm">{selectedVisit.restrictions}</p>
+              </div>
+            )}
+
+            {selectedVisit.documents && selectedVisit.documents.length > 0 && (
+              <div>
+                <Label>Documents</Label>
+                <div className="space-y-2 mt-2">
+                  {selectedVisit.documents.map((doc, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                    >
+                      <span className="text-sm">{doc}</span>
+                      <Button variant="ghost" size="sm">
+                        Télécharger
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!selectedVisit.alertSent && (selectedVisit.status === "À planifier" || selectedVisit.status === "En retard") && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  handleSendAlert(selectedVisit.id);
+                  setIsViewModalOpen(false);
+                }}
+              >
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Envoyer une alerte automatique
+              </Button>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}
+
