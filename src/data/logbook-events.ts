@@ -41,7 +41,125 @@ export interface LogbookEvent {
   resolvedAt?: string;
 }
 
+// Helper function to get today's date in ISO format
+const getTodayISO = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export const mockLogbookEvents: LogbookEvent[] = [
+  // Today's events (for client portal)
+  {
+    id: "EVT-TODAY-001",
+    timestamp: `${getTodayISO()}T08:15:00Z`,
+    site: "Centre Commercial Atlantis",
+    siteId: "SITE-001",
+    zone: "Entrée Principale",
+    type: "routine",
+    severity: "low",
+    status: "resolved",
+    title: "Ouverture site",
+    description: "Ouverture normale du site. Inspection visuelle effectuée. RAS.",
+    agentId: "AGT-125",
+    agentName: "Jean Dupont",
+    supervisorId: "SUP-012",
+    supervisorName: "Marie Martin",
+    supervisorComment: "Conforme",
+    clientNotified: false,
+    tags: ["ouverture", "routine"],
+    media: {
+      photos: ["/logbook/opening-today-001.jpg"],
+    },
+    signature: "signed",
+    validatedAt: `${getTodayISO()}T08:30:00Z`,
+    resolvedAt: `${getTodayISO()}T08:20:00Z`,
+  },
+  {
+    id: "EVT-TODAY-002",
+    timestamp: `${getTodayISO()}T10:30:00Z`,
+    site: "Centre Commercial Atlantis",
+    siteId: "SITE-001",
+    zone: "Hall principal",
+    type: "incident",
+    severity: "medium",
+    status: "resolved",
+    title: "Intervention visiteur",
+    description: "Visiteur sans badge d'accès. Accompagné au bureau d'accueil. Situation résolue.",
+    agentId: "AGT-125",
+    agentName: "Jean Dupont",
+    supervisorId: "SUP-012",
+    supervisorName: "Marie Martin",
+    supervisorComment: "Bien géré",
+    clientNotified: true,
+    tags: ["visiteur", "intervention"],
+    media: {
+      photos: ["/logbook/visitor-today-002.jpg"],
+    },
+    signature: "signed",
+    validatedAt: `${getTodayISO()}T10:45:00Z`,
+    resolvedAt: `${getTodayISO()}T10:40:00Z`,
+  },
+  {
+    id: "EVT-TODAY-003",
+    timestamp: `${getTodayISO()}T14:00:00Z`,
+    site: "Tour de Bureaux Skyline",
+    siteId: "SITE-002",
+    zone: "Niveau 3",
+    type: "control",
+    severity: "low",
+    status: "resolved",
+    title: "Ronde de contrôle",
+    description: "Ronde de contrôle effectuée. Vérification des accès et alarmes. Tout conforme.",
+    agentId: "AGT-087",
+    agentName: "Sophie Bernard",
+    clientNotified: false,
+    tags: ["ronde", "contrôle", "routine"],
+    signature: "signed",
+    resolvedAt: `${getTodayISO()}T14:15:00Z`,
+  },
+  {
+    id: "EVT-TODAY-004",
+    timestamp: `${getTodayISO()}T16:00:00Z`,
+    site: "Centre Commercial Atlantis",
+    siteId: "SITE-001",
+    zone: "Parking",
+    type: "action",
+    severity: "low",
+    status: "resolved",
+    title: "Nettoyage déversement",
+    description: "Déversement de liquide détecté. Nettoyage immédiat effectué. Zone sécurisée.",
+    agentId: "AGT-125",
+    agentName: "Jean Dupont",
+    clientNotified: false,
+    tags: ["nettoyage", "action"],
+    signature: "signed",
+    resolvedAt: `${getTodayISO()}T16:10:00Z`,
+  },
+  {
+    id: "EVT-TODAY-005",
+    timestamp: `${getTodayISO()}T19:00:00Z`,
+    site: "Centre Commercial Atlantis",
+    siteId: "SITE-001",
+    zone: "Sortie Principale",
+    type: "routine",
+    severity: "low",
+    status: "resolved",
+    title: "Fermeture site",
+    description: "Fermeture du site. Vérification de tous les accès. Armement alarme effectué. RAS.",
+    agentId: "AGT-125",
+    agentName: "Jean Dupont",
+    clientNotified: false,
+    tags: ["fermeture", "routine"],
+    media: {
+      photos: ["/logbook/closing-today-005.jpg"],
+    },
+    signature: "signed",
+    resolvedAt: `${getTodayISO()}T19:15:00Z`,
+  },
+  // Historical events
   {
     id: "EVT-2024-001",
     timestamp: "2024-12-24T08:15:00Z",

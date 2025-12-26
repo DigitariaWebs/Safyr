@@ -16,79 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, AlertCircle, CheckCircle, Clock } from "lucide-react";
-
-interface MedicalVisit {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  type: "VM" | "VIP" | "Pré-reprise" | "Reprise";
-  status: "À planifier" | "Planifiée" | "Effectuée" | "En retard";
-  scheduledDate?: string;
-  completedDate?: string;
-  nextVisitDate?: string;
-  fitness: "Apte" | "Apte avec réserves" | "Inapte temporaire" | "Inapte" | "-";
-  doctor: string;
-  organization: string;
-  restrictions?: string;
-  documents?: string[];
-  alertSent: boolean;
-}
-
-const mockVisits: MedicalVisit[] = [
-  {
-    id: "1",
-    employeeId: "emp1",
-    employeeName: "Jean Dupont",
-    type: "VM",
-    status: "Effectuée",
-    scheduledDate: "2024-11-15",
-    completedDate: "2024-11-15",
-    nextVisitDate: "2026-11-15",
-    fitness: "Apte",
-    doctor: "Dr. Martin",
-    organization: "Médecine du Travail Paris",
-    documents: ["certificat_aptitude_2024.pdf"],
-    alertSent: false,
-  },
-  {
-    id: "2",
-    employeeId: "emp2",
-    employeeName: "Marie Martin",
-    type: "VIP",
-    status: "À planifier",
-    fitness: "-",
-    doctor: "",
-    organization: "Médecine du Travail Paris",
-    alertSent: true,
-  },
-  {
-    id: "3",
-    employeeId: "emp3",
-    employeeName: "Sophie Bernard",
-    type: "Reprise",
-    status: "Planifiée",
-    scheduledDate: "2024-12-28",
-    fitness: "-",
-    doctor: "Dr. Dubois",
-    organization: "Médecine du Travail Paris",
-    alertSent: false,
-  },
-  {
-    id: "4",
-    employeeId: "emp4",
-    employeeName: "Pierre Legrand",
-    type: "VM",
-    status: "En retard",
-    scheduledDate: "2024-11-30",
-    fitness: "-",
-    doctor: "",
-    organization: "Médecine du Travail Paris",
-    alertSent: true,
-  },
-];
+import { mockMedicalVisits, type MedicalVisit } from "@/data/hr-occupational-medicine";
 
 export default function OccupationalMedicinePage() {
-  const [visits, setVisits] = useState<MedicalVisit[]>(mockVisits);
+  const [visits, setVisits] = useState<MedicalVisit[]>(mockMedicalVisits);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<MedicalVisit | null>(null);
@@ -184,17 +115,22 @@ export default function OccupationalMedicinePage() {
   };
 
   const handleSave = () => {
+    const now = new Date().toISOString();
     const newVisit: MedicalVisit = {
       id: (visits.length + 1).toString(),
       employeeId: `emp${visits.length + 1}`,
       employeeName: formData.employeeName,
+      employeeNumber: `EMP${String(visits.length + 1).padStart(3, "0")}`,
       type: formData.type,
       status: formData.scheduledDate ? "Planifiée" : "À planifier",
       scheduledDate: formData.scheduledDate || undefined,
       fitness: "-",
       doctor: formData.doctor,
       organization: formData.organization,
+      documents: [],
       alertSent: false,
+      createdAt: now,
+      updatedAt: now,
     };
     setVisits([...visits, newVisit]);
     setIsCreateModalOpen(false);

@@ -10,7 +10,11 @@ import {
   CheckCircle,
   AlertTriangle,
   BarChart3,
-  Settings,
+  Calendar,
+  Users,
+  Shield,
+  Download,
+  FileText,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -45,20 +49,72 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    label: "Planning & RH",
+    icon: Calendar,
+    children: [
+      {
+        label: "Connexion Planning & RH",
+        href: "/dashboard/logbook/planning-rh",
+      },
+    ],
+  },
+  {
+    label: "Portails",
+    icon: Users,
+    children: [
+      {
+        label: "Portail Clients",
+        href: "/dashboard/logbook/client-portal",
+      },
+      {
+        label: "Portail Agents",
+        href: "/dashboard/logbook/agent-portal",
+      },
+    ],
+  },
+  {
     label: "Rapports",
     icon: BarChart3,
     children: [
       {
-        label: "Statistiques",
+        label: "Statistiques & KPIs",
         href: "/dashboard/logbook/statistics",
       },
     ],
   },
   {
-    label: "Paramètres",
-    icon: Settings,
-    href: "/dashboard/logbook/settings",
-    disabled: true,
+    label: "Sécurité",
+    icon: Shield,
+    children: [
+      {
+        label: "Sécurité & Technique",
+        href: "/dashboard/logbook/security",
+      },
+    ],
+  },
+  {
+    label: "Exports",
+    icon: Download,
+    children: [
+      {
+        label: "Export & Archivage",
+        href: "/dashboard/logbook/exports",
+      },
+    ],
+  },
+  {
+    label: "Gestion",
+    icon: FileText,
+    children: [
+      {
+        label: "Démarque Inconnue (DI)",
+        href: "/dashboard/logbook/unknown-losses",
+      },
+      {
+        label: "Fiches d'Interpellation",
+        href: "/dashboard/logbook/interpellation-archives",
+      },
+    ],
   },
 ];
 

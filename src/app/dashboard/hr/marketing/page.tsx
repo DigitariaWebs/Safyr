@@ -17,118 +17,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Calendar, TrendingUp, Mail, Share2 } from "lucide-react";
-
-interface SocialPost {
-  id: string;
-  platform: "LinkedIn" | "Facebook" | "Instagram";
-  content: string;
-  scheduledDate: string;
-  status: "Planifié" | "Publié" | "Échec";
-  performance?: {
-    views: number;
-    likes: number;
-    shares: number;
-    engagement: number;
-  };
-}
-
-interface EmailAutoReply {
-  id: string;
-  trigger: string;
-  subject: string;
-  body: string;
-  isActive: boolean;
-}
-
-interface CRMCustomer {
-  id: string;
-  name: string;
-  email: string;
-  status: "Prospect" | "Client" | "Ancien client";
-  lastContact: string;
-}
-
-const mockPosts: SocialPost[] = [
-  {
-    id: "1",
-    platform: "LinkedIn",
-    content: "Nous recrutons des agents de sécurité qualifiés! Rejoignez notre équipe...",
-    scheduledDate: "2024-12-25T09:00:00",
-    status: "Planifié",
-  },
-  {
-    id: "2",
-    platform: "Facebook",
-    content: "Formation SSIAP disponible - Inscriptions ouvertes",
-    scheduledDate: "2024-12-20T10:00:00",
-    status: "Publié",
-    performance: {
-      views: 1250,
-      likes: 89,
-      shares: 12,
-      engagement: 8.1,
-    },
-  },
-  {
-    id: "3",
-    platform: "Instagram",
-    content: "Journée sécurité - Nos équipes en action",
-    scheduledDate: "2024-12-18T14:00:00",
-    status: "Publié",
-    performance: {
-      views: 2100,
-      likes: 156,
-      shares: 23,
-      engagement: 8.5,
-    },
-  },
-];
-
-const mockAutoReplies: EmailAutoReply[] = [
-  {
-    id: "1",
-    trigger: "Candidature reçue",
-    subject: "Accusé de réception - Candidature",
-    body: "Merci pour votre candidature. Nous étudierons votre dossier...",
-    isActive: true,
-  },
-  {
-    id: "2",
-    trigger: "Demande d'information",
-    subject: "Réponse automatique - Demande d'information",
-    body: "Nous avons bien reçu votre demande. Un membre de notre équipe vous contactera...",
-    isActive: true,
-  },
-];
-
-const mockCRMCustomers: CRMCustomer[] = [
-  {
-    id: "1",
-    name: "Centre Commercial Rosny 2",
-    email: "contact@rosny2.fr",
-    status: "Client",
-    lastContact: "2024-12-15",
-  },
-  {
-    id: "2",
-    name: "Siège Social La Défense",
-    email: "rh@ladefense-corp.fr",
-    status: "Client",
-    lastContact: "2024-12-10",
-  },
-  {
-    id: "3",
-    name: "Entreprise XYZ",
-    email: "contact@xyz.fr",
-    status: "Prospect",
-    lastContact: "2024-11-20",
-  },
-];
+import {
+  mockSocialPosts,
+  mockEmailAutoReplies,
+  mockCRMCustomers,
+  type SocialPost,
+  type EmailAutoReply,
+  type CRMCustomer,
+} from "@/data/hr-marketing";
 
 export default function MarketingPage() {
   const [activeTab, setActiveTab] = useState<"posts" | "emails" | "crm">("posts");
-  const [posts, setPosts] = useState<SocialPost[]>(mockPosts);
-  const [autoReplies] = useState<EmailAutoReply[]>(mockAutoReplies);
+  const [posts, setPosts] = useState<SocialPost[]>(mockSocialPosts);
+  const [autoReplies] = useState<EmailAutoReply[]>(mockEmailAutoReplies);
   const [crmCustomers] = useState<CRMCustomer[]>(mockCRMCustomers);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -207,12 +108,15 @@ export default function MarketingPage() {
   };
 
   const handleSavePost = () => {
+    const now = new Date().toISOString();
     const newPost: SocialPost = {
       id: (posts.length + 1).toString(),
       platform: formData.platform,
       content: formData.content,
       scheduledDate: `${formData.scheduledDate}T${formData.scheduledTime}:00`,
       status: "Planifié",
+      createdAt: now,
+      updatedAt: now,
     };
     setPosts([...posts, newPost]);
     setIsPostModalOpen(false);

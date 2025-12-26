@@ -18,64 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Download, FileText, CheckCircle, Clock } from "lucide-react";
 import { mockEmployees } from "@/data/employees";
-
-interface OffboardingProcess {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  contractEndDate: string;
-  noticePeriodStart: string;
-  noticePeriodEnd: string;
-  status: "En cours" | "Terminé" | "Annulé";
-  equipmentReturned: boolean;
-  documentsGenerated: {
-    workCertificate: boolean;
-    poleEmploiCertificate: boolean;
-    finalSettlement: boolean;
-  };
-  payrollExported: boolean;
-  fileArchived: boolean;
-  createdAt: string;
-}
-
-const mockOffboardingProcesses: OffboardingProcess[] = [
-  {
-    id: "1",
-    employeeId: "emp1",
-    employeeName: "Jean Dupont",
-    contractEndDate: "2024-12-31",
-    noticePeriodStart: "2024-11-01",
-    noticePeriodEnd: "2024-12-31",
-    status: "En cours",
-    equipmentReturned: false,
-    documentsGenerated: {
-      workCertificate: false,
-      poleEmploiCertificate: false,
-      finalSettlement: false,
-    },
-    payrollExported: false,
-    fileArchived: false,
-    createdAt: "2024-10-15",
-  },
-  {
-    id: "2",
-    employeeId: "emp2",
-    employeeName: "Marie Martin",
-    contractEndDate: "2024-11-30",
-    noticePeriodStart: "2024-10-01",
-    noticePeriodEnd: "2024-11-30",
-    status: "Terminé",
-    equipmentReturned: true,
-    documentsGenerated: {
-      workCertificate: true,
-      poleEmploiCertificate: true,
-      finalSettlement: true,
-    },
-    payrollExported: true,
-    fileArchived: true,
-    createdAt: "2024-09-15",
-  },
-];
+import { mockOffboardingProcesses, type OffboardingProcess } from "@/data/hr-offboarding";
 
 export default function OffboardingPage() {
   const [processes, setProcesses] = useState<OffboardingProcess[]>(mockOffboardingProcesses);
@@ -159,13 +102,16 @@ export default function OffboardingPage() {
     const noticeStart = new Date(endDate);
     noticeStart.setDate(noticeStart.getDate() - formData.noticePeriodDays);
 
+    const now = new Date().toISOString();
     const newProcess: OffboardingProcess = {
       id: (processes.length + 1).toString(),
       employeeId: formData.employeeId,
       employeeName: `${employee.firstName} ${employee.lastName}`,
+      employeeNumber: employee.employeeNumber,
       contractEndDate: formData.contractEndDate,
       noticePeriodStart: noticeStart.toISOString().split("T")[0],
       noticePeriodEnd: formData.contractEndDate,
+      reason: "resignation", // Default, can be updated later
       status: "En cours",
       equipmentReturned: false,
       documentsGenerated: {
@@ -175,7 +121,8 @@ export default function OffboardingPage() {
       },
       payrollExported: false,
       fileArchived: false,
-      createdAt: new Date().toISOString().split("T")[0],
+      createdAt: now,
+      updatedAt: now,
     };
     setProcesses([...processes, newProcess]);
     setIsCreateModalOpen(false);

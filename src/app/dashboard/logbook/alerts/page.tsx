@@ -4,54 +4,100 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { AlertTriangle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertTriangle,
+  Shield,
+  Flame,
+  UserX,
+  Clock,
+  Bell,
+  Users,
+  Mail,
+} from "lucide-react";
 import { Modal } from "@/components/ui/modal";
-
-type Alert = {
-  id: string;
-  type: "critical" | "warning";
-  title: string;
-  description: string;
-  timestamp: string;
-  site: string;
-};
+import { mockAlerts, type Alert, type AlertType } from "@/data/logbook-alerts";
 
 export default function AlertsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingAlert, setViewingAlert] = useState<Alert | null>(null);
+  const [filterType, setFilterType] = useState<string>("all");
 
-  const alerts: Alert[] = [
-    {
-      id: "1",
-      type: "critical",
-      title: "Détection incendie - Zone Technique",
-      description: "Alarme incendie déclenchée",
-      timestamp: "2024-12-24T14:00:00Z",
-      site: "Centre Commercial Atlantis",
-    },
-    {
-      id: "2",
-      type: "warning",
-      title: "Ronde manquée - Niveau -2",
-      description: "Ronde de 18h non effectuée",
-      timestamp: "2024-12-24T18:15:00Z",
-      site: "Tour de Bureaux Skyline",
-    },
-  ];
+  const alerts = mockAlerts;
+
+  const filteredAlerts = filterType === "all" 
+    ? alerts 
+    : alerts.filter((a) => a.type === filterType);
+
+  const getAlertIcon = (type: AlertType) => {
+    switch (type) {
+      case "incendie":
+        return Flame;
+      case "effraction":
+        return Shield;
+      case "critique_medical":
+        return UserX;
+      case "absence_ronde":
+      case "inactivite":
+        return Clock;
+      default:
+        return AlertTriangle;
+    }
+  };
+
+  const getAlertTypeLabel = (type: AlertType): string => {
+    const labels: Record<AlertType, string> = {
+      grave_incident: "Incident grave",
+      effraction: "Tentative d'effraction",
+      incendie: "Détection incendie",
+      critique_medical: "Événement critique (médical)",
+      absence_ronde: "Absence de ronde",
+      inactivite: "Inactivité prolongée",
+      pc_securite: "Alerte PC Sécurité",
+      superviseur: "Alerte superviseur",
+      client: "Alerte client",
+      rh: "Alerte RH",
+    };
+    return labels[type] || type;
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-3xl font-light tracking-tight">
-          Alertes actives
-        </h1>
-        <p className="mt-2 text-sm font-light text-muted-foreground">
-          {alerts.length} alerte(s) nécessitant votre attention
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-3xl font-light tracking-tight">
+            Notifications & Alertes
+          </h1>
+          <p className="mt-2 text-sm font-light text-muted-foreground">
+            {filteredAlerts.length} alerte(s) nécessitant votre attention
+          </p>
+        </div>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filtrer par type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="grave_incident">Incidents graves</SelectItem>
+            <SelectItem value="effraction">Tentatives d&apos;effraction</SelectItem>
+            <SelectItem value="incendie">Détection incendie</SelectItem>
+            <SelectItem value="critique_medical">Événements critiques</SelectItem>
+            <SelectItem value="absence_ronde">Absence de ronde</SelectItem>
+            <SelectItem value="inactivite">Inactivité prolongée</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {alerts.map((alert) => (
+        {filteredAlerts.map((alert) => {
+          const Icon = getAlertIcon(alert.type);
+          return (
           <Card
             key={alert.id}
             className="glass-card border-border/40 hover:border-primary/30 transition-all cursor-pointer"
@@ -63,20 +109,35 @@ export default function AlertsPage() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle
-                    className={`h-5 w-5 ${alert.type === "critical" ? "text-red-500" : "text-orange-500"}`}
+                  <Icon
+                    className={`h-5 w-5 ${
+                      alert.severity === "critical"
+                        ? "text-red-500"
+                        : alert.severity === "high"
+                          ? "text-orange-500"
+                          : "text-yellow-500"
+                    }`}
                   />
                   <CardTitle className="text-xl font-light">
                     {alert.title}
                   </CardTitle>
                 </div>
-                <Badge
-                  variant={
-                    alert.type === "critical" ? "destructive" : "default"
-                  }
-                >
-                  {alert.type}
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge
+                    variant={
+                      alert.severity === "critical"
+                        ? "destructive"
+                        : alert.severity === "high"
+                          ? "destructive"
+                          : "default"
+                    }
+                  >
+                    {alert.severity}
+                  </Badge>
+                  <Badge variant="outline">
+                    {getAlertTypeLabel(alert.type)}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -90,9 +151,28 @@ export default function AlertsPage() {
                   {new Date(alert.timestamp).toLocaleString("fr-FR")}
                 </span>
               </div>
+              <div className="flex items-center gap-4 pt-2 border-t mt-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <Bell className="h-3 w-3" />
+                  <span className="text-muted-foreground">Notifié:</span>
+                  {alert.notified.pcSecurite && (
+                    <Badge variant="outline" className="text-xs">PC Sécurité</Badge>
+                  )}
+                  {alert.notified.superviseur && (
+                    <Badge variant="outline" className="text-xs">Superviseur</Badge>
+                  )}
+                  {alert.notified.client && (
+                    <Badge variant="outline" className="text-xs">Client</Badge>
+                  )}
+                  {alert.notified.rh && (
+                    <Badge variant="outline" className="text-xs">RH</Badge>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {/* View Alert Modal */}
@@ -106,16 +186,72 @@ export default function AlertsPage() {
         {viewingAlert && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Type</Label>
-                <Badge
-                  variant={
-                    viewingAlert.type === "critical" ? "destructive" : "default"
-                  }
-                >
-                  {viewingAlert.type}
+                <Badge variant="outline">
+                  {getAlertTypeLabel(viewingAlert.type)}
                 </Badge>
               </div>
+              <div>
+                <Label>Gravité</Label>
+                <Badge
+                  variant={
+                    viewingAlert.severity === "critical"
+                      ? "destructive"
+                      : viewingAlert.severity === "high"
+                        ? "destructive"
+                        : "default"
+                  }
+                >
+                  {viewingAlert.severity}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <Label className="text-base font-semibold mb-3 block">
+                Notifications envoyées
+              </Label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm">PC Sécurité</span>
+                  </div>
+                  <Badge variant={viewingAlert.notified.pcSecurite ? "default" : "outline"}>
+                    {viewingAlert.notified.pcSecurite ? "Oui" : "Non"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm">Superviseur</span>
+                  </div>
+                  <Badge variant={viewingAlert.notified.superviseur ? "default" : "outline"}>
+                    {viewingAlert.notified.superviseur ? "Oui" : "Non"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span className="text-sm">Client</span>
+                  </div>
+                  <Badge variant={viewingAlert.notified.client ? "default" : "outline"}>
+                    {viewingAlert.notified.client ? "Oui" : "Non"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm">Responsable RH</span>
+                  </div>
+                  <Badge variant={viewingAlert.notified.rh ? "default" : "outline"}>
+                    {viewingAlert.notified.rh ? "Oui" : "Non"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
               <div>
                 <Label>Date/Heure</Label>
                 <p className="text-sm">

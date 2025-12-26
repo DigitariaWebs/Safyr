@@ -203,126 +203,126 @@
 
 ## 2. Workflow de Validation & Supervision
 
-- [ ] L'agent crée un événement
-- [ ] Le superviseur valide / commente / modifie (si besoin)
-- [ ] Notification client immédiate (événements critiques)
-- [ ] Rapport automatique quotidien client
-- [ ] Résumé hebdomadaire client
-- [ ] Classement automatique par site
-- [ ] Classement automatique par client
-- [ ] Classement automatique par type d'incident
-- [ ] Classement automatique par gravité
-- [ ] Classement automatique par zone
-- [ ] Tag manuel ou automatique
+- [x] L'agent crée un événement
+- [x] Le superviseur valide / commente / modifie (si besoin)
+- [x] Notification client immédiate (événements critiques)
+- [x] Rapport automatique quotidien client
+- [x] Résumé hebdomadaire client
+- [x] Classement automatique par site
+- [x] Classement automatique par client
+- [x] Classement automatique par type d'incident
+- [x] Classement automatique par gravité
+- [x] Classement automatique par zone
+- [x] Tag manuel ou automatique
 
 ## 3. Notifications & Alertes
 
-- [ ] Incidents graves
-- [ ] Tentatives d'effraction
-- [ ] Détection incendie
-- [ ] Evénements critiques (médical, agression…)
-- [ ] Absence de ronde
-- [ ] Inactivité prolongée
-- [ ] Alertes PC Sécurité
-- [ ] Alertes responsable site / superviseur
-- [ ] Alertes client (option)
-- [ ] Alertes responsable RH
+- [x] Incidents graves
+- [x] Tentatives d'effraction
+- [x] Détection incendie
+- [x] Evénements critiques (médical, agression…)
+- [x] Absence de ronde
+- [x] Inactivité prolongée
+- [x] Alertes PC Sécurité
+- [x] Alertes responsable site / superviseur
+- [x] Alertes client (option)
+- [x] Alertes responsable RH
 
 ## 4. Connexion Planning & RH
 
-- [ ] Vérification automatique : agent affecté au site peut saisir
-- [ ] Journalisation des rondes (planning → main courante)
-- [ ] Contrôle de présence agent (badgeuse / photo → main courante)
-- [ ] Transmission automatique incidents impliquant un agent
-- [ ] Transmission automatique demandes d'explication
-- [ ] Transmission automatique éloges / félicitations
-- [ ] Traçabilité accident de travail
-- [ ] Génération automatique dossier "Suivi disciplinaire RH"
+- [x] Vérification automatique : agent affecté au site peut saisir
+- [x] Journalisation des rondes (planning → main courante)
+- [x] Contrôle de présence agent (badgeuse / photo → main courante)
+- [x] Transmission automatique incidents impliquant un agent
+- [x] Transmission automatique demandes d'explication
+- [x] Transmission automatique éloges / félicitations
+- [x] Traçabilité accident de travail
+- [x] Génération automatique dossier "Suivi disciplinaire RH"
 
 ## 5. Portail Clients
 
-- [ ] Consultation temps réel tous les événements du jour
-- [ ] Filtres : site / période / type incident / agent
-- [ ] Statistiques instantanées
-- [ ] Niveau de criticité
-- [ ] Export PDF journalier
-- [ ] Rapport hebdomadaire automatique PDF
-- [ ] Rapport mensuel (nombre d'événements, typologie, time-to-resolution, comparatif N/N-1)
-- [ ] Messagerie interne client ↔ PC sécurité
+- [x] Consultation temps réel tous les événements du jour
+- [x] Filtres : site / période / type incident / agent
+- [x] Statistiques instantanées
+- [x] Niveau de criticité
+- [x] Export PDF journalier
+- [x] Rapport hebdomadaire automatique PDF
+- [x] Rapport mensuel (nombre d'événements, typologie, time-to-resolution, comparatif N/N-1)
+- [x] Messagerie interne client ↔ PC sécurité
 
 ## 6. Portail Agents
 
-- [ ] Accès aux événements liés à leur poste
-- [ ] Accès restreint (RGPD)
-- [ ] Consultation de leurs actions / interventions
-- [ ] Saisie nouvelle main courante
-- [ ] Upload photo/vidéo depuis mobile
-- [ ] Système de ticket interne
-- [ ] Messagerie interne pour instructions
+- [x] Accès aux événements liés à leur poste
+- [x] Accès restreint (RGPD)
+- [x] Consultation de leurs actions / interventions
+- [x] Saisie nouvelle main courante
+- [x] Upload photo/vidéo depuis mobile
+- [x] Système de ticket interne
+- [x] Messagerie interne pour instructions
 
 ## 7. Dashboard KPI & Statistiques
 
-- [ ] Nombre d'incidents / site / période
-- [ ] Typologie des incidents
-- [ ] Heures entre détection & résolution
-- [ ] Nombre de visiteurs
-- [ ] Nombre de rondes effectuées
-- [ ] Temps moyen entre deux rondes
-- [ ] Zones le plus souvent impactées
-- [ ] Taux d'incidents résolus
-- [ ] Incidents critiques vs incidents mineurs
-- [ ] Agents impliqués dans incidents
-- [ ] Incidents HSE / SST
-- [ ] Historique par agent
-- [ ] Indicateurs qualité prestation
-- [ ] Performance sécurité
-- [ ] Qualité du service rendu
-- [ ] Analyse des pics d'incidents
-- [ ] Comparaison N/N-1
-- [ ] Analyse multi-sites
+- [x] Nombre d'incidents / site / période
+- [x] Typologie des incidents
+- [x] Heures entre détection & résolution
+- [x] Nombre de visiteurs
+- [x] Nombre de rondes effectuées
+- [x] Temps moyen entre deux rondes
+- [x] Zones le plus souvent impactées
+- [x] Taux d'incidents résolus
+- [x] Incidents critiques vs incidents mineurs
+- [x] Agents impliqués dans incidents
+- [x] Incidents HSE / SST
+- [x] Historique par agent
+- [x] Indicateurs qualité prestation
+- [x] Performance sécurité
+- [x] Qualité du service rendu
+- [x] Analyse des pics d'incidents
+- [x] Comparaison N/N-1
+- [x] Analyse multi-sites
 
 ## 8. Sécurité & Technique
 
-- [ ] Stockage crypté
-- [ ] Journalisation infalsifiable
-- [ ] Sauvegardes automatiques
-- [ ] Traçabilité complète (audit log)
-- [ ] API REST pour intégration CRM
-- [ ] API REST pour systèmes d'alarme
-- [ ] API REST pour vidéosurveillance
-- [ ] API REST pour logiciels comptables
-- [ ] API REST pour logiciels clients (SI)
-- [ ] Authentification forte (2FA)
-- [ ] Accès par rôle (agent, superviseur, client, admin)
-- [ ] Chiffrement AES256
-- [ ] RGPD compliant
-- [ ] Masquage automatique des données sensibles
+- [x] Stockage crypté
+- [x] Journalisation infalsifiable
+- [x] Sauvegardes automatiques
+- [x] Traçabilité complète (audit log)
+- [x] API REST pour intégration CRM
+- [x] API REST pour systèmes d'alarme
+- [x] API REST pour vidéosurveillance
+- [x] API REST pour logiciels comptables
+- [x] API REST pour logiciels clients (SI)
+- [x] Authentification forte (2FA)
+- [x] Accès par rôle (agent, superviseur, client, admin)
+- [x] Chiffrement AES256
+- [x] RGPD compliant
+- [x] Masquage automatique des données sensibles
 
 ## 9. Export, Reporting & Archivage
 
-- [ ] Exports PDF
-- [ ] Exports Excel
-- [ ] Exports CSV
-- [ ] Archivage légal 10 ans
-- [ ] Recherche multicritère avancée
-- [ ] Génération automatique des rapports clients
-- [ ] Rapports paramétrables par client / site
+- [x] Exports PDF
+- [x] Exports Excel
+- [x] Exports CSV
+- [x] Archivage légal 10 ans
+- [x] Recherche multicritère avancée
+- [x] Génération automatique des rapports clients
+- [x] Rapports paramétrables par client / site
 
 ## 10. Gestion de la Démarque Inconnue (DI)
 
-- [ ] Suivi des DI pour chaque site
-- [ ] Catégorisation des DI
-- [ ] Photo pour chaque DI
-- [ ] Description pour chaque DI
-- [ ] Montant estimé pour chaque DI
+- [x] Suivi des DI pour chaque site
+- [x] Catégorisation des DI
+- [x] Photo pour chaque DI
+- [x] Description pour chaque DI
+- [x] Montant estimé pour chaque DI
 
 ## 11. Archivage des Fiches d'Interpellation
 
-- [ ] Stockage par site
-- [ ] Stockage par date
-- [ ] Recherche avancée (agent, motif, site…)
-- [ ] Historisation
-- [ ] Accès sécurisé
+- [x] Stockage par site
+- [x] Stockage par date
+- [x] Recherche avancée (agent, motif, site…)
+- [x] Historisation
+- [x] Accès sécurisé
 
 # C/CAHIER DES CHARGES – MODULE GÉOLOCALISATION DES AGENTS
 

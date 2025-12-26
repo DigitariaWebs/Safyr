@@ -7,6 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   CheckCircle,
   XCircle,
@@ -16,17 +24,26 @@ import {
   Camera,
   Video,
   Mic,
+  Edit,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 export default function ValidationPage() {
+  const [events, setEvents] = useState<LogbookEvent[]>(mockLogbookEvents);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [comment, setComment] = useState("");
-  const [action, setAction] = useState<"approve" | "reject" | null>(null);
+  const [action, setAction] = useState<"approve" | "reject" | "modify" | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<LogbookEvent | null>(null);
+  const [modifyData, setModifyData] = useState({
+    severity: "",
+    type: "",
+    tags: "",
+    notifyClient: false,
+  });
 
-  const pendingEvents = mockLogbookEvents.filter(
+  const pendingEvents = events.filter(
     (e) => e.status === "pending" || e.status === "in_progress",
   );
 
@@ -47,17 +64,82 @@ export default function ValidationPage() {
 
   const handleValidation = (
     eventId: string,
-    validationAction: "approve" | "reject",
+    validationAction: "approve" | "reject" | "modify",
   ) => {
     setSelectedEvent(eventId);
     setAction(validationAction);
+    const event = events.find((e) => e.id === eventId);
+    if (event && validationAction === "modify") {
+      setModifyData({
+        severity: event.severity,
+        type: event.type,
+        tags: event.tags.join(", "),
+        notifyClient: event.clientNotified,
+      });
+      setIsModifyModalOpen(true);
+    }
   };
 
   const handleSubmitValidation = () => {
-    console.log("Validation:", { eventId: selectedEvent, action, comment });
+    if (!selectedEvent) return;
+
+    const eventIndex = events.findIndex((e) => e.id === selectedEvent);
+    if (eventIndex === -1) return;
+
+    const updatedEvents = [...events];
+    const event = updatedEvents[eventIndex];
+
+    if (action === "approve") {
+      updatedEvents[eventIndex] = {
+        ...event,
+        status: "resolved" as const,
+        validatedAt: new Date().toISOString(),
+        supervisorComment: comment || undefined,
+        clientNotified: event.severity === "critical" || event.clientNotified,
+      };
+      // Notification client si critique
+      if (event.severity === "critical") {
+        alert("Notification envoyée au client (événement critique)");
+      }
+    } else if (action === "reject") {
+      updatedEvents[eventIndex] = {
+        ...event,
+        status: "deferred" as const,
+        supervisorComment: comment,
+      };
+    }
+
+    setEvents(updatedEvents);
     setSelectedEvent(null);
     setComment("");
     setAction(null);
+  };
+
+  const handleModifyEvent = () => {
+    if (!selectedEvent) return;
+
+    const eventIndex = events.findIndex((e) => e.id === selectedEvent);
+    if (eventIndex === -1) return;
+
+    const updatedEvents = [...events];
+    updatedEvents[eventIndex] = {
+      ...updatedEvents[eventIndex],
+      severity: modifyData.severity as LogbookEvent["severity"],
+      type: modifyData.type as LogbookEvent["type"],
+      tags: modifyData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      clientNotified: modifyData.notifyClient,
+    };
+
+    setEvents(updatedEvents);
+    setIsModifyModalOpen(false);
+    setSelectedEvent(null);
+    setModifyData({ severity: "", type: "", tags: "", notifyClient: false });
+    setAction(null);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleGenerateReport = (type: "daily" | "weekly" | "monthly") => {
+    alert(`Génération du rapport ${type === "daily" ? "quotidien" : type === "weekly" ? "hebdomadaire" : "mensuel"} en cours...`);
   };
 
   return (
@@ -189,7 +271,22 @@ export default function ValidationPage() {
                   <Button 
                     variant="outline" 
                     className="gap-2"
-                    onClick={() => handleValidation(event.id, "approve")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleValidation(event.id, "modify");
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                    Modifier
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewingEvent(event);
+                      setIsViewModalOpen(true);
+                    }}
                   >
                     <MessageSquare className="h-4 w-4" />
                     Commenter
@@ -364,6 +461,93 @@ export default function ValidationPage() {
               rows={4}
               required={action === "reject"}
             />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modify Event Modal */}
+      <Modal
+        open={isModifyModalOpen}
+        onOpenChange={setIsModifyModalOpen}
+        type="form"
+        title="Modifier l'événement"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Enregistrer",
+            onClick: handleModifyEvent,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setIsModifyModalOpen(false);
+              setSelectedEvent(null);
+              setModifyData({ severity: "", type: "", tags: "", notifyClient: false });
+              setAction(null);
+            },
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="severity">Gravité</Label>
+            <Select
+              value={modifyData.severity}
+              onValueChange={(value) => setModifyData({ ...modifyData, severity: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Faible</SelectItem>
+                <SelectItem value="medium">Moyenne</SelectItem>
+                <SelectItem value="high">Élevée</SelectItem>
+                <SelectItem value="critical">Critique</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="type">Type</Label>
+            <Select
+              value={modifyData.type}
+              onValueChange={(value) => setModifyData({ ...modifyData, type: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="routine">Routine</SelectItem>
+                <SelectItem value="incident">Incident</SelectItem>
+                <SelectItem value="action">Action</SelectItem>
+                <SelectItem value="control">Contrôle</SelectItem>
+                <SelectItem value="critical">Critique</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="tags">Tags (séparés par des virgules)</Label>
+            <Input
+              id="tags"
+              value={modifyData.tags}
+              onChange={(e) => setModifyData({ ...modifyData, tags: e.target.value })}
+              placeholder="ex: urgent, police, incendie"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="notifyClient"
+              checked={modifyData.notifyClient}
+              onChange={(e) => setModifyData({ ...modifyData, notifyClient: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            <Label htmlFor="notifyClient" className="cursor-pointer">
+              Notifier le client immédiatement
+            </Label>
           </div>
         </div>
       </Modal>

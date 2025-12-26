@@ -36,7 +36,9 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import Link from "next/link";
 
-// Mock employees
+import { mockDocumentRequests } from "@/data/hr-workflows";
+
+// Mock employees for dropdown (simplified) - use inline for compatibility
 const mockEmployees = [
   { id: "1", name: "Marie Dupont", department: "Sécurité" },
   { id: "2", name: "Jean Martin", department: "Surveillance" },
@@ -44,88 +46,32 @@ const mockEmployees = [
   { id: "4", name: "Pierre Durand", department: "Sécurité" },
 ];
 
-// Mock data
-const mockDocumentRequests: DocumentRequest[] = [
-  {
-    id: "1",
-    employeeId: "1",
-    employeeName: "Marie Dupont",
-    employeeNumber: "EMP-001",
-    department: "Sécurité",
-    type: "document",
-    documentType: "payslip",
-    documentDescription: "Bulletins de paie de janvier à juin 2024",
-    period: "2024-01 à 2024-06",
-    deliveryMethod: "email",
-    status: "validated",
-    submittedAt: new Date("2024-12-15T09:30:00"),
-    processedAt: new Date("2024-12-15T14:20:00"),
-    processedBy: "hr-manager",
-    processedByName: "Alice Dubois",
-    documentUrl: "/documents/payslips-marie-2024.pdf",
-    providedAt: new Date("2024-12-15T14:20:00"),
-    priority: "normal",
-    history: [],
-    createdAt: new Date("2024-12-15T09:30:00"),
-    updatedAt: new Date("2024-12-15T14:20:00"),
-  },
-  {
-    id: "2",
-    employeeId: "2",
-    employeeName: "Jean Martin",
-    employeeNumber: "EMP-002",
-    department: "Surveillance",
-    type: "document",
-    documentType: "contract",
-    documentDescription: "Copie du contrat de travail CDI",
-    year: 2023,
-    deliveryMethod: "email",
-    status: "pending",
-    submittedAt: new Date("2024-12-20T10:15:00"),
-    priority: "high",
-    history: [],
-    createdAt: new Date("2024-12-20T10:15:00"),
-    updatedAt: new Date("2024-12-20T10:15:00"),
-  },
-  {
-    id: "3",
-    employeeId: "3",
-    employeeName: "Sophie Leroy",
-    employeeNumber: "EMP-003",
-    department: "Administration",
-    type: "document",
-    documentType: "attestation",
-    documentDescription: "Attestation employeur pour la CAF",
-    specificDetails: "Pour dossier APL",
-    deliveryMethod: "pickup",
-    status: "in_progress",
-    submittedAt: new Date("2024-12-19T11:00:00"),
-    assignedTo: "hr-manager",
-    assignedToName: "Alice Dubois",
-    priority: "normal",
-    history: [],
-    createdAt: new Date("2024-12-19T11:00:00"),
-    updatedAt: new Date("2024-12-20T08:00:00"),
-  },
-  {
-    id: "4",
-    employeeId: "4",
-    employeeName: "Pierre Durand",
-    employeeNumber: "EMP-004",
-    department: "Sécurité",
-    type: "document",
-    documentType: "tax_document",
-    documentDescription: "Attestation fiscale 2023",
-    year: 2023,
-    deliveryMethod: "email",
-    status: "pending",
-    submittedAt: new Date("2024-12-18T15:45:00"),
-    priority: "normal",
-    history: [],
-    createdAt: new Date("2024-12-18T15:45:00"),
-    updatedAt: new Date("2024-12-18T15:45:00"),
-  },
-];
+// Mock data - use data from file, convert dates
+const mockDocumentRequestsData: DocumentRequest[] = mockDocumentRequests.map((req) => ({
+  id: req.id,
+  employeeId: req.employeeId,
+  employeeName: req.employeeName,
+  employeeNumber: req.employeeNumber,
+  department: req.department || "Sécurité",
+  type: "document" as const,
+  documentType: req.documentType,
+  documentDescription: req.documentDescription,
+  period: req.period,
+  year: req.year,
+  specificDetails: req.specificDetails,
+  deliveryMethod: req.deliveryMethod === "post" ? "mail" : req.deliveryMethod,
+  status: req.status as HRRequestStatus,
+  submittedAt: new Date(req.submittedAt),
+  processedAt: req.processedAt ? new Date(req.processedAt) : undefined,
+  processedBy: req.processedBy,
+  processedByName: req.processedBy ? "Sophie Dubois" : undefined,
+  providedAt: req.providedAt ? new Date(req.providedAt) : undefined,
+  documentUrl: req.documentUrl,
+  priority: req.priority,
+  history: [],
+  createdAt: new Date(req.createdAt),
+  updatedAt: new Date(req.updatedAt),
+}));
 
 const documentTypeLabels: Record<DocumentType, string> = {
   payslip: "Bulletin de paie",
@@ -160,7 +106,7 @@ const deliveryMethodLabels = {
 
 export default function DocumentRequestsPage() {
   const [requests, setRequests] = useState<DocumentRequest[]>(
-    mockDocumentRequests,
+    mockDocumentRequestsData,
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);

@@ -16,70 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, ExternalLink, FileText, Clock, CheckCircle, XCircle } from "lucide-react";
-
-interface Tender {
-  id: string;
-  reference: string;
-  title: string;
-  client: string;
-  source: string;
-  sourceUrl: string;
-  publicationDate: string;
-  deadline: string;
-  status: "À créer" | "En cours" | "Soumis" | "Gagné" | "Perdu" | "Annulé";
-  dossierCreated: boolean;
-  documents: string[];
-  estimatedValue?: number;
-  createdAt?: string;
-  submittedAt?: string;
-}
-
-const mockTenders: Tender[] = [
-  {
-    id: "1",
-    reference: "AO-2024-001",
-    title: "Prestation de sécurité - Centre Commercial",
-    client: "Centre Commercial Rosny 2",
-    source: "BOAMP",
-    sourceUrl: "https://www.boamp.fr/avis/detail/123456",
-    publicationDate: "2024-12-01",
-    deadline: "2025-01-15",
-    status: "En cours",
-    dossierCreated: true,
-    documents: ["dossier_technique.pdf", "dossier_financier.pdf"],
-    estimatedValue: 150000,
-    createdAt: "2024-12-05",
-  },
-  {
-    id: "2",
-    reference: "AO-2024-002",
-    title: "Gardiennage Siège Social",
-    client: "Entreprise XYZ",
-    source: "Marchés Publics",
-    sourceUrl: "https://www.marche-public.fr/123456",
-    publicationDate: "2024-11-20",
-    deadline: "2024-12-20",
-    status: "Soumis",
-    dossierCreated: true,
-    documents: ["dossier_complet.pdf"],
-    estimatedValue: 80000,
-    createdAt: "2024-11-25",
-    submittedAt: "2024-12-18",
-  },
-  {
-    id: "3",
-    reference: "AO-2024-003",
-    title: "Sécurité Événementielle",
-    client: "Mairie de Paris",
-    source: "BOAMP",
-    sourceUrl: "https://www.boamp.fr/avis/detail/789012",
-    publicationDate: "2024-12-10",
-    deadline: "2025-01-30",
-    status: "À créer",
-    dossierCreated: false,
-    documents: [],
-  },
-];
+import { mockTenders, type Tender } from "@/data/hr-tenders";
 
 export default function TendersPage() {
   const [tenders, setTenders] = useState<Tender[]>(mockTenders);
@@ -185,7 +122,7 @@ export default function TendersPage() {
       reference: `AO-2024-${String(tenders.length + 1).padStart(3, "0")}`,
       title: formData.title,
       client: formData.client,
-      source: formData.source,
+      source: formData.source as "BOAMP" | "Marchés Publics" | "Autre",
       sourceUrl: formData.sourceUrl,
       publicationDate: formData.publicationDate,
       deadline: formData.deadline,
