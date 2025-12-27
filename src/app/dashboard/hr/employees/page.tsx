@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,10 +38,6 @@ import {
   User as UserIcon,
   Mail,
   Phone,
-  ExternalLink,
-  Calendar,
-  Briefcase,
-  MapPin,
   Send,
   X,
   ChevronLeft,
@@ -53,11 +50,8 @@ import { mockEmployees, mockStats } from "@/data/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
 
 export default function EmployeesPage() {
+  const router = useRouter();
   const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null,
-  );
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
@@ -118,8 +112,7 @@ export default function EmployeesPage() {
   };
 
   const handleViewProfile = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsDetailsModalOpen(true);
+    router.push(`/dashboard/hr/employees/${employee.id}`);
   };
 
   const handleBulkDelete = () => {
@@ -165,7 +158,7 @@ export default function EmployeesPage() {
   const handleNewEmployeeChange = (field: string, value: string | number) => {
     setNewEmployeeData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: field === "children" ? (value as number) : value,
     }));
   };
 
@@ -194,8 +187,8 @@ export default function EmployeesPage() {
       dateOfBirth: new Date(newEmployeeData.dateOfBirth),
       placeOfBirth: newEmployeeData.placeOfBirth,
       nationality: newEmployeeData.nationality,
-      gender: newEmployeeData.gender,
-      civilStatus: newEmployeeData.civilStatus,
+      gender: newEmployeeData.gender as Employee["gender"],
+      civilStatus: newEmployeeData.civilStatus as Employee["civilStatus"],
       children: newEmployeeData.children,
       address: {
         street: newEmployeeData.street,
@@ -213,10 +206,20 @@ export default function EmployeesPage() {
       hireDate: new Date(newEmployeeData.hireDate),
       position: newEmployeeData.position,
       department: newEmployeeData.department,
-      status: newEmployeeData.status,
+      status: newEmployeeData.status as Employee["status"],
       documents: {},
       contracts: [],
       assignedEquipment: [],
+      savingsPlans: {
+        pee: {
+          contributions: 0,
+          balance: 0,
+        },
+        pereco: {
+          contributions: 0,
+          balance: 0,
+        },
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -567,177 +570,6 @@ export default function EmployeesPage() {
           </DropdownMenu>
         )}
       />
-
-      {/* Employee Details Modal */}
-      <Modal
-        open={isDetailsModalOpen}
-        onOpenChange={setIsDetailsModalOpen}
-        type="details"
-        title="Profil de l'employé"
-        description={
-          selectedEmployee
-            ? `${selectedEmployee.firstName} ${selectedEmployee.lastName} - ${selectedEmployee.position}`
-            : ""
-        }
-        actions={{
-          secondary: {
-            label: "Fermer",
-            onClick: () => setIsDetailsModalOpen(false),
-            variant: "outline",
-          },
-          primary: selectedEmployee
-            ? {
-                label: "Voir le profil complet",
-                onClick: () => {
-                  window.location.href = `/dashboard/hr/employees/${selectedEmployee.id}`;
-                },
-                icon: <ExternalLink className="h-4 w-4" />,
-              }
-            : undefined,
-        }}
-      >
-        {selectedEmployee && (
-          <div className="space-y-6">
-            {/* Header with Avatar */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage
-                  src={selectedEmployee.photo}
-                  alt={selectedEmployee.firstName}
-                />
-                <AvatarFallback className="text-lg">
-                  {selectedEmployee.firstName[0]}
-                  {selectedEmployee.lastName[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold">
-                  {selectedEmployee.firstName} {selectedEmployee.lastName}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedEmployee.employeeNumber}
-                </p>
-                <div className="mt-2">
-                  {getStatusBadge(selectedEmployee.status)}
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm text-muted-foreground">
-                Informations de contact
-              </h4>
-              <div className="grid gap-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedEmployee.email}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedEmployee.phone}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {selectedEmployee.address.street},{" "}
-                    {selectedEmployee.address.postalCode}{" "}
-                    {selectedEmployee.address.city}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Employment Information */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm text-muted-foreground">
-                Informations professionnelles
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <Briefcase className="h-3 w-3" />
-                    <span>Poste</span>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedEmployee.position}
-                  </p>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Département
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedEmployee.department}
-                  </p>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>Date d&apos;embauche</span>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {new Date(selectedEmployee.hireDate).toLocaleDateString(
-                      "fr-FR",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      },
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Contrats
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedEmployee.contracts.length} contrat(s)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="rounded-lg bg-muted/30 p-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold">
-                    {selectedEmployee.documents
-                      ? Object.keys(selectedEmployee.documents).length
-                      : 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Documents</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {selectedEmployee.assignedEquipment.length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Équipements</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {
-                      selectedEmployee.contracts.filter(
-                        (c) => c.status === "active",
-                      ).length
-                    }
-                  </p>
-                  <p className="text-xs text-muted-foreground">Contrat actif</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Consultez le profil complet pour plus de détails sur les
-                certifications, contrats, équipements et historique.
-              </p>
-            </div>
-          </div>
-        )}
-      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

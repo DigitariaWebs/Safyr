@@ -22,7 +22,7 @@ import {
 
 export default function PayrollConfigurationPage() {
   const [conventions, setConventions] = useState<PayrollConvention[]>(
-    mockPayrollConventions
+    mockPayrollConventions,
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -52,12 +52,12 @@ export default function PayrollConfigurationPage() {
     },
     {
       key: "nightBonus",
-      label: "Prime Nuit",
+      label: "Majoration Nuit",
       render: (conv) => `${conv.nightBonus}%`,
     },
     {
       key: "sundayBonus",
-      label: "Prime Dimanche",
+      label: "Majoration Dimanche",
       render: (conv) => `${conv.sundayBonus}%`,
     },
     {
@@ -96,8 +96,8 @@ export default function PayrollConfigurationPage() {
     if (formData.id) {
       setConventions(
         conventions.map((c) =>
-          c.id === formData.id ? { ...c, ...formData } : c
-        )
+          c.id === formData.id ? { ...c, ...formData } : c,
+        ),
       );
     } else {
       const newConvention: PayrollConvention = {
@@ -247,7 +247,7 @@ export default function PayrollConfigurationPage() {
             </div>
 
             <div>
-              <Label htmlFor="nightBonus">Prime nuit (%)</Label>
+              <Label htmlFor="nightBonus">Majoration nuit (%)</Label>
               <Input
                 id="nightBonus"
                 type="number"
@@ -262,7 +262,7 @@ export default function PayrollConfigurationPage() {
             </div>
 
             <div>
-              <Label htmlFor="sundayBonus">Prime dimanche (%)</Label>
+              <Label htmlFor="sundayBonus">Majoration dimanche (%)</Label>
               <Input
                 id="sundayBonus"
                 type="number"
@@ -277,7 +277,7 @@ export default function PayrollConfigurationPage() {
             </div>
 
             <div>
-              <Label htmlFor="holidayBonus">Prime jours fériés (%)</Label>
+              <Label htmlFor="holidayBonus">Majoration jours fériés (%)</Label>
               <Input
                 id="holidayBonus"
                 type="number"
@@ -387,21 +387,21 @@ export default function PayrollConfigurationPage() {
               </div>
 
               <div>
-                <Label>Prime nuit</Label>
+                <Label>Majoration nuit</Label>
                 <p className="text-sm font-medium">
                   {selectedConvention.nightBonus}%
                 </p>
               </div>
 
               <div>
-                <Label>Prime dimanche</Label>
+                <Label>Majoration dimanche</Label>
                 <p className="text-sm font-medium">
                   {selectedConvention.sundayBonus}%
                 </p>
               </div>
 
               <div>
-                <Label>Prime jours fériés</Label>
+                <Label>Majoration jours fériés</Label>
                 <p className="text-sm font-medium">
                   {selectedConvention.holidayBonus}%
                 </p>
@@ -431,7 +431,9 @@ export default function PayrollConfigurationPage() {
               <div>
                 <Label>Dernière mise à jour</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedConvention.lastUpdate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedConvention.lastUpdate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             </div>
@@ -441,4 +443,3 @@ export default function PayrollConfigurationPage() {
     </div>
   );
 }
-

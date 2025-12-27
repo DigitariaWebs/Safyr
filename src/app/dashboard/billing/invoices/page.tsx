@@ -19,11 +19,14 @@ import { mockBillingInvoices, BillingInvoice } from "@/data/billing-invoices";
 import { mockBillingClients } from "@/data/billing-clients";
 
 export default function BillingInvoicesPage() {
-  const [invoices, setInvoices] = useState<BillingInvoice[]>(mockBillingInvoices);
+  const [invoices, setInvoices] =
+    useState<BillingInvoice[]>(mockBillingInvoices);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(
+    null,
+  );
   const [formData, setFormData] = useState<Partial<BillingInvoice>>({});
 
   const columns: ColumnDef<BillingInvoice>[] = [
@@ -67,13 +70,16 @@ export default function BillingInvoicesPage() {
       key: "status",
       label: "Statut",
       render: (invoice) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-          "Payée": "default",
-          "Envoyée": "secondary",
-          "Validée": "secondary",
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
+          Payée: "default",
+          Envoyée: "secondary",
+          Validée: "secondary",
           "En attente": "outline",
-          "Brouillon": "outline",
-          "Annulée": "destructive",
+          Brouillon: "outline",
+          Annulée: "destructive",
         };
         return (
           <Badge variant={variants[invoice.status] || "outline"}>
@@ -87,7 +93,11 @@ export default function BillingInvoicesPage() {
       label: "Heures",
       render: (invoice) => (
         <span className="text-sm">
-          {invoice.validatedHours || invoice.realizedHours || invoice.planningHours || 0} h
+          {invoice.validatedHours ||
+            invoice.realizedHours ||
+            invoice.planningHours ||
+            0}{" "}
+          h
         </span>
       ),
     },
@@ -113,9 +123,13 @@ export default function BillingInvoicesPage() {
     const client = mockBillingClients.find((c) => c.id === formData.clientId);
     if (!client) return;
 
-    const hours = formData.validatedHours || formData.realizedHours || formData.planningHours || 0;
+    const hours =
+      formData.validatedHours ||
+      formData.realizedHours ||
+      formData.planningHours ||
+      0;
     const subtotal = hours * client.hourlyRate;
-    const vatAmount = subtotal * (formData.vatRate || 20) / 100;
+    const vatAmount = (subtotal * (formData.vatRate || 20)) / 100;
     const total = subtotal + vatAmount;
 
     setFormData({
@@ -130,14 +144,16 @@ export default function BillingInvoicesPage() {
   const handleSave = () => {
     if (formData.id) {
       setInvoices(
-        invoices.map((i) => (i.id === formData.id ? { ...i, ...formData } : i))
+        invoices.map((i) => (i.id === formData.id ? { ...i, ...formData } : i)),
       );
     } else {
       const newInvoice: BillingInvoice = {
         id: (invoices.length + 1).toString(),
         invoiceNumber: `FAC-2024-${String(invoices.length + 1).padStart(3, "0")}`,
         clientId: formData.clientId || "",
-        clientName: mockBillingClients.find((c) => c.id === formData.clientId)?.name || "",
+        clientName:
+          mockBillingClients.find((c) => c.id === formData.clientId)?.name ||
+          "",
         period: formData.period || {
           start: new Date().toISOString().split("T")[0],
           end: new Date().toISOString().split("T")[0],
@@ -184,8 +200,8 @@ export default function BillingInvoicesPage() {
               validatedAt: new Date().toISOString(),
               previewed: true,
             }
-          : i
-      )
+          : i,
+      ),
     );
   };
 
@@ -199,8 +215,8 @@ export default function BillingInvoicesPage() {
               issuedAt: new Date().toISOString(),
               sentAt: new Date().toISOString(),
             }
-          : i
-      )
+          : i,
+      ),
     );
   };
 
@@ -208,9 +224,12 @@ export default function BillingInvoicesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Génération Automatique des Factures</h1>
+          <h1 className="text-3xl font-bold">
+            Génération Automatique des Factures
+          </h1>
           <p className="text-muted-foreground">
-            Création et gestion des factures à partir des données Planning, Géolocalisation, Paie et RH
+            Création et gestion des factures à partir des données Planning,
+            Géolocalisation, Paie et RH
           </p>
         </div>
         <Button onClick={handleCreate}>
@@ -357,7 +376,9 @@ export default function BillingInvoicesPage() {
             </div>
 
             <div>
-              <Label htmlFor="planningHours">Heures planifiées (Planning)</Label>
+              <Label htmlFor="planningHours">
+                Heures planifiées (Planning)
+              </Label>
               <Input
                 id="planningHours"
                 type="number"
@@ -365,7 +386,9 @@ export default function BillingInvoicesPage() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    planningHours: e.target.value ? parseInt(e.target.value) : undefined,
+                    planningHours: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
                   })
                 }
                 placeholder="720"
@@ -373,7 +396,9 @@ export default function BillingInvoicesPage() {
             </div>
 
             <div>
-              <Label htmlFor="realizedHours">Heures réalisées (Géoloc/Main courante)</Label>
+              <Label htmlFor="realizedHours">
+                Heures réalisées (Géoloc/Main courante)
+              </Label>
               <Input
                 id="realizedHours"
                 type="number"
@@ -381,7 +406,9 @@ export default function BillingInvoicesPage() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    realizedHours: e.target.value ? parseInt(e.target.value) : undefined,
+                    realizedHours: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
                   })
                 }
                 placeholder="715"
@@ -397,7 +424,9 @@ export default function BillingInvoicesPage() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    validatedHours: e.target.value ? parseInt(e.target.value) : undefined,
+                    validatedHours: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
                   })
                 }
                 placeholder="715"
@@ -523,7 +552,9 @@ export default function BillingInvoicesPage() {
 
               <div>
                 <Label>Client</Label>
-                <p className="text-sm font-medium">{selectedInvoice.clientName}</p>
+                <p className="text-sm font-medium">
+                  {selectedInvoice.clientName}
+                </p>
               </div>
 
               <div>
@@ -534,8 +565,13 @@ export default function BillingInvoicesPage() {
               <div>
                 <Label>Période</Label>
                 <p className="text-sm">
-                  {new Date(selectedInvoice.period.start).toLocaleDateString("fr-FR")} -{" "}
-                  {new Date(selectedInvoice.period.end).toLocaleDateString("fr-FR")}
+                  {new Date(selectedInvoice.period.start).toLocaleDateString(
+                    "fr-FR",
+                  )}{" "}
+                  -{" "}
+                  {new Date(selectedInvoice.period.end).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
 
@@ -569,9 +605,13 @@ export default function BillingInvoicesPage() {
               {selectedInvoice.variance && (
                 <div>
                   <Label>Écart (prévu/réalisé)</Label>
-                  <p className={`text-sm font-semibold ${
-                    selectedInvoice.variance.difference >= 0 ? "text-green-600" : "text-red-600"
-                  }`}>
+                  <p
+                    className={`text-sm font-semibold ${
+                      selectedInvoice.variance.difference >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {selectedInvoice.variance.difference > 0 ? "+" : ""}
                     {selectedInvoice.variance.difference} h
                   </p>
@@ -647,7 +687,7 @@ export default function BillingInvoicesPage() {
       >
         {selectedInvoice && (
           <div className="space-y-4">
-            <div className="border rounded-lg p-6 bg-white">
+            <div className="border rounded-lg p-6">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold">FACTURE</h2>
                 <p className="text-sm text-muted-foreground">
@@ -669,13 +709,20 @@ export default function BillingInvoicesPage() {
                   <p className="text-sm">
                     <strong>Date:</strong>{" "}
                     {selectedInvoice.issuedAt
-                      ? new Date(selectedInvoice.issuedAt).toLocaleDateString("fr-FR")
+                      ? new Date(selectedInvoice.issuedAt).toLocaleDateString(
+                          "fr-FR",
+                        )
                       : new Date().toLocaleDateString("fr-FR")}
                   </p>
                   <p className="text-sm">
                     <strong>Période:</strong>{" "}
-                    {new Date(selectedInvoice.period.start).toLocaleDateString("fr-FR")} -{" "}
-                    {new Date(selectedInvoice.period.end).toLocaleDateString("fr-FR")}
+                    {new Date(selectedInvoice.period.start).toLocaleDateString(
+                      "fr-FR",
+                    )}{" "}
+                    -{" "}
+                    {new Date(selectedInvoice.period.end).toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </p>
                 </div>
               </div>
@@ -693,7 +740,9 @@ export default function BillingInvoicesPage() {
                   <tbody>
                     <tr>
                       <td className="py-2">Heures normales</td>
-                      <td className="text-right py-2">{selectedInvoice.normalHours} h</td>
+                      <td className="text-right py-2">
+                        {selectedInvoice.normalHours} h
+                      </td>
                       <td className="text-right py-2">-</td>
                       <td className="text-right py-2">
                         {selectedInvoice.subtotal.toLocaleString("fr-FR")} €
@@ -702,7 +751,9 @@ export default function BillingInvoicesPage() {
                     {selectedInvoice.overtimeHours > 0 && (
                       <tr>
                         <td className="py-2">Heures supplémentaires</td>
-                        <td className="text-right py-2">{selectedInvoice.overtimeHours} h</td>
+                        <td className="text-right py-2">
+                          {selectedInvoice.overtimeHours} h
+                        </td>
                         <td className="text-right py-2">-</td>
                         <td className="text-right py-2">-</td>
                       </tr>
@@ -716,15 +767,21 @@ export default function BillingInvoicesPage() {
                   <div className="w-64 space-y-2">
                     <div className="flex justify-between">
                       <span>Total HT:</span>
-                      <span>{selectedInvoice.subtotal.toLocaleString("fr-FR")} €</span>
+                      <span>
+                        {selectedInvoice.subtotal.toLocaleString("fr-FR")} €
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>TVA ({selectedInvoice.vatRate}%):</span>
-                      <span>{selectedInvoice.vatAmount.toLocaleString("fr-FR")} €</span>
+                      <span>
+                        {selectedInvoice.vatAmount.toLocaleString("fr-FR")} €
+                      </span>
                     </div>
-                    <div className="flex justify-between font-bold text-lg font-bold">
+                    <div className="flex justify-between text-lg font-bold">
                       <span>Total TTC:</span>
-                      <span>{selectedInvoice.total.toLocaleString("fr-FR")} €</span>
+                      <span>
+                        {selectedInvoice.total.toLocaleString("fr-FR")} €
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -736,4 +793,3 @@ export default function BillingInvoicesPage() {
     </div>
   );
 }
-

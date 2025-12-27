@@ -51,6 +51,14 @@ const mockContracts: Contract[] = [
     signedByEmployer: true,
     amendments: [],
     status: "pending-signature",
+    probationPeriod: {
+      duration: 2,
+      unit: "months",
+    },
+    probationStartDate: new Date("2024-02-01"),
+    probationEndDate: new Date("2024-04-01"),
+    probationRenewed: false,
+    probationStatus: "active",
     createdAt: new Date("2024-01-20"),
     updatedAt: new Date("2024-01-20"),
   },
@@ -72,6 +80,14 @@ const mockContracts: Contract[] = [
     signedAt: new Date("2024-01-12"),
     amendments: [],
     status: "active",
+    probationPeriod: {
+      duration: 2,
+      unit: "weeks",
+    },
+    probationStartDate: new Date("2024-01-15"),
+    probationEndDate: new Date("2024-01-29"),
+    probationRenewed: false,
+    probationStatus: "completed",
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-12"),
   },
@@ -168,10 +184,54 @@ export default function ContractsPage() {
   };
 
   const handleSave = () => {
+    const startDate = new Date(formData.startDate);
+    const endDate = formData.endDate ? new Date(formData.endDate) : undefined;
+
+    // Calculate probation period based on convention
+    let probationPeriod:
+      | { duration: number; unit: "months" | "weeks" | "days" }
+      | undefined;
+    let probationEndDate: Date | undefined;
+
+    if (formData.type === "CDI") {
+      // CDI private security
+      const position = formData.position.toLowerCase();
+      if (
+        position.includes("responsable") ||
+        position.includes("cadre") ||
+        position.includes("directeur")
+      ) {
+        probationPeriod = { duration: 4, unit: "months" };
+      } else if (position.includes("maitrise") || position.includes("chef")) {
+        probationPeriod = { duration: 3, unit: "months" };
+      } else {
+        probationPeriod = { duration: 2, unit: "months" };
+      }
+      probationEndDate = new Date(startDate);
+      probationEndDate.setMonth(
+        probationEndDate.getMonth() + probationPeriod.duration,
+      );
+    } else if (formData.type === "CDD") {
+      // CDD private security
+      if (endDate) {
+        const durationMs = endDate.getTime() - startDate.getTime();
+        const durationMonths = durationMs / (1000 * 60 * 60 * 24 * 30.44); // Approximate months
+        if (durationMonths <= 6) {
+          probationPeriod = { duration: 2, unit: "weeks" };
+          probationEndDate = new Date(startDate);
+          probationEndDate.setDate(probationEndDate.getDate() + 14);
+        } else {
+          probationPeriod = { duration: 1, unit: "months" };
+          probationEndDate = new Date(startDate);
+          probationEndDate.setMonth(probationEndDate.getMonth() + 1);
+        }
+      }
+    }
+
     const contractData = {
       type: formData.type,
-      startDate: new Date(formData.startDate),
-      endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+      startDate,
+      endDate,
       position: formData.position,
       department: formData.department,
       salary: {
@@ -181,6 +241,11 @@ export default function ContractsPage() {
       },
       workingHours: parseInt(formData.workingHours),
       fileUrl: contractFile ? `/files/contract_${Date.now()}.pdf` : undefined,
+      probationPeriod,
+      probationStartDate: probationPeriod ? startDate : undefined,
+      probationEndDate,
+      probationRenewed: false,
+      probationStatus: probationPeriod ? ("active" as const) : undefined,
     };
 
     if (editingContract) {

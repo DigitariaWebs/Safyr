@@ -62,7 +62,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Ouverture site",
-    description: "Ouverture normale du site. Inspection visuelle effectuée. RAS.",
+    description:
+      "Ouverture normale du site. Inspection visuelle effectuée. RAS.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     supervisorId: "SUP-012",
@@ -87,7 +88,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "medium",
     status: "resolved",
     title: "Intervention visiteur",
-    description: "Visiteur sans badge d'accès. Accompagné au bureau d'accueil. Situation résolue.",
+    description:
+      "Visiteur sans badge d'accès. Accompagné au bureau d'accueil. Situation résolue.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     supervisorId: "SUP-012",
@@ -112,7 +114,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Ronde de contrôle",
-    description: "Ronde de contrôle effectuée. Vérification des accès et alarmes. Tout conforme.",
+    description:
+      "Ronde de contrôle effectuée. Vérification des accès et alarmes. Tout conforme.",
     agentId: "AGT-087",
     agentName: "Sophie Bernard",
     clientNotified: false,
@@ -130,7 +133,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Nettoyage déversement",
-    description: "Déversement de liquide détecté. Nettoyage immédiat effectué. Zone sécurisée.",
+    description:
+      "Déversement de liquide détecté. Nettoyage immédiat effectué. Zone sécurisée.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     clientNotified: false,
@@ -148,7 +152,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Fermeture site",
-    description: "Fermeture du site. Vérification de tous les accès. Armement alarme effectué. RAS.",
+    description:
+      "Fermeture du site. Vérification de tous les accès. Armement alarme effectué. RAS.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     clientNotified: false,
@@ -170,7 +175,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Ouverture site",
-    description: "Ouverture normale du site. Inspection visuelle effectuée. RAS.",
+    description:
+      "Ouverture normale du site. Inspection visuelle effectuée. RAS.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     supervisorId: "SUP-012",
@@ -253,7 +259,8 @@ export const mockLogbookEvents: LogbookEvent[] = [
     agentName: "Jean Dupont",
     supervisorId: "SUP-012",
     supervisorName: "Marie Martin",
-    supervisorComment: "Intervention rapide et conforme. Maintenance préventive à prévoir.",
+    supervisorComment:
+      "Intervention rapide et conforme. Maintenance préventive à prévoir.",
     clientNotified: true,
     tags: ["incendie", "alarme", "pompiers", "critique"],
     media: {
@@ -377,14 +384,33 @@ export const mockSites = [
 ];
 
 export const mockAgents = [
-  { id: "AGT-125", name: "Jean Dupont", role: "Agent de sécurité" },
-  { id: "AGT-087", name: "Sophie Bernard", role: "Agent de sécurité" },
-  { id: "AGT-234", name: "Thomas Petit", role: "Agent de sécurité" },
-  { id: "AGT-156", name: "Julie Moreau", role: "Agent de sécurité" },
+  {
+    id: "AGT-125",
+    name: "Jean Dupont",
+    role: "Agent de sécurité",
+    siteId: "SITE-001",
+  },
+  {
+    id: "AGT-087",
+    name: "Sophie Bernard",
+    role: "Agent de sécurité",
+    siteId: "SITE-002",
+  },
+  {
+    id: "AGT-234",
+    name: "Thomas Petit",
+    role: "Agent de sécurité",
+    siteId: "SITE-003",
+  },
+  {
+    id: "AGT-156",
+    name: "Julie Moreau",
+    role: "Agent de sécurité",
+    siteId: "SITE-004",
+  },
 ];
 
 export const mockSupervisors = [
   { id: "SUP-012", name: "Marie Martin", role: "Superviseur" },
   { id: "SUP-024", name: "Pierre Durand", role: "Superviseur" },
 ];
-

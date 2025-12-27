@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 
 type SidebarMode = "expanded" | "collapsed";
 
@@ -14,26 +20,26 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
-    if (typeof window !== "undefined") {
-      const savedMode = localStorage.getItem("dashboardSidebarMode");
-      if (savedMode === "expanded" || savedMode === "collapsed") {
-        return savedMode;
-      }
-    }
-    return "collapsed";
-  });
-  
-  const [isHidden, setIsHidden] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedHidden = localStorage.getItem("dashboardSidebarHidden");
-      return savedHidden === "true";
-    }
-    return false;
-  });
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("collapsed");
+  const [isHidden, setIsHidden] = useState(false);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    mountedRef.current = true;
+    const savedMode = localStorage.getItem("dashboardSidebarMode");
+    const savedHidden = localStorage.getItem("dashboardSidebarHidden");
+
+    if (savedMode === "expanded" || savedMode === "collapsed") {
+      setSidebarMode(savedMode);
+    }
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    if (savedHidden === "true") {
+      setIsHidden(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mountedRef.current) {
       localStorage.setItem("dashboardSidebarMode", sidebarMode);
       localStorage.setItem("dashboardSidebarHidden", String(isHidden));
     }

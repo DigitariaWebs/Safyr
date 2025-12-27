@@ -12,25 +12,32 @@ export default function BillingKPIPage() {
 
   // Calculate KPIs
   const totalRevenue = invoices.reduce((sum, inv) => sum + inv.total, 0);
-  const revenueByClient = invoices.reduce((acc, inv) => {
-    acc[inv.clientId] = (acc[inv.clientId] || 0) + inv.total;
-    return acc;
-  }, {} as Record<string, number>);
+  const revenueByClient = invoices.reduce(
+    (acc, inv) => {
+      acc[inv.clientId] = (acc[inv.clientId] || 0) + inv.total;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
-  const revenueBySite = invoices.reduce((acc, inv) => {
-    if (inv.siteId) {
-      acc[inv.siteId] = (acc[inv.siteId] || 0) + inv.total;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const revenueBySite = invoices.reduce(
+    (acc, inv) => {
+      if (inv.siteId) {
+        acc[inv.siteId] = (acc[inv.siteId] || 0) + inv.total;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const totalHoursBilled = invoices.reduce(
-    (sum, inv) => sum + (inv.validatedHours || inv.realizedHours || inv.planningHours || 0),
-    0
+    (sum, inv) =>
+      sum + (inv.validatedHours || inv.realizedHours || inv.planningHours || 0),
+    0,
   );
   const totalHoursRealized = invoices.reduce(
     (sum, inv) => sum + (inv.realizedHours || inv.planningHours || 0),
-    0
+    0,
   );
 
   const varianceRate =
@@ -116,7 +123,11 @@ export default function BillingKPIPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {invoices.filter((inv) => inv.status === "Envoyée" || inv.status === "Payée").length}
+              {
+                invoices.filter(
+                  (inv) => inv.status === "Envoyée" || inv.status === "Payée",
+                ).length
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               sur {invoices.length}
@@ -135,7 +146,10 @@ export default function BillingKPIPage() {
             {Object.entries(revenueByClient).map(([clientId, revenue]) => {
               const client = clients.find((c) => c.id === clientId);
               return (
-                <div key={clientId} className="flex justify-between items-center">
+                <div
+                  key={clientId}
+                  className="flex justify-between items-center"
+                >
                   <span className="text-sm">{client?.name || clientId}</span>
                   <span className="text-sm font-semibold">
                     {revenue.toLocaleString("fr-FR")} €
@@ -158,8 +172,13 @@ export default function BillingKPIPage() {
               {Object.entries(revenueBySite).map(([siteId, revenue]) => {
                 const invoice = invoices.find((inv) => inv.siteId === siteId);
                 return (
-                  <div key={siteId} className="flex justify-between items-center">
-                    <span className="text-sm">{invoice?.siteName || siteId}</span>
+                  <div
+                    key={siteId}
+                    className="flex justify-between items-center"
+                  >
+                    <span className="text-sm">
+                      {invoice?.siteName || siteId}
+                    </span>
                     <span className="text-sm font-semibold">
                       {revenue.toLocaleString("fr-FR")} €
                     </span>
@@ -179,16 +198,37 @@ export default function BillingKPIPage() {
         <CardContent>
           <div className="space-y-2">
             {Object.entries(
-              clients.reduce((acc, client) => {
-                const clientInvoices = invoices.filter((inv) => inv.clientId === client.id);
-                const clientRevenue = clientInvoices.reduce((sum, inv) => sum + inv.total, 0);
-                if (clientRevenue > 0 && client.serviceType) {
-                  acc[client.serviceType] = (acc[client.serviceType] || 0) + clientRevenue;
-                }
-                return acc;
-              }, {} as Record<string, number>)
+              clients.reduce(
+                (acc, client) => {
+                  const clientInvoices = invoices.filter(
+                    (inv) => inv.clientId === client.id,
+                  );
+                  const clientRevenue = clientInvoices.reduce(
+                    (sum, inv) => sum + inv.total,
+                    0,
+                  );
+                  if (clientRevenue > 0) {
+                    // Support multiple service types per client (serviceTypes array).
+                    // Fall back to single serviceType for backward compatibility.
+                    const types =
+                      client.serviceTypes && client.serviceTypes.length > 0
+                        ? client.serviceTypes
+                        : client.serviceType
+                          ? [client.serviceType]
+                          : [];
+                    types.forEach((t) => {
+                      acc[t] = (acc[t] || 0) + clientRevenue;
+                    });
+                  }
+                  return acc;
+                },
+                {} as Record<string, number>,
+              ),
             ).map(([serviceType, revenue]) => (
-              <div key={serviceType} className="flex justify-between items-center">
+              <div
+                key={serviceType}
+                className="flex justify-between items-center"
+              >
                 <span className="text-sm">{serviceType}</span>
                 <span className="text-sm font-semibold">
                   {revenue.toLocaleString("fr-FR")} €
@@ -201,4 +241,3 @@ export default function BillingKPIPage() {
     </div>
   );
 }
-

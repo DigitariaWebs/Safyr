@@ -3,20 +3,43 @@ export interface BillingClient {
   name: string;
   siret: string;
   contractType: "Mensuel" | "Forfaitaire" | "Heure réelle";
-  serviceType: "Gardiennage" | "Rondes" | "Événementiel";
+  // Backwards-compatible single service type (kept for compatibility)
+  serviceType?:
+    | "Gardiennage"
+    | "Rondes"
+    | "Événementiel"
+    | "SSIAP"
+    | "Accueil"
+    | "Intervention"
+    | "ADS";
+  // Multiple service types allowed
+  serviceTypes?: (
+    | "Gardiennage"
+    | "Rondes"
+    | "Événementiel"
+    | "SSIAP"
+    | "Accueil"
+    | "Intervention"
+    | "ADS"
+  )[];
   contractStartDate: string;
   contractEndDate?: string;
   monthlyHours?: number; // volumes horaires mensuels
   hourlyRate: number;
-  nightBonus: number; // %
-  sundayBonus: number; // %
-  holidayBonus: number; // %
+  nightBonus: number; // % majoration nuit
+  sundayBonus: number; // % majoration dimanche
+  holidayBonus: number; // % majoration jours fériés
   indexationRate?: number; // % d'indexation annuelle
   sites: number;
   status: "Actif" | "Suspendu" | "Inactif";
   billingDay: number; // jour du mois
   paymentTerm: number; // jours
   lastInvoice: string;
+  // Contact
+  contactName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
   // Connexions
   agentTypes?: string[]; // Typologie des agents affectés (RH)
   planningVolumes?: {
@@ -32,10 +55,11 @@ export const mockBillingClients: BillingClient[] = [
     siret: "12345678901234",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
+    serviceTypes: ["Gardiennage"],
     contractStartDate: "2024-01-01",
     contractEndDate: "2024-12-31",
     monthlyHours: 720,
-    hourlyRate: 25.50,
+    hourlyRate: 25.5,
     nightBonus: 15,
     sundayBonus: 30,
     holidayBonus: 50,
@@ -45,6 +69,10 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 30,
     lastInvoice: "2024-01-01",
+    contactName: "Mme. Responsable",
+    address: "1 Rue du Commerce, 93100 Rosny-sous-Bois",
+    phone: "01 23 45 67 89",
+    email: "contact@rosny2.example.com",
     agentTypes: ["Agent de sécurité", "Chef de poste"],
     planningVolumes: [
       { site: "Rosny 2 - Entrée principale", monthlyHours: 720 },
@@ -56,9 +84,10 @@ export const mockBillingClients: BillingClient[] = [
     siret: "98765432109876",
     contractType: "Forfaitaire",
     serviceType: "Rondes",
+    serviceTypes: ["Rondes"],
     contractStartDate: "2024-01-01",
     monthlyHours: 480,
-    hourlyRate: 28.00,
+    hourlyRate: 28.0,
     nightBonus: 20,
     sundayBonus: 35,
     holidayBonus: 55,
@@ -68,6 +97,10 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 5,
     paymentTerm: 45,
     lastInvoice: "2024-01-05",
+    contactName: "M. Directeur",
+    address: "10 Place de la Défense, 92000 La Défense",
+    phone: "01 98 76 54 32",
+    email: "contact@ladefense.example.com",
     agentTypes: ["Rondier", "Agent de sécurité"],
     planningVolumes: [
       { site: "Tour A", monthlyHours: 240 },
@@ -80,8 +113,9 @@ export const mockBillingClients: BillingClient[] = [
     siret: "11223344556677",
     contractType: "Heure réelle",
     serviceType: "Événementiel",
+    serviceTypes: ["Événementiel"],
     contractStartDate: "2024-01-01",
-    hourlyRate: 22.00,
+    hourlyRate: 22.0,
     nightBonus: 10,
     sundayBonus: 25,
     holidayBonus: 45,
@@ -90,6 +124,10 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 10,
     paymentTerm: 30,
     lastInvoice: "2024-01-10",
+    contactName: "M. Logistique",
+    address: "5 Rue des Entrepôts, 92230 Gennevilliers",
+    phone: "01 34 56 78 90",
+    email: "contact@gennevilliers-warehouse.example.com",
     agentTypes: ["Agent événementiel"],
   },
   {
@@ -98,10 +136,11 @@ export const mockBillingClients: BillingClient[] = [
     siret: "22334455667788",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
+    serviceTypes: ["Gardiennage", "SSIAP"],
     contractStartDate: "2024-01-01",
     contractEndDate: "2024-12-31",
     monthlyHours: 960,
-    hourlyRate: 26.70,
+    hourlyRate: 26.7,
     nightBonus: 20,
     sundayBonus: 40,
     holidayBonus: 60,
@@ -111,6 +150,10 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 30,
     lastInvoice: "2024-01-01",
+    contactName: "Direction des services",
+    address: "2 Rue de l'Hôpital, 75012 Paris",
+    phone: "01 23 45 11 22",
+    email: "security@stantoine.example.com",
     agentTypes: ["Agent de sécurité", "Chef de poste", "Superviseur"],
     planningVolumes: [
       { site: "Entrée principale", monthlyHours: 320 },
@@ -124,10 +167,11 @@ export const mockBillingClients: BillingClient[] = [
     siret: "33445566778899",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
+    serviceTypes: ["Gardiennage", "Accueil"],
     contractStartDate: "2024-01-01",
     contractEndDate: "2024-12-31",
     monthlyHours: 1440,
-    hourlyRate: 26.80,
+    hourlyRate: 26.8,
     nightBonus: 25,
     sundayBonus: 50,
     holidayBonus: 70,
@@ -137,7 +181,15 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 45,
     lastInvoice: "2024-01-01",
-    agentTypes: ["Agent de sécurité aéroportuaire", "Chef de poste", "Superviseur"],
+    contactName: "Direction Sécurité aéroportuaire",
+    address: "95700 Roissy-en-France",
+    phone: "01 60 79 60 00",
+    email: "security@cdg.example.com",
+    agentTypes: [
+      "Agent de sécurité aéroportuaire",
+      "Chef de poste",
+      "Superviseur",
+    ],
     planningVolumes: [
       { site: "Terminal 1", monthlyHours: 480 },
       { site: "Terminal 2", monthlyHours: 480 },
@@ -147,4 +199,3 @@ export const mockBillingClients: BillingClient[] = [
     ],
   },
 ];
-

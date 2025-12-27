@@ -27,6 +27,12 @@ import {
   FileSignature,
   UserCheck,
   UserX,
+  Gift,
+  Briefcase,
+  Fuel,
+  Utensils,
+  Calendar,
+  Archive,
 } from "lucide-react";
 import type { Employee, Equipment } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -126,12 +132,118 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "returned",
       notes: "Remplacé par nouveau badge le 20/12/2023",
     },
+    {
+      id: "11",
+      name: "Carte Carburant 2023",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2023-001",
+      description: "Carte carburant professionnelle - épuisée",
+      quantity: 0,
+      consumable: true,
+      assignedAt: new Date("2023-01-01"),
+      assignedBy: "admin@safyr.com",
+      returnedAt: new Date("2023-12-31"),
+      returnedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2023-01-01T09:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      returnSignature: {
+        signedAt: new Date("2023-12-31T17:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "exhausted",
+      notes: "Carte épuisée fin 2023",
+    },
+    {
+      id: "6",
+      name: "Chèque Vacances 2024",
+      type: "VACATION_VOUCHER",
+      description: "Chèque Vacances annuel",
+      assignedAt: new Date("2024-01-01"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2024-01-01T09:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "7",
+      name: "Carte Cadeau Noël",
+      type: "GIFT_CARD",
+      description: "Carte cadeau de fin d'année",
+      assignedAt: new Date("2023-12-20"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2023-12-20T10:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "8",
+      name: "CESU Services",
+      type: "CESU",
+      description: "Chèque Emploi Service Universel",
+      assignedAt: new Date("2024-01-15"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2024-01-15T11:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "9",
+      name: "Carte Carburant",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2024-001",
+      description: "Carte carburant professionnelle",
+      quantity: 200,
+      consumable: true,
+      assignedAt: new Date("2024-02-01"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2024-02-01T14:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "10",
+      name: "Titre Restaurant",
+      type: "MEAL_VOUCHER",
+      description: "Titre restaurant mensuel",
+      quantity: 20,
+      consumable: true,
+      assignedAt: new Date("2024-01-01"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2024-01-01T09:30:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
   ]);
 
   // Available equipment pool (mock data)
   const [availableEquipment] = useState<Equipment[]>([
     {
-      id: "6",
+      id: "11",
       name: "Gilet pare-balles supplémentaire",
       type: "PPE",
       serialNumber: "PPE-2024-001235",
@@ -142,7 +254,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "7",
+      id: "12",
       name: "Radio Icom IC-F2000",
       type: "RADIO",
       serialNumber: "ICOM-2024-001236",
@@ -153,7 +265,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "8",
+      id: "13",
       name: "Trousseau de clés - Bâtiment B",
       type: "KEYS",
       serialNumber: "KEY-B-456",
@@ -164,7 +276,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "9",
+      id: "14",
       name: "Badge d'accès neuf",
       type: "BADGE",
       serialNumber: "BADGE-001237",
@@ -174,13 +286,70 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       condition: "new",
       status: "assigned", // This would be "available" in real app
     },
+    {
+      id: "15",
+      name: "Chèque Vacances 2024",
+      type: "VACATION_VOUCHER",
+      description: "Chèque Vacances annuel - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "16",
+      name: "Carte Cadeau",
+      type: "GIFT_CARD",
+      description: "Carte cadeau - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "17",
+      name: "CESU Services",
+      type: "CESU",
+      description: "Chèque Emploi Service Universel - disponible",
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "18",
+      name: "Carte Carburant",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2024-002",
+      description: "Carte carburant professionnelle - disponible",
+      quantity: 300,
+      consumable: true,
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "19",
+      name: "Titre Restaurant",
+      type: "MEAL_VOUCHER",
+      description: "Titre restaurant mensuel - disponible",
+      quantity: 22,
+      consumable: true,
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
   ]);
 
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showExhaustModal, setShowExhaustModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<string>("");
   const [returnEquipmentId, setReturnEquipmentId] = useState<string>("");
+  const [exhaustEquipmentId, setExhaustEquipmentId] = useState<string>("");
   const [detailsEquipmentId, setDetailsEquipmentId] = useState<string>("");
   const [returnCondition, setReturnCondition] =
     useState<Equipment["condition"]>("good");
@@ -194,6 +363,11 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       UNIFORM: Package,
       BADGE: FileSignature,
       VEHICLE: Car,
+      VACATION_VOUCHER: Calendar,
+      GIFT_CARD: Gift,
+      CESU: Briefcase,
+      FUEL_CARD: Fuel,
+      MEAL_VOUCHER: Utensils,
       OTHER: Package,
     };
     return icons[type] || Package;
@@ -207,6 +381,11 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       UNIFORM: "Uniforme",
       BADGE: "Badge",
       VEHICLE: "Véhicule",
+      VACATION_VOUCHER: "Chèque Vacances",
+      GIFT_CARD: "Carte Cadeau",
+      CESU: "CESU",
+      FUEL_CARD: "Carte Carburant",
+      MEAL_VOUCHER: "Titre Restaurant",
       OTHER: "Autre",
     };
     return labels[type] || type;
@@ -225,6 +404,12 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         label: "Retourné",
         icon: CheckCircle,
         color: "text-blue-600",
+      },
+      exhausted: {
+        variant: "secondary" as const,
+        label: "Épuisé",
+        icon: Archive,
+        color: "text-purple-600",
       },
       lost: {
         variant: "destructive" as const,
@@ -254,7 +439,9 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
   };
 
   const assignedEquipment = equipment.filter((eq) => eq.status === "assigned");
-  const returnedEquipment = equipment.filter((eq) => eq.status === "returned");
+  const returnedEquipment = equipment.filter(
+    (eq) => eq.status === "returned" || eq.status === "exhausted",
+  );
 
   const handleAssignEquipment = () => {
     if (!selectedEquipmentId) return;
@@ -312,6 +499,35 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
     setReturnNotes("");
   };
 
+  const handleExhaustEquipment = () => {
+    if (!exhaustEquipmentId) return;
+
+    setEquipment((prev) =>
+      prev.map((eq) => {
+        if (eq.id === exhaustEquipmentId) {
+          return {
+            ...eq,
+            returnedAt: new Date(),
+            returnedBy: "admin@safyr.com", // In real app, get from current user
+            status: "exhausted",
+            condition: "good",
+            notes: returnNotes || eq.notes,
+            returnSignature: {
+              signedAt: new Date(),
+              signedBy: `${employee.firstName} ${employee.lastName}`,
+              signatureData: "simulated_signature", // In real app, get actual signature
+            },
+          };
+        }
+        return eq;
+      }),
+    );
+
+    setShowExhaustModal(false);
+    setExhaustEquipmentId("");
+    setReturnNotes("");
+  };
+
   const equipmentColumns: ColumnDef<Equipment>[] = [
     {
       key: "icon",
@@ -336,9 +552,6 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
               <span className="font-semibold truncate">{item.name}</span>
-              <Badge variant="outline" className="shrink-0">
-                {getEquipmentTypeLabel(item.type)}
-              </Badge>
               <Badge variant={statusConfig.variant} className="shrink-0">
                 <StatusIcon className="mr-1 h-3 w-3" />
                 {statusConfig.label}
@@ -352,6 +565,26 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
           </div>
         );
       },
+    },
+    {
+      key: "type",
+      label: "Type",
+      sortable: true,
+      render: (item) => (
+        <Badge variant="outline" className="shrink-0">
+          {getEquipmentTypeLabel(item.type)}
+        </Badge>
+      ),
+    },
+    {
+      key: "quantity",
+      label: "Quantité",
+      sortable: true,
+      render: (item) => (
+        <span className="text-sm">
+          {item.quantity !== undefined ? item.quantity : "-"}
+        </span>
+      ),
     },
     {
       key: "description",
@@ -413,9 +646,6 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         return (
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="font-semibold truncate">{item.name}</span>
-            <Badge variant="outline" className="shrink-0">
-              {getEquipmentTypeLabel(item.type)}
-            </Badge>
             <Badge variant={statusConfig.variant} className="shrink-0">
               <StatusIcon className="mr-1 h-3 w-3" />
               {statusConfig.label}
@@ -423,6 +653,26 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
           </div>
         );
       },
+    },
+    {
+      key: "type",
+      label: "Type",
+      sortable: true,
+      render: (item) => (
+        <Badge variant="outline" className="shrink-0">
+          {getEquipmentTypeLabel(item.type)}
+        </Badge>
+      ),
+    },
+    {
+      key: "quantity",
+      label: "Quantité",
+      sortable: true,
+      render: (item) => (
+        <span className="text-sm">
+          {item.quantity !== undefined ? item.quantity : "-"}
+        </span>
+      ),
     },
     {
       key: "assignedAt",
@@ -506,7 +756,13 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
             <DataTable
               data={assignedEquipment}
               columns={equipmentColumns}
-              searchKeys={["name", "serialNumber", "description"]}
+              searchKeys={[
+                "name",
+                "serialNumber",
+                "description",
+                "type",
+                "quantity",
+              ]}
               searchPlaceholder="Rechercher un équipement..."
               itemsPerPage={10}
               filters={[
@@ -521,6 +777,11 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                     { value: "UNIFORM", label: "Uniforme" },
                     { value: "BADGE", label: "Badge" },
                     { value: "VEHICLE", label: "Véhicule" },
+                    { value: "VACATION_VOUCHER", label: "Chèque Vacances" },
+                    { value: "GIFT_CARD", label: "Carte Cadeau" },
+                    { value: "CESU", label: "CESU" },
+                    { value: "FUEL_CARD", label: "Carte Carburant" },
+                    { value: "MEAL_VOUCHER", label: "Titre Restaurant" },
                   ],
                 },
                 {
@@ -549,17 +810,31 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                     <Eye className="mr-2 h-4 w-4" />
                     Détails
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setReturnEquipmentId(item.id);
-                      setShowReturnModal(true);
-                    }}
-                  >
-                    <FileSignature className="mr-2 h-4 w-4" />
-                    Retour
-                  </Button>
+                  {item.consumable ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setExhaustEquipmentId(item.id);
+                        setShowExhaustModal(true);
+                      }}
+                    >
+                      <Archive className="mr-2 h-4 w-4" />
+                      Épuiser
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setReturnEquipmentId(item.id);
+                        setShowReturnModal(true);
+                      }}
+                    >
+                      <FileSignature className="mr-2 h-4 w-4" />
+                      Retour
+                    </Button>
+                  )}
                 </div>
               )}
             />
@@ -577,7 +852,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
             <DataTable
               data={returnedEquipment}
               columns={returnedEquipmentColumns}
-              searchKeys={["name", "serialNumber"]}
+              searchKeys={["name", "serialNumber", "type", "quantity"]}
               searchPlaceholder="Rechercher dans l'historique..."
               itemsPerPage={10}
               actions={() => (
@@ -779,6 +1054,77 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
               id="return-notes"
               className="w-full min-h-20 p-3 border rounded-md resize-none"
               placeholder="Ajouter des notes sur l'état de l'équipement..."
+              value={returnNotes}
+              onChange={(e) => setReturnNotes(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Exhaust Equipment Modal */}
+      <Modal
+        open={showExhaustModal}
+        onOpenChange={setShowExhaustModal}
+        type="form"
+        title="Épuisement d'équipement"
+        description="Confirmer l'épuisement de l'équipement consommable"
+        actions={{
+          primary: {
+            label: "Confirmer l'épuisement",
+            onClick: handleExhaustEquipment,
+            variant: "destructive",
+            icon: <Archive className="h-4 w-4" />,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setShowExhaustModal(false);
+              setExhaustEquipmentId("");
+              setReturnNotes("");
+            },
+          },
+        }}
+      >
+        <div className="space-y-4">
+          {exhaustEquipmentId && (
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium mb-2">Équipement à épuiser</h4>
+              {(() => {
+                const eq = equipment.find((e) => e.id === exhaustEquipmentId);
+                return eq ? (
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <strong>Nom:</strong> {eq.name}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {getEquipmentTypeLabel(eq.type)}
+                    </p>
+                    {eq.quantity !== undefined && (
+                      <p>
+                        <strong>Quantité restante:</strong> {eq.quantity}
+                      </p>
+                    )}
+                    {eq.serialNumber && (
+                      <p>
+                        <strong>N° série:</strong> {eq.serialNumber}
+                      </p>
+                    )}
+                    <p>
+                      <strong>Assigné le:</strong>{" "}
+                      {eq.assignedAt.toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="exhaust-notes">Notes (optionnel)</Label>
+            <textarea
+              id="exhaust-notes"
+              className="w-full min-h-20 p-3 border rounded-md resize-none"
+              placeholder="Ajouter des notes sur l'épuisement..."
               value={returnNotes}
               onChange={(e) => setReturnNotes(e.target.value)}
             />

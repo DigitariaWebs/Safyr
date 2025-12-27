@@ -20,6 +20,7 @@ import {
   Users,
   Send,
   Gavel,
+  DollarSign,
 } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import { getEmployeeById } from "@/data/employees";
@@ -30,6 +31,7 @@ import {
   EmployeeEquipmentTab,
   EmployeeCSETab,
   EmployeeDisciplineTab,
+  EmployeeSavingsTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
 import { cn } from "@/lib/utils";
@@ -68,6 +70,7 @@ export default function EmployeeDetailPage({
     { id: "documents" as const, label: "Documents", icon: FileText },
     { id: "contracts" as const, label: "Contrats", icon: FileText },
     { id: "equipment" as const, label: "Équipements", icon: Package },
+    { id: "savings" as const, label: "Épargne", icon: DollarSign },
     { id: "discipline" as const, label: "Discipline", icon: Gavel },
     { id: "cse" as const, label: "CSE", icon: Users },
   ];
@@ -253,6 +256,9 @@ export default function EmployeeDetailPage({
         </TabsContent>
         <TabsContent value="equipment">
           <EmployeeEquipmentTab employee={employee} />
+        </TabsContent>
+        <TabsContent value="savings">
+          <EmployeeSavingsTab employee={employee} />
         </TabsContent>
         <TabsContent value="discipline">
           <EmployeeDisciplineTab employee={employee} />

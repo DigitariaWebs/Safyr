@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { mockLogbookEvents, mockSites, mockAgents, LogbookEvent } from "@/data/logbook-events";
+import {
+  mockLogbookEvents,
+  mockSites,
+  mockAgents,
+  LogbookEvent,
+} from "@/data/logbook-events";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Download, Monitor, Smartphone, Tablet, Clock, MapPin, Camera, Video, Mic } from "lucide-react";
+import {
+  Plus,
+  Download,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Clock,
+  MapPin,
+  Camera,
+  Video,
+  Mic,
+} from "lucide-react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
 import { QRCodeScanner } from "@/components/logbook/QRCodeScanner";
@@ -44,9 +60,10 @@ export default function EventsListPage() {
   const [photos, setPhotos] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
   const [voiceNotes, setVoiceNotes] = useState<File[]>([]);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
   const [signature, setSignature] = useState<string | null>(null);
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -154,9 +171,7 @@ export default function EventsListPage() {
     {
       key: "id",
       label: "ID",
-      render: (event) => (
-        <span className="font-mono text-xs">{event.id}</span>
-      ),
+      render: (event) => <span className="font-mono text-xs">{event.id}</span>,
     },
     {
       key: "timestamp",
@@ -170,15 +185,15 @@ export default function EventsListPage() {
     {
       key: "site",
       label: "Site",
-      render: (event) => (
-        <span className="text-sm">{event.site}</span>
-      ),
+      render: (event) => <span className="text-sm">{event.site}</span>,
     },
     {
       key: "zone",
       label: "Zone",
       render: (event) => (
-        <span className="text-sm text-muted-foreground">{event.zone || "-"}</span>
+        <span className="text-sm text-muted-foreground">
+          {event.zone || "-"}
+        </span>
       ),
     },
     {
@@ -192,7 +207,9 @@ export default function EventsListPage() {
       key: "severity",
       label: "Gravité",
       render: (event) => (
-        <Badge variant={getSeverityColor(event.severity)}>{event.severity}</Badge>
+        <Badge variant={getSeverityColor(event.severity)}>
+          {event.severity}
+        </Badge>
       ),
     },
     {
@@ -205,9 +222,7 @@ export default function EventsListPage() {
     {
       key: "agentName",
       label: "Agent",
-      render: (event) => (
-        <span className="text-sm">{event.agentName}</span>
-      ),
+      render: (event) => <span className="text-sm">{event.agentName}</span>,
     },
   ];
 
@@ -217,8 +232,7 @@ export default function EventsListPage() {
       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesSite =
-      selectedSite === "all" || event.siteId === selectedSite;
+    const matchesSite = selectedSite === "all" || event.siteId === selectedSite;
     const matchesStatus =
       selectedStatus === "all" || event.status === selectedStatus;
     const matchesSeverity =
@@ -556,7 +570,7 @@ export default function EventsListPage() {
 
           {/* Digital Signature */}
           <div>
-            <Label>Signature numérique *</Label>
+            <Label>Signature numérique (optionnel)</Label>
             <DigitalSignature onSign={setSignature} signature={signature} />
           </div>
 
@@ -568,7 +582,9 @@ export default function EventsListPage() {
               <span className="font-medium">
                 {new Date().toLocaleString("fr-FR")}
               </span>
-              <Badge variant="outline" className="ml-auto">Automatique</Badge>
+              <Badge variant="outline" className="ml-auto">
+                Automatique
+              </Badge>
             </div>
           </div>
         </div>
@@ -601,7 +617,8 @@ export default function EventsListPage() {
               <div>
                 <Label>Site</Label>
                 <p className="text-sm">
-                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name || "N/A"}
+                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name ||
+                    "N/A"}
                 </p>
               </div>
               <div>
@@ -617,7 +634,9 @@ export default function EventsListPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingEvent.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingEvent.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -643,7 +662,8 @@ export default function EventsListPage() {
               <div>
                 <Label>Agent</Label>
                 <p className="text-sm">
-                  {mockAgents.find((a) => a.id === viewingEvent.agentId)?.name || "N/A"}
+                  {mockAgents.find((a) => a.id === viewingEvent.agentId)
+                    ?.name || "N/A"}
                 </p>
               </div>
             </div>
@@ -654,7 +674,8 @@ export default function EventsListPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
-                    {viewingEvent.location.lat.toFixed(4)}, {viewingEvent.location.lng.toFixed(4)}
+                    {viewingEvent.location.lat.toFixed(4)},{" "}
+                    {viewingEvent.location.lng.toFixed(4)}
                   </span>
                 </div>
               </div>
@@ -664,24 +685,30 @@ export default function EventsListPage() {
               <div>
                 <Label>Médias</Label>
                 <div className="flex gap-4 text-sm">
-                  {viewingEvent.media.photos && viewingEvent.media.photos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
-                      <span>{viewingEvent.media.photos.length} photo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.videos && viewingEvent.media.videos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      <span>{viewingEvent.media.videos.length} vidéo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.voiceNotes && viewingEvent.media.voiceNotes.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Mic className="h-4 w-4" />
-                      <span>{viewingEvent.media.voiceNotes.length} note(s) vocale(s)</span>
-                    </div>
-                  )}
+                  {viewingEvent.media.photos &&
+                    viewingEvent.media.photos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        <span>{viewingEvent.media.photos.length} photo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.videos &&
+                    viewingEvent.media.videos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4" />
+                        <span>{viewingEvent.media.videos.length} vidéo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.voiceNotes &&
+                    viewingEvent.media.voiceNotes.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Mic className="h-4 w-4" />
+                        <span>
+                          {viewingEvent.media.voiceNotes.length} note(s)
+                          vocale(s)
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -692,15 +719,15 @@ export default function EventsListPage() {
                 <div className="mt-2 border rounded-lg p-2 bg-white">
                   {viewingEvent.signature.startsWith("data:") ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img 
-                      src={viewingEvent.signature} 
-                      alt="Signature" 
+                    <img
+                      src={viewingEvent.signature}
+                      alt="Signature"
                       className="max-h-24"
                     />
                   ) : (
-                    <Image 
-                      src={viewingEvent.signature} 
-                      alt="Signature" 
+                    <Image
+                      src={viewingEvent.signature}
+                      alt="Signature"
                       width={200}
                       height={96}
                       className="max-h-24 object-contain"
@@ -714,7 +741,10 @@ export default function EventsListPage() {
               <div className="p-4 bg-muted/30 rounded-lg">
                 <Label>Validation</Label>
                 <p className="text-sm mt-1">
-                  Validé par: <span className="font-medium">{viewingEvent.supervisorName}</span>
+                  Validé par:{" "}
+                  <span className="font-medium">
+                    {viewingEvent.supervisorName}
+                  </span>
                 </p>
                 {viewingEvent.supervisorComment && (
                   <p className="text-sm mt-1 text-muted-foreground">
@@ -723,7 +753,8 @@ export default function EventsListPage() {
                 )}
                 {viewingEvent.validatedAt && (
                   <p className="text-xs mt-1 text-muted-foreground">
-                    Le {new Date(viewingEvent.validatedAt).toLocaleString("fr-FR")}
+                    Le{" "}
+                    {new Date(viewingEvent.validatedAt).toLocaleString("fr-FR")}
                   </p>
                 )}
               </div>
@@ -734,4 +765,3 @@ export default function EventsListPage() {
     </div>
   );
 }
-

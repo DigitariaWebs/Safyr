@@ -3,45 +3,69 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, DollarSign, TrendingUp, Clock, CheckCircle, Send, AlertCircle } from "lucide-react";
+import {
+  Users,
+  FileText,
+  FilePlus,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  Send,
+  AlertCircle,
+  Receipt,
+} from "lucide-react";
 import { mockBillingClients } from "@/data/billing-clients";
 import { mockBillingInvoices } from "@/data/billing-invoices";
 import Link from "next/link";
 
 export default function BillingDashboard() {
   const activeClients = mockBillingClients.filter(
-    (c) => c.status === "Actif"
+    (c) => c.status === "Actif",
   ).length;
   const totalSites = mockBillingClients.reduce((acc, c) => acc + c.sites, 0);
 
   // Calculate real metrics from invoices
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
-  
+
   const invoicesThisMonth = mockBillingInvoices.filter((inv) => {
     const invDate = new Date(inv.createdAt);
-    return invDate.getMonth() === currentMonth && invDate.getFullYear() === currentYear;
+    return (
+      invDate.getMonth() === currentMonth &&
+      invDate.getFullYear() === currentYear
+    );
   });
 
-  const totalRevenueThisMonth = invoicesThisMonth.reduce((sum, inv) => sum + inv.total, 0);
-  const totalRevenue = mockBillingInvoices.reduce((sum, inv) => sum + inv.total, 0);
-  
+  const totalRevenueThisMonth = invoicesThisMonth.reduce(
+    (sum, inv) => sum + inv.total,
+    0,
+  );
+  const totalRevenue = mockBillingInvoices.reduce(
+    (sum, inv) => sum + inv.total,
+    0,
+  );
+
   const pendingInvoices = mockBillingInvoices.filter(
-    (inv) => inv.status === "Brouillon" || inv.status === "En attente"
+    (inv) => inv.status === "Brouillon" || inv.status === "En attente",
   ).length;
-  
+
   const sentInvoices = mockBillingInvoices.filter(
-    (inv) => inv.status === "Envoyée" || inv.status === "Payée"
+    (inv) => inv.status === "Envoyée" || inv.status === "Payée",
   ).length;
 
   const totalHoursBilled = mockBillingInvoices.reduce(
-    (sum, inv) => sum + (inv.validatedHours || inv.realizedHours || inv.planningHours || 0),
-    0
+    (sum, inv) =>
+      sum + (inv.validatedHours || inv.realizedHours || inv.planningHours || 0),
+    0,
   );
 
   // Recent invoices
   const recentInvoices = [...mockBillingInvoices]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
     .slice(0, 5);
 
   // Calculate average margin (simplified)
@@ -109,7 +133,9 @@ export default function BillingDashboard() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{averageMargin}%</div>
+            <div className="text-2xl font-bold text-green-600">
+              {averageMargin}%
+            </div>
             <p className="text-xs text-muted-foreground">
               {totalHoursBilled} h facturées
             </p>
@@ -137,7 +163,10 @@ export default function BillingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockBillingInvoices.filter((inv) => inv.status === "Validée").length}
+              {
+                mockBillingInvoices.filter((inv) => inv.status === "Validée")
+                  .length
+              }
             </div>
             <p className="text-xs text-muted-foreground">Prêtes à envoyer</p>
           </CardContent>
@@ -150,7 +179,9 @@ export default function BillingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{sentInvoices}</div>
-            <p className="text-xs text-muted-foreground">En attente de paiement</p>
+            <p className="text-xs text-muted-foreground">
+              En attente de paiement
+            </p>
           </CardContent>
         </Card>
 
@@ -161,7 +192,10 @@ export default function BillingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockBillingInvoices.filter((inv) => inv.status === "Payée").length}
+              {
+                mockBillingInvoices.filter((inv) => inv.status === "Payée")
+                  .length
+              }
             </div>
             <p className="text-xs text-muted-foreground">Factures réglées</p>
           </CardContent>
@@ -182,13 +216,16 @@ export default function BillingDashboard() {
           {recentInvoices.length > 0 ? (
             <div className="space-y-3">
               {recentInvoices.map((invoice) => {
-                const statusVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-                  "Payée": "default",
-                  "Envoyée": "secondary",
-                  "Validée": "secondary",
+                const statusVariants: Record<
+                  string,
+                  "default" | "secondary" | "outline" | "destructive"
+                > = {
+                  Payée: "default",
+                  Envoyée: "secondary",
+                  Validée: "secondary",
                   "En attente": "outline",
-                  "Brouillon": "outline",
-                  "Annulée": "destructive",
+                  Brouillon: "outline",
+                  Annulée: "destructive",
                 };
                 return (
                   <div
@@ -200,7 +237,9 @@ export default function BillingDashboard() {
                         <span className="font-mono text-sm font-semibold">
                           {invoice.invoiceNumber}
                         </span>
-                        <Badge variant={statusVariants[invoice.status] || "outline"}>
+                        <Badge
+                          variant={statusVariants[invoice.status] || "outline"}
+                        >
                           {invoice.status}
                         </Badge>
                       </div>
@@ -213,7 +252,9 @@ export default function BillingDashboard() {
                         {invoice.total.toLocaleString("fr-FR")} €
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(invoice.createdAt).toLocaleDateString("fr-FR")}
+                        {new Date(invoice.createdAt).toLocaleDateString(
+                          "fr-FR",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -236,19 +277,51 @@ export default function BillingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/billing/invoices">
                   <FileText className="h-4 w-4 mr-2" />
                   Générer une facture
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/billing/clients">
                   <Users className="h-4 w-4 mr-2" />
                   Ajouter un client
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/billing/quotes">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Nouveau devis
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/billing/services">
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Services
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/billing/kpi">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Voir les KPI
@@ -268,24 +341,34 @@ export default function BillingDashboard() {
                 <div className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950 rounded">
                   <AlertCircle className="h-4 w-4 text-orange-600" />
                   <span className="text-sm">
-                    {pendingInvoices} facture{pendingInvoices > 1 ? "s" : ""} en attente de validation
+                    {pendingInvoices} facture{pendingInvoices > 1 ? "s" : ""} en
+                    attente de validation
                   </span>
                 </div>
               )}
-              {mockBillingInvoices.filter((inv) => !inv.sentAt && inv.status === "Validée").length > 0 && (
+              {mockBillingInvoices.filter(
+                (inv) => !inv.sentAt && inv.status === "Validée",
+              ).length > 0 && (
                 <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950 rounded">
                   <Send className="h-4 w-4 text-blue-600" />
                   <span className="text-sm">
-                    {mockBillingInvoices.filter((inv) => !inv.sentAt && inv.status === "Validée").length}{" "}
+                    {
+                      mockBillingInvoices.filter(
+                        (inv) => !inv.sentAt && inv.status === "Validée",
+                      ).length
+                    }{" "}
                     facture(s) validée(s) à envoyer
                   </span>
                 </div>
               )}
-              {pendingInvoices === 0 && mockBillingInvoices.filter((inv) => !inv.sentAt && inv.status === "Validée").length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-2">
-                  Aucune alerte
-                </p>
-              )}
+              {pendingInvoices === 0 &&
+                mockBillingInvoices.filter(
+                  (inv) => !inv.sentAt && inv.status === "Validée",
+                ).length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    Aucune alerte
+                  </p>
+                )}
             </div>
           </CardContent>
         </Card>
@@ -293,4 +376,3 @@ export default function BillingDashboard() {
     </div>
   );
 }
-

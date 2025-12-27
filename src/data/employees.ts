@@ -34,6 +34,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 5000,
+        balance: 5200,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 3000,
+        balance: 3150,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2020-01-15"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -69,6 +81,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 8000,
+        balance: 8400,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 4500,
+        balance: 4725,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2019-03-10"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -105,6 +129,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 2000,
+        balance: 2100,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 1200,
+        balance: 1260,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2021-06-01"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -141,6 +177,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 12000,
+        balance: 12600,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 8000,
+        balance: 8400,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2018-09-15"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -176,6 +224,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 1500,
+        balance: 1575,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 900,
+        balance: 945,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2022-02-01"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -212,6 +272,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 4000,
+        balance: 4200,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 2500,
+        balance: 2625,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2020-11-20"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -247,6 +319,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 15000,
+        balance: 15750,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 10000,
+        balance: 10500,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2017-05-12"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -282,6 +366,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 800,
+        balance: 840,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 500,
+        balance: 525,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2023-01-10"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -317,6 +413,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 7000,
+        balance: 7350,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 4000,
+        balance: 4200,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2019-08-05"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -352,6 +460,18 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 300,
+        balance: 315,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+      pereco: {
+        contributions: 200,
+        balance: 210,
+        lastContributionDate: new Date("2024-11-01"),
+      },
+    },
     createdAt: new Date("2024-03-01"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -388,6 +508,16 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 18000,
+        balance: 18900,
+      },
+      pereco: {
+        contributions: 12000,
+        balance: 12600,
+      },
+    },
     createdAt: new Date("2016-04-20"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -423,6 +553,16 @@ export const mockEmployees: Employee[] = [
     documents: {},
     contracts: [],
     assignedEquipment: [],
+    savingsPlans: {
+      pee: {
+        contributions: 3500,
+        balance: 3675,
+      },
+      pereco: {
+        contributions: 2000,
+        balance: 2100,
+      },
+    },
     createdAt: new Date("2021-09-15"),
     updatedAt: new Date("2024-12-15"),
   },

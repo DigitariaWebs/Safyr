@@ -1,7 +1,21 @@
 "use client";
 
-import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
-import { Users, FileText, CreditCard, Receipt, Wallet, Calculator, TrendingUp, Settings } from "lucide-react";
+import {
+  ModuleNavigationBar,
+  NavItem,
+} from "@/components/ui/module-navigation-bar";
+import {
+  Users,
+  FileText,
+  FilePlus,
+  CreditCard,
+  Receipt,
+  Wallet,
+  Calculator,
+  TrendingUp,
+  Settings,
+  ClipboardList,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -10,9 +24,24 @@ const navItems: NavItem[] = [
     icon: Users,
   },
   {
+    label: "Services",
+    href: "/dashboard/billing/services",
+    icon: Receipt,
+  },
+  {
     label: "Factures",
     href: "/dashboard/billing/invoices",
     icon: FileText,
+  },
+  {
+    label: "Devis",
+    href: "/dashboard/billing/quotes",
+    icon: FilePlus,
+  },
+  {
+    label: "Bon de commande",
+    href: "/dashboard/billing/purchase-orders",
+    icon: ClipboardList,
   },
   {
     label: "Ajustements",
@@ -65,4 +94,3 @@ export function BillingNavigationBar({
     />
   );
 }
-

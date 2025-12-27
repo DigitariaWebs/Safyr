@@ -49,7 +49,7 @@ const mockVariables: PayrollVariable[] = [
     type: "bonus",
     amount: 500,
     currency: "EUR",
-    description: "Prime de fin d'année",
+    description: "Majoration de fin d'année",
     validated: true,
     validatedBy: "Admin",
     validatedAt: new Date("2024-12-15"),
@@ -87,7 +87,7 @@ const mockVariables: PayrollVariable[] = [
 ];
 
 const variableTypeLabels: Record<PayrollVariableType, string> = {
-  bonus: "Prime",
+  bonus: "Majoration",
   night_shift: "Nuit",
   sunday_shift: "Dimanche",
   holiday_shift: "Jour férié",

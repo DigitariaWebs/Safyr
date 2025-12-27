@@ -22,7 +22,7 @@ interface EmployeeContractsTabProps {
 }
 
 export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
-  const [contracts] = useState<Contract[]>([
+  const [contracts, setContracts] = useState<Contract[]>([
     {
       id: "1",
       type: "CDI",
@@ -39,6 +39,14 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
       signedAt: new Date("2020-01-14"),
       signedByEmployee: true,
       signedByEmployer: true,
+      probationPeriod: {
+        duration: 2,
+        unit: "months",
+      },
+      probationStartDate: new Date("2020-01-15"),
+      probationEndDate: new Date("2020-03-15"),
+      probationRenewed: false,
+      probationStatus: "completed",
       amendments: [
         {
           id: "1",
@@ -77,12 +85,41 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
       signedAt: new Date("2019-06-25"),
       signedByEmployee: true,
       signedByEmployer: true,
+      probationPeriod: {
+        duration: 2,
+        unit: "weeks",
+      },
+      probationStartDate: new Date("2019-07-01"),
+      probationEndDate: new Date("2019-07-15"),
+      probationRenewed: false,
+      probationStatus: "completed",
       amendments: [],
       status: "terminated",
       createdAt: new Date("2019-06-20"),
       updatedAt: new Date("2020-01-05"),
     },
   ]);
+
+  const handleRenewProbation = (contractId: string) => {
+    setContracts((prevContracts) =>
+      prevContracts.map((contract) => {
+        if (contract.id === contractId && contract.probationPeriod) {
+          const renewalEndDate = new Date(contract.probationEndDate!);
+          renewalEndDate.setMonth(
+            renewalEndDate.getMonth() + contract.probationPeriod.duration,
+          );
+          return {
+            ...contract,
+            probationRenewed: true,
+            probationRenewalDate: new Date(),
+            probationRenewalEndDate: renewalEndDate,
+            probationStatus: "renewed",
+          };
+        }
+        return contract;
+      }),
+    );
+  };
 
   const getContractTypeBadge = (type: Contract["type"]) => {
     const config = {
@@ -234,6 +271,46 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
                       {contract.signedAt.toLocaleDateString("fr-FR")}
                     </span>
                   </div>
+                </div>
+              )}
+
+              {/* Probation Period */}
+              {contract.probationPeriod && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-700 dark:text-blue-400">
+                      Période d&apos;essai
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Du{" "}
+                    {contract.probationStartDate?.toLocaleDateString("fr-FR")}{" "}
+                    au {contract.probationEndDate?.toLocaleDateString("fr-FR")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Statut:{" "}
+                    {contract.probationStatus === "active"
+                      ? "En cours"
+                      : contract.probationStatus === "completed"
+                        ? "Terminée"
+                        : contract.probationStatus === "renewed"
+                          ? "Renouvelée"
+                          : "Échouée"}
+                  </p>
+                  {contract.probationStatus === "active" &&
+                    !contract.probationRenewed &&
+                    contract.type !== "CDD" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => handleRenewProbation(contract.id)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Renouveler la période d&apos;essai
+                      </Button>
+                    )}
                 </div>
               )}
 

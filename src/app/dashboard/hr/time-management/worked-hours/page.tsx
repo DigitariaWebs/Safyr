@@ -180,7 +180,7 @@ export default function WorkedHoursPage() {
     0,
   );
 
-  const workedHoursColumns: ColumnDef<(typeof mockWorkedHours)[0]>[] = [
+  const allWorkedHoursColumns: ColumnDef<(typeof mockWorkedHours)[0]>[] = [
     {
       key: "employeeName",
       label: "Employé",
@@ -190,18 +190,16 @@ export default function WorkedHoursPage() {
       ),
     },
     {
-      key: "date",
-      label: "Date",
+      key: "period",
+      label: "Période",
       sortable: true,
       render: (hours) => (
         <div className="flex items-center gap-2 min-w-0">
           <Calendar className="h-4 w-4 shrink-0" />
           <span className="text-sm truncate">
             {new Date(hours.date).toLocaleDateString("fr-FR", {
-              weekday: "short",
+              month: "long",
               year: "numeric",
-              month: "short",
-              day: "numeric",
             })}
           </span>
         </div>
@@ -209,94 +207,93 @@ export default function WorkedHoursPage() {
     },
     {
       key: "regularHours",
-      label: "Heures normales",
+      label: "H jour",
       sortable: true,
       render: (hours) => (
         <span className="text-sm font-semibold">{hours.regularHours}h</span>
       ),
     },
     {
-      key: "supplementaryHours",
-      label: "Heures supplémentaires",
-      sortable: true,
-      render: (hours) => (
-        <div className="text-xs space-y-1">
-          <div className="flex justify-between items-center p-1 rounded bg-blue-50 dark:bg-blue-950/20">
-            <span className="text-gray-600">Base:</span>
-            <span className="font-semibold text-blue-600">
-              {hours.overtimeHours}h
-            </span>
-          </div>
-          <CategoryTable category="supplementary" hours={hours} />
-        </div>
-      ),
-    },
-    {
-      key: "nightHours",
-      label: "Heures nuit",
-      sortable: true,
-      render: (hours) => (
-        <div className="text-xs space-y-1">
-          <div className="flex justify-between items-center p-1 rounded bg-purple-50 dark:bg-purple-950/20">
-            <span className="text-gray-600">Base:</span>
-            <span className="font-semibold text-purple-600">
-              {hours.nightHours}h
-            </span>
-          </div>
-          <CategoryTable category="night" hours={hours} />
-        </div>
-      ),
-    },
-    {
       key: "sundayHours",
-      label: "Dimanche",
+      label: "H Dimanche",
       sortable: true,
       render: (hours) => (
-        <div className="text-xs space-y-1">
-          <div className="flex justify-between items-center p-1 rounded bg-orange-50 dark:bg-orange-950/20">
-            <span className="text-gray-600">Base:</span>
-            <span className="font-semibold text-orange-600">
-              {hours.sundayHours}h
-            </span>
-          </div>
-          <CategoryTable category="sunday" hours={hours} />
-        </div>
+        <span className="text-sm font-semibold">{hours.sundayHours}h</span>
       ),
     },
     {
       key: "holidayHours",
-      label: "Jours fériés",
+      label: "H Férié",
       sortable: true,
       render: (hours) => (
-        <div className="text-xs space-y-1">
-          <div className="flex justify-between items-center p-1 rounded bg-red-50 dark:bg-red-950/20">
-            <span className="text-gray-600">Base:</span>
-            <span className="font-semibold text-red-600">
-              {hours.holidayHours}h
-            </span>
-          </div>
-          <CategoryTable category="holiday" hours={hours} />
-        </div>
+        <span className="text-sm font-semibold">{hours.holidayHours}h</span>
       ),
     },
     {
-      key: "validated",
-      label: "Statut",
+      key: "nightHours",
+      label: "H Nuit",
       sortable: true,
-      render: (hours) =>
-        hours.validated ? (
-          <Badge variant="outline" className="text-green-600">
-            <CheckCircle className="mr-1 h-3 w-3" />
-            Validé
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-orange-600">
-            <Clock className="mr-1 h-3 w-3" />
-            En attente
-          </Badge>
-        ),
+      render: (hours) => (
+        <span className="text-sm font-semibold">{hours.nightHours}h</span>
+      ),
+    },
+    {
+      key: "sundayNightHours",
+      label: "H Dimanche Nuit",
+      sortable: true,
+      render: (hours) => (
+        <span className="text-sm font-semibold">{hours.sundayHours25}h</span>
+      ),
+    },
+    {
+      key: "holidayNightHours",
+      label: "H Férié Nuit",
+      sortable: true,
+      render: (hours) => (
+        <span className="text-sm font-semibold">{hours.holidayHours25}h</span>
+      ),
+    },
+    {
+      key: "supplementaryHours25",
+      label: "H Supp 25%",
+      sortable: true,
+      render: (hours) => (
+        <span className="text-sm font-semibold">
+          {hours.supplementaryHours25}h
+        </span>
+      ),
+    },
+    {
+      key: "supplementaryHours50",
+      label: "H Supp 50%",
+      sortable: true,
+      render: (hours) => (
+        <span className="text-sm font-semibold">
+          {hours.supplementaryHours50}h
+        </span>
+      ),
+    },
+    {
+      key: "complementaryHours10",
+      label: "H Compl 10%",
+      sortable: true,
+      render: (hours) => (
+        <span className="text-sm font-semibold">
+          {hours.complementaryHours10}h
+        </span>
+      ),
     },
   ];
+
+  const visibleColumns = allWorkedHoursColumns.filter((col) => {
+    if (col.key === "employeeName" || col.key === "period") return true;
+    return mockWorkedHours.some((hour) => {
+      const value = hour[col.key as keyof typeof hour];
+      return typeof value === "number" && value > 0;
+    });
+  });
+
+  const workedHoursColumns = visibleColumns;
 
   return (
     <div className="flex-1 space-y-6 p-8 max-w-full overflow-x-hidden">

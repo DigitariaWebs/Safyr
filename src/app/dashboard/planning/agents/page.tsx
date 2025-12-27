@@ -22,9 +22,11 @@ export default function PlanningAgentsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<PlanningAgent | null>(
-    null
+    null,
   );
-  const [formData, setFormData] = useState<Partial<PlanningAgent>>({});
+  const [formData, setFormData] = useState<
+    Omit<Partial<PlanningAgent>, "qualifications"> & { qualifications?: string }
+  >({});
 
   const columns: ColumnDef<PlanningAgent>[] = [
     {
@@ -99,22 +101,28 @@ export default function PlanningAgentsPage() {
   const handleCreate = () => {
     setFormData({
       contractType: "CDI",
-      availabilityStatus: "Disponible",
       contractHours: 35,
       weeklyHours: 35,
       maxAmplitude: 12,
-      qualifications: [],
+      qualifications: "",
     });
     setIsCreateModalOpen(true);
   };
 
   const handleSave = () => {
+    const qualifications: string[] = formData.qualifications
+      ? formData.qualifications
+          .split(",")
+          .map((q) => q.trim())
+          .filter((q) => q)
+      : [];
     if (formData.id) {
       // Edit
+      const { qualifications: _, ...rest } = formData;
       setAgents(
         agents.map((a) =>
-          a.id === formData.id ? { ...a, ...formData } : a
-        )
+          a.id === formData.id ? { ...a, ...rest, qualifications } : a,
+        ),
       );
     } else {
       // Create
@@ -123,8 +131,8 @@ export default function PlanningAgentsPage() {
         name: formData.name || "",
         contractType: formData.contractType || "CDI",
         contractHours: formData.contractHours || 35,
-        qualifications: formData.qualifications || [],
-        availabilityStatus: formData.availabilityStatus || "Disponible",
+        qualifications,
+        availabilityStatus: "Disponible",
         weeklyHours: formData.weeklyHours || 35,
         maxAmplitude: formData.maxAmplitude || 12,
         lastActivity: new Date().toISOString().split("T")[0],
@@ -140,6 +148,17 @@ export default function PlanningAgentsPage() {
   const handleRowClick = (agent: PlanningAgent) => {
     setSelectedAgent(agent);
     setIsViewModalOpen(true);
+  };
+
+  const handleEdit = () => {
+    if (selectedAgent) {
+      setFormData({
+        ...selectedAgent,
+        qualifications: selectedAgent.qualifications.join(", "),
+      });
+      setIsViewModalOpen(false);
+      setIsCreateModalOpen(true);
+    }
   };
 
   return (
@@ -265,27 +284,43 @@ export default function PlanningAgentsPage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="availabilityStatus">Disponibilité</Label>
-              <Select
-                value={formData.availabilityStatus}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    availabilityStatus: value as PlanningAgent["availabilityStatus"],
-                  })
+            {formData.id && (
+              <div>
+                <Label htmlFor="availabilityStatus">Disponibilité</Label>
+                <Select
+                  value={formData.availabilityStatus}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      availabilityStatus:
+                        value as PlanningAgent["availabilityStatus"],
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Disponible">Disponible</SelectItem>
+                    <SelectItem value="En mission">En mission</SelectItem>
+                    <SelectItem value="Congé">Congé</SelectItem>
+                    <SelectItem value="Absent">Absent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="col-span-2">
+              <Label htmlFor="qualifications">Qualifications</Label>
+              <textarea
+                id="qualifications"
+                value={formData.qualifications || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, qualifications: e.target.value })
                 }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Disponible">Disponible</SelectItem>
-                  <SelectItem value="En mission">En mission</SelectItem>
-                  <SelectItem value="Congé">Congé</SelectItem>
-                  <SelectItem value="Absent">Absent</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="CQP APS, SSIAP 1, Carte Professionnelle"
+                className="w-full min-h-20 p-3 border rounded-lg"
+              />
             </div>
 
             <div>
@@ -324,6 +359,10 @@ export default function PlanningAgentsPage() {
         title="Détails de l'agent"
         size="lg"
         actions={{
+          primary: {
+            label: "Modifier",
+            onClick: handleEdit,
+          },
           secondary: {
             label: "Fermer",
             onClick: () => setIsViewModalOpen(false),
@@ -401,7 +440,9 @@ export default function PlanningAgentsPage() {
               <div>
                 <Label>Dernière activité</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedAgent.lastActivity).toLocaleDateString("fr-FR")}
+                  {new Date(selectedAgent.lastActivity).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             </div>
@@ -411,4 +452,3 @@ export default function PlanningAgentsPage() {
     </div>
   );
 }
-

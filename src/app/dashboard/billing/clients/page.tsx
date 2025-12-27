@@ -22,7 +22,7 @@ export default function BillingClientsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<BillingClient | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState<Partial<BillingClient>>({});
 
@@ -76,10 +76,21 @@ export default function BillingClientsPage() {
     },
   ];
 
+  const SERVICE_TYPES = [
+    "Gardiennage",
+    "Rondes",
+    "Événementiel",
+    "SSIAP",
+    "Accueil",
+    "Intervention",
+    "ADS",
+  ] as const;
+  type ServiceType = (typeof SERVICE_TYPES)[number];
+
   const handleCreate = () => {
     setFormData({
       contractType: "Mensuel",
-      serviceType: "Gardiennage",
+      serviceTypes: ["Gardiennage"],
       contractStartDate: new Date().toISOString().split("T")[0],
       sites: 1,
       hourlyRate: 25,
@@ -89,6 +100,10 @@ export default function BillingClientsPage() {
       status: "Actif",
       billingDay: 1,
       paymentTerm: 30,
+      contactName: "",
+      address: "",
+      phone: "",
+      email: "",
     });
     setIsCreateModalOpen(true);
   };
@@ -96,7 +111,7 @@ export default function BillingClientsPage() {
   const handleSave = () => {
     if (formData.id) {
       setClients(
-        clients.map((c) => (c.id === formData.id ? { ...c, ...formData } : c))
+        clients.map((c) => (c.id === formData.id ? { ...c, ...formData } : c)),
       );
     } else {
       const newClient: BillingClient = {
@@ -104,8 +119,15 @@ export default function BillingClientsPage() {
         name: formData.name || "",
         siret: formData.siret || "",
         contractType: formData.contractType || "Mensuel",
-        serviceType: formData.serviceType || "Gardiennage",
-        contractStartDate: formData.contractStartDate || new Date().toISOString().split("T")[0],
+        serviceType:
+          (formData.serviceTypes && formData.serviceTypes[0]) ||
+          formData.serviceType ||
+          "Gardiennage",
+        serviceTypes:
+          formData.serviceTypes ||
+          (formData.serviceType ? [formData.serviceType] : ["Gardiennage"]),
+        contractStartDate:
+          formData.contractStartDate || new Date().toISOString().split("T")[0],
         contractEndDate: formData.contractEndDate,
         monthlyHours: formData.monthlyHours,
         sites: formData.sites || 1,
@@ -118,6 +140,10 @@ export default function BillingClientsPage() {
         billingDay: formData.billingDay || 1,
         paymentTerm: formData.paymentTerm || 30,
         lastInvoice: new Date().toISOString().split("T")[0],
+        contactName: formData.contactName || "",
+        address: formData.address || "",
+        phone: formData.phone || "",
+        email: formData.email || "",
         agentTypes: formData.agentTypes,
         planningVolumes: formData.planningVolumes,
       };
@@ -201,6 +227,55 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
+              <Label htmlFor="contactName">Nom interlocuteur</Label>
+              <Input
+                id="contactName"
+                value={formData.contactName || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactName: e.target.value })
+                }
+                placeholder="Nom interlocuteur"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input
+                id="phone"
+                value={formData.phone || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                placeholder="06 12 34 56 78"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="contact@example.com"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Label htmlFor="address">Adresse</Label>
+              <Input
+                id="address"
+                value={formData.address || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, address: e.target.value })
+                }
+                placeholder="1 Rue du Commerce, 75000 Paris"
+              />
+            </div>
+
+            <div>
               <Label htmlFor="contractType">Type de contrat</Label>
               <Select
                 value={formData.contractType}
@@ -223,25 +298,51 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="serviceType">Type de prestation</Label>
-              <Select
-                value={formData.serviceType}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    serviceType: value as BillingClient["serviceType"],
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Gardiennage">Gardiennage</SelectItem>
-                  <SelectItem value="Rondes">Rondes</SelectItem>
-                  <SelectItem value="Événementiel">Événementiel</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Type de prestation</Label>
+              <div className="space-y-2">
+                {SERVICE_TYPES.map((type) => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`serviceType-${type}`}
+                      checked={
+                        Array.isArray(formData.serviceTypes)
+                          ? (formData.serviceTypes as ServiceType[]).includes(
+                              type as ServiceType,
+                            )
+                          : false
+                      }
+                      onChange={(e) => {
+                        const current: ServiceType[] = Array.isArray(
+                          formData.serviceTypes,
+                        )
+                          ? (formData.serviceTypes as ServiceType[])
+                          : [];
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            serviceTypes: [...current, type as ServiceType],
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            serviceTypes: current.filter(
+                              (t) => t !== (type as ServiceType),
+                            ),
+                          });
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <Label
+                      htmlFor={`serviceType-${type}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {type}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>
@@ -260,7 +361,9 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="contractEndDate">Date fin contrat (optionnel)</Label>
+              <Label htmlFor="contractEndDate">
+                Date fin contrat (optionnel)
+              </Label>
               <Input
                 id="contractEndDate"
                 type="date"
@@ -275,7 +378,9 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="monthlyHours">Volumes horaires mensuels (h)</Label>
+              <Label htmlFor="monthlyHours">
+                Volumes horaires mensuels (h)
+              </Label>
               <Input
                 id="monthlyHours"
                 type="number"
@@ -283,7 +388,9 @@ export default function BillingClientsPage() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    monthlyHours: e.target.value ? parseInt(e.target.value) : undefined,
+                    monthlyHours: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
                   })
                 }
                 placeholder="720"
@@ -291,7 +398,9 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="indexationRate">Indexation contractuelle (%)</Label>
+              <Label htmlFor="indexationRate">
+                Indexation contractuelle (%)
+              </Label>
               <Input
                 id="indexationRate"
                 type="number"
@@ -300,7 +409,9 @@ export default function BillingClientsPage() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    indexationRate: e.target.value ? parseFloat(e.target.value) : undefined,
+                    indexationRate: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
                   })
                 }
                 placeholder="2.5"
@@ -339,7 +450,7 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="nightBonus">Prime nuit (%)</Label>
+              <Label htmlFor="nightBonus">Majoration nuit (%)</Label>
               <Input
                 id="nightBonus"
                 type="number"
@@ -354,7 +465,7 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="sundayBonus">Prime dimanche (%)</Label>
+              <Label htmlFor="sundayBonus">Majoration dimanche (%)</Label>
               <Input
                 id="sundayBonus"
                 type="number"
@@ -369,7 +480,7 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="holidayBonus">Prime jours fériés (%)</Label>
+              <Label htmlFor="holidayBonus">Majoration jours fériés (%)</Label>
               <Input
                 id="holidayBonus"
                 type="number"
@@ -442,7 +553,17 @@ export default function BillingClientsPage() {
                 Connexion RH : Typologie des agents affectés
               </Label>
               <div className="space-y-2">
-                {["Agent de sécurité", "Chef de poste", "Rondier", "Agent événementiel", "Superviseur"].map((type) => (
+                {[
+                  "Agent de sécurité",
+                  "Chef de poste",
+                  "Rondier",
+                  "Agent événementiel",
+                  "Superviseur",
+                  "SSIAP1",
+                  "SSIAP2",
+                  "SSIAP3",
+                  "Agent Cynophile",
+                ].map((type) => (
                   <div key={type} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -464,7 +585,10 @@ export default function BillingClientsPage() {
                       }}
                       className="rounded border-gray-300"
                     />
-                    <Label htmlFor={`agentType-${type}`} className="text-sm font-normal cursor-pointer">
+                    <Label
+                      htmlFor={`agentType-${type}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
                       {type}
                     </Label>
                   </div>
@@ -490,13 +614,18 @@ export default function BillingClientsPage() {
                           site: e.target.value,
                           monthlyHours: newVolumes[index]?.monthlyHours || 0,
                         };
-                        setFormData({ ...formData, planningVolumes: newVolumes });
+                        setFormData({
+                          ...formData,
+                          planningVolumes: newVolumes,
+                        });
                       }}
                     />
                     <Input
                       type="number"
                       placeholder="Heures mensuelles"
-                      value={formData.planningVolumes?.[index]?.monthlyHours || ""}
+                      value={
+                        formData.planningVolumes?.[index]?.monthlyHours || ""
+                      }
                       onChange={(e) => {
                         const volumes = formData.planningVolumes || [];
                         const newVolumes = [...volumes];
@@ -505,7 +634,10 @@ export default function BillingClientsPage() {
                           site: newVolumes[index]?.site || `Site ${index + 1}`,
                           monthlyHours: parseInt(e.target.value) || 0,
                         };
-                        setFormData({ ...formData, planningVolumes: newVolumes });
+                        setFormData({
+                          ...formData,
+                          planningVolumes: newVolumes,
+                        });
                       }}
                     />
                   </div>
@@ -544,20 +676,63 @@ export default function BillingClientsPage() {
               </div>
 
               <div>
+                <Label>Interlocuteur</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.contactName || "-"}
+                </p>
+              </div>
+
+              <div>
+                <Label>Téléphone</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.phone || "-"}
+                </p>
+              </div>
+
+              <div>
+                <Label>Email</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.email || "-"}
+                </p>
+              </div>
+
+              <div className="col-span-2">
+                <Label>Adresse</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.address || "-"}
+                </p>
+              </div>
+
+              <div>
                 <Label>Type de contrat</Label>
                 <Badge variant="secondary">{selectedClient.contractType}</Badge>
               </div>
 
               <div>
                 <Label>Type de prestation</Label>
-                <Badge variant="outline">{selectedClient.serviceType}</Badge>
+                <div className="flex gap-2">
+                  {Array.isArray(selectedClient.serviceTypes) &&
+                  selectedClient.serviceTypes.length > 0 ? (
+                    (selectedClient.serviceTypes as ServiceType[]).map((st) => (
+                      <Badge key={st} variant="outline">
+                        {st}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline">
+                      {selectedClient.serviceType || "N/A"}
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               <div>
                 <Label>Date début contrat</Label>
                 <p className="text-sm font-medium">
                   {selectedClient.contractStartDate
-                    ? new Date(selectedClient.contractStartDate).toLocaleDateString("fr-FR")
+                    ? new Date(
+                        selectedClient.contractStartDate,
+                      ).toLocaleDateString("fr-FR")
                     : "-"}
                 </p>
               </div>
@@ -566,7 +741,9 @@ export default function BillingClientsPage() {
                 <Label>Date fin contrat</Label>
                 <p className="text-sm font-medium">
                   {selectedClient.contractEndDate
-                    ? new Date(selectedClient.contractEndDate).toLocaleDateString("fr-FR")
+                    ? new Date(
+                        selectedClient.contractEndDate,
+                      ).toLocaleDateString("fr-FR")
                     : "Non définie"}
                 </p>
               </div>
@@ -574,14 +751,18 @@ export default function BillingClientsPage() {
               {selectedClient.monthlyHours && (
                 <div>
                   <Label>Volumes horaires mensuels</Label>
-                  <p className="text-sm font-medium">{selectedClient.monthlyHours} h</p>
+                  <p className="text-sm font-medium">
+                    {selectedClient.monthlyHours} h
+                  </p>
                 </div>
               )}
 
               {selectedClient.indexationRate && (
                 <div>
                   <Label>Indexation contractuelle</Label>
-                  <p className="text-sm font-medium">{selectedClient.indexationRate}%</p>
+                  <p className="text-sm font-medium">
+                    {selectedClient.indexationRate}%
+                  </p>
                 </div>
               )}
 
@@ -598,21 +779,21 @@ export default function BillingClientsPage() {
               </div>
 
               <div>
-                <Label>Prime nuit</Label>
+                <Label>Majoration nuit</Label>
                 <p className="text-sm font-medium">
                   {selectedClient.nightBonus}%
                 </p>
               </div>
 
               <div>
-                <Label>Prime dimanche</Label>
+                <Label>Majoration dimanche</Label>
                 <p className="text-sm font-medium">
                   {selectedClient.sundayBonus}%
                 </p>
               </div>
 
               <div>
-                <Label>Prime jours fériés</Label>
+                <Label>Majoration jours fériés</Label>
                 <p className="text-sm font-medium">
                   {selectedClient.holidayBonus}%
                 </p>
@@ -646,40 +827,51 @@ export default function BillingClientsPage() {
               <div>
                 <Label>Dernière facture</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedClient.lastInvoice).toLocaleDateString("fr-FR")}
+                  {new Date(selectedClient.lastInvoice).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
 
-              {selectedClient.agentTypes && selectedClient.agentTypes.length > 0 && (
-                <div className="col-span-2 border-t pt-4">
-                  <Label className="text-base font-semibold mb-2 block">
-                    Connexion RH : Typologie des agents affectés
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedClient.agentTypes.map((type) => (
-                      <Badge key={type} variant="outline">
-                        {type}
-                      </Badge>
-                    ))}
+              {selectedClient.agentTypes &&
+                selectedClient.agentTypes.length > 0 && (
+                  <div className="col-span-2 border-t pt-4">
+                    <Label className="text-base font-semibold mb-2 block">
+                      Connexion RH : Typologie des agents affectés
+                    </Label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedClient.agentTypes.map((type) => (
+                        <Badge key={type} variant="outline">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {selectedClient.planningVolumes && selectedClient.planningVolumes.length > 0 && (
-                <div className="col-span-2 border-t pt-4">
-                  <Label className="text-base font-semibold mb-2 block">
-                    Connexion Planning : Volumes contractuels par site
-                  </Label>
-                  <div className="space-y-2">
-                    {selectedClient.planningVolumes.map((volume, index) => (
-                      <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                        <span className="text-sm font-medium">{volume.site}</span>
-                        <span className="text-sm">{volume.monthlyHours} h/mois</span>
-                      </div>
-                    ))}
+              {selectedClient.planningVolumes &&
+                selectedClient.planningVolumes.length > 0 && (
+                  <div className="col-span-2 border-t pt-4">
+                    <Label className="text-base font-semibold mb-2 block">
+                      Connexion Planning : Volumes contractuels par site
+                    </Label>
+                    <div className="space-y-2">
+                      {selectedClient.planningVolumes.map((volume, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center p-2 bg-muted rounded"
+                        >
+                          <span className="text-sm font-medium">
+                            {volume.site}
+                          </span>
+                          <span className="text-sm">
+                            {volume.monthlyHours} h/mois
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         )}
@@ -687,4 +879,3 @@ export default function BillingClientsPage() {
     </div>
   );
 }
-

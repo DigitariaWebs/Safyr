@@ -15,16 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Plus,
-  MessageSquare,
-  FileText,
-  Shield,
-} from "lucide-react";
+import { Plus, MessageSquare, FileText, Shield, Clock } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
-import { mockLogbookEvents, LogbookEvent } from "@/data/logbook-events";
+import {
+  mockLogbookEvents,
+  LogbookEvent,
+  mockAgents,
+  mockSites,
+} from "@/data/logbook-events";
 import { MediaUpload } from "@/components/logbook/MediaUpload";
 import { QRCodeScanner } from "@/components/logbook/QRCodeScanner";
+import { DigitalSignature } from "@/components/logbook/DigitalSignature";
 
 export default function AgentPortalPage() {
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function AgentPortalPage() {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<LogbookEvent | null>(null);
+  const [shiftSignature, setShiftSignature] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     type: "",
     severity: "",
@@ -43,18 +45,20 @@ export default function AgentPortalPage() {
   const [videos, setVideos] = useState<File[]>([]);
   const [voiceNotes, setVoiceNotes] = useState<File[]>([]);
 
-  // Filter events for current agent (RGPD - restricted access)
+  // Filter events for current agent's site (RGPD - restricted access)
   const currentAgentId = "AGT-125"; // Mock current agent
+  const currentAgent = mockAgents.find((a) => a.id === currentAgentId);
+  const currentSiteId = currentAgent?.siteId || "SITE-001";
+  const currentSite = mockSites.find((s) => s.id === currentSiteId);
   const agentEvents = mockLogbookEvents.filter(
-    (e) => e.agentId === currentAgentId
+    (e) => e.siteId === currentSiteId,
   );
 
   const columns: ColumnDef<LogbookEvent>[] = [
     {
       key: "timestamp",
       label: "Date/Heure",
-      render: (event) =>
-        new Date(event.timestamp).toLocaleString("fr-FR"),
+      render: (event) => new Date(event.timestamp).toLocaleString("fr-FR"),
     },
     {
       key: "title",
@@ -139,16 +143,47 @@ export default function AgentPortalPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label className="text-sm text-muted-foreground">Agent</Label>
-              <p className="text-sm font-medium">Jean Dupont</p>
+              <p className="text-sm font-medium">
+                {currentAgent?.name || "N/A"}
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Site actuel</Label>
-              <p className="text-sm font-medium">Centre Commercial Atlantis</p>
+              <Label className="text-sm text-muted-foreground">
+                Site actuel
+              </Label>
+              <p className="text-sm font-medium">
+                {currentSite?.name || "N/A"}
+              </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Poste</Label>
               <p className="text-sm font-medium">Rondier</p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* End of Shift Card */}
+      <Card className="glass-card border-border/40">
+        <CardHeader>
+          <CardTitle className="text-lg font-light flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Fin de service
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Signature optionnelle pour valider la fin de votre service et
+              confirmer la main courante.
+            </p>
+            <DigitalSignature
+              onSign={setShiftSignature}
+              signature={shiftSignature}
+            />
+            {shiftSignature && (
+              <Badge variant="secondary">Service terminé avec signature</Badge>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -198,7 +233,9 @@ export default function AgentPortalPage() {
             <Label htmlFor="type">Type d&apos;événement</Label>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, type: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner..." />
@@ -216,7 +253,9 @@ export default function AgentPortalPage() {
             <Label htmlFor="severity">Gravité</Label>
             <Select
               value={formData.severity}
-              onValueChange={(value) => setFormData({ ...formData, severity: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, severity: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner..." />
@@ -235,7 +274,9 @@ export default function AgentPortalPage() {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               placeholder="Titre de l'événement"
             />
           </div>
@@ -245,7 +286,9 @@ export default function AgentPortalPage() {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Description détaillée..."
               rows={4}
             />
@@ -257,10 +300,14 @@ export default function AgentPortalPage() {
               <Input
                 id="zone"
                 value={formData.zone}
-                onChange={(e) => setFormData({ ...formData, zone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, zone: e.target.value })
+                }
                 placeholder="Zone ou scan QR code"
               />
-              <QRCodeScanner onScan={(data) => setFormData({ ...formData, zone: data.zone })} />
+              <QRCodeScanner
+                onScan={(data) => setFormData({ ...formData, zone: data.zone })}
+              />
             </div>
           </div>
 
@@ -271,7 +318,9 @@ export default function AgentPortalPage() {
                 type="photo"
                 files={photos}
                 onUpload={setPhotos}
-                onRemove={(index) => setPhotos(photos.filter((_, i) => i !== index))}
+                onRemove={(index) =>
+                  setPhotos(photos.filter((_, i) => i !== index))
+                }
               />
             </div>
             <div>
@@ -280,7 +329,9 @@ export default function AgentPortalPage() {
                 type="video"
                 files={videos}
                 onUpload={setVideos}
-                onRemove={(index) => setVideos(videos.filter((_, i) => i !== index))}
+                onRemove={(index) =>
+                  setVideos(videos.filter((_, i) => i !== index))
+                }
               />
             </div>
             <div>
@@ -289,7 +340,9 @@ export default function AgentPortalPage() {
                 type="voice"
                 files={voiceNotes}
                 onUpload={setVoiceNotes}
-                onRemove={(index) => setVoiceNotes(voiceNotes.filter((_, i) => i !== index))}
+                onRemove={(index) =>
+                  setVoiceNotes(voiceNotes.filter((_, i) => i !== index))
+                }
               />
             </div>
           </div>
@@ -332,7 +385,9 @@ export default function AgentPortalPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingEvent.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingEvent.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -436,4 +491,3 @@ export default function AgentPortalPage() {
     </div>
   );
 }
-

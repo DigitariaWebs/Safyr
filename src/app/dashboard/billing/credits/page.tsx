@@ -18,10 +18,13 @@ import { Plus } from "lucide-react";
 import { mockBillingInvoices, BillingInvoice } from "@/data/billing-invoices";
 
 export default function BillingCreditsPage() {
-  const [invoices, setInvoices] = useState<BillingInvoice[]>(mockBillingInvoices);
+  const [invoices, setInvoices] =
+    useState<BillingInvoice[]>(mockBillingInvoices);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(
+    null,
+  );
   const [formData, setFormData] = useState<{
     invoiceId: string;
     amount: number;
@@ -40,11 +43,11 @@ export default function BillingCreditsPage() {
         invoiceNumber: invoice.invoiceNumber,
         clientName: invoice.clientName,
         invoiceId: invoice.id,
-      }))
+      })),
     )
     .filter((credit) => credit);
 
-  const columns: ColumnDef<typeof allCredits[0]>[] = [
+  const columns: ColumnDef<(typeof allCredits)[0]>[] = [
     {
       key: "creditNumber",
       label: "N° Avoir",
@@ -60,10 +63,10 @@ export default function BillingCreditsPage() {
     },
     {
       key: "amount",
-      label: "Montant",
+      label: "Montant TTC",
       render: (credit) => (
         <span className="font-semibold text-red-600">
-          -{credit.amount.toLocaleString("fr-FR")} €
+          -{(credit.amount * 1.2).toLocaleString("fr-FR")} €
         </span>
       ),
     },
@@ -122,15 +125,15 @@ export default function BillingCreditsPage() {
               total: newTotal,
               updatedAt: new Date().toISOString(),
             }
-          : i
-      )
+          : i,
+      ),
     );
 
     setIsCreateModalOpen(false);
     setFormData({ invoiceId: "", amount: 0, reason: "" });
   };
 
-  const handleRowClick = (credit: typeof allCredits[0]) => {
+  const handleRowClick = (credit: (typeof allCredits)[0]) => {
     const invoice = invoices.find((i) => i.id === credit.invoiceId);
     if (invoice) {
       setSelectedInvoice(invoice);
@@ -205,7 +208,7 @@ export default function BillingCreditsPage() {
             </div>
 
             <div>
-              <Label htmlFor="amount">Montant de l&apos;avoir (€)</Label>
+              <Label htmlFor="amount">Montant HT (€)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -218,6 +221,24 @@ export default function BillingCreditsPage() {
                   })
                 }
                 placeholder="0.00"
+              />
+            </div>
+
+            <div>
+              <Label>TVA 20% (€)</Label>
+              <Input
+                value={(formData.amount * 0.2).toFixed(2)}
+                readOnly
+                className="bg-muted"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Label>TTC (€)</Label>
+              <Input
+                value={(formData.amount * 1.2).toFixed(2)}
+                readOnly
+                className="bg-muted"
               />
             </div>
 
@@ -272,13 +293,22 @@ export default function BillingCreditsPage() {
                       <span className="font-mono text-sm font-semibold">
                         {credit.creditNumber}
                       </span>
-                      <span className="font-semibold text-red-600">
-                        -{credit.amount.toLocaleString("fr-FR")} €
-                      </span>
+                      <div className="text-right text-red-600">
+                        <div className="font-semibold">
+                          -{(credit.amount * 1.2).toLocaleString("fr-FR")} € TTC
+                        </div>
+                        <div className="text-xs">
+                          HT: -{credit.amount.toLocaleString("fr-FR")} € | TVA:
+                          -{(credit.amount * 0.2).toLocaleString("fr-FR")} €
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{credit.reason}</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {credit.reason}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Créé le {new Date(credit.createdAt).toLocaleString("fr-FR")}
+                      Créé le{" "}
+                      {new Date(credit.createdAt).toLocaleString("fr-FR")}
                     </p>
                   </div>
                 ))}
@@ -294,4 +324,3 @@ export default function BillingCreditsPage() {
     </div>
   );
 }
-

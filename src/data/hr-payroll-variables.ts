@@ -47,26 +47,26 @@ export const mockPayrollVariables: PayrollVariable[] = [
   {
     id: "VAR-002",
     code: "NIGHT_PREMIUM",
-    name: "Prime de nuit",
+    name: "Majoration nuit",
     category: "premium",
     type: "percentage",
     percentage: 25,
     appliesTo: ["all"],
     isActive: true,
-    description: "Prime de 25% pour les heures de nuit",
+    description: "Majoration de 25% pour les heures de nuit",
     createdAt: "2024-01-01",
     updatedAt: "2024-01-01",
   },
   {
     id: "VAR-003",
     code: "SUNDAY_PREMIUM",
-    name: "Prime dimanche",
+    name: "Majoration dimanche",
     category: "premium",
     type: "percentage",
     percentage: 50,
     appliesTo: ["all"],
     isActive: true,
-    description: "Prime de 50% pour les heures travaillées le dimanche",
+    description: "Majoration de 50% pour les heures travaillées le dimanche",
     createdAt: "2024-01-01",
     updatedAt: "2024-01-01",
   },
@@ -148,6 +148,20 @@ export const mockPayrollVariables: PayrollVariable[] = [
     createdAt: "2024-01-01",
     updatedAt: "2024-01-01",
   },
+  {
+    id: "VAR-010",
+    code: "HOLIDAY_PREMIUM",
+    name: "Majoration jours fériés",
+    category: "premium",
+    type: "percentage",
+    percentage: 50,
+    appliesTo: ["all"],
+    isActive: true,
+    description:
+      "Majoration de 50% pour les heures travaillées les jours fériés",
+    createdAt: "2024-01-01",
+    updatedAt: "2024-01-01",
+  },
 ];
 
 export const mockPayrollPeriods: PayrollPeriod[] = [
@@ -193,5 +207,3 @@ export const mockPayrollPeriods: PayrollPeriod[] = [
     updatedAt: "2024-10-25",
   },
 ];
-
-

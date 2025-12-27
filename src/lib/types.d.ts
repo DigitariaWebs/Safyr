@@ -8,6 +8,7 @@ export interface Company {
   legalForm: string;
   siret: string;
   vatNumber?: string;
+  authorizationNumber?: string; // N° D'autorisation ou carte CNAPS - CAPITAL
   address: {
     street: string;
     city: string;
@@ -24,7 +25,73 @@ export interface Company {
     iban: string;
     bic: string;
   };
+  legalRepresentative: {
+    firstName: string;
+    lastName: string;
+    status: "GERANT" | "PRESIDENT";
+    phone: string;
+    email: string;
+    cnapsCardNumber: string;
+  };
+  administrativeDocuments: {
+    legalRepCNI?: string; // File URL
+    directorCnapsCard?: string;
+    companyCnapsCard?: string;
+    kbis?: string;
+    urssafVigilance?: string;
+    fiscalRegularity?: string;
+    rcProInsurance?: string;
+    rib?: string;
+  };
+  expirationAlerts: {
+    directorCnapsExpiry?: Date;
+    companyCnapsExpiry?: Date;
+  };
+  subcontractors: Subcontractor[];
+  clients: Client[];
   // Add more fields as needed for complete company fiche
+}
+
+export interface Subcontractor {
+  id: string;
+  name: string;
+  contracts: SubcontractorContract[];
+}
+
+export interface SubcontractorContract {
+  id: string;
+  subcontractorId: string;
+  startDate: Date;
+  endDate?: Date;
+  description: string;
+  fileUrl?: string;
+  status: "active" | "expired" | "terminated";
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  contracts: ClientContract[];
+  gifts: ClientGift[];
+}
+
+export interface ClientContract {
+  id: string;
+  clientId: string;
+  startDate: Date;
+  endDate?: Date;
+  description: string;
+  fileUrl?: string;
+  status: "active" | "expired" | "terminated";
+}
+
+export interface ClientGift {
+  id: string;
+  clientId: string;
+  giftDescription: string;
+  date: Date;
+  value?: number;
+  notes?: string;
 }
 
 // ============================================================================
@@ -310,6 +377,20 @@ export interface Employee {
   // CSE
   cseRole?: CSERole;
 
+  // Savings Plans
+  savingsPlans: {
+    pee: {
+      contributions: number;
+      balance: number;
+      lastContributionDate?: Date;
+    };
+    pereco: {
+      contributions: number;
+      balance: number;
+      lastContributionDate?: Date;
+    };
+  };
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -410,6 +491,18 @@ export interface Contract {
   signedByEmployee: boolean;
   signedByEmployer: boolean;
 
+  // Probation Period
+  probationPeriod?: {
+    duration: number;
+    unit: "months" | "weeks" | "days";
+  };
+  probationStartDate?: Date;
+  probationEndDate?: Date;
+  probationRenewed: boolean;
+  probationRenewalDate?: Date;
+  probationRenewalEndDate?: Date;
+  probationStatus?: "active" | "completed" | "renewed" | "failed";
+
   // Amendments
   amendments: ContractAmendment[];
 
@@ -435,9 +528,23 @@ export interface ContractAmendment {
 export interface Equipment {
   id: string;
   name: string;
-  type: "PPE" | "RADIO" | "KEYS" | "UNIFORM" | "BADGE" | "VEHICLE" | "OTHER";
+  type:
+    | "PPE"
+    | "RADIO"
+    | "KEYS"
+    | "UNIFORM"
+    | "BADGE"
+    | "VEHICLE"
+    | "VACATION_VOUCHER"
+    | "GIFT_CARD"
+    | "CESU"
+    | "FUEL_CARD"
+    | "MEAL_VOUCHER"
+    | "OTHER";
   serialNumber?: string;
   description?: string;
+  quantity?: number;
+  consumable?: boolean;
 
   // Assignment
   assignedAt: Date;
@@ -450,7 +557,7 @@ export interface Equipment {
   returnSignature?: Signature;
 
   condition: "new" | "good" | "fair" | "poor" | "damaged";
-  status: "assigned" | "returned" | "lost" | "damaged";
+  status: "assigned" | "returned" | "lost" | "damaged" | "exhausted";
   notes?: string;
 }
 
@@ -477,7 +584,14 @@ export interface ExpirationAlert {
   id: string;
   employeeId: string;
   employeeName: string;
-  type: "pro-card" | "ssiap" | "vm" | "sst" | "contract" | "certification";
+  type:
+    | "pro-card"
+    | "ssiap"
+    | "vm"
+    | "sst"
+    | "contract"
+    | "certification"
+    | "probation";
   documentName: string;
   expiryDate: Date;
   daysUntilExpiry: number;
