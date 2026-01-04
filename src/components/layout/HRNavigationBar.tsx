@@ -49,12 +49,12 @@ const navItems: NavItem[] = [
     icon: Users,
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
-      { label: "DUERP", href: "/dashboard/hr/duerp" },
+      { label: "DUERP", href: "/dashboard/hr/employees/duerp" },
       {
         label: "Archives Mails",
         href: "/dashboard/hr/employees/archives-mails",
       },
-      { label: "AKTO", href: "/dashboard/hr/akto-opco" },
+      { label: "AKTO", href: "/dashboard/hr/employees/akto-opco" },
       {
         label: "Contrats & avenants",
         href: "/dashboard/hr/contracts",

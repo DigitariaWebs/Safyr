@@ -3,11 +3,10 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
   DollarSign,
@@ -70,108 +69,6 @@ const mockAnomalies: PayrollAnomaly[] = [
     updatedAt: new Date("2024-12-18"),
   },
 ];
-
-function PayrollOverviewWidget() {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
-          Coût total du personnel
-        </CardTitle>
-        <DollarSign className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {mockPayrollStats.totalPersonnelCost.toLocaleString("fr-FR")} €
-        </div>
-        <p className="text-xs text-muted-foreground">
-          <TrendingUp className="inline h-3 w-3 text-green-600 mr-1" />
-          +2.5% par rapport au mois dernier
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function AverageCostWidget() {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
-          Coût moyen par salarié
-        </CardTitle>
-        <Users className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {mockPayrollStats.averageCostPerEmployee.toLocaleString("fr-FR")} €
-        </div>
-        <p className="text-xs text-muted-foreground">
-          <TrendingDown className="inline h-3 w-3 text-green-600 mr-1" />
-          -0.8% par rapport au mois dernier
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PendingValidationsWidget() {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
-          Validations en attente
-        </CardTitle>
-        <Clock className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {mockPayrollStats.pendingValidations}
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Variables de paie à valider
-        </p>
-        <div className="mt-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/hr/payroll/variables">
-              Voir les validations
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function AnomaliesWidget() {
-  const criticalCount = mockAnomalies.filter(
-    (a) => a.severity === "critical",
-  ).length;
-  const highCount = mockAnomalies.filter((a) => a.severity === "high").length;
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Anomalies de paie</CardTitle>
-        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-red-600">
-          {mockPayrollStats.anomaliesCount}
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {criticalCount} critique{criticalCount !== 1 ? "s" : ""}, {highCount}{" "}
-          élevé{highCount !== 1 ? "s" : ""}
-        </p>
-        <div className="mt-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/hr/payroll/control">Voir les anomalies</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function RecentAnomaliesWidget() {
   return (
@@ -333,12 +230,38 @@ export default function PayrollPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <PayrollOverviewWidget />
-        <AverageCostWidget />
-        <PendingValidationsWidget />
-        <AnomaliesWidget />
+      <InfoCardContainer>
+        <InfoCard
+          icon={DollarSign}
+          title="Coût total du personnel"
+          value={`${mockPayrollStats.totalPersonnelCost.toLocaleString("fr-FR")} €`}
+          subtext="+2.5% par rapport au mois dernier"
+          color="blue"
+        />
+        <InfoCard
+          icon={Users}
+          title="Coût moyen par salarié"
+          value={`${mockPayrollStats.averageCostPerEmployee.toLocaleString("fr-FR")} €`}
+          subtext="-0.8% par rapport au mois dernier"
+          color="green"
+        />
+        <InfoCard
+          icon={Clock}
+          title="Validations en attente"
+          value={mockPayrollStats.pendingValidations}
+          subtext="Variables de paie à valider"
+          color="orange"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="Anomalies de paie"
+          value={mockPayrollStats.anomaliesCount}
+          subtext={`${mockAnomalies.filter((a) => a.severity === "critical").length} critique${mockAnomalies.filter((a) => a.severity === "critical").length !== 1 ? "s" : ""}, ${mockAnomalies.filter((a) => a.severity === "high").length} élevé${mockAnomalies.filter((a) => a.severity === "high").length !== 1 ? "s" : ""}`}
+          color="red"
+        />
+      </InfoCardContainer>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="md:col-span-2">
           <RecentAnomaliesWidget />
         </div>

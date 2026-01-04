@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -310,130 +311,87 @@ export default function WorkedHoursPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-7">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Déclarations
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockWorkedHours.length}</div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Clock}
+          title="Total Déclarations"
+          value={mockWorkedHours.length}
+          subtext="Ce mois-ci"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures Normales
-            </CardTitle>
-            <Sun className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalRegularHours}h</div>
-            <p className="text-xs text-muted-foreground">Total du mois</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Sun}
+          title="Heures Normales"
+          value={`${totalRegularHours}h`}
+          subtext="Total du mois"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures Supplémentaires
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {totalSupplementaryHours25 +
-                totalSupplementaryHours50 +
-                totalComplementaryHours10}
-              h
-            </div>
-            <p className="text-xs text-muted-foreground">Toutes majorations</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Heures Supplémentaires"
+          value={`${totalSupplementaryHours25 + totalSupplementaryHours50 + totalComplementaryHours10}h`}
+          subtext="Toutes majorations"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures de Nuit
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {mockWorkedHours.reduce(
-                (sum, h) =>
-                  sum +
-                  h.nightHours +
-                  (h.nightHours25 || 0) +
-                  (h.nightHours50 || 0) +
-                  (h.nightHours10 || 0),
-                0,
-              )}
-              h
-            </div>
-            <p className="text-xs text-muted-foreground">Toutes variantes</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Heures de Nuit"
+          value={`${mockWorkedHours.reduce(
+            (sum, h) =>
+              sum +
+              h.nightHours +
+              (h.nightHours25 || 0) +
+              (h.nightHours50 || 0) +
+              (h.nightHours10 || 0),
+            0,
+          )}h`}
+          subtext="Toutes variantes"
+          color="purple"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dimanche</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {mockWorkedHours.reduce(
-                (sum, h) =>
-                  sum +
-                  h.sundayHours +
-                  (h.sundayHours25 || 0) +
-                  (h.sundayHours50 || 0) +
-                  (h.sundayHours10 || 0),
-                0,
-              )}
-              h
-            </div>
-            <p className="text-xs text-muted-foreground">Toutes variantes</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Dimanche"
+          value={`${mockWorkedHours.reduce(
+            (sum, h) =>
+              sum +
+              h.sundayHours +
+              (h.sundayHours25 || 0) +
+              (h.sundayHours50 || 0) +
+              (h.sundayHours10 || 0),
+            0,
+          )}h`}
+          subtext="Toutes variantes"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Jours Fériés</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {mockWorkedHours.reduce(
-                (sum, h) =>
-                  sum +
-                  h.holidayHours +
-                  (h.holidayHours25 || 0) +
-                  (h.holidayHours50 || 0) +
-                  (h.holidayHours10 || 0),
-                0,
-              )}
-              h
-            </div>
-            <p className="text-xs text-muted-foreground">Toutes variantes</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Jours Fériés"
+          value={`${mockWorkedHours.reduce(
+            (sum, h) =>
+              sum +
+              h.holidayHours +
+              (h.holidayHours25 || 0) +
+              (h.holidayHours50 || 0) +
+              (h.holidayHours10 || 0),
+            0,
+          )}h`}
+          subtext="Toutes variantes"
+          color="red"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalPending}</div>
-            <p className="text-xs text-muted-foreground">À valider</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={XCircle}
+          title="En Attente"
+          value={totalPending}
+          subtext="À valider"
+          color="yellow"
+        />
+      </InfoCardContainer>
 
       {/* Worked Hours Table */}
       <Card>

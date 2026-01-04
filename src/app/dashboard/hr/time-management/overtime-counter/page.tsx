@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -187,56 +188,31 @@ export default function OvertimeCounterPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Accumulé
-            </CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {totalAccumulated}h
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Heures supplémentaires totales
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Clock}
+          title="Total Accumulé"
+          value={`${totalAccumulated}h`}
+          subtext="Heures supplémentaires totales"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Payé</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {totalPaid}h
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Déjà payées cette année
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle}
+          title="Total Payé"
+          value={`${totalPaid}h`}
+          subtext="Déjà payées cette année"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              En Attente de Paiement
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {totalRemaining}h
-            </div>
-            <p className="text-xs text-muted-foreground">
-              À payer prochainement
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={AlertTriangle}
+          title="En Attente de Paiement"
+          value={`${totalRemaining}h`}
+          subtext="À payer prochainement"
+          color="orange"
+        />
+      </InfoCardContainer>
 
       {/* Overtime Counter Table */}
       <Card>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -203,59 +204,39 @@ export default function CSEHoursPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Élus CSE</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockCSEDelegationHours.length}
-            </div>
-            <p className="text-xs text-muted-foreground">Actifs ce mois</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Élus CSE"
+          value={mockCSEDelegationHours.length}
+          subtext="Actifs ce mois"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures Allouées
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAllocated}h</div>
-            <p className="text-xs text-muted-foreground">Total du mois</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Heures Allouées"
+          value={`${totalAllocated}h`}
+          subtext="Total du mois"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures Utilisées
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalUsed}h</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((totalUsed / totalAllocated) * 100)}% du crédit
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle}
+          title="Heures Utilisées"
+          value={`${totalUsed}h`}
+          subtext={`${Math.round((totalUsed / totalAllocated) * 100)}% du crédit`}
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Séances</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSessions}</div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Calendar}
+          title="Séances"
+          value={totalSessions}
+          subtext="Ce mois-ci"
+          color="orange"
+        />
+      </InfoCardContainer>
 
       {/* CSE Hours Table */}
       <Card>

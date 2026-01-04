@@ -1,20 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +21,6 @@ import {
   Inbox,
   Paperclip,
 } from "lucide-react";
-import { mockEmployees } from "@/data/employees";
 
 // Mock archived communications
 interface ArchivedCommunication {
@@ -92,10 +80,6 @@ const mockArchivedCommunications: ArchivedCommunication[] = [
 ];
 
 export default function ArchivesMailsPage() {
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-
   const getCategoryBadge = (category: ArchivedCommunication["category"]) => {
     const variants = {
       hr: { variant: "default" as const, label: "RH" },
@@ -185,19 +169,6 @@ export default function ArchivesMailsPage() {
     },
   ];
 
-  const filteredCommunications = mockArchivedCommunications.filter((comm) => {
-    const employeeMatch =
-      selectedEmployee === "all" || comm.employeeId === selectedEmployee;
-    const categoryMatch =
-      selectedCategory === "all" || comm.category === selectedCategory;
-    const searchMatch =
-      searchTerm === "" ||
-      comm.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      comm.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      comm.from.toLowerCase().includes(searchTerm.toLowerCase());
-    return employeeMatch && categoryMatch && searchMatch;
-  });
-
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
@@ -212,66 +183,44 @@ export default function ArchivesMailsPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filtres</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="employee">Employé</Label>
-              <Select
-                value={selectedEmployee}
-                onValueChange={setSelectedEmployee}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Tous les employés" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les employés</SelectItem>
-                  {mockEmployees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
-                      {employee.firstName} {employee.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Catégorie</Label>
-              <Select
-                value={selectedCategory}
-                onValueChange={setSelectedCategory}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les catégories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les catégories</SelectItem>
-                  <SelectItem value="hr">RH</SelectItem>
-                  <SelectItem value="payroll">Paie</SelectItem>
-                  <SelectItem value="training">Formation</SelectItem>
-                  <SelectItem value="other">Autre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="search">Recherche</Label>
-              <Input
-                id="search"
-                placeholder="Rechercher par objet, employé..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Stats */}
+      <InfoCardContainer>
+        <InfoCard
+          icon={Mail}
+          title="Total communications"
+          value={mockArchivedCommunications.length}
+          color="gray"
+        />
+        <InfoCard
+          icon={Send}
+          title="Envoyés"
+          value={
+            mockArchivedCommunications.filter((c) => c.type === "sent").length
+          }
+          color="blue"
+        />
+        <InfoCard
+          icon={Inbox}
+          title="Reçus"
+          value={
+            mockArchivedCommunications.filter((c) => c.type === "received")
+              .length
+          }
+          color="green"
+        />
+        <InfoCard
+          icon={Paperclip}
+          title="Avec PJ"
+          value={
+            mockArchivedCommunications.filter((c) => c.hasAttachments).length
+          }
+          color="orange"
+        />
+      </InfoCardContainer>
 
       {/* Communications DataTable */}
       <DataTable
-        data={filteredCommunications}
+        data={mockArchivedCommunications}
         columns={columns}
         searchKeys={["subject", "employeeName", "from"]}
         getSearchValue={(comm) =>
@@ -303,36 +252,6 @@ export default function ArchivesMailsPage() {
           </DropdownMenu>
         )}
       />
-
-      {/* Stats */}
-      <InfoCardContainer>
-        <InfoCard
-          icon={Mail}
-          title="Total communications"
-          value={filteredCommunications.length}
-          color="gray"
-        />
-        <InfoCard
-          icon={Send}
-          title="Envoyés"
-          value={filteredCommunications.filter((c) => c.type === "sent").length}
-          color="blue"
-        />
-        <InfoCard
-          icon={Inbox}
-          title="Reçus"
-          value={
-            filteredCommunications.filter((c) => c.type === "received").length
-          }
-          color="green"
-        />
-        <InfoCard
-          icon={Paperclip}
-          title="Avec PJ"
-          value={filteredCommunications.filter((c) => c.hasAttachments).length}
-          color="orange"
-        />
-      </InfoCardContainer>
     </div>
   );
 }
