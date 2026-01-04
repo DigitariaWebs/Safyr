@@ -32,6 +32,7 @@ import {
   Euro,
   CheckCircle,
   Clock,
+  XCircle,
 } from "lucide-react";
 import { ExpenseReport, ExpenseItem } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -154,6 +155,14 @@ const categoryLabels = {
   other: "Autre",
 };
 
+// Mock employees
+const mockEmployees = [
+  { id: "1", name: "Marie Dupont" },
+  { id: "2", name: "Jean Martin" },
+  { id: "3", name: "Sophie Leroy" },
+  { id: "4", name: "Pierre Durand" },
+];
+
 export default function ExpenseReportsPage() {
   const [expenses, setExpenses] = useState<ExpenseReport[]>(mockExpenseReports);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -171,14 +180,13 @@ export default function ExpenseReportsPage() {
     notes: "",
   });
 
-  // Filter by current user (mock - in real app, use actual auth)
-  const currentUserId = "1";
-  const myExpenses = expenses.filter((e) => e.employeeId === currentUserId);
+  // Show all expenses (remove filter for current user)
+  const allExpenses = expenses;
 
   const handleCreate = () => {
     setEditingExpense(null);
     setFormData({
-      employeeId: currentUserId,
+      employeeId: "1", // Default employee ID
       title: "",
       items: [
         {
@@ -194,12 +202,6 @@ export default function ExpenseReportsPage() {
   };
 
   const handleEdit = (expense: ExpenseReport) => {
-    if (expense.status !== "draft" && expense.status !== "rejected") {
-      alert(
-        "Seuls les brouillons et les notes de frais rejetées peuvent être modifiés.",
-      );
-      return;
-    }
     setEditingExpense(expense);
     setFormData({
       employeeId: expense.employeeId,
@@ -221,14 +223,24 @@ export default function ExpenseReportsPage() {
     setIsViewModalOpen(true);
   };
 
-  const handleDelete = (expenseId: string) => {
-    const expense = expenses.find((e) => e.id === expenseId);
-    if (expense && expense.status !== "draft") {
-      alert("Seuls les brouillons peuvent être supprimés.");
-      return;
-    }
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette note de frais ?")) {
-      setExpenses(expenses.filter((e) => e.id !== expenseId));
+  const handleAccept = (expense: ExpenseReport) => {
+    setExpenses(
+      expenses.map((e) =>
+        e.id === expense.id
+          ? {
+              ...e,
+              status: "submitted",
+              submittedAt: new Date(),
+              updatedAt: new Date(),
+            }
+          : e,
+      ),
+    );
+  };
+
+  const handleRefuse = (expense: ExpenseReport) => {
+    if (confirm("Êtes-vous sûr de vouloir refuser cette note de frais ?")) {
+      setExpenses(expenses.filter((e) => e.id !== expense.id));
     }
   };
 
@@ -315,6 +327,21 @@ export default function ExpenseReportsPage() {
 
   const columns: ColumnDef<ExpenseReport>[] = [
     {
+      key: "employee",
+      label: "Employé",
+      render: (expense: ExpenseReport) => {
+        const employee = mockEmployees.find((e) => e.id === expense.employeeId);
+        return (
+          <div>
+            <div className="font-medium">{employee?.name || "N/A"}</div>
+            <div className="text-sm text-muted-foreground">
+              {expense.employeeId}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
       key: "title",
       label: "Titre",
       render: (expense: ExpenseReport) => (
@@ -370,19 +397,27 @@ export default function ExpenseReportsPage() {
               <Eye className="mr-2 h-4 w-4" />
               Voir
             </DropdownMenuItem>
-            {(expense.status === "draft" || expense.status === "rejected") && (
+            {expense.status === "draft" && (
+              <>
+                <DropdownMenuItem onClick={() => handleAccept(expense)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Accepter
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleRefuse(expense)}
+                  className="text-red-600"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Refuser
+                </DropdownMenuItem>
+              </>
+            )}
+            {(expense.status === "submitted" ||
+              expense.status === "approved" ||
+              expense.status === "rejected") && (
               <DropdownMenuItem onClick={() => handleEdit(expense)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Modifier
-              </DropdownMenuItem>
-            )}
-            {expense.status === "draft" && (
-              <DropdownMenuItem
-                onClick={() => handleDelete(expense.id)}
-                className="text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -392,14 +427,14 @@ export default function ExpenseReportsPage() {
   ];
 
   // Calculate stats
-  const draftCount = myExpenses.filter((e) => e.status === "draft").length;
-  const submittedCount = myExpenses.filter(
+  const draftCount = allExpenses.filter((e) => e.status === "draft").length;
+  const submittedCount = allExpenses.filter(
     (e) => e.status === "submitted",
   ).length;
-  const approvedCount = myExpenses.filter(
+  const approvedCount = allExpenses.filter(
     (e) => e.status === "approved",
   ).length;
-  const totalApprovedAmount = myExpenses
+  const totalApprovedAmount = allExpenses
     .filter((e) => e.status === "approved" || e.status === "paid")
     .reduce((sum, e) => sum + e.totalAmount, 0);
 
@@ -407,7 +442,7 @@ export default function ExpenseReportsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Mes Notes de Frais</h1>
+          <h1 className="text-3xl font-bold">Notes de Frais</h1>
           <p className="text-muted-foreground">
             Déclarez et suivez vos notes de frais
           </p>
@@ -466,10 +501,10 @@ export default function ExpenseReportsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Mes notes de frais</CardTitle>
+          <CardTitle>Notes de frais</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={myExpenses} />
+          <DataTable columns={columns} data={allExpenses} />
         </CardContent>
       </Card>
 

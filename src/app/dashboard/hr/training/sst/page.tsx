@@ -15,6 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   CheckCircle,
   XCircle,
   MoreVertical,
@@ -24,6 +31,7 @@ import {
   Users,
   Eye,
   RotateCcw,
+  Plus,
 } from "lucide-react";
 import type { TrainingCertification } from "@/lib/types";
 
@@ -91,12 +99,22 @@ export default function SSTPage() {
   );
   const [isRecycleModalOpen, setIsRecycleModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isCertificationModalOpen, setIsCertificationModalOpen] =
+    useState(false);
   const [selectedCertification, setSelectedCertification] =
     useState<TrainingCertification | null>(null);
   const [recycleForm, setRecycleForm] = useState({
     recycleDate: "",
     newExpiryDate: "",
     notes: "",
+  });
+  const [certificationForm, setCertificationForm] = useState({
+    employeeId: "",
+    employeeName: "",
+    number: "",
+    issueDate: "",
+    expiryDate: "",
+    issuer: "INRS",
   });
 
   const handleAddRecycle = (certification: TrainingCertification) => {
@@ -112,6 +130,42 @@ export default function SSTPage() {
   const handleViewCertification = (certification: TrainingCertification) => {
     setSelectedCertification(certification);
     setIsViewModalOpen(true);
+  };
+
+  const handleOpenCreateModal = () => {
+    setCertificationForm({
+      employeeId: "",
+      employeeName: "",
+      number: "",
+      issueDate: "",
+      expiryDate: "",
+      issuer: "INRS",
+    });
+    setIsCertificationModalOpen(true);
+  };
+
+  const handleCreateCertification = () => {
+    const certification: TrainingCertification = {
+      id: `SST-${Date.now()}`,
+      employeeId: certificationForm.employeeId,
+      employeeName: certificationForm.employeeName,
+      type: "SST",
+      number: certificationForm.number,
+      issueDate: new Date(certificationForm.issueDate),
+      expiryDate: new Date(certificationForm.expiryDate),
+      issuer: certificationForm.issuer,
+      status: "valid",
+      lastRenewalDate: new Date(certificationForm.issueDate),
+      nextRenewalDate: new Date(certificationForm.expiryDate),
+      validated: true,
+      validatedBy: "Admin",
+      validatedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setCertifications([...certifications, certification]);
+    setIsCertificationModalOpen(false);
   };
 
   const handleCreateRecycle = () => {
@@ -234,6 +288,10 @@ export default function SSTPage() {
             Suivi des certifications SST et gestion des recyclages
           </p>
         </div>
+        <Button onClick={handleOpenCreateModal} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Nouvelle certification
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -523,6 +581,117 @@ export default function SSTPage() {
               }
               placeholder="Notes sur le recyclage"
             />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Certification Modal (Create) */}
+      <Modal
+        open={isCertificationModalOpen}
+        onOpenChange={setIsCertificationModalOpen}
+        type="form"
+        title="Nouvelle certification SST"
+        size="md"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCertificationModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Créer",
+            onClick: handleCreateCertification,
+            disabled:
+              !certificationForm.employeeName || !certificationForm.number,
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="employee">
+              Employé <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="employee"
+              value={certificationForm.employeeName}
+              onChange={(e) =>
+                setCertificationForm((prev) => ({
+                  ...prev,
+                  employeeName: e.target.value,
+                }))
+              }
+              placeholder="Nom de l'employé"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="number">
+              Numéro de certification{" "}
+              <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="number"
+              value={certificationForm.number}
+              onChange={(e) =>
+                setCertificationForm((prev) => ({
+                  ...prev,
+                  number: e.target.value,
+                }))
+              }
+              placeholder="SST-2024-001"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="issuer">Émetteur</Label>
+              <Select
+                value={certificationForm.issuer}
+                onValueChange={(value) =>
+                  setCertificationForm((prev) => ({ ...prev, issuer: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INRS">INRS</SelectItem>
+                  <SelectItem value="SDIS">SDIS</SelectItem>
+                  <SelectItem value="Autre">Autre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="issueDate">Date d&apos;émission</Label>
+              <Input
+                id="issueDate"
+                type="date"
+                value={certificationForm.issueDate}
+                onChange={(e) =>
+                  setCertificationForm((prev) => ({
+                    ...prev,
+                    issueDate: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiryDate">Date d&apos;expiration</Label>
+              <Input
+                id="expiryDate"
+                type="date"
+                value={certificationForm.expiryDate}
+                onChange={(e) =>
+                  setCertificationForm((prev) => ({
+                    ...prev,
+                    expiryDate: e.target.value,
+                  }))
+                }
+              />
+            </div>
           </div>
         </div>
       </Modal>

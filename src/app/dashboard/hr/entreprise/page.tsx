@@ -1,659 +1,747 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Building2 } from "lucide-react";
-import type { Company, Subcontractor, Client } from "@/lib/types";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Building2,
+  FileText,
+  Upload,
+  Download,
+  AlertTriangle,
+  ExternalLink,
+  Euro,
+  CreditCard,
+  FileCheck,
+  Edit3,
+  Archive,
+} from "lucide-react";
 
-export default function EntreprisePage() {
-  const [isEditing, setIsEditing] = React.useState(false);
+interface Document {
+  id: string;
+  name: string;
+  type: string;
+  uploadDate: string;
+  expiryDate?: string;
+  status: "valid" | "expiring" | "expired";
+  required: boolean;
+}
 
-  const [company, setCompany] = React.useState<Company>({
-    id: "1",
-    name: "Safyr SARL",
-    legalForm: "SARL",
+interface CompanyInfo {
+  name: string;
+  siret: string;
+  address: string;
+  capitalSocial: string;
+  numeroAutorisation: string;
+  dirigeant: string;
+  email: string;
+  telephone: string;
+}
+
+const requiredDocuments = [
+  { type: "cni_dirigeant", name: "CNI du dirigeant", category: "dirigeant" },
+  {
+    type: "carte_pro_dirigeant",
+    name: "Carte pro CNAPS du dirigeant",
+    category: "dirigeant",
+  },
+  {
+    type: "carte_pro_entreprise",
+    name: "Carte pro CNAPS de l'entreprise",
+    category: "entreprise",
+  },
+  { type: "kbis", name: "Kbis", category: "entreprise" },
+  {
+    type: "urssaf",
+    name: "Attestation de vigilance URSSAF",
+    category: "attestations",
+  },
+  {
+    type: "fiscale",
+    name: "Attestation de régularité Fiscale",
+    category: "attestations",
+  },
+  {
+    type: "assurance_rc",
+    name: "Attestation d'assurance RC PRO",
+    category: "attestations",
+  },
+  { type: "rib", name: "RIB", category: "bancaire" },
+];
+
+const optionalDocuments = [
+  { type: "statuts", name: "Statuts", category: "juridique" },
+  { type: "pv_ag", name: "PV Assemblée Générale", category: "juridique" },
+];
+
+export default function InformationEntreprisePage() {
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
+    name: "Safyr Security",
     siret: "12345678901234",
-    vatNumber: "FR12345678901",
-    authorizationNumber: "",
-    address: {
-      street: "123 Rue de la Paix",
-      city: "Paris",
-      postalCode: "75001",
-      country: "France",
-    },
-    contact: {
-      phone: "+33 1 23 45 67 89",
-      email: "contact@safyr.fr",
-      website: "https://www.safyr.fr",
-    },
-    bankDetails: {
-      bankName: "Banque de France",
-      iban: "FR1420041010050500013M02606",
-      bic: "BDFEFR2L",
-    },
-    legalRepresentative: {
-      firstName: "",
-      lastName: "",
-      status: "GERANT",
-      phone: "",
-      email: "",
-      cnapsCardNumber: "",
-    },
-    administrativeDocuments: {},
-    expirationAlerts: {},
-    subcontractors: [
-      {
-        id: "sub1",
-        name: "Sous-traitant Exemple 1",
-        contracts: [
-          {
-            id: "contract1",
-            subcontractorId: "sub1",
-            startDate: new Date("2023-01-01"),
-            endDate: new Date("2024-01-01"),
-            description: "Contrat de sous-traitance exemple",
-            status: "active",
-          },
-        ],
-      },
-    ],
-    clients: [
-      {
-        id: "client1",
-        name: "Client Exemple 1",
-        contracts: [
-          {
-            id: "clientcontract1",
-            clientId: "client1",
-            startDate: new Date("2023-01-01"),
-            endDate: new Date("2024-01-01"),
-            description: "Contrat client exemple",
-            status: "active",
-          },
-        ],
-        gifts: [
-          {
-            id: "gift1",
-            clientId: "client1",
-            giftDescription: "Cadeau exemple",
-            date: new Date("2023-12-01"),
-            value: 50,
-            notes: "Notes sur le cadeau",
-          },
-        ],
-      },
-    ],
+    address: "123 Rue de la Sécurité, 75001 Paris",
+    capitalSocial: "50000",
+    numeroAutorisation: "AUT-123456-CNAPS",
+    dirigeant: "Jean Dupont",
+    email: "contact@safyr-security.fr",
+    telephone: "01 23 45 67 89",
   });
 
-  const handleSave = () => {
-    // TODO: Save to database
-    console.log("Saving company info:", company);
-    setIsEditing(false);
+  const [documents] = useState<Document[]>([
+    {
+      id: "1",
+      name: "CNI Jean Dupont",
+      type: "cni_dirigeant",
+      uploadDate: "2024-11-15",
+      expiryDate: "2029-11-15",
+      status: "valid",
+      required: true,
+    },
+    {
+      id: "2",
+      name: "Carte Pro CNAPS - Jean Dupont",
+      type: "carte_pro_dirigeant",
+      uploadDate: "2024-08-10",
+      expiryDate: "2025-02-15",
+      status: "expiring",
+      required: true,
+    },
+    {
+      id: "3",
+      name: "Attestation URSSAF",
+      type: "urssaf",
+      uploadDate: "2024-10-01",
+      expiryDate: "2025-04-01",
+      status: "expiring",
+      required: true,
+    },
+  ]);
+
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "valid":
+        return "Valide";
+      case "expiring":
+        return "Expire bientôt";
+      case "expired":
+        return "Expiré";
+      default:
+        return "Inconnu";
+    }
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleExportPdf = (includeOptional = false) => {
+    const docsToExport = documents.filter(
+      (doc) => doc.required || (includeOptional && !doc.required),
+    );
+    console.log("Exporting PDF with documents:", docsToExport);
+    // Logique d'export PDF
   };
 
-  const updateCompany = (
-    field: keyof Omit<Company, "address" | "contact" | "bankDetails">,
-    value: string,
-  ) => {
-    setCompany((prev: Company) => ({ ...prev, [field]: value }));
+  const handleDocumentUpload = (type: string) => {
+    console.log("Uploading document for type:", type);
+    // Logique d'upload
   };
 
-  const updateAddress = (field: keyof Company["address"], value: string) => {
-    setCompany((prev: Company) => ({
-      ...prev,
-      address: { ...prev.address, [field]: value },
-    }));
+  const handleBulkDownload = () => {
+    const selectedDocs = documents.filter((doc) =>
+      selectedDocuments.includes(doc.id),
+    );
+    console.log("Downloading documents:", selectedDocs);
+    // Logique de téléchargement en lot
+    alert(`Téléchargement de ${selectedDocs.length} document(s) en cours...`);
   };
 
-  const updateContact = (field: keyof Company["contact"], value: string) => {
-    setCompany((prev: Company) => ({
-      ...prev,
-      contact: { ...prev.contact, [field]: value },
-    }));
+  const toggleDocumentSelection = (docId: string) => {
+    setSelectedDocuments((prev) =>
+      prev.includes(docId)
+        ? prev.filter((id) => id !== docId)
+        : [...prev, docId],
+    );
   };
 
-  const updateBankDetails = (
-    field: keyof Company["bankDetails"],
-    value: string,
-  ) => {
-    setCompany((prev: Company) => ({
-      ...prev,
-      bankDetails: { ...prev.bankDetails, [field]: value },
-    }));
+  const toggleSelectAll = () => {
+    if (selectedDocuments.length === documents.length) {
+      setSelectedDocuments([]);
+    } else {
+      setSelectedDocuments(documents.map((doc) => doc.id));
+    }
   };
 
-  const updateLegalRepresentative = (
-    field: keyof Company["legalRepresentative"],
-    value: string,
-  ) => {
-    setCompany((prev: Company) => ({
-      ...prev,
-      legalRepresentative: { ...prev.legalRepresentative, [field]: value },
-    }));
-  };
-
-  const updateAdministrativeDocuments = (
-    field: keyof Company["administrativeDocuments"],
-    value: string,
-  ) => {
-    setCompany((prev: Company) => ({
-      ...prev,
-      administrativeDocuments: {
-        ...prev.administrativeDocuments,
-        [field]: value,
-      },
-    }));
-  };
+  const quickLinks = [
+    { name: "URSSAF", url: "https://urssaf.fr", icon: ExternalLink },
+    { name: "Impôts", url: "https://impots.gouv.fr", icon: ExternalLink },
+    { name: "Infogreffe", url: "https://infogreffe.fr", icon: ExternalLink },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-3 space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Building2 className="h-6 w-6" />
-          <h1 className="text-2xl font-semibold">Informations société</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Information Entreprise</h1>
+          <p className="text-muted-foreground">
+            Gestion des informations et documents administratifs de
+            l&apos;entreprise
+          </p>
         </div>
-        {!isEditing ? (
-          <Button onClick={handleEdit}>Modifier</Button>
-        ) : (
-          <Button onClick={handleSave}>Enregistrer</Button>
-        )}
+        <div className="flex gap-2"></div>
       </div>
 
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Informations générales</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nom de l&apos;entreprise</Label>
-              <Input
-                id="name"
-                value={company.name}
-                onChange={(e) => updateCompany("name", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="legalForm">Forme juridique</Label>
-              <Input
-                id="legalForm"
-                value={company.legalForm}
-                onChange={(e) => updateCompany("legalForm", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="siret">SIRET</Label>
-              <Input
-                id="siret"
-                value={company.siret}
-                onChange={(e) => updateCompany("siret", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="vatNumber">Numéro de TVA</Label>
-              <Input
-                id="vatNumber"
-                value={company.vatNumber || ""}
-                onChange={(e) => updateCompany("vatNumber", e.target.value)}
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="authorizationNumber">
-                N° D&apos;autorisation / Carte CNAPS - CAPITAL
-              </Label>
-              <Input
-                id="authorizationNumber"
-                value={company.authorizationNumber || ""}
-                onChange={(e) =>
-                  updateCompany("authorizationNumber", e.target.value)
-                }
-                disabled={!isEditing}
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="info" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 rounded-xl">
+          <TabsTrigger value="info">Informations</TabsTrigger>
+          <TabsTrigger value="documents">Documents </TabsTrigger>
+        </TabsList>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <TabsContent value="info">
           <Card>
             <CardHeader>
-              <CardTitle>Adresse</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="street">Rue</Label>
-                <Input
-                  id="street"
-                  value={company.address.street}
-                  onChange={(e) => updateAddress("street", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="city">Ville</Label>
-                <Input
-                  id="city"
-                  value={company.address.city}
-                  onChange={(e) => updateAddress("city", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="postalCode">Code postal</Label>
-                <Input
-                  id="postalCode"
-                  value={company.address.postalCode}
-                  onChange={(e) => updateAddress("postalCode", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="country">Pays</Label>
-                <Input
-                  id="country"
-                  value={company.address.country}
-                  onChange={(e) => updateAddress("country", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input
-                  id="phone"
-                  value={company.contact.phone}
-                  onChange={(e) => updateContact("phone", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={company.contact.email}
-                  onChange={(e) => updateContact("email", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="website">Site web</Label>
-                <Input
-                  id="website"
-                  value={company.contact.website || ""}
-                  onChange={(e) => updateContact("website", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informations bancaires</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="bankName">Nom de la banque</Label>
-                <Input
-                  id="bankName"
-                  value={company.bankDetails.bankName}
-                  onChange={(e) =>
-                    updateBankDetails("bankName", e.target.value)
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="iban">IBAN</Label>
-                <Input
-                  id="iban"
-                  value={company.bankDetails.iban}
-                  onChange={(e) => updateBankDetails("iban", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="bic">BIC</Label>
-                <Input
-                  id="bic"
-                  value={company.bankDetails.bic}
-                  onChange={(e) => updateBankDetails("bic", e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Alertes d&apos;Expiration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>
-                Carte pro CNAPS Dirigeant:{" "}
-                {company.expirationAlerts.directorCnapsExpiry
-                  ? new Date(
-                      company.expirationAlerts.directorCnapsExpiry,
-                    ).toLocaleDateString()
-                  : "Non défini"}
-              </p>
-              <p>
-                Carte pro CNAPS Société:{" "}
-                {company.expirationAlerts.companyCnapsExpiry
-                  ? new Date(
-                      company.expirationAlerts.companyCnapsExpiry,
-                    ).toLocaleDateString()
-                  : "Non défini"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Représentant Légal</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="repFirstName">Prénom</Label>
-                <Input
-                  id="repFirstName"
-                  value={company.legalRepresentative.firstName}
-                  onChange={(e) =>
-                    updateLegalRepresentative("firstName", e.target.value)
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="repLastName">Nom</Label>
-                <Input
-                  id="repLastName"
-                  value={company.legalRepresentative.lastName}
-                  onChange={(e) =>
-                    updateLegalRepresentative("lastName", e.target.value)
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="repStatus">Statut</Label>
-                <select
-                  id="repStatus"
-                  value={company.legalRepresentative.status}
-                  onChange={(e) =>
-                    updateLegalRepresentative(
-                      "status",
-                      e.target.value as "GERANT" | "PRESIDENT",
-                    )
-                  }
-                  disabled={!isEditing}
-                  className="w-full p-2 border rounded"
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  <CardTitle>Informations de l&apos;entreprise</CardTitle>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex items-center gap-2"
                 >
-                  <option value="GERANT">Gérant</option>
-                  <option value="PRESIDENT">Président</option>
-                </select>
+                  <Edit3 className="h-4 w-4" />
+                  {isEditing ? "Annuler" : "Modifier"}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="repPhone">Téléphone</Label>
-                <Input
-                  id="repPhone"
-                  value={company.legalRepresentative.phone}
-                  onChange={(e) =>
-                    updateLegalRepresentative("phone", e.target.value)
-                  }
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nom de l&apos;entreprise</Label>
+                  <Input
+                    id="name"
+                    value={companyInfo.name}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({ ...companyInfo, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="siret">SIRET</Label>
+                  <Input
+                    id="siret"
+                    value={companyInfo.siret}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({ ...companyInfo, siret: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Textarea
+                  id="address"
+                  value={companyInfo.address}
                   disabled={!isEditing}
+                  onChange={(e) =>
+                    setCompanyInfo({ ...companyInfo, address: e.target.value })
+                  }
                 />
               </div>
-              <div>
-                <Label htmlFor="repEmail">Email</Label>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="capital" className="flex items-center gap-2">
+                    <Euro className="h-4 w-4" />
+                    Capital Social (€)
+                  </Label>
+                  <Input
+                    id="capital"
+                    value={companyInfo.capitalSocial}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({
+                        ...companyInfo,
+                        capitalSocial: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="autorisation"
+                    className="flex items-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    N° Autorisation CNAPS
+                  </Label>
+                  <Input
+                    id="autorisation"
+                    value={companyInfo.numeroAutorisation}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({
+                        ...companyInfo,
+                        numeroAutorisation: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant">Dirigeant</Label>
+                  <Input
+                    id="dirigeant"
+                    value={companyInfo.dirigeant}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({
+                        ...companyInfo,
+                        dirigeant: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={companyInfo.email}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({ ...companyInfo, email: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telephone">Téléphone</Label>
                 <Input
-                  id="repEmail"
-                  type="email"
-                  value={company.legalRepresentative.email}
-                  onChange={(e) =>
-                    updateLegalRepresentative("email", e.target.value)
-                  }
+                  id="telephone"
+                  value={companyInfo.telephone}
                   disabled={!isEditing}
+                  onChange={(e) =>
+                    setCompanyInfo({
+                      ...companyInfo,
+                      telephone: e.target.value,
+                    })
+                  }
                 />
               </div>
-              <div>
-                <Label htmlFor="repCnaps">Carte pro CNAPS</Label>
-                <Input
-                  id="repCnaps"
-                  value={company.legalRepresentative.cnapsCardNumber}
-                  onChange={(e) =>
-                    updateLegalRepresentative("cnapsCardNumber", e.target.value)
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
+
+              {isEditing && (
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => setIsEditing(false)}>
+                    Sauvegarder
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    Annuler
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="documents">
+          <div className="space-y-6">
+            {/* Export Actions */}
+            <div className="flex gap-2 justify-end">
+              {selectedDocuments.length > 0 && (
+                <Button
+                  variant="default"
+                  onClick={handleBulkDownload}
+                  className="flex items-center gap-2"
+                >
+                  <Archive className="h-4 w-4" />
+                  Télécharger ({selectedDocuments.length})
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => handleExportPdf(false)}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exporter PDF (Documents requis)
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleExportPdf(true)}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exporter PDF (Tous documents)
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+            {/* Alertes de renouvellement */}
+            <Card className="border-l-4 border-l-orange-500">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-orange-700">
+                  <AlertTriangle className="h-5 w-5" />
+                  Documents à Renouveler Prochainement
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between py-2 px-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-destructive rounded-full"></div>
+                    <div>
+                      <p className="font-medium text-sm">
+                        Cartes Pro CNAPS - Dirigeant
+                      </p>
+                      <p className="text-xs text-destructive">
+                        Expiré le 15/02/2025
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() =>
+                      window.open("https://cnaps-securite.fr", "_blank")
+                    }
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Renouveler
+                  </Button>
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Documents Administratifs</CardTitle>
-            <Button onClick={() => console.log("Export PDF")}>
-              Exporter en PDF
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="legalRepCNI">CNI du Représentant Légal</Label>
-                <Input
-                  id="legalRepCNI"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "legalRepCNI",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="directorCnapsCard">
-                  Carte pro CNAPS du Dirigeant
-                </Label>
-                <Input
-                  id="directorCnapsCard"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "directorCnapsCard",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyCnapsCard">
-                  Carte pro CNAPS de l&apos;Entreprise
-                </Label>
-                <Input
-                  id="companyCnapsCard"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "companyCnapsCard",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="kbis">Kbis</Label>
-                <Input
-                  id="kbis"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "kbis",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="urssafVigilance">
-                  Attestation de Vigilance URSSAF
-                </Label>
-                <Input
-                  id="urssafVigilance"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "urssafVigilance",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="fiscalRegularity">
-                  Attestation de Régularité Fiscale
-                </Label>
-                <Input
-                  id="fiscalRegularity"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "fiscalRegularity",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="rcProInsurance">
-                  Attestation d&apos;Assurance RC PRO
-                </Label>
-                <Input
-                  id="rcProInsurance"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "rcProInsurance",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="rib">RIB</Label>
-                <Input
-                  id="rib"
-                  type="file"
-                  onChange={(e) =>
-                    updateAdministrativeDocuments(
-                      "rib",
-                      e.target.files?.[0]?.name || "",
-                    )
-                  }
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex items-center justify-between py-2 px-3 bg-warning/10 border border-warning/20 rounded-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-warning rounded-full"></div>
+                    <div>
+                      <p className="font-medium text-sm">Kbis</p>
+                      <p className="text-xs text-warning-foreground">
+                        Expire le 15/04/2025
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() =>
+                      window.open("https://infogreffe.fr", "_blank")
+                    }
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Télécharger
+                  </Button>
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Sous-traitance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={company.subcontractors}
-              columns={
-                [
-                  {
-                    key: "name",
-                    label: "Nom de l'Entreprise",
-                  },
-                  {
-                    key: "contracts",
-                    label: "Contrats",
-                    render: (sub) => (
-                      <span>{sub.contracts.length} contrats</span>
-                    ),
-                  },
-                ] as ColumnDef<Subcontractor>[]
-              }
-            />
-          </CardContent>
-        </Card>
+                <div className="flex items-center justify-between py-2 px-3 bg-info/10 border border-info/20 rounded-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-info rounded-full"></div>
+                    <div>
+                      <p className="font-medium text-sm">
+                        Attestations URSSAF et Fiscales
+                      </p>
+                      <p className="text-xs text-info-foreground">
+                        Prochaine échéance: 01/04/2025
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() => window.open("https://urssaf.fr", "_blank")}
+                    >
+                      URSSAF
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() =>
+                        window.open("https://impots.gouv.fr", "_blank")
+                      }
+                    >
+                      Impôts
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Clients</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={company.clients}
-              columns={
-                [
-                  {
-                    key: "name",
-                    label: "Nom du Client",
-                  },
-                  {
-                    key: "contracts",
-                    label: "Contrats",
-                    render: (client) => (
-                      <span>{client.contracts.length} contrats</span>
-                    ),
-                  },
-                  {
-                    key: "gifts",
-                    label: "Cadeaux",
-                    render: (client) => (
-                      <span>{client.gifts.length} cadeaux</span>
-                    ),
-                  },
-                ] as ColumnDef<Client>[]
-              }
-            />
-          </CardContent>
-        </Card>
-      </div>
+            {/* Liens rapides */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <ExternalLink className="h-4 w-4" />
+                  Liens Rapides
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  {quickLinks.map((link) => (
+                    <Button
+                      key={link.name}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => window.open(link.url, "_blank")}
+                    >
+                      {link.name}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-      {isEditing && (
-        <div className="flex justify-end">
-          <Button onClick={handleSave}>Enregistrer</Button>
-        </div>
-      )}
+            {/* Documents requis */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileCheck className="h-5 w-5" />
+                    Documents Administratifs Requis
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="select-all"
+                      checked={selectedDocuments.length === documents.length}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <Label htmlFor="select-all" className="text-sm">
+                      Tout sélectionner
+                    </Label>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {requiredDocuments.map((docType) => {
+                    const existingDoc = documents.find(
+                      (d) => d.type === docType.type,
+                    );
+
+                    // Check if document is expiring soon (within 30 days) or expired
+                    const isExpiring =
+                      existingDoc?.expiryDate &&
+                      new Date(existingDoc.expiryDate) <=
+                        new Date(Date() + 30 * 24 * 60 * 60 * 1000);
+                    const isExpired =
+                      existingDoc?.expiryDate &&
+                      new Date(existingDoc.expiryDate) < new Date();
+
+                    return (
+                      <div
+                        key={docType.type}
+                        className={`flex items-center justify-between py-3 px-3 border rounded-md ${
+                          isExpired
+                            ? "border-destructive/20 bg-destructive/10"
+                            : isExpiring
+                              ? "border-warning/20 bg-warning/10"
+                              : "hover:bg-accent"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={selectedDocuments.includes(
+                              existingDoc?.id || "",
+                            )}
+                            onCheckedChange={() =>
+                              toggleDocumentSelection(existingDoc?.id || "")
+                            }
+                            disabled={!existingDoc}
+                          />
+                          {isExpired || isExpiring ? (
+                            <div
+                              className={`w-2 h-2 rounded-full ${isExpired ? "bg-destructive" : "bg-warning"}`}
+                            ></div>
+                          ) : (
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <div>
+                            <p className="font-medium text-sm">
+                              {docType.name}
+                            </p>
+                            {existingDoc && (
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <Badge
+                                  variant={
+                                    isExpired
+                                      ? "destructive"
+                                      : isExpiring
+                                        ? "secondary"
+                                        : "default"
+                                  }
+                                  className="text-xs h-5"
+                                >
+                                  {isExpired
+                                    ? "Expiré"
+                                    : isExpiring
+                                      ? "Expire bientôt"
+                                      : getStatusText(existingDoc.status)}
+                                </Badge>
+                                {existingDoc.expiryDate && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(
+                                      existingDoc.expiryDate,
+                                    ).toLocaleDateString("fr-FR")}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          {existingDoc && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                            >
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          )}
+                          {(isExpiring || isExpired) &&
+                            docType.type === "kbis" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() =>
+                                  window.open("https://infogreffe.fr", "_blank")
+                                }
+                              >
+                                Renouveler
+                              </Button>
+                            )}
+                          {(isExpiring || isExpired) &&
+                            docType.type === "urssaf" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() =>
+                                  window.open("https://urssaf.fr", "_blank")
+                                }
+                              >
+                                URSSAF
+                              </Button>
+                            )}
+                          {(isExpiring || isExpired) &&
+                            docType.type === "fiscal" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() =>
+                                  window.open(
+                                    "https://impots.gouv.fr",
+                                    "_blank",
+                                  )
+                                }
+                              >
+                                Impôts
+                              </Button>
+                            )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleDocumentUpload(docType.type)}
+                          >
+                            <Upload className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Documents optionnels */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Documents Juridiques (Optionnels)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {optionalDocuments.map((docType) => {
+                    const existingDoc = documents.find(
+                      (d) => d.type === docType.type,
+                    );
+                    return (
+                      <div
+                        key={docType.type}
+                        className="flex items-center justify-between py-3 px-3 border rounded-md hover:bg-accent"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-sm">
+                              {docType.name}
+                            </p>
+                            {existingDoc && (
+                              <span className="text-xs text-muted-foreground">
+                                Uploadé le{" "}
+                                {new Date(
+                                  existingDoc.uploadDate,
+                                ).toLocaleDateString("fr-FR")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          {existingDoc && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                              >
+                                Export PDF
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleDocumentUpload(docType.type)}
+                          >
+                            <Upload className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -44,8 +44,7 @@ import {
   ChevronRight,
   Save,
 } from "lucide-react";
-import type { Employee } from "@/lib/types";
-import type { EmployeeFormData } from "@/lib/types";
+import type { Employee, EmployeeFormData, Contract } from "@/lib/types";
 import { mockEmployees, mockStats } from "@/data/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
 
@@ -84,7 +83,11 @@ export default function EmployeesPage() {
     hireDate: "",
     position: "",
     department: "",
+    contractType: "CDI",
+    workSchedule: "full-time",
     status: "active",
+    cnapsNumber: "",
+    ssiapNumber: "",
   });
 
   const getStatusBadge = (status: Employee["status"]) => {
@@ -206,8 +209,35 @@ export default function EmployeesPage() {
       hireDate: new Date(newEmployeeData.hireDate),
       position: newEmployeeData.position,
       department: newEmployeeData.department,
+      contractType: newEmployeeData.contractType as Contract["type"],
+      workSchedule: newEmployeeData.workSchedule,
       status: newEmployeeData.status as Employee["status"],
-      documents: {},
+      documents: {
+        proCard: newEmployeeData.cnapsNumber
+          ? {
+              id: `PROCARD${Date.now()}`,
+              name: "Carte professionnelle CNAPS",
+              type: "pro-card",
+              fileUrl: "",
+              uploadedAt: new Date(),
+              uploadedBy: "admin",
+              verified: false,
+              notes: `Numéro: ${newEmployeeData.cnapsNumber}`,
+            }
+          : undefined,
+        ssiap: newEmployeeData.ssiapNumber
+          ? {
+              id: `SSIAP${Date.now()}`,
+              type: "SSIAP1",
+              number: newEmployeeData.ssiapNumber,
+              issueDate: new Date(),
+              expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+              issuer: "CNAPS",
+              verified: false,
+              status: "valid",
+            }
+          : undefined,
+      },
       contracts: [],
       assignedEquipment: [],
       savingsPlans: {
@@ -250,7 +280,11 @@ export default function EmployeesPage() {
       hireDate: "",
       position: "",
       department: "",
+      contractType: "CDI",
+      workSchedule: "full-time",
       status: "active",
+      cnapsNumber: "",
+      ssiapNumber: "",
     });
   };
 
@@ -260,8 +294,7 @@ export default function EmployeesPage() {
         return (
           newEmployeeData.firstName &&
           newEmployeeData.lastName &&
-          newEmployeeData.dateOfBirth &&
-          newEmployeeData.placeOfBirth
+          newEmployeeData.dateOfBirth
         );
       case 1: // Contact
         return (
@@ -723,7 +756,11 @@ export default function EmployeesPage() {
               hireDate: "",
               position: "",
               department: "",
+              contractType: "CDI",
+              workSchedule: "full-time",
               status: "active",
+              cnapsNumber: "",
+              ssiapNumber: "",
             });
           }
         }}
@@ -1038,6 +1075,45 @@ export default function EmployeesPage() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="contractType">Type de contrat</Label>
+                    <Select
+                      value={newEmployeeData.contractType}
+                      onValueChange={(value) =>
+                        handleNewEmployeeChange("contractType", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CDI">CDI</SelectItem>
+                        <SelectItem value="CDD">CDD</SelectItem>
+                        <SelectItem value="INTERIM">Intérim</SelectItem>
+                        <SelectItem value="APPRENTICESHIP">
+                          Apprentissage
+                        </SelectItem>
+                        <SelectItem value="INTERNSHIP">Stage</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="workSchedule">Temps de travail</Label>
+                    <Select
+                      value={newEmployeeData.workSchedule}
+                      onValueChange={(value) =>
+                        handleNewEmployeeChange("workSchedule", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full-time">Temps complet</SelectItem>
+                        <SelectItem value="part-time">Temps partiel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="hireDate">
                       Date d&apos;embauche{" "}
                       <span className="text-destructive">*</span>
@@ -1048,6 +1124,28 @@ export default function EmployeesPage() {
                       value={newEmployeeData.hireDate}
                       onChange={(e) =>
                         handleNewEmployeeChange("hireDate", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cnapsNumber">N° carte Pro CNAPS</Label>
+                    <Input
+                      id="cnapsNumber"
+                      placeholder="Numéro de carte CNAPS"
+                      value={newEmployeeData.cnapsNumber}
+                      onChange={(e) =>
+                        handleNewEmployeeChange("cnapsNumber", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ssiapNumber">N° Diplôme SSIAP</Label>
+                    <Input
+                      id="ssiapNumber"
+                      placeholder="Numéro de diplôme SSIAP"
+                      value={newEmployeeData.ssiapNumber}
+                      onChange={(e) =>
+                        handleNewEmployeeChange("ssiapNumber", e.target.value)
                       }
                     />
                   </div>

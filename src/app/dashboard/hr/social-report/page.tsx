@@ -81,7 +81,7 @@ interface SocialReportData {
 const generateMockReport = (year: number): SocialReportData => {
   const employees = mockEmployees;
   const total = employees.length;
-  
+
   return {
     year,
     employeeDistribution: {
@@ -92,19 +92,19 @@ const generateMockReport = (year: number): SocialReportData => {
       },
       byAge: {
         "18-25": Math.floor(total * 0.15),
-        "26-35": Math.floor(total * 0.40),
+        "26-35": Math.floor(total * 0.4),
         "36-50": Math.floor(total * 0.35),
-        "50+": Math.floor(total * 0.10),
+        "50+": Math.floor(total * 0.1),
       },
       bySeniority: {
-        "0-1": Math.floor(total * 0.20),
+        "0-1": Math.floor(total * 0.2),
         "1-3": Math.floor(total * 0.35),
         "3-5": Math.floor(total * 0.25),
-        "5+": Math.floor(total * 0.20),
+        "5+": Math.floor(total * 0.2),
       },
     },
     contracts: {
-      cdi: Math.floor(total * 0.70),
+      cdi: Math.floor(total * 0.7),
       cdd: Math.floor(total * 0.25),
       apprentices: Math.floor(total * 0.05),
       cddRenewed: Math.floor(total * 0.15),
@@ -158,9 +158,9 @@ const generateMockReport = (year: number): SocialReportData => {
     hourlyCost: {
       average: 18.5,
       byCategory: {
-        "Agent": 16.2,
+        Agent: 16.2,
         "Chef de poste": 20.5,
-        "Superviseur": 25.8,
+        Superviseur: 25.8,
       },
     },
     comparison: {
@@ -173,7 +173,9 @@ const generateMockReport = (year: number): SocialReportData => {
 
 export default function SocialReportPage() {
   const [selectedYear, setSelectedYear] = useState(2024);
-  const [report, setReport] = useState<SocialReportData>(generateMockReport(2024));
+  const [report, setReport] = useState<SocialReportData>(
+    generateMockReport(2024),
+  );
 
   const handleYearChange = (year: string) => {
     const yearNum = parseInt(year);
@@ -191,11 +193,15 @@ export default function SocialReportPage() {
         <div>
           <h1 className="text-3xl font-bold">Bilan Social Automatisé</h1>
           <p className="text-muted-foreground">
-            Génération automatique du bilan social à partir des données RH, Paie et Planning
+            Génération automatique du bilan social à partir des données RH, Paie
+            et Planning
           </p>
         </div>
         <div className="flex gap-2">
-          <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={handleYearChange}
+          >
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -223,21 +229,39 @@ export default function SocialReportPage() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <Label className="text-sm text-muted-foreground">Total effectif</Label>
-              <p className="text-2xl font-bold">{report.employeeDistribution.total}</p>
+              <Label className="text-sm text-muted-foreground">
+                Total effectif
+              </Label>
+              <p className="text-2xl font-bold">
+                {report.employeeDistribution.total}
+              </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Hommes</Label>
-              <p className="text-2xl font-bold">{report.employeeDistribution.byGender.male}</p>
+              <p className="text-2xl font-bold">
+                {report.employeeDistribution.byGender.male}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {((report.employeeDistribution.byGender.male / report.employeeDistribution.total) * 100).toFixed(1)}%
+                {(
+                  (report.employeeDistribution.byGender.male /
+                    report.employeeDistribution.total) *
+                  100
+                ).toFixed(1)}
+                %
               </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Femmes</Label>
-              <p className="text-2xl font-bold">{report.employeeDistribution.byGender.female}</p>
+              <p className="text-2xl font-bold">
+                {report.employeeDistribution.byGender.female}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {((report.employeeDistribution.byGender.female / report.employeeDistribution.total) * 100).toFixed(1)}%
+                {(
+                  (report.employeeDistribution.byGender.female /
+                    report.employeeDistribution.total) *
+                  100
+                ).toFixed(1)}
+                %
               </p>
             </div>
             <div>
@@ -248,25 +272,33 @@ export default function SocialReportPage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div>
-              <Label className="text-sm font-semibold mb-2 block">Par tranche d&apos;âge</Label>
+              <Label className="text-sm font-semibold mb-2 block">
+                Par tranche d&apos;âge
+              </Label>
               <div className="space-y-2">
-                {Object.entries(report.employeeDistribution.byAge).map(([age, count]) => (
-                  <div key={age} className="flex justify-between">
-                    <span className="text-sm">{age} ans</span>
-                    <span className="text-sm font-medium">{count}</span>
-                  </div>
-                ))}
+                {Object.entries(report.employeeDistribution.byAge).map(
+                  ([age, count]) => (
+                    <div key={age} className="flex justify-between">
+                      <span className="text-sm">{age} ans</span>
+                      <span className="text-sm font-medium">{count}</span>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
             <div>
-              <Label className="text-sm font-semibold mb-2 block">Par ancienneté</Label>
+              <Label className="text-sm font-semibold mb-2 block">
+                Par ancienneté
+              </Label>
               <div className="space-y-2">
-                {Object.entries(report.employeeDistribution.bySeniority).map(([range, count]) => (
-                  <div key={range} className="flex justify-between">
-                    <span className="text-sm">{range} ans</span>
-                    <span className="text-sm font-medium">{count}</span>
-                  </div>
-                ))}
+                {Object.entries(report.employeeDistribution.bySeniority).map(
+                  ([range, count]) => (
+                    <div key={range} className="flex justify-between">
+                      <span className="text-sm">{range} ans</span>
+                      <span className="text-sm font-medium">{count}</span>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -290,16 +322,26 @@ export default function SocialReportPage() {
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Apprentis</Label>
-              <p className="text-2xl font-bold">{report.contracts.apprentices}</p>
+              <p className="text-2xl font-bold">
+                {report.contracts.apprentices}
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">CDD renouvelés</Label>
-              <p className="text-2xl font-bold">{report.contracts.cddRenewed}</p>
+              <Label className="text-sm text-muted-foreground">
+                CDD renouvelés
+              </Label>
+              <p className="text-2xl font-bold">
+                {report.contracts.cddRenewed}
+              </p>
             </div>
           </div>
           <div className="mt-4">
-            <Label className="text-sm text-muted-foreground">Durée moyenne CDD</Label>
-            <p className="text-xl font-semibold">{report.contracts.averageCddDuration} mois</p>
+            <Label className="text-sm text-muted-foreground">
+              Durée moyenne CDD
+            </Label>
+            <p className="text-xl font-semibold">
+              {report.contracts.averageCddDuration} mois
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -313,15 +355,23 @@ export default function SocialReportPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <div>
               <Label className="text-sm text-muted-foreground">Entrées</Label>
-              <p className="text-2xl font-bold text-green-600">{report.turnover.entries}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {report.turnover.entries}
+              </p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Sorties</Label>
-              <p className="text-2xl font-bold text-red-600">{report.turnover.exits}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {report.turnover.exits}
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Taux global</Label>
-              <p className="text-2xl font-bold">{report.turnover.globalRate}%</p>
+              <Label className="text-sm text-muted-foreground">
+                Taux global
+              </Label>
+              <p className="text-2xl font-bold">
+                {report.turnover.globalRate}%
+              </p>
             </div>
           </div>
         </CardContent>
@@ -338,7 +388,9 @@ export default function SocialReportPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <Label className="text-sm text-muted-foreground">Brut total</Label>
+              <Label className="text-sm text-muted-foreground">
+                Brut total
+              </Label>
               <p className="text-2xl font-bold">
                 {report.payroll.grossTotal.toLocaleString("fr-FR")} €
               </p>
@@ -350,13 +402,17 @@ export default function SocialReportPage() {
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Charges patronales</Label>
+              <Label className="text-sm text-muted-foreground">
+                Charges patronales
+              </Label>
               <p className="text-2xl font-bold text-orange-600">
                 {report.payroll.employerContributions.toLocaleString("fr-FR")} €
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Coût total employeur</Label>
+              <Label className="text-sm text-muted-foreground">
+                Coût total employeur
+              </Label>
               <p className="text-2xl font-bold text-blue-600">
                 {report.payroll.totalCost.toLocaleString("fr-FR")} €
               </p>
@@ -364,40 +420,19 @@ export default function SocialReportPage() {
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div>
-              <Label className="text-sm text-muted-foreground">Salaire brut moyen</Label>
-              <p className="text-xl font-semibold">{report.payroll.averageGross.toLocaleString("fr-FR")} €</p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Salaire net moyen</Label>
-              <p className="text-xl font-semibold">{report.payroll.averageNet.toLocaleString("fr-FR")} €</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Gender Pay Gap */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Écart Salarial H/F</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <Label className="text-sm text-muted-foreground">Salaire brut moyen H</Label>
+              <Label className="text-sm text-muted-foreground">
+                Salaire brut moyen
+              </Label>
               <p className="text-xl font-semibold">
-                {report.genderPayGap.averageMaleGross.toLocaleString("fr-FR")} €
+                {report.payroll.averageGross.toLocaleString("fr-FR")} €
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Salaire brut moyen F</Label>
+              <Label className="text-sm text-muted-foreground">
+                Salaire net moyen
+              </Label>
               <p className="text-xl font-semibold">
-                {report.genderPayGap.averageFemaleGross.toLocaleString("fr-FR")} €
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Écart</Label>
-              <p className="text-xl font-semibold text-red-600">
-                {report.genderPayGap.gap.toLocaleString("fr-FR")} € ({report.genderPayGap.gapPercentage}%)
+                {report.payroll.averageNet.toLocaleString("fr-FR")} €
               </p>
             </div>
           </div>
@@ -412,19 +447,29 @@ export default function SocialReportPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <Label className="text-sm text-muted-foreground">Total jours</Label>
+              <Label className="text-sm text-muted-foreground">
+                Total jours
+              </Label>
               <p className="text-2xl font-bold">{report.absences.totalDays}</p>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Maladie</Label>
-              <p className="text-xl font-semibold">{report.absences.byType.maladie} jours</p>
+              <p className="text-xl font-semibold">
+                {report.absences.byType.maladie} jours
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Accident travail</Label>
-              <p className="text-xl font-semibold">{report.absences.byType.accidentTravail} jours</p>
+              <Label className="text-sm text-muted-foreground">
+                Accident travail
+              </Label>
+              <p className="text-xl font-semibold">
+                {report.absences.byType.accidentTravail} jours
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Coût total</Label>
+              <Label className="text-sm text-muted-foreground">
+                Coût total
+              </Label>
               <p className="text-xl font-semibold text-orange-600">
                 {report.absences.cost.toLocaleString("fr-FR")} €
               </p>
@@ -441,17 +486,25 @@ export default function SocialReportPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label className="text-sm text-muted-foreground">Dépenses totales</Label>
+              <Label className="text-sm text-muted-foreground">
+                Dépenses totales
+              </Label>
               <p className="text-2xl font-bold">
                 {report.training.totalExpenses.toLocaleString("fr-FR")} €
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Participants</Label>
-              <p className="text-2xl font-bold">{report.training.participants}</p>
+              <Label className="text-sm text-muted-foreground">
+                Participants
+              </Label>
+              <p className="text-2xl font-bold">
+                {report.training.participants}
+              </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Heures de formation</Label>
+              <Label className="text-sm text-muted-foreground">
+                Heures de formation
+              </Label>
               <p className="text-2xl font-bold">{report.training.hours} h</p>
             </div>
           </div>
@@ -466,18 +519,28 @@ export default function SocialReportPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label className="text-sm text-muted-foreground">Coût moyen/heure</Label>
-              <p className="text-2xl font-bold">{report.hourlyCost.average.toFixed(2)} €</p>
+              <Label className="text-sm text-muted-foreground">
+                Coût moyen/heure
+              </Label>
+              <p className="text-2xl font-bold">
+                {report.hourlyCost.average.toFixed(2)} €
+              </p>
             </div>
             <div>
-              <Label className="text-sm font-semibold mb-2 block">Par catégorie</Label>
+              <Label className="text-sm font-semibold mb-2 block">
+                Par catégorie
+              </Label>
               <div className="space-y-2">
-                {Object.entries(report.hourlyCost.byCategory).map(([category, cost]) => (
-                  <div key={category} className="flex justify-between">
-                    <span className="text-sm">{category}</span>
-                    <span className="text-sm font-medium">{cost.toFixed(2)} €</span>
-                  </div>
-                ))}
+                {Object.entries(report.hourlyCost.byCategory).map(
+                  ([category, cost]) => (
+                    <div key={category} className="flex justify-between">
+                      <span className="text-sm">{category}</span>
+                      <span className="text-sm font-medium">
+                        {cost.toFixed(2)} €
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -489,13 +552,16 @@ export default function SocialReportPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Comparaison {selectedYear} vs {selectedYear - 1}
+            Comparaison de la masse salariale {selectedYear} vs{" "}
+            {selectedYear - 1}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label className="text-sm text-muted-foreground">Année précédente</Label>
+              <Label className="text-sm text-muted-foreground">
+                Année précédente
+              </Label>
               <p className="text-xl font-semibold">
                 {report.comparison.previousYear.toLocaleString("fr-FR")} €
               </p>
@@ -507,7 +573,9 @@ export default function SocialReportPage() {
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Pourcentage</Label>
+              <Label className="text-sm text-muted-foreground">
+                Pourcentage
+              </Label>
               <p className="text-xl font-semibold text-green-600">
                 +{report.comparison.evolutionPercentage}%
               </p>
@@ -518,4 +586,3 @@ export default function SocialReportPage() {
     </div>
   );
 }
-

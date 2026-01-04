@@ -38,40 +38,69 @@ import {
 import type { Employee, Equipment } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
-interface EmployeeEquipmentTabProps {
+interface EmployeeAvantageTabProps {
   employee: Employee;
 }
 
-export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
+export function EmployeeAvantageTab({ employee }: EmployeeAvantageTabProps) {
   const [equipment, setEquipment] = useState<Equipment[]>([
     {
-      id: "1",
-      name: "Gilet pare-balles",
-      type: "PPE",
-      serialNumber: "PPE-2024-001234",
-      description: "Gilet pare-balles niveau IIIA",
+      id: "6",
+      name: "Chèque Vacances 2024",
+      type: "VACATION_VOUCHER",
+      description: "Chèque Vacances annuel",
+      assignedAt: new Date("2024-01-01"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2024-01-01T09:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "7",
+      name: "Carte Cadeau Noël",
+      type: "GIFT_CARD",
+      description: "Carte cadeau de fin d'année",
+      assignedAt: new Date("2023-12-20"),
+      assignedBy: "admin@safyr.com",
+      issuanceSignature: {
+        signedAt: new Date("2023-12-20T10:00:00"),
+        signedBy: "Jean Dupont",
+        signatureData: "base64_signature_data",
+      },
+      condition: "good",
+      status: "assigned",
+    },
+    {
+      id: "8",
+      name: "CESU Services",
+      type: "CESU",
+      description: "Chèque Emploi Service Universel",
       assignedAt: new Date("2024-01-15"),
       assignedBy: "admin@safyr.com",
       issuanceSignature: {
-        signedAt: new Date("2024-01-15T10:30:00"),
+        signedAt: new Date("2024-01-15T11:00:00"),
         signedBy: "Jean Dupont",
         signatureData: "base64_signature_data",
-        ipAddress: "192.168.1.100",
       },
       condition: "good",
       status: "assigned",
-      notes: "Contrôle annuel prévu en janvier 2025",
     },
     {
-      id: "2",
-      name: "Radio Motorola",
-      type: "RADIO",
-      serialNumber: "MTR-2023-567890",
-      description: "Radio portable Motorola DP4400e",
-      assignedAt: new Date("2023-06-01"),
+      id: "9",
+      name: "Carte Carburant",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2024-001",
+      description: "Carte carburant professionnelle",
+      quantity: 200,
+      consumable: true,
+      assignedAt: new Date("2024-02-01"),
       assignedBy: "admin@safyr.com",
       issuanceSignature: {
-        signedAt: new Date("2023-06-01T14:20:00"),
+        signedAt: new Date("2024-02-01T14:00:00"),
         signedBy: "Jean Dupont",
         signatureData: "base64_signature_data",
       },
@@ -79,15 +108,16 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "assigned",
     },
     {
-      id: "3",
-      name: "Trousseau de clés - Bâtiment A",
-      type: "KEYS",
-      serialNumber: "KEY-A-123",
-      description: "Accès principal, accès technique, bureau sécurité",
-      assignedAt: new Date("2024-01-15"),
+      id: "10",
+      name: "Titre Restaurant",
+      type: "MEAL_VOUCHER",
+      description: "Titre restaurant mensuel",
+      quantity: 20,
+      consumable: true,
+      assignedAt: new Date("2024-01-01"),
       assignedBy: "admin@safyr.com",
       issuanceSignature: {
-        signedAt: new Date("2024-01-15T10:35:00"),
+        signedAt: new Date("2024-01-01T09:30:00"),
         signedBy: "Jean Dupont",
         signatureData: "base64_signature_data",
       },
@@ -95,87 +125,85 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       status: "assigned",
     },
     {
-      id: "4",
-      name: "Uniforme complet",
-      type: "UNIFORM",
-      description: "Veste, pantalon, chemise (x3)",
-      assignedAt: new Date("2024-01-15"),
+      id: "11",
+      name: "Carte Carburant 2023",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2023-001",
+      description: "Carte carburant professionnelle - épuisée",
+      quantity: 0,
+      consumable: true,
+      assignedAt: new Date("2023-01-01"),
       assignedBy: "admin@safyr.com",
-      issuanceSignature: {
-        signedAt: new Date("2024-01-15T10:40:00"),
-        signedBy: "Jean Dupont",
-        signatureData: "base64_signature_data",
-      },
-      condition: "good",
-      status: "assigned",
-    },
-    {
-      id: "5",
-      name: "Badge d'accès",
-      type: "BADGE",
-      serialNumber: "BADGE-001234",
-      description: "Badge RFID multi-sites",
-      assignedAt: new Date("2023-03-10"),
-      assignedBy: "admin@safyr.com",
-      returnedAt: new Date("2023-12-20"),
+      returnedAt: new Date("2023-12-31"),
       returnedBy: "admin@safyr.com",
       issuanceSignature: {
-        signedAt: new Date("2023-03-10T09:00:00"),
+        signedAt: new Date("2023-01-01T09:00:00"),
         signedBy: "Jean Dupont",
         signatureData: "base64_signature_data",
       },
       returnSignature: {
-        signedAt: new Date("2023-12-20T17:30:00"),
+        signedAt: new Date("2023-12-31T17:00:00"),
         signedBy: "Jean Dupont",
         signatureData: "base64_signature_data",
       },
       condition: "good",
-      status: "returned",
-      notes: "Remplacé par nouveau badge le 20/12/2023",
+      status: "exhausted",
+      notes: "Carte épuisée fin 2023",
     },
   ]);
 
-  // Available equipment pool (mock data)
+  // Available avantage pool (mock data)
   const [availableEquipment] = useState<Equipment[]>([
     {
-      id: "11",
-      name: "Gilet pare-balles supplémentaire",
-      type: "PPE",
-      serialNumber: "PPE-2024-001235",
-      description: "Gilet pare-balles niveau IIIA - disponible",
+      id: "15",
+      name: "Chèque Vacances 2024",
+      type: "VACATION_VOUCHER",
+      description: "Chèque Vacances annuel - disponible",
       assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
       assignedBy: "system", // Placeholder
       condition: "new",
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "12",
-      name: "Radio Icom IC-F2000",
-      type: "RADIO",
-      serialNumber: "ICOM-2024-001236",
-      description: "Radio portable Icom IC-F2000 - disponible",
+      id: "16",
+      name: "Carte Cadeau",
+      type: "GIFT_CARD",
+      description: "Carte cadeau - disponible",
       assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
       assignedBy: "system", // Placeholder
       condition: "new",
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "13",
-      name: "Trousseau de clés - Bâtiment B",
-      type: "KEYS",
-      serialNumber: "KEY-B-456",
-      description: "Accès Bâtiment B - disponible",
+      id: "17",
+      name: "CESU Services",
+      type: "CESU",
+      description: "Chèque Emploi Service Universel - disponible",
       assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
       assignedBy: "system", // Placeholder
-      condition: "good",
+      condition: "new",
       status: "assigned", // This would be "available" in real app
     },
     {
-      id: "14",
-      name: "Badge d'accès neuf",
-      type: "BADGE",
-      serialNumber: "BADGE-001237",
-      description: "Badge RFID multi-sites - disponible",
+      id: "18",
+      name: "Carte Carburant",
+      type: "FUEL_CARD",
+      serialNumber: "FUEL-2024-002",
+      description: "Carte carburant professionnelle - disponible",
+      quantity: 300,
+      consumable: true,
+      assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
+      assignedBy: "system", // Placeholder
+      condition: "new",
+      status: "assigned", // This would be "available" in real app
+    },
+    {
+      id: "19",
+      name: "Titre Restaurant",
+      type: "MEAL_VOUCHER",
+      description: "Titre restaurant mensuel - disponible",
+      quantity: 22,
+      consumable: true,
       assignedAt: new Date("2024-01-01"), // Placeholder for available equipment
       assignedBy: "system", // Placeholder
       condition: "new",
@@ -196,7 +224,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
   const [returnNotes, setReturnNotes] = useState<string>("");
   const [newEquipmentData, setNewEquipmentData] = useState({
     name: "",
-    type: "PPE" as Equipment["type"],
+    type: "VACATION_VOUCHER" as Equipment["type"],
     description: "",
     serialNumber: "",
     quantity: 1,
@@ -297,9 +325,9 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
     let equipmentToAssign: Equipment;
 
     if (selectedEquipmentId === "add-new") {
-      // Create new equipment
+      // Create new avantage
       equipmentToAssign = {
-        id: `EQ-${Date.now()}`,
+        id: `AV-${Date.now()}`,
         name: newEquipmentData.name,
         type: newEquipmentData.type,
         description: newEquipmentData.description,
@@ -343,7 +371,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
     setSelectedEquipmentId("");
     setNewEquipmentData({
       name: "",
-      type: "PPE",
+      type: "VACATION_VOUCHER",
       description: "",
       serialNumber: "",
       quantity: 1,
@@ -584,12 +612,12 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Equipment Stats */}
+      {/* Avantage Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">
-              Équipements assignés
+              Avantages assignés
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -620,13 +648,13 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         </Card>
       </div>
 
-      {/* Assigned Equipment */}
+      {/* Assigned Avantages */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Équipements actuellement assignés</CardTitle>
+          <CardTitle>Avantages actuellement assignés</CardTitle>
           <Button onClick={() => setShowAssignModal(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Assigner équipement
+            Assigner avantage
           </Button>
         </CardHeader>
         <CardContent>
@@ -653,12 +681,11 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                   label: "Type",
                   options: [
                     { value: "all", label: "Tous" },
-                    { value: "PPE", label: "EPI" },
-                    { value: "RADIO", label: "Radio" },
-                    { value: "KEYS", label: "Clés" },
-                    { value: "UNIFORM", label: "Uniforme" },
-                    { value: "BADGE", label: "Badge" },
-                    { value: "VEHICLE", label: "Véhicule" },
+                    { value: "VACATION_VOUCHER", label: "Chèque Vacances" },
+                    { value: "GIFT_CARD", label: "Carte Cadeau" },
+                    { value: "CESU", label: "CESU" },
+                    { value: "FUEL_CARD", label: "Carte Carburant" },
+                    { value: "MEAL_VOUCHER", label: "Titre Restaurant" },
                   ],
                 },
                 {
@@ -719,11 +746,11 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         </CardContent>
       </Card>
 
-      {/* Returned Equipment History */}
+      {/* Returned Avantages History */}
       {returnedEquipment.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Historique des équipements retournés</CardTitle>
+            <CardTitle>Historique des avantages retournés</CardTitle>
           </CardHeader>
           <CardContent>
             <DataTable
@@ -749,10 +776,10 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
             <FileSignature className="h-6 w-6 text-blue-600 dark:text-blue-400 mt-1" />
             <div>
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                Signature électronique des équipements
+                Signature électronique des avantages
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Chaque attribution et retour d&apos;équipement est signé
+                Chaque attribution et retour d&apos;avantage est signé
                 numériquement par l&apos;employé. Les signatures sont horodatées
                 et sécurisées pour garantir la traçabilité complète.
               </p>
@@ -766,8 +793,8 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         open={showAssignModal}
         onOpenChange={setShowAssignModal}
         type="form"
-        title="Assigner un équipement"
-        description={`Sélectionnez un équipement à assigner à ${employee.firstName} ${employee.lastName}`}
+        title="Assigner un avantage"
+        description={`Sélectionnez un avantage à assigner à ${employee.firstName} ${employee.lastName}`}
         actions={{
           primary: {
             label: "Assigner",
@@ -784,7 +811,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
               setSelectedEquipmentId("");
               setNewEquipmentData({
                 name: "",
-                type: "PPE",
+                type: "VACATION_VOUCHER",
                 description: "",
                 serialNumber: "",
                 quantity: 1,
@@ -796,20 +823,20 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       >
         <div className="space-y-4">
           <div>
-            <Label htmlFor="equipment-select">Équipement disponible</Label>
+            <Label htmlFor="equipment-select">Avantage disponible</Label>
             <Select
               value={selectedEquipmentId}
               onValueChange={setSelectedEquipmentId}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sélectionnez un équipement..." />
+                <SelectValue placeholder="Sélectionnez un avantage..." />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="add-new">
                   <div className="flex items-center gap-2">
                     <Plus className="h-4 w-4" />
                     <span className="font-medium">
-                      Ajouter un nouvel équipement
+                      Ajouter un nouvel avantage
                     </span>
                   </div>
                 </SelectItem>
@@ -834,7 +861,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
 
           {selectedEquipmentId === "add-new" && (
             <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium">Nouveau équipement</h4>
+              <h4 className="font-medium">Nouvel avantage</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="new-name">
@@ -849,7 +876,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                         name: e.target.value,
                       }))
                     }
-                    placeholder="Nom de l'équipement"
+                    placeholder="Nom de l'avantage"
                   />
                 </div>
                 <div>
@@ -864,13 +891,15 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PPE">EPI</SelectItem>
-                      <SelectItem value="RADIO">Radio</SelectItem>
-                      <SelectItem value="KEYS">Clés</SelectItem>
-                      <SelectItem value="UNIFORM">Uniforme</SelectItem>
-                      <SelectItem value="BADGE">Badge</SelectItem>
-                      <SelectItem value="VEHICLE">Véhicule</SelectItem>
-                      <SelectItem value="OTHER">Autre</SelectItem>
+                      <SelectItem value="VACATION_VOUCHER">
+                        Chèque Vacances
+                      </SelectItem>
+                      <SelectItem value="GIFT_CARD">Carte Cadeau</SelectItem>
+                      <SelectItem value="CESU">CESU</SelectItem>
+                      <SelectItem value="FUEL_CARD">Carte Carburant</SelectItem>
+                      <SelectItem value="MEAL_VOUCHER">
+                        Titre Restaurant
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -885,7 +914,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                         description: e.target.value,
                       }))
                     }
-                    placeholder="Description de l'équipement"
+                    placeholder="Description de l'avantage"
                   />
                 </div>
                 <div>
@@ -945,7 +974,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
 
           {selectedEquipmentId && selectedEquipmentId !== "add-new" && (
             <div className="p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium mb-2">Détails de l&apos;équipement</h4>
+              <h4 className="font-medium mb-2">Détails de l&apos;avantage</h4>
               {(() => {
                 const eq = availableEquipment.find(
                   (e) => e.id === selectedEquipmentId,
@@ -984,8 +1013,8 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         open={showReturnModal}
         onOpenChange={setShowReturnModal}
         type="form"
-        title="Retour d'équipement"
-        description="Confirmer le retour de l'équipement et son état"
+        title="Retour d'avantage"
+        description="Confirmer le retour de l'avantage et son état"
         actions={{
           primary: {
             label: "Confirmer le retour",
@@ -1007,7 +1036,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         <div className="space-y-4">
           {returnEquipmentId && (
             <div className="p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium mb-2">Équipement à retourner</h4>
+              <h4 className="font-medium mb-2">Avantage à retourner</h4>
               {(() => {
                 const eq = equipment.find((e) => e.id === returnEquipmentId);
                 return eq ? (
@@ -1072,8 +1101,8 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         open={showExhaustModal}
         onOpenChange={setShowExhaustModal}
         type="form"
-        title="Épuisement d'équipement"
-        description="Confirmer l'épuisement de l'équipement consommable"
+        title="Épuisement d'avantage"
+        description="Confirmer l'épuisement de l'avantage consommable"
         actions={{
           primary: {
             label: "Confirmer l'épuisement",
@@ -1094,7 +1123,7 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         <div className="space-y-4">
           {exhaustEquipmentId && (
             <div className="p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium mb-2">Équipement à épuiser</h4>
+              <h4 className="font-medium mb-2">Avantage à épuiser</h4>
               {(() => {
                 const eq = equipment.find((e) => e.id === exhaustEquipmentId);
                 return eq ? (
@@ -1143,8 +1172,8 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
         open={showDetailsModal}
         onOpenChange={setShowDetailsModal}
         type="details"
-        title="Détails de l'équipement"
-        description="Informations complètes sur l'équipement"
+        title="Détails de l'avantage"
+        description="Informations complètes sur l'avantage"
         actions={{
           secondary: {
             label: "Fermer",

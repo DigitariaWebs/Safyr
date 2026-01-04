@@ -15,7 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, ExternalLink, FileText, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  Plus,
+  ExternalLink,
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { mockTenders, type Tender } from "@/data/hr-tenders";
 
 export default function TendersPage() {
@@ -63,12 +70,19 @@ export default function TendersPage() {
       render: (tender) => {
         const deadline = new Date(tender.deadline);
         const today = new Date();
-        const daysLeft = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = Math.ceil(
+          (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+        );
         return (
           <div>
-            <span className="text-sm">{deadline.toLocaleDateString("fr-FR")}</span>
+            <span className="text-sm">
+              {deadline.toLocaleDateString("fr-FR")}
+            </span>
             {daysLeft >= 0 && (
-              <Badge variant={daysLeft < 7 ? "destructive" : "secondary"} className="ml-2">
+              <Badge
+                variant={daysLeft < 7 ? "destructive" : "secondary"}
+                className="ml-2"
+              >
                 {daysLeft}j restants
               </Badge>
             )}
@@ -80,13 +94,16 @@ export default function TendersPage() {
       key: "status",
       label: "Statut",
       render: (tender) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           "À créer": "outline",
           "En cours": "default",
-          "Soumis": "secondary",
-          "Gagné": "default",
-          "Perdu": "destructive",
-          "Annulé": "outline",
+          Soumis: "secondary",
+          Gagné: "default",
+          Perdu: "destructive",
+          Annulé: "outline",
         };
         return <Badge variant={variants[tender.status]}>{tender.status}</Badge>;
       },
@@ -129,7 +146,9 @@ export default function TendersPage() {
       status: "À créer",
       dossierCreated: false,
       documents: [],
-      estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue) : undefined,
+      estimatedValue: formData.estimatedValue
+        ? parseFloat(formData.estimatedValue)
+        : undefined,
       createdAt: new Date().toISOString().split("T")[0],
     };
     setTenders([...tenders, newTender]);
@@ -146,19 +165,25 @@ export default function TendersPage() {
       tenders.map((t) =>
         t.id === tenderId
           ? { ...t, dossierCreated: true, status: "En cours" as const }
-          : t
-      )
+          : t,
+      ),
     );
-    alert("Dossier créé avec succès! Vous pouvez maintenant ajouter les documents.");
+    alert(
+      "Dossier créé avec succès! Vous pouvez maintenant ajouter les documents.",
+    );
   };
 
   const handleSubmitTender = (tenderId: string) => {
     setTenders(
       tenders.map((t) =>
         t.id === tenderId
-          ? { ...t, status: "Soumis" as const, submittedAt: new Date().toISOString().split("T")[0] }
-          : t
-      )
+          ? {
+              ...t,
+              status: "Soumis" as const,
+              submittedAt: new Date().toISOString().split("T")[0],
+            }
+          : t,
+      ),
     );
     alert("Appel d'offre soumis avec succès!");
   };
@@ -169,20 +194,49 @@ export default function TendersPage() {
         <div>
           <h1 className="text-3xl font-bold">Appels d&apos;Offre</h1>
           <p className="text-muted-foreground">
-            Accès aux sites d&apos;appels d&apos;offres, création et suivi des dossiers
+            Accès aux sites d&apos;appels d&apos;offres, création et suivi des
+            dossiers
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <a href="https://www.boamp.fr" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://www.boamp.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="h-4 w-4 mr-2" />
               BOAMP
             </a>
           </Button>
           <Button variant="outline" asChild>
-            <a href="https://www.marche-public.fr" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://www.marche-public.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="h-4 w-4 mr-2" />
               Marchés Publics
+            </a>
+          </Button>
+          <Button variant="outline" asChild>
+            <a
+              href="https://www.akkel.fr/categories-cpv/79710000-services-securite"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Akkel CPV Sécurité
+            </a>
+          </Button>
+          <Button variant="outline" asChild>
+            <a
+              href="https://marches-publics.gouv.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Marchés Publics Gouv
             </a>
           </Button>
           <Button onClick={handleCreate}>
@@ -223,7 +277,9 @@ export default function TendersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{submitted}</div>
-            <p className="text-xs text-muted-foreground">En attente de réponse</p>
+            <p className="text-xs text-muted-foreground">
+              En attente de réponse
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -261,7 +317,9 @@ export default function TendersPage() {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               placeholder="Ex: Prestation de sécurité - Centre Commercial"
             />
           </div>
@@ -271,7 +329,9 @@ export default function TendersPage() {
             <Input
               id="client"
               value={formData.client}
-              onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, client: e.target.value })
+              }
               placeholder="Nom du client"
             />
           </div>
@@ -280,7 +340,9 @@ export default function TendersPage() {
             <Label htmlFor="source">Source</Label>
             <Select
               value={formData.source}
-              onValueChange={(value) => setFormData({ ...formData, source: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, source: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -299,7 +361,9 @@ export default function TendersPage() {
               id="sourceUrl"
               type="url"
               value={formData.sourceUrl}
-              onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, sourceUrl: e.target.value })
+              }
               placeholder="https://..."
             />
           </div>
@@ -311,7 +375,9 @@ export default function TendersPage() {
                 id="publicationDate"
                 type="date"
                 value={formData.publicationDate}
-                onChange={(e) => setFormData({ ...formData, publicationDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, publicationDate: e.target.value })
+                }
               />
             </div>
             <div>
@@ -320,18 +386,24 @@ export default function TendersPage() {
                 id="deadline"
                 type="date"
                 value={formData.deadline}
-                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, deadline: e.target.value })
+                }
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="estimatedValue">Valeur estimée (€) - optionnel</Label>
+            <Label htmlFor="estimatedValue">
+              Valeur estimée (€) - optionnel
+            </Label>
             <Input
               id="estimatedValue"
               type="number"
               value={formData.estimatedValue}
-              onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, estimatedValue: e.target.value })
+              }
               placeholder="150000"
             />
           </div>
@@ -357,7 +429,9 @@ export default function TendersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Référence</Label>
-                <p className="text-sm font-medium">{selectedTender.reference}</p>
+                <p className="text-sm font-medium">
+                  {selectedTender.reference}
+                </p>
               </div>
               <div>
                 <Label>Statut</Label>
@@ -394,13 +468,17 @@ export default function TendersPage() {
               <div>
                 <Label>Date de publication</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedTender.publicationDate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedTender.publicationDate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
               <div>
                 <Label>Date limite</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedTender.deadline).toLocaleDateString("fr-FR")}
+                  {new Date(selectedTender.deadline).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             </div>
@@ -409,7 +487,11 @@ export default function TendersPage() {
               <div>
                 <Label>Lien vers l&apos;avis</Label>
                 <Button variant="outline" size="sm" asChild className="mt-2">
-                  <a href={selectedTender.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={selectedTender.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Ouvrir l&apos;avis
                   </a>
@@ -418,7 +500,9 @@ export default function TendersPage() {
             )}
 
             <div className="pt-4 border-t">
-              <Label className="text-base font-semibold mb-3 block">Documents du dossier</Label>
+              <Label className="text-base font-semibold mb-3 block">
+                Documents du dossier
+              </Label>
               {selectedTender.documents.length > 0 ? (
                 <div className="space-y-2">
                   {selectedTender.documents.map((doc, index) => (
@@ -434,7 +518,9 @@ export default function TendersPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucun document ajouté</p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun document ajouté
+                </p>
               )}
             </div>
 
@@ -453,27 +539,32 @@ export default function TendersPage() {
                 </Button>
               )}
 
-              {selectedTender.dossierCreated && selectedTender.status === "En cours" && (
-                <Button
-                  variant="default"
-                  className="w-full"
-                  onClick={() => {
-                    handleSubmitTender(selectedTender.id);
-                    setIsViewModalOpen(false);
-                  }}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Soumettre l&apos;appel d&apos;offre
-                </Button>
-              )}
+              {selectedTender.dossierCreated &&
+                selectedTender.status === "En cours" && (
+                  <Button
+                    variant="default"
+                    className="w-full"
+                    onClick={() => {
+                      handleSubmitTender(selectedTender.id);
+                      setIsViewModalOpen(false);
+                    }}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Soumettre l&apos;appel d&apos;offre
+                  </Button>
+                )}
 
-              {selectedTender.status === "Soumis" && selectedTender.submittedAt && (
-                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <p className="text-sm text-green-600 font-medium">
-                    ✓ Soumis le {new Date(selectedTender.submittedAt).toLocaleDateString("fr-FR")}
-                  </p>
-                </div>
-              )}
+              {selectedTender.status === "Soumis" &&
+                selectedTender.submittedAt && (
+                  <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <p className="text-sm text-green-600 font-medium">
+                      ✓ Soumis le{" "}
+                      {new Date(selectedTender.submittedAt).toLocaleDateString(
+                        "fr-FR",
+                      )}
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
         )}
@@ -481,4 +572,3 @@ export default function TendersPage() {
     </div>
   );
 }
-

@@ -1,22 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Eye, MoreVertical } from "lucide-react";
-import { SanctionsRegister } from "@/lib/types";
+import { Download } from "lucide-react";
+import jsPDF from "jspdf";
+import { Sanction, SanctionsRegister } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Modal } from "@/components/ui/modal";
+
+interface SanctionRow {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  date: Date;
+  type: string;
+  reason: string;
+  description: string;
+  issuedBy: string;
+  severity: "minor" | "major" | "severe";
+}
 
 // Mock employees for selection
 const mockEmployees = [
@@ -97,197 +100,139 @@ const severityColors = {
 } as const;
 
 export default function SanctionsRegisterPage() {
-  const [sanctionsRegisters] = useState<SanctionsRegister[]>(
-    mockSanctionsRegisters,
-  );
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingRegister, setViewingRegister] =
-    useState<SanctionsRegister | null>(null);
-
-  const handleView = (register: SanctionsRegister) => {
-    setViewingRegister(register);
-    setIsViewModalOpen(true);
-  };
-
   const getEmployeeName = (employeeId: string) => {
     const employee = mockEmployees.find((e) => e.id === employeeId);
     return employee ? employee.name : "Employé inconnu";
   };
 
-  const columns: ColumnDef<SanctionsRegister>[] = [
+  // Flatten sanctions data, excluding suspensions
+  const sanctionRows: SanctionRow[] = mockSanctionsRegisters
+    .flatMap((register) =>
+      register.sanctions
+        .filter((sanction: Sanction) => sanction.type !== "Suspension")
+        .map((sanction: Sanction) => ({
+          ...sanction,
+          employeeId: sanction.employeeId,
+          employeeName: getEmployeeName(sanction.employeeId),
+        })),
+    )
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const handleExportSinglePDF = (row: SanctionRow) => {
+    const doc = new jsPDF();
+    doc.text("Sanction", 20, 20);
+    doc.text(
+      "Note: Ceci est un exemple de PDF et non l'implémentation finale.",
+      20,
+      30,
+    );
+    doc.text(`Employé: ${row.employeeName}`, 20, 50);
+    doc.text(`Date: ${row.date.toLocaleDateString("fr-FR")}`, 20, 60);
+    doc.text(`Type: ${row.type}`, 20, 70);
+    doc.text(`Raison: ${row.reason}`, 20, 80);
+    doc.text(`Description: ${row.description}`, 20, 90);
+    doc.text(`Émis par: ${row.issuedBy}`, 20, 100);
+    doc.text(`Sévérité: ${severityLabels[row.severity]}`, 20, 110);
+    doc.save(`sanction-${row.id}.pdf`);
+  };
+
+  const columns: ColumnDef<SanctionRow>[] = [
     {
-      key: "employeeId",
+      key: "employeeName",
       label: "Employé",
-      render: (register: SanctionsRegister) => (
-        <div>
-          <div className="font-medium">
-            <Link
-              href={`/dashboard/hr/employees/${register.employeeId}`}
-              className="text-primary hover:underline"
-            >
-              {getEmployeeName(register.employeeId)}
-            </Link>
-          </div>
+      render: (row: SanctionRow) => (
+        <div className="font-medium">
+          <Link
+            href={`/dashboard/hr/employees/${row.employeeId}`}
+            className="text-primary hover:underline"
+          >
+            {row.employeeName}
+          </Link>
         </div>
       ),
     },
     {
-      key: "totalWarnings",
-      label: "Avertissements",
-      render: (register: SanctionsRegister) => register.totalWarnings,
+      key: "date",
+      label: "Date",
+      render: (row: SanctionRow) => row.date.toLocaleDateString("fr-FR"),
     },
     {
-      key: "totalSuspensions",
-      label: "Suspensions",
-      render: (register: SanctionsRegister) => register.totalSuspensions,
+      key: "type",
+      label: "Type",
+      render: (row: SanctionRow) => row.type,
     },
     {
-      key: "lastUpdated",
-      label: "Dernière mise à jour",
-      render: (register: SanctionsRegister) =>
-        register.lastUpdated.toLocaleDateString("fr-FR"),
+      key: "reason",
+      label: "Raison",
+      render: (row: SanctionRow) => row.reason,
+    },
+    {
+      key: "description",
+      label: "Description",
+      render: (row: SanctionRow) => (
+        <div className="max-w-xs truncate" title={row.description}>
+          {row.description}
+        </div>
+      ),
+    },
+    {
+      key: "issuedBy",
+      label: "Émis par",
+      render: (row: SanctionRow) => row.issuedBy,
+    },
+    {
+      key: "severity",
+      label: "Sévérité",
+      render: (row: SanctionRow) => (
+        <Badge variant={severityColors[row.severity]}>
+          {severityLabels[row.severity]}
+        </Badge>
+      ),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (register: SanctionsRegister) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => handleView(register)}
-              className="gap-2"
-            >
-              <Eye className="h-4 w-4" />
-              Voir le registre
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      render: (row: SanctionRow) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleExportSinglePDF(row)}
+          className="gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Exporter PDF
+        </Button>
       ),
     },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Registre des sanctions
-          </h1>
-          <p className="text-muted-foreground">
-            Historique des sanctions par employé
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Registre des sanctions
+        </h1>
+        <p className="text-muted-foreground">
+          Historique des sanctions par employé
+        </p>
       </div>
 
       {/* Sanctions Register Table */}
       <Card>
         <CardHeader>
           <CardTitle>
-            Registre des sanctions ({sanctionsRegisters.length} employés)
+            Registre des sanctions ({sanctionRows.length} sanctions)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
-            data={sanctionsRegisters}
+            data={sanctionRows}
             columns={columns}
-            searchKeys={["employeeId"]}
-            searchPlaceholder="Rechercher un employé..."
+            searchKeys={["employeeName", "type", "reason"]}
+            searchPlaceholder="Rechercher une sanction..."
           />
         </CardContent>
       </Card>
-
-      {/* View Modal */}
-      <Modal
-        open={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        type="details"
-        title="Registre des sanctions"
-        description={
-          viewingRegister
-            ? `Historique des sanctions pour ${getEmployeeName(viewingRegister.employeeId)}`
-            : ""
-        }
-        actions={{
-          primary: {
-            label: "Fermer",
-            onClick: () => setIsViewModalOpen(false),
-          },
-        }}
-      >
-        {viewingRegister && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Employé</Label>
-                <p className="text-sm font-medium">
-                  {getEmployeeName(viewingRegister.employeeId)}
-                </p>
-              </div>
-              <div>
-                <Label>Total avertissements</Label>
-                <p className="text-sm font-medium">
-                  {viewingRegister.totalWarnings}
-                </p>
-              </div>
-              <div>
-                <Label>Total suspensions</Label>
-                <p className="text-sm font-medium">
-                  {viewingRegister.totalSuspensions}
-                </p>
-              </div>
-              <div>
-                <Label>Dernière mise à jour</Label>
-                <p className="text-sm font-medium">
-                  {viewingRegister.lastUpdated.toLocaleDateString("fr-FR")}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label>Sanctions ({viewingRegister.sanctions.length})</Label>
-              <div className="space-y-2">
-                {viewingRegister.sanctions.map((sanction) => (
-                  <div key={sanction.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">
-                        {sanction.type} - {sanction.reason}
-                      </h4>
-                      <Badge variant={severityColors[sanction.severity]}>
-                        {severityLabels[sanction.severity]}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      <div>
-                        <Label className="text-xs">Date</Label>
-                        <p className="text-sm">
-                          {sanction.date.toLocaleDateString("fr-FR")}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Émis par</Label>
-                        <p className="text-sm">{sanction.issuedBy}</p>
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <Label className="text-xs">Description</Label>
-                      <Textarea
-                        value={sanction.description}
-                        readOnly
-                        className="min-h-16 mt-1"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

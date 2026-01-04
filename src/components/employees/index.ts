@@ -1,7 +1,9 @@
 export { EmployeeInfoTab } from "./EmployeeInfoTab";
 export { EmployeeDocumentsTab } from "./EmployeeDocumentsTab";
 export { EmployeeContractsTab } from "./EmployeeContractsTab";
+export { EmployeeAvantageTab } from "./EmployeeAvantageTab";
 export { EmployeeEquipmentTab } from "./EmployeeEquipmentTab";
+export { EmployeeBadgesTab } from "./EmployeeBadgesTab";
 export { EmployeeDisciplineTab } from "./EmployeeDisciplineTab";
 export { EmployeeCSETab } from "./EmployeeCSETab";
 export { EmployeeSavingsTab } from "./EmployeeSavingsTab";

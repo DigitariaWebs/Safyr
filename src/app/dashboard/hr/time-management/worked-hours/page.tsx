@@ -110,10 +110,12 @@ export default function WorkedHoursPage() {
     nightHours50: 0,
     nightHours10: 0,
     sundayHours: 0,
+    sundayNightHours: 0,
     sundayHours25: 0,
     sundayHours50: 0,
     sundayHours10: 0,
     holidayHours: 0,
+    holidayNightHours: 0,
     holidayHours25: 0,
     holidayHours50: 0,
     holidayHours10: 0,
@@ -242,7 +244,7 @@ export default function WorkedHoursPage() {
       label: "H Dimanche Nuit",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold">{hours.sundayHours25}h</span>
+        <span className="text-sm font-semibold">{hours.sundayNightHours}h</span>
       ),
     },
     {
@@ -250,7 +252,9 @@ export default function WorkedHoursPage() {
       label: "H Férié Nuit",
       sortable: true,
       render: (hours) => (
-        <span className="text-sm font-semibold">{hours.holidayHours25}h</span>
+        <span className="text-sm font-semibold">
+          {hours.holidayNightHours}h
+        </span>
       ),
     },
     {
@@ -285,15 +289,7 @@ export default function WorkedHoursPage() {
     },
   ];
 
-  const visibleColumns = allWorkedHoursColumns.filter((col) => {
-    if (col.key === "employeeName" || col.key === "period") return true;
-    return mockWorkedHours.some((hour) => {
-      const value = hour[col.key as keyof typeof hour];
-      return typeof value === "number" && value > 0;
-    });
-  });
-
-  const workedHoursColumns = visibleColumns;
+  const workedHoursColumns = allWorkedHoursColumns;
 
   return (
     <div className="flex-1 space-y-6 p-8 max-w-full overflow-x-hidden">
@@ -486,10 +482,12 @@ export default function WorkedHoursPage() {
               nightHours50: 0,
               nightHours10: 0,
               sundayHours: 0,
+              sundayNightHours: 0,
               sundayHours25: 0,
               sundayHours50: 0,
               sundayHours10: 0,
               holidayHours: 0,
+              holidayNightHours: 0,
               holidayHours25: 0,
               holidayHours50: 0,
               holidayHours10: 0,
@@ -519,10 +517,12 @@ export default function WorkedHoursPage() {
                 nightHours50: 0,
                 nightHours10: 0,
                 sundayHours: 0,
+                sundayNightHours: 0,
                 sundayHours25: 0,
                 sundayHours50: 0,
                 sundayHours10: 0,
                 holidayHours: 0,
+                holidayNightHours: 0,
                 holidayHours25: 0,
                 holidayHours50: 0,
                 holidayHours10: 0,
@@ -744,6 +744,42 @@ export default function WorkedHoursPage() {
                   setFormData({
                     ...formData,
                     holidayHours: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sundayNightHours">Heures dimanche nuit</Label>
+              <Input
+                id="sundayNightHours"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.sundayNightHours}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    sundayNightHours: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="holidayNightHours">
+                Heures jours fériés nuit
+              </Label>
+              <Input
+                id="holidayNightHours"
+                type="number"
+                min="0"
+                step="0.5"
+                value={formData.holidayNightHours}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    holidayNightHours: parseFloat(e.target.value),
                   })
                 }
               />

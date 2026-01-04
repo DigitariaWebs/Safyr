@@ -30,7 +30,7 @@ import {
   Award,
   Scale,
   FilePenLine,
-CreditCard,
+  CreditCard,
   PenTool,
 } from "lucide-react";
 
@@ -158,7 +158,7 @@ const navigationSections: MenuSection[] = [
     label: "Formations & Habilitations",
     items: [
       {
-        title: "SSIAP 1 / 2 / 3",
+        title: "SSIAP",
         url: "/dashboard/hr/training/ssiap",
         icon: Shield,
         disabled: true,

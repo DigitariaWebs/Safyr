@@ -118,7 +118,7 @@ export default function SendEmailPage() {
     setSelectedRecipients((prev) =>
       prev.includes(recipientId)
         ? prev.filter((id) => id !== recipientId)
-        : [...prev, recipientId]
+        : [...prev, recipientId],
     );
   };
 
@@ -144,9 +144,9 @@ export default function SendEmailPage() {
 
     // Simulate sending
     alert(
-      `Email envoyé à ${selectedRecipients.length} destinataire(s)${saveInArchive ? " et archivé dans les dossiers" : ""}`
+      `Email envoyé à ${selectedRecipients.length} destinataire(s)${saveInArchive ? " et archivé dans les dossiers" : ""}`,
     );
-    
+
     // Reset form
     setSelectedRecipients([]);
     setSubject("");
@@ -156,14 +156,16 @@ export default function SendEmailPage() {
   };
 
   const recipients = getRecipientsList();
-  const allSelected = selectedRecipients.length === recipients.length && recipients.length > 0;
+  const allSelected =
+    selectedRecipients.length === recipients.length && recipients.length > 0;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Envoi d&apos;Emails</h1>
         <p className="text-muted-foreground">
-          Envoyez des emails depuis la plateforme aux employés, clients et partenaires
+          Envoyez des emails depuis la plateforme aux employés, clients et
+          partenaires
         </p>
       </div>
 
@@ -233,7 +235,7 @@ export default function SendEmailPage() {
             </div>
 
             {/* Recipients List */}
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            <div className="space-y-2 max-h-100 overflow-y-auto">
               {recipients.map((recipient) => (
                 <div
                   key={recipient.id}
@@ -277,7 +279,10 @@ export default function SendEmailPage() {
             {/* Template Selection */}
             <div>
               <Label htmlFor="template">Utiliser un modèle (optionnel)</Label>
-              <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+              <Select
+                value={selectedTemplate}
+                onValueChange={handleTemplateSelect}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir un modèle..." />
                 </SelectTrigger>
@@ -356,7 +361,9 @@ export default function SendEmailPage() {
               <Checkbox
                 id="archive"
                 checked={saveInArchive}
-                onCheckedChange={(checked) => setSaveInArchive(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setSaveInArchive(checked as boolean)
+                }
               />
               <Label htmlFor="archive" className="text-sm cursor-pointer">
                 Archiver cette communication dans les dossiers concernés
@@ -365,13 +372,16 @@ export default function SendEmailPage() {
 
             {/* Send Button */}
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => {
-                setSubject("");
-                setBody("");
-                setSelectedTemplate("");
-                setAttachments([]);
-                setSelectedRecipients([]);
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSubject("");
+                  setBody("");
+                  setSelectedTemplate("");
+                  setAttachments([]);
+                  setSelectedRecipients([]);
+                }}
+              >
                 Annuler
               </Button>
               <Button onClick={handleSendEmail}>
@@ -385,5 +395,3 @@ export default function SendEmailPage() {
     </div>
   );
 }
-
-

@@ -341,10 +341,23 @@ export default function ApplicationsPage() {
             Gestion des candidatures et recrutement
           </p>
         </div>
-        <Button onClick={handleCreate} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nouvelle candidature
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <a
+              href="https://www.francetravail.fr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Voir France Travail
+            </a>
+          </Button>
+          <Button onClick={handleCreate} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nouvelle candidature
+          </Button>
+        </div>
       </div>
 
       {/* Applications Table */}

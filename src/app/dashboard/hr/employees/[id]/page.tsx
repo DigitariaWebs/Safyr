@@ -21,6 +21,8 @@ import {
   Send,
   Gavel,
   DollarSign,
+  Gift,
+  FileSignature,
 } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import { getEmployeeById } from "@/data/employees";
@@ -28,13 +30,14 @@ import {
   EmployeeInfoTab,
   EmployeeDocumentsTab,
   EmployeeContractsTab,
+  EmployeeAvantageTab,
   EmployeeEquipmentTab,
+  EmployeeBadgesTab,
   EmployeeCSETab,
   EmployeeDisciplineTab,
   EmployeeSavingsTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
-import { cn } from "@/lib/utils";
 
 export default function EmployeeDetailPage({
   params,
@@ -69,7 +72,9 @@ export default function EmployeeDetailPage({
     { id: "info" as const, label: "Informations", icon: FileText },
     { id: "documents" as const, label: "Documents", icon: FileText },
     { id: "contracts" as const, label: "Contrats", icon: FileText },
+    { id: "avantage" as const, label: "Avantages", icon: Gift },
     { id: "equipment" as const, label: "Équipements", icon: Package },
+    { id: "badges" as const, label: "Badges", icon: FileSignature },
     { id: "savings" as const, label: "Épargne", icon: DollarSign },
     { id: "discipline" as const, label: "Discipline", icon: Gavel },
     { id: "cse" as const, label: "CSE", icon: Users },
@@ -105,20 +110,11 @@ export default function EmployeeDetailPage({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="sticky top-0 z-10 items-center gap-1 px-6 py-2 overflow-x-auto w-full bg-muted rounded-none">
+      <TabsList>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
-            <TabsTrigger
-              className={cn(
-                "flex items-center gap-2 p-3 text-sm rounded-lg transition-all whitespace-nowrap font-medium border-0",
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                  : "text-foreground hover:bg-accent hover:text-foreground",
-              )}
-              key={tab.id}
-              value={tab.id}
-            >
+            <TabsTrigger key={tab.id} value={tab.id}>
               <Icon className="h-4 w-4 mr-2" />
               {tab.label}
             </TabsTrigger>
@@ -254,8 +250,14 @@ export default function EmployeeDetailPage({
         <TabsContent value="contracts">
           <EmployeeContractsTab employee={employee} />
         </TabsContent>
+        <TabsContent value="avantage">
+          <EmployeeAvantageTab employee={employee} />
+        </TabsContent>
         <TabsContent value="equipment">
           <EmployeeEquipmentTab employee={employee} />
+        </TabsContent>
+        <TabsContent value="badges">
+          <EmployeeBadgesTab employee={employee} />
         </TabsContent>
         <TabsContent value="savings">
           <EmployeeSavingsTab employee={employee} />

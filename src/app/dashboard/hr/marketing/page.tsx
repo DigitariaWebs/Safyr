@@ -27,22 +27,39 @@ import {
 } from "@/data/hr-marketing";
 
 export default function MarketingPage() {
-  const [activeTab, setActiveTab] = useState<"posts" | "emails" | "crm">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "emails" | "crm">(
+    "posts",
+  );
   const [posts, setPosts] = useState<SocialPost[]>(mockSocialPosts);
   const [autoReplies] = useState<EmailAutoReply[]>(mockEmailAutoReplies);
   const [crmCustomers] = useState<CRMCustomer[]>(mockCRMCustomers);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isAutoReplyModalOpen, setIsAutoReplyModalOpen] = useState(false);
+  const [isCRMModalOpen, setIsCRMModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedItem, setSelectedItem] = useState<SocialPost | EmailAutoReply | CRMCustomer | null>(null);
+  const [selectedItem, setSelectedItem] = useState<
+    SocialPost | EmailAutoReply | CRMCustomer | null
+  >(null);
   const [formData, setFormData] = useState({
     platform: "LinkedIn" as SocialPost["platform"],
     content: "",
     scheduledDate: "",
     scheduledTime: "",
+  });
+  const [autoReplyFormData, setAutoReplyFormData] = useState({
+    trigger: "",
+    subject: "",
+    body: "",
+    isActive: true,
+  });
+  const [crmFormData, setCrmFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    status: "Prospect" as CRMCustomer["status"],
   });
 
   const postColumns: ColumnDef<SocialPost>[] = [
@@ -68,17 +85,19 @@ export default function MarketingPage() {
     {
       key: "scheduledDate",
       label: "Date de publication",
-      render: (post) =>
-        new Date(post.scheduledDate).toLocaleString("fr-FR"),
+      render: (post) => new Date(post.scheduledDate).toLocaleString("fr-FR"),
     },
     {
       key: "status",
       label: "Statut",
       render: (post) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-          "Planifié": "outline",
-          "Publié": "default",
-          "Échec": "destructive",
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
+          Planifié: "outline",
+          Publié: "default",
+          Échec: "destructive",
         };
         return <Badge variant={variants[post.status]}>{post.status}</Badge>;
       },
@@ -130,16 +149,18 @@ export default function MarketingPage() {
   const totalEngagement = posts
     .filter((p) => p.performance)
     .reduce((sum, p) => sum + (p.performance?.engagement || 0), 0);
-  const averageEngagement = posts.filter((p) => p.performance).length > 0
-    ? totalEngagement / posts.filter((p) => p.performance).length
-    : 0;
+  const averageEngagement =
+    posts.filter((p) => p.performance).length > 0
+      ? totalEngagement / posts.filter((p) => p.performance).length
+      : 0;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Marketing RH</h1>
         <p className="text-muted-foreground">
-          Gestion des publications sociales, réponses automatiques emails, CRM clients
+          Gestion des publications sociales, réponses automatiques emails, CRM
+          clients
         </p>
       </div>
 
@@ -175,7 +196,9 @@ export default function MarketingPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Publications planifiées</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Publications planifiées
+                  </CardTitle>
                   <Calendar className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
@@ -186,7 +209,9 @@ export default function MarketingPage() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Publications publiées</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Publications publiées
+                  </CardTitle>
                   <Share2 className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
@@ -197,11 +222,15 @@ export default function MarketingPage() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Engagement moyen</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Engagement moyen
+                  </CardTitle>
                   <TrendingUp className="h-4 w-4" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{averageEngagement.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold">
+                    {averageEngagement.toFixed(1)}%
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -226,7 +255,7 @@ export default function MarketingPage() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Réponses Automatiques</h2>
-            <Button onClick={() => setIsEmailModalOpen(true)}>
+            <Button onClick={() => setIsAutoReplyModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nouvelle règle
             </Button>
@@ -238,7 +267,9 @@ export default function MarketingPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold">{reply.trigger}</h3>
-                      <p className="text-sm text-muted-foreground">{reply.subject}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {reply.subject}
+                      </p>
                     </div>
                     <Badge variant={reply.isActive ? "default" : "outline"}>
                       {reply.isActive ? "Actif" : "Inactif"}
@@ -256,7 +287,7 @@ export default function MarketingPage() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Gestion CRM Clients</h2>
-            <Button onClick={() => setIsEmailModalOpen(true)}>
+            <Button onClick={() => setIsCRMModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Ajouter un client
             </Button>
@@ -268,10 +299,13 @@ export default function MarketingPage() {
                   <CardTitle className="text-lg">{customer.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-2">{customer.email}</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {customer.email}
+                  </p>
                   <Badge variant="secondary">{customer.status}</Badge>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Dernier contact: {new Date(customer.lastContact).toLocaleDateString("fr-FR")}
+                    Dernier contact:{" "}
+                    {new Date(customer.lastContact).toLocaleDateString("fr-FR")}
                   </p>
                 </CardContent>
               </Card>
@@ -305,7 +339,10 @@ export default function MarketingPage() {
             <Select
               value={formData.platform}
               onValueChange={(value) =>
-                setFormData({ ...formData, platform: value as SocialPost["platform"] })
+                setFormData({
+                  ...formData,
+                  platform: value as SocialPost["platform"],
+                })
               }
             >
               <SelectTrigger>
@@ -324,7 +361,9 @@ export default function MarketingPage() {
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               placeholder="Votre message..."
               rows={6}
             />
@@ -337,7 +376,9 @@ export default function MarketingPage() {
                 id="scheduledDate"
                 type="date"
                 value={formData.scheduledDate}
-                onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, scheduledDate: e.target.value })
+                }
               />
             </div>
             <div>
@@ -346,13 +387,198 @@ export default function MarketingPage() {
                 id="scheduledTime"
                 type="time"
                 value={formData.scheduledTime}
-                onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, scheduledTime: e.target.value })
+                }
               />
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Auto Reply Modal */}
+      <Modal
+        open={isAutoReplyModalOpen}
+        onOpenChange={setIsAutoReplyModalOpen}
+        type="form"
+        title="Nouvelle règle de réponse automatique"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Créer la règle",
+            onClick: () => {
+              // Handle save auto reply
+              alert("Règle de réponse automatique créée!");
+              setIsAutoReplyModalOpen(false);
+            },
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsAutoReplyModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="trigger">Déclencheur</Label>
+            <Input
+              id="trigger"
+              value={autoReplyFormData.trigger}
+              onChange={(e) =>
+                setAutoReplyFormData({
+                  ...autoReplyFormData,
+                  trigger: e.target.value,
+                })
+              }
+              placeholder="Ex: Candidature spontanée"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="subject">Objet de l&apos;email</Label>
+            <Input
+              id="subject"
+              value={autoReplyFormData.subject}
+              onChange={(e) =>
+                setAutoReplyFormData({
+                  ...autoReplyFormData,
+                  subject: e.target.value,
+                })
+              }
+              placeholder="Objet de la réponse automatique"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="body">Corps de l&apos;email</Label>
+            <Textarea
+              id="body"
+              value={autoReplyFormData.body}
+              onChange={(e) =>
+                setAutoReplyFormData({
+                  ...autoReplyFormData,
+                  body: e.target.value,
+                })
+              }
+              placeholder="Contenu de la réponse automatique..."
+              rows={6}
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isActive"
+              checked={autoReplyFormData.isActive}
+              onChange={(e) =>
+                setAutoReplyFormData({
+                  ...autoReplyFormData,
+                  isActive: e.target.checked,
+                })
+              }
+            />
+            <Label htmlFor="isActive">Activer cette r&egrave;gle</Label>
+          </div>
+        </div>
+      </Modal>
+
+      {/* CRM Add Client Modal */}
+      <Modal
+        open={isCRMModalOpen}
+        onOpenChange={setIsCRMModalOpen}
+        type="form"
+        title="Ajouter un client"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Ajouter le client",
+            onClick: () => {
+              // Handle save client
+              alert("Client ajouté au CRM!");
+              setIsCRMModalOpen(false);
+            },
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCRMModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nom du client</Label>
+            <Input
+              id="name"
+              value={crmFormData.name}
+              onChange={(e) =>
+                setCrmFormData({ ...crmFormData, name: e.target.value })
+              }
+              placeholder="Nom complet"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={crmFormData.email}
+              onChange={(e) =>
+                setCrmFormData({ ...crmFormData, email: e.target.value })
+              }
+              placeholder="email@exemple.com"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="phone">Téléphone</Label>
+            <Input
+              id="phone"
+              value={crmFormData.phone}
+              onChange={(e) =>
+                setCrmFormData({ ...crmFormData, phone: e.target.value })
+              }
+              placeholder="+33 6 12 34 56 78"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="company">Entreprise</Label>
+            <Input
+              id="company"
+              value={crmFormData.company}
+              onChange={(e) =>
+                setCrmFormData({ ...crmFormData, company: e.target.value })
+              }
+              placeholder="Nom de l'entreprise"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="status">Statut</Label>
+            <Select
+              value={crmFormData.status}
+              onValueChange={(value) =>
+                setCrmFormData({
+                  ...crmFormData,
+                  status: value as CRMCustomer["status"],
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Prospect">Prospect</SelectItem>
+                <SelectItem value="Client">Client</SelectItem>
+                <SelectItem value="Ancien client">Ancien client</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </Modal>
     </div>
   );
 }
-

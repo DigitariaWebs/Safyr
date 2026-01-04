@@ -16,7 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, AlertCircle, CheckCircle, Clock } from "lucide-react";
-import { mockMedicalVisits, type MedicalVisit } from "@/data/hr-occupational-medicine";
+import {
+  mockMedicalVisits,
+  type MedicalVisit,
+} from "@/data/hr-occupational-medicine";
 
 export default function OccupationalMedicinePage() {
   const [visits, setVisits] = useState<MedicalVisit[]>(mockMedicalVisits);
@@ -45,11 +48,14 @@ export default function OccupationalMedicinePage() {
       key: "type",
       label: "Type",
       render: (visit) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-          "VM": "default",
-          "VIP": "secondary",
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
+          VM: "default",
+          VIP: "secondary",
           "Pré-reprise": "outline",
-          "Reprise": "outline",
+          Reprise: "outline",
         };
         return <Badge variant={variants[visit.type]}>{visit.type}</Badge>;
       },
@@ -58,10 +64,13 @@ export default function OccupationalMedicinePage() {
       key: "status",
       label: "Statut",
       render: (visit) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           "À planifier": "outline",
-          "Planifiée": "default",
-          "Effectuée": "secondary",
+          Planifiée: "default",
+          Effectuée: "secondary",
           "En retard": "destructive",
         };
         return <Badge variant={variants[visit.status]}>{visit.status}</Badge>;
@@ -71,17 +80,30 @@ export default function OccupationalMedicinePage() {
       key: "scheduledDate",
       label: "Date prévue",
       render: (visit) =>
-        visit.scheduledDate ? new Date(visit.scheduledDate).toLocaleDateString("fr-FR") : "-",
+        visit.scheduledDate
+          ? new Date(visit.scheduledDate).toLocaleDateString("fr-FR")
+          : "-",
+    },
+    {
+      key: "nextVisitDate",
+      label: "Prochaine visite",
+      render: (visit) =>
+        visit.nextVisitDate
+          ? new Date(visit.nextVisitDate).toLocaleDateString("fr-FR")
+          : "-",
     },
     {
       key: "fitness",
       label: "Aptitude",
       render: (visit) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-          "Apte": "default",
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
+          Apte: "default",
           "Apte avec réserves": "secondary",
           "Inapte temporaire": "destructive",
-          "Inapte": "destructive",
+          Inapte: "destructive",
           "-": "outline",
         };
         return <Badge variant={variants[visit.fitness]}>{visit.fitness}</Badge>;
@@ -95,11 +117,10 @@ export default function OccupationalMedicinePage() {
     {
       key: "alertSent",
       label: "Alerte",
-      render: (visit) => (
+      render: (visit) =>
         visit.alertSent ? (
           <AlertCircle className="h-4 w-4 text-orange-600" />
-        ) : null
-      ),
+        ) : null,
     },
   ];
 
@@ -143,7 +164,7 @@ export default function OccupationalMedicinePage() {
 
   const handleSendAlert = (visitId: string) => {
     setVisits(
-      visits.map((v) => (v.id === visitId ? { ...v, alertSent: true } : v))
+      visits.map((v) => (v.id === visitId ? { ...v, alertSent: true } : v)),
     );
     alert("Alerte envoyée à l'employé et l'organisme de médecine du travail");
   };
@@ -200,7 +221,9 @@ export default function OccupationalMedicinePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alertes envoyées</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Alertes envoyées
+            </CardTitle>
             <AlertCircle className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -257,7 +280,10 @@ export default function OccupationalMedicinePage() {
             <Select
               value={formData.type}
               onValueChange={(value) =>
-                setFormData({ ...formData, type: value as MedicalVisit["type"] })
+                setFormData({
+                  ...formData,
+                  type: value as MedicalVisit["type"],
+                })
               }
             >
               <SelectTrigger>
@@ -265,8 +291,12 @@ export default function OccupationalMedicinePage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="VM">Visite Médicale (VM)</SelectItem>
-                <SelectItem value="VIP">Visite Initiale Périodique (VIP)</SelectItem>
-                <SelectItem value="Pré-reprise">Visite de Pré-reprise</SelectItem>
+                <SelectItem value="VIP">
+                  Visite Initiale Périodique (VIP)
+                </SelectItem>
+                <SelectItem value="Pré-reprise">
+                  Visite de Pré-reprise
+                </SelectItem>
                 <SelectItem value="Reprise">Visite de Reprise</SelectItem>
               </SelectContent>
             </Select>
@@ -328,7 +358,9 @@ export default function OccupationalMedicinePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Employé</Label>
-                <p className="text-sm font-medium">{selectedVisit.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {selectedVisit.employeeName}
+                </p>
               </div>
               <div>
                 <Label>Type</Label>
@@ -352,7 +384,9 @@ export default function OccupationalMedicinePage() {
                 <Label>Date prévue</Label>
                 <p className="text-sm font-medium">
                   {selectedVisit.scheduledDate
-                    ? new Date(selectedVisit.scheduledDate).toLocaleDateString("fr-FR")
+                    ? new Date(selectedVisit.scheduledDate).toLocaleDateString(
+                        "fr-FR",
+                      )
                     : "Non planifiée"}
                 </p>
               </div>
@@ -360,7 +394,9 @@ export default function OccupationalMedicinePage() {
                 <div>
                   <Label>Date d&apos;exécution</Label>
                   <p className="text-sm font-medium">
-                    {new Date(selectedVisit.completedDate).toLocaleDateString("fr-FR")}
+                    {new Date(selectedVisit.completedDate).toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </p>
                 </div>
               )}
@@ -370,14 +406,18 @@ export default function OccupationalMedicinePage() {
               <div>
                 <Label>Prochaine visite</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedVisit.nextVisitDate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedVisit.nextVisitDate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             )}
 
             <div>
               <Label>Organisme</Label>
-              <p className="text-sm font-medium">{selectedVisit.organization}</p>
+              <p className="text-sm font-medium">
+                {selectedVisit.organization}
+              </p>
             </div>
 
             {selectedVisit.doctor && (
@@ -413,23 +453,24 @@ export default function OccupationalMedicinePage() {
               </div>
             )}
 
-            {!selectedVisit.alertSent && (selectedVisit.status === "À planifier" || selectedVisit.status === "En retard") && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  handleSendAlert(selectedVisit.id);
-                  setIsViewModalOpen(false);
-                }}
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Envoyer une alerte automatique
-              </Button>
-            )}
+            {!selectedVisit.alertSent &&
+              (selectedVisit.status === "À planifier" ||
+                selectedVisit.status === "En retard") && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    handleSendAlert(selectedVisit.id);
+                    setIsViewModalOpen(false);
+                  }}
+                >
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Envoyer une alerte automatique
+                </Button>
+              )}
           </div>
         )}
       </Modal>
     </div>
   );
 }
-

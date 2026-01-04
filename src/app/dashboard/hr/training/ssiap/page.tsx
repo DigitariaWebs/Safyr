@@ -121,7 +121,7 @@ export default function SSIAPPage() {
     number: "",
     issueDate: "",
     expiryDate: "",
-    issuer: "CNAPS",
+    issuer: "SDIS",
   });
 
   // Handle click outside to close employee search
@@ -363,7 +363,7 @@ export default function SSIAPPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-3xl font-light tracking-tight">
-            SSIAP 1 / 2 / 3
+            SSIAP
           </h1>
           <p className="mt-2 text-sm font-light text-muted-foreground">
             Suivi des certifications SSIAP du personnel
@@ -734,7 +734,7 @@ export default function SSIAPPage() {
                     issuer: e.target.value,
                   }))
                 }
-                placeholder="CNAPS, INRS..."
+                placeholder="SDIS, INRS..."
               />
             </div>
           </div>

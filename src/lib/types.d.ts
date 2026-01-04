@@ -71,6 +71,15 @@ export interface SubcontractorContract {
 export interface Client {
   id: string;
   name: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  contactPerson?: string;
+  phone?: string;
+  email?: string;
+  siret?: string;
+  sector?: string;
   contracts: ClientContract[];
   gifts: ClientGift[];
 }
@@ -363,6 +372,8 @@ export interface Employee {
   hireDate: Date;
   position: string;
   department: string;
+  contractType?: Contract["type"];
+  workSchedule: "full-time" | "part-time";
   status: "active" | "inactive" | "suspended" | "terminated";
 
   // Documents
@@ -418,7 +429,11 @@ export interface EmployeeFormData {
   hireDate: string;
   position: string;
   department: string;
+  contractType?: Contract["type"];
+  workSchedule: "full-time" | "part-time";
   status: Employee["status"];
+  cnapsNumber: string;
+  ssiapNumber: string;
 }
 
 export interface EmployeeDocuments {
@@ -678,10 +693,12 @@ export interface WorkedHours {
   nightHours50: number; // Night hours with 50% increase
   nightHours10: number; // Night hours with 10% increase
   sundayHours: number;
+  sundayNightHours: number; // Sunday night hours
   sundayHours25: number; // Sunday hours with 25% increase
   sundayHours50: number; // Sunday hours with 50% increase
   sundayHours10: number; // Sunday hours with 10% increase
   holidayHours: number;
+  holidayNightHours: number; // Holiday night hours
   holidayHours25: number; // Holiday hours with 25% increase
   holidayHours50: number; // Holiday hours with 50% increase
   holidayHours10: number; // Holiday hours with 10% increase
@@ -796,14 +813,22 @@ export interface PayrollVariable {
 }
 
 export type PayrollVariableType =
-  | "bonus"
-  | "night_shift"
-  | "sunday_shift"
-  | "holiday_shift"
-  | "travel_allowance"
-  | "meal_allowance"
-  | "dressing_allowance"
-  | "other_allowance";
+  | "h_jour"
+  | "h_dimanche"
+  | "h_ferie"
+  | "h_nuit"
+  | "h_dimanche_nuit"
+  | "h_ferie_nuit"
+  | "h_supp_25"
+  | "h_supp_50"
+  | "h_compl_10"
+  | "nbre_paniers"
+  | "frais_restauration"
+  | "prime"
+  | "indemnite_habillage"
+  | "tenue"
+  | "nbre_deplacement"
+  | "autres_indemnites";
 
 export interface Allowance {
   id: string;

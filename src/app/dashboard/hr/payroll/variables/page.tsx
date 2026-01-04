@@ -46,10 +46,10 @@ const mockVariables: PayrollVariable[] = [
     employeeId: "EMP001",
     employeeName: "Jean Dupont",
     period: "2024-12-01",
-    type: "bonus",
-    amount: 500,
+    type: "h_jour",
+    amount: 160,
     currency: "EUR",
-    description: "Majoration de fin d'année",
+    description: "Heures travaillées",
     validated: true,
     validatedBy: "Admin",
     validatedAt: new Date("2024-12-15"),
@@ -61,10 +61,10 @@ const mockVariables: PayrollVariable[] = [
     employeeId: "EMP002",
     employeeName: "Marie Martin",
     period: "2024-12-01",
-    type: "night_shift",
-    amount: 120,
+    type: "h_nuit",
+    amount: 24,
     currency: "EUR",
-    description: "Majoration heures de nuit",
+    description: "Heures de nuit",
     validated: false,
     createdAt: new Date("2024-12-18"),
     updatedAt: new Date("2024-12-18"),
@@ -74,27 +74,65 @@ const mockVariables: PayrollVariable[] = [
     employeeId: "EMP003",
     employeeName: "Pierre Durand",
     period: "2024-12-01",
-    type: "travel_allowance",
-    amount: 85,
+    type: "prime",
+    amount: 500,
     currency: "EUR",
-    description: "Indemnité de déplacement",
+    description: "Prime de fin d'année",
     validated: true,
     validatedBy: "Admin",
     validatedAt: new Date("2024-12-16"),
     createdAt: new Date("2024-12-12"),
     updatedAt: new Date("2024-12-16"),
   },
+  {
+    id: "4",
+    employeeId: "EMP001",
+    employeeName: "Jean Dupont",
+    period: "2024-12-01",
+    type: "frais_restauration",
+    amount: 45.5,
+    currency: "EUR",
+    description: "Frais de restauration",
+    validated: true,
+    validatedBy: "Admin",
+    validatedAt: new Date("2024-12-15"),
+    createdAt: new Date("2024-12-10"),
+    updatedAt: new Date("2024-12-15"),
+  },
+  {
+    id: "5",
+    employeeId: "EMP002",
+    employeeName: "Marie Martin",
+    period: "2024-12-01",
+    type: "h_dimanche",
+    amount: 8,
+    currency: "EUR",
+    description: "Heures dimanche",
+    validated: true,
+    validatedBy: "Admin",
+    validatedAt: new Date("2024-12-15"),
+    createdAt: new Date("2024-12-10"),
+    updatedAt: new Date("2024-12-15"),
+  },
 ];
 
 const variableTypeLabels: Record<PayrollVariableType, string> = {
-  bonus: "Majoration",
-  night_shift: "Nuit",
-  sunday_shift: "Dimanche",
-  holiday_shift: "Jour férié",
-  travel_allowance: "Déplacement",
-  meal_allowance: "Repas",
-  dressing_allowance: "Tenue",
-  other_allowance: "Autre indemnité",
+  h_jour: "H Jour",
+  h_dimanche: "H Dimanche",
+  h_ferie: "H Férié",
+  h_nuit: "H Nuit",
+  h_dimanche_nuit: "H Dimanche Nuit",
+  h_ferie_nuit: "H Férié Nuit",
+  h_supp_25: "H Supp 25%",
+  h_supp_50: "H Supp 50%",
+  h_compl_10: "H Compl 10%",
+  nbre_paniers: "Nbre Paniers",
+  frais_restauration: "Frais restauration",
+  prime: "Prime",
+  indemnite_habillage: "Indemnité d'habillage",
+  tenue: "Tenue",
+  nbre_deplacement: "Nbre Déplacement",
+  autres_indemnites: "Autres Indemnités",
 };
 
 interface GroupedVariable {
@@ -123,18 +161,26 @@ export default function PayrollVariablesPage() {
   const [variableForm, setVariableForm] = useState({
     employeeId: "",
     employeeName: "",
-    period: new Date().toISOString().split("T")[0],
-    type: "bonus" as PayrollVariableType,
+    period: "",
+    type: "h_jour" as PayrollVariableType,
     amount: "",
     description: "",
-    bonus: "",
-    night_shift: "",
-    sunday_shift: "",
-    holiday_shift: "",
-    travel_allowance: "",
-    meal_allowance: "",
-    dressing_allowance: "",
-    other_allowance: "",
+    h_jour: "",
+    h_dimanche: "",
+    h_ferie: "",
+    h_nuit: "",
+    h_dimanche_nuit: "",
+    h_ferie_nuit: "",
+    h_supp_25: "",
+    h_supp_50: "",
+    h_compl_10: "",
+    nbre_paniers: "",
+    frais_restauration: "",
+    prime: "",
+    indemnite_habillage: "",
+    tenue: "",
+    nbre_deplacement: "",
+    autres_indemnites: "",
   });
 
   // Handle click outside to close employee search
@@ -204,14 +250,22 @@ export default function PayrollVariablesPage() {
       type: variable.type,
       amount: variable.amount.toString(),
       description: variable.description || "",
-      bonus: "",
-      night_shift: "",
-      sunday_shift: "",
-      holiday_shift: "",
-      travel_allowance: "",
-      meal_allowance: "",
-      dressing_allowance: "",
-      other_allowance: "",
+      h_jour: "",
+      h_dimanche: "",
+      h_ferie: "",
+      h_nuit: "",
+      h_dimanche_nuit: "",
+      h_ferie_nuit: "",
+      h_supp_25: "",
+      h_supp_50: "",
+      h_compl_10: "",
+      nbre_paniers: "",
+      frais_restauration: "",
+      prime: "",
+      indemnite_habillage: "",
+      tenue: "",
+      nbre_deplacement: "",
+      autres_indemnites: "",
     });
     setIsEditMode(true);
     setIsVariableModalOpen(true);
@@ -240,14 +294,22 @@ export default function PayrollVariablesPage() {
       // Create new variables for each non-empty type
       const newVariables: PayrollVariable[] = [];
       const types = [
-        "bonus",
-        "night_shift",
-        "sunday_shift",
-        "holiday_shift",
-        "travel_allowance",
-        "meal_allowance",
-        "dressing_allowance",
-        "other_allowance",
+        "h_jour",
+        "h_dimanche",
+        "h_ferie",
+        "h_nuit",
+        "h_dimanche_nuit",
+        "h_ferie_nuit",
+        "h_supp_25",
+        "h_supp_50",
+        "h_compl_10",
+        "nbre_paniers",
+        "frais_restauration",
+        "prime",
+        "indemnite_habillage",
+        "tenue",
+        "nbre_deplacement",
+        "autres_indemnites",
       ] as const;
       types.forEach((type) => {
         const amountStr = variableForm[type];
@@ -278,18 +340,26 @@ export default function PayrollVariablesPage() {
     setVariableForm({
       employeeId: "",
       employeeName: "",
-      period: new Date().toISOString().split("T")[0],
-      type: "bonus",
+      period: "",
+      type: "h_jour" as PayrollVariableType,
       amount: "",
       description: "",
-      bonus: "",
-      night_shift: "",
-      sunday_shift: "",
-      holiday_shift: "",
-      travel_allowance: "",
-      meal_allowance: "",
-      dressing_allowance: "",
-      other_allowance: "",
+      h_jour: "",
+      h_dimanche: "",
+      h_ferie: "",
+      h_nuit: "",
+      h_dimanche_nuit: "",
+      h_ferie_nuit: "",
+      h_supp_25: "",
+      h_supp_50: "",
+      h_compl_10: "",
+      nbre_paniers: "",
+      frais_restauration: "",
+      prime: "",
+      indemnite_habillage: "",
+      tenue: "",
+      nbre_deplacement: "",
+      autres_indemnites: "",
     });
   };
 
@@ -301,21 +371,30 @@ export default function PayrollVariablesPage() {
 
   const handleOpenCreateModal = () => {
     setIsEditMode(false);
+    setSelectedVariable(null);
     setVariableForm({
       employeeId: "",
       employeeName: "",
-      period: new Date().toISOString().split("T")[0],
-      type: "bonus",
+      period: "",
+      type: "h_jour" as PayrollVariableType,
       amount: "",
       description: "",
-      bonus: "",
-      night_shift: "",
-      sunday_shift: "",
-      holiday_shift: "",
-      travel_allowance: "",
-      meal_allowance: "",
-      dressing_allowance: "",
-      other_allowance: "",
+      h_jour: "",
+      h_dimanche: "",
+      h_ferie: "",
+      h_nuit: "",
+      h_dimanche_nuit: "",
+      h_ferie_nuit: "",
+      h_supp_25: "",
+      h_supp_50: "",
+      h_compl_10: "",
+      nbre_paniers: "",
+      frais_restauration: "",
+      prime: "",
+      indemnite_habillage: "",
+      tenue: "",
+      nbre_deplacement: "",
+      autres_indemnites: "",
     });
     setIsVariableModalOpen(true);
   };
@@ -392,11 +471,18 @@ export default function PayrollVariablesPage() {
       label,
       sortable: true,
       sortValue: (item: GroupedVariable) => item.types[type] || 0,
-      render: (item: GroupedVariable) => (
-        <span className="font-medium">
-          {(item.types[type] || 0).toLocaleString("fr-FR")} €
-        </span>
-      ),
+      render: (item: GroupedVariable) => {
+        const value = item.types[type] || 0;
+        const isHoursOrCount =
+          type.startsWith("h_") || type.startsWith("nbre_");
+        return (
+          <span className="font-medium">
+            {isHoursOrCount
+              ? value.toLocaleString("fr-FR")
+              : `${value.toLocaleString("fr-FR")} €`}
+          </span>
+        );
+      },
     })),
     {
       key: "validated",
@@ -580,9 +666,18 @@ export default function PayrollVariablesPage() {
                 </p>
               </div>
               <div>
-                <Label className="text-sm font-medium">Montant</Label>
+                <Label className="text-sm font-medium">
+                  {selectedVariable.type.startsWith("h_")
+                    ? "Nombre d'heures"
+                    : selectedVariable.type.startsWith("nbre_")
+                      ? "Nombre"
+                      : "Montant"}
+                </Label>
                 <p className="text-sm font-medium">
-                  {selectedVariable.amount.toLocaleString("fr-FR")} €
+                  {selectedVariable.type.startsWith("h_") ||
+                  selectedVariable.type.startsWith("nbre_")
+                    ? selectedVariable.amount.toLocaleString("fr-FR")
+                    : `${selectedVariable.amount.toLocaleString("fr-FR")} €`}
                 </p>
               </div>
             </div>
@@ -682,9 +777,18 @@ export default function PayrollVariablesPage() {
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Montant</Label>
+                      <Label className="text-sm font-medium">
+                        {variable.type.startsWith("h_")
+                          ? "Nombre d'heures"
+                          : variable.type.startsWith("nbre_")
+                            ? "Nombre"
+                            : "Montant"}
+                      </Label>
                       <p className="text-sm font-medium">
-                        {variable.amount.toLocaleString("fr-FR")} €
+                        {variable.type.startsWith("h_") ||
+                        variable.type.startsWith("nbre_")
+                          ? variable.amount.toLocaleString("fr-FR")
+                          : `${variable.amount.toLocaleString("fr-FR")} €`}
                       </p>
                     </div>
                   </div>
@@ -745,7 +849,7 @@ export default function PayrollVariablesPage() {
             ? "Modifier la variable de paie"
             : "Nouvelle déclaration de variables de paie"
         }
-        size="md"
+        size="lg"
         actions={{
           secondary: {
             label: "Annuler",
@@ -862,7 +966,12 @@ export default function PayrollVariablesPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount">
-                  Montant (€) <span className="text-destructive">*</span>
+                  {variableForm.type.startsWith("h_")
+                    ? "Nombre d'heures"
+                    : variableForm.type.startsWith("nbre_")
+                      ? "Nombre"
+                      : "Montant (€)"}{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="amount"
@@ -881,26 +990,36 @@ export default function PayrollVariablesPage() {
             </>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {Object.entries(variableTypeLabels).map(([type, label]) => (
-                <div key={type} className="space-y-2">
-                  <Label htmlFor={type}>{label}</Label>
-                  <Input
-                    id={type}
-                    type="number"
-                    step="0.01"
-                    value={
-                      variableForm[type as keyof typeof variableForm] as string
-                    }
-                    onChange={(e) =>
-                      setVariableForm((prev) => ({
-                        ...prev,
-                        [type]: e.target.value,
-                      }))
-                    }
-                    placeholder="0.00"
-                  />
-                </div>
-              ))}
+              {Object.entries(variableTypeLabels).map(([type, label]) => {
+                const isHours = type.startsWith("h_");
+                const isCount = type.startsWith("nbre_");
+                const unit = isHours ? " (heures)" : isCount ? "" : " (€)";
+                return (
+                  <div key={type} className="space-y-2">
+                    <Label htmlFor={type}>
+                      {label}
+                      {unit}
+                    </Label>
+                    <Input
+                      id={type}
+                      type="number"
+                      step="0.01"
+                      value={
+                        variableForm[
+                          type as keyof typeof variableForm
+                        ] as string
+                      }
+                      onChange={(e) =>
+                        setVariableForm((prev) => ({
+                          ...prev,
+                          [type]: e.target.value,
+                        }))
+                      }
+                      placeholder="0.00"
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
 

@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   ModuleNavigationBar,
   NavItem,
@@ -22,7 +21,6 @@ import {
   Mail,
   Megaphone,
   FileText,
-  GraduationCap,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -30,7 +28,20 @@ const navItems: NavItem[] = [
     label: "Entreprise",
     icon: Building2,
     children: [
-      { label: "Informations société", href: "/dashboard/hr/entreprise" },
+      {
+        label: "Information Entreprise",
+        href: "/dashboard/hr/entreprise",
+      },
+      {
+        label: "Sous-traitants",
+        href: "/dashboard/hr/entreprise/sous-traitants",
+      },
+      { label: "Clients", href: "/dashboard/hr/entreprise/clients" },
+      { label: "Impôt SIE", href: "/dashboard/hr/entreprise/impot-sie" },
+      {
+        label: "Divers Documents",
+        href: "/dashboard/hr/entreprise/divers-documents",
+      },
     ],
   },
   {
@@ -38,6 +49,12 @@ const navItems: NavItem[] = [
     icon: Users,
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
+      { label: "DUERP", href: "/dashboard/hr/duerp" },
+      {
+        label: "Archives Mails",
+        href: "/dashboard/hr/employees/archives-mails",
+      },
+      { label: "AKTO", href: "/dashboard/hr/akto-opco" },
       {
         label: "Contrats & avenants",
         href: "/dashboard/hr/contracts",
@@ -59,13 +76,7 @@ const navItems: NavItem[] = [
     label: "Temps & Absences",
     icon: Calendar,
     children: [
-      { label: "Congés", href: "/dashboard/hr/time-management/leaves" },
       { label: "Absences", href: "/dashboard/hr/time-management" },
-      {
-        label: "Arrêts maladie",
-        href: "/dashboard/hr/time-management/sick-leaves",
-        disabled: true,
-      },
       {
         label: "Heures travaillées",
         href: "/dashboard/hr/time-management/worked-hours",
@@ -73,6 +84,10 @@ const navItems: NavItem[] = [
       {
         label: "Heures CSE",
         href: "/dashboard/hr/time-management/cse-hours",
+      },
+      {
+        label: "Compteur heures supplémentaires",
+        href: "/dashboard/hr/time-management/overtime-counter",
       },
     ],
   },
@@ -85,7 +100,7 @@ const navItems: NavItem[] = [
         href: "/dashboard/hr/payroll/variables",
       },
       {
-        label: "Mes notes de frais",
+        label: "Notes de frais",
         href: "/dashboard/hr/payroll/expenses",
       },
       {
@@ -119,7 +134,7 @@ const navItems: NavItem[] = [
     icon: Award,
     children: [
       {
-        label: "SSIAP 1 / 2 / 3",
+        label: "SSIAP",
         href: "/dashboard/hr/training/ssiap",
       },
       {
@@ -171,10 +186,6 @@ const navItems: NavItem[] = [
         href: "/dashboard/hr/discipline/warnings",
       },
       {
-        label: "Suspensions",
-        href: "/dashboard/hr/discipline/suspensions",
-      },
-      {
         label: "Procédures disciplinaires",
         href: "/dashboard/hr/discipline/disciplinary-procedures",
       },
@@ -187,20 +198,7 @@ const navItems: NavItem[] = [
   {
     label: "Entretiens",
     icon: MessageSquare,
-    children: [
-      {
-        label: "Entretiens annuels",
-        href: "/dashboard/hr/interviews/annual",
-      },
-      {
-        label: "Entretiens professionnels",
-        href: "/dashboard/hr/interviews/professional",
-      },
-      {
-        label: "Objectifs & évolution",
-        href: "/dashboard/hr/interviews/objectives",
-      },
-    ],
+    href: "/dashboard/hr/interviews",
   },
   {
     label: "Médecine",
@@ -257,11 +255,7 @@ const navItems: NavItem[] = [
         href: "/dashboard/hr/workflows/requests",
       },
       {
-        label: "Demandes de certificats",
-        href: "/dashboard/hr/workflows/certificate",
-      },
-      {
-        label: "Demandes de documents",
+        label: "Demande de documents",
         href: "/dashboard/hr/workflows/document",
       },
       {
@@ -290,7 +284,6 @@ const navItems: NavItem[] = [
         label: "Bilan social",
         href: "/dashboard/hr/social-report",
       },
-      { label: "KPI RH", href: "/dashboard/hr" },
     ],
   },
   {
@@ -324,11 +317,6 @@ const navItems: NavItem[] = [
     label: "Appels d'Offre",
     icon: FileText,
     href: "/dashboard/hr/tenders",
-  },
-  {
-    label: "AKTO & OPCO",
-    icon: GraduationCap,
-    href: "/dashboard/hr/akto-opco",
   },
 ];
 

@@ -24,7 +24,7 @@ import {
   ChevronUp,
   ChevronDown,
   GripVertical,
-  Eye,
+  Trash2,
   Mail,
   Megaphone,
   GraduationCap,
@@ -274,6 +274,7 @@ function TrainingWidget({ isLoading }: { isLoading: boolean }) {
     { type: "SSIAP", valid: 198, expiring: 12, expired: 3 },
     { type: "SST", valid: 187, expiring: 18, expired: 5 },
     { type: "H0B0", valid: 156, expiring: 8, expired: 2 },
+    { type: "Carte PRO", valid: 143, expiring: 15, expired: 7 },
   ];
 
   return (
@@ -958,9 +959,9 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
                 href={action.href}
                 className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group"
               >
-                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                 <span className="text-sm flex-1">{action.label}</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
               </Link>
             );
           })}
@@ -1093,7 +1094,7 @@ function SortableWidget({
             onClick={() => toggleVisibility(config.id)}
             className="bg-background/80 rounded shadow h-6 w-6 p-0"
           >
-            <Eye className="h-3 w-3" />
+            <Trash2 className="h-3 w-3 text-red-500" />
           </Button>
           <div
             {...attributes}
@@ -1521,8 +1522,10 @@ export default function HRDashboardPage() {
           {/* Top Row - Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {visibleWidgets
-              .filter((config) => 
-                ["employeeStats", "turnover", "compliance", "payroll"].includes(config.id)
+              .filter((config) =>
+                ["employeeStats", "turnover", "compliance", "payroll"].includes(
+                  config.id,
+                ),
               )
               .map((config: WidgetConfig) => {
                 const Component = config.component;
@@ -1537,8 +1540,8 @@ export default function HRDashboardPage() {
           {/* Second Row - Training & Alerts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {visibleWidgets
-              .filter((config) => 
-                ["training", "alerts", "pendingRequests"].includes(config.id)
+              .filter((config) =>
+                ["training", "alerts", "pendingRequests"].includes(config.id),
               )
               .map((config: WidgetConfig) => {
                 const Component = config.component;
@@ -1553,13 +1556,26 @@ export default function HRDashboardPage() {
           {/* Third Row - Detailed Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {visibleWidgets
-              .filter((config) => 
-                !["employeeStats", "turnover", "compliance", "payroll", "training", "alerts", "pendingRequests", "quickActions"].includes(config.id)
+              .filter(
+                (config) =>
+                  ![
+                    "employeeStats",
+                    "turnover",
+                    "compliance",
+                    "payroll",
+                    "training",
+                    "alerts",
+                    "pendingRequests",
+                    "quickActions",
+                  ].includes(config.id),
               )
               .map((config: WidgetConfig) => {
                 const Component = config.component;
                 return (
-                  <div key={config.id} className={cn(config.span || "", "h-full")}>
+                  <div
+                    key={config.id}
+                    className={cn(config.span || "", "h-full")}
+                  >
                     <Component isLoading={isLoading} />
                   </div>
                 );
@@ -1567,8 +1583,7 @@ export default function HRDashboardPage() {
           </div>
 
           {/* Bottom Row - Quick Actions */}
-          {visibleWidgets
-            .filter((config) => config.id === "quickActions")
+          {visibleWidgets.filter((config) => config.id === "quickActions")
             .length > 0 && (
             <div className="grid grid-cols-1 gap-4">
               {visibleWidgets

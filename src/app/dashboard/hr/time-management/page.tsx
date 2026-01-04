@@ -627,13 +627,15 @@ export default function TimeManagementPage() {
             <h4 className="font-medium mb-2">📋 Informations importantes</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>
-                • Les demandes de congés doivent être faites au moins 2 semaines
-                à l&apos;avance
+                • Les demandes de congés doivent être faites au moins 2 mois à
+                l&apos;avance
               </li>
-              <li>• Les arrêts maladie nécessitent un justificatif médical</li>
               <li>
-                • Les congés maternité/paternité doivent être déclarés dès que
-                possible
+                • Les arrêts maladie doivent être déclarés dans moins de 48h
+              </li>
+              <li>
+                • Les congés maternité/paternité doivent être déclarés au moins
+                2 mois à l&apos;avance
               </li>
               <li>• Les heures de délégation CSE sont soumises à validation</li>
             </ul>
