@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,126 +82,78 @@ export default function BillingDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Clients Actifs
-            </CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeClients}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalSites} sites au total
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Clients Actifs"
+          value={activeClients}
+          subtext={`${totalSites} sites au total`}
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Factures ce mois
-            </CardTitle>
-            <FileText className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{invoicesThisMonth.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {pendingInvoices} en attente
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={FileText}
+          title="Factures ce mois"
+          value={invoicesThisMonth.length}
+          subtext={`${pendingInvoices} en attente`}
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CA Ce Mois</CardTitle>
-            <DollarSign className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalRevenueThisMonth.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {totalRevenue.toLocaleString("fr-FR")} € total
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={DollarSign}
+          title="CA Ce Mois"
+          value={`${totalRevenueThisMonth.toLocaleString("fr-FR")} €`}
+          subtext={`${totalRevenue.toLocaleString("fr-FR")} € total`}
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Marge Moyenne</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {averageMargin}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {totalHoursBilled} h facturées
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={TrendingUp}
+          title="Marge Moyenne"
+          value={`${averageMargin}%`}
+          subtext={`${totalHoursBilled} h facturées`}
+          color="green"
+        />
+      </InfoCardContainer>
 
       {/* Status Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingInvoices}</div>
-            <p className="text-xs text-muted-foreground">Factures à traiter</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Clock}
+          title="En Attente"
+          value={pendingInvoices}
+          subtext="Factures à traiter"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Validées</CardTitle>
-            <CheckCircle className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                mockBillingInvoices.filter((inv) => inv.status === "Validée")
-                  .length
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">Prêtes à envoyer</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle}
+          title="Validées"
+          value={
+            mockBillingInvoices.filter((inv) => inv.status === "Validée").length
+          }
+          subtext="Prêtes à envoyer"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Envoyées</CardTitle>
-            <Send className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{sentInvoices}</div>
-            <p className="text-xs text-muted-foreground">
-              En attente de paiement
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Send}
+          title="Envoyées"
+          value={sentInvoices}
+          subtext="En attente de paiement"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Payées</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                mockBillingInvoices.filter((inv) => inv.status === "Payée")
-                  .length
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">Factures réglées</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={CheckCircle}
+          title="Payées"
+          value={
+            mockBillingInvoices.filter((inv) => inv.status === "Payée").length
+          }
+          subtext="Factures réglées"
+          color="green"
+        />
+      </InfoCardContainer>
 
       {/* Recent Invoices */}
       <Card>

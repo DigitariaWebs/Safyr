@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -298,7 +299,9 @@ export default function WorkAccidentsPage() {
   }
 
   if (filterStatus !== "all") {
-    filteredAccidents = filteredAccidents.filter((a) => a.status === filterStatus);
+    filteredAccidents = filteredAccidents.filter(
+      (a) => a.status === filterStatus,
+    );
   }
 
   const columns: ColumnDef<WorkAccident>[] = [
@@ -322,7 +325,9 @@ export default function WorkAccidentsPage() {
           <div className="font-medium">
             {getEmployeeName(accident.employeeId)}
           </div>
-          <div className="text-sm text-muted-foreground">{accident.location}</div>
+          <div className="text-sm text-muted-foreground">
+            {accident.location}
+          </div>
         </Link>
       ),
     },
@@ -429,53 +434,40 @@ export default function WorkAccidentsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAccidents}</div>
-            <p className="text-xs text-muted-foreground">Accidents déclarés</p>
-          </CardContent>
-        </Card>
+      {/* Summary Cards */}
+      <InfoCardContainer>
+        <InfoCard
+          icon={AlertTriangle}
+          title="Total"
+          value={totalAccidents}
+          subtext="Accidents déclarés"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAccidents}</div>
-            <p className="text-xs text-muted-foreground">Non clôturés</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={FileText}
+          title="En cours"
+          value={activeAccidents}
+          subtext="Non clôturés"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avec arrêt
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{withStoppage}</div>
-            <p className="text-xs text-muted-foreground">Arrêts de travail</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Calendar}
+          title="Avec arrêt"
+          value={withStoppage}
+          subtext="Arrêts de travail"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Graves</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{severeAccidents}</div>
-            <p className="text-xs text-muted-foreground">Accidents graves</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={AlertTriangle}
+          title="Graves"
+          value={severeAccidents}
+          subtext="Accidents graves"
+          color="red"
+        />
+      </InfoCardContainer>
 
       <Card>
         <CardHeader>
@@ -501,7 +493,9 @@ export default function WorkAccidentsPage() {
                 <SelectContent>
                   <SelectItem value="all">Tous statuts</SelectItem>
                   <SelectItem value="declared">Déclaré</SelectItem>
-                  <SelectItem value="investigating">En investigation</SelectItem>
+                  <SelectItem value="investigating">
+                    En investigation
+                  </SelectItem>
                   <SelectItem value="closed">Clôturé</SelectItem>
                 </SelectContent>
               </Select>
@@ -610,7 +604,9 @@ export default function WorkAccidentsPage() {
           </div>
 
           <div>
-            <Label htmlFor="description">Description de l&apos;accident *</Label>
+            <Label htmlFor="description">
+              Description de l&apos;accident *
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -675,7 +671,9 @@ export default function WorkAccidentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="declared">Déclaré</SelectItem>
-                  <SelectItem value="investigating">En investigation</SelectItem>
+                  <SelectItem value="investigating">
+                    En investigation
+                  </SelectItem>
                   <SelectItem value="closed">Clôturé</SelectItem>
                 </SelectContent>
               </Select>
@@ -834,7 +832,9 @@ export default function WorkAccidentsPage() {
                 </p>
               </div>
               <div>
-                <Label className="text-muted-foreground">N° de déclaration</Label>
+                <Label className="text-muted-foreground">
+                  N° de déclaration
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingAccident.declarationNumber || "Non attribué"}
                 </p>
@@ -853,7 +853,9 @@ export default function WorkAccidentsPage() {
               </div>
               <div>
                 <Label className="text-muted-foreground">Lieu</Label>
-                <p className="text-sm font-medium">{viewingAccident.location}</p>
+                <p className="text-sm font-medium">
+                  {viewingAccident.location}
+                </p>
               </div>
             </div>
 
@@ -886,12 +888,15 @@ export default function WorkAccidentsPage() {
               </div>
             </div>
 
-            {viewingAccident.witnesses && viewingAccident.witnesses.length > 0 && (
-              <div>
-                <Label className="text-muted-foreground">Témoins</Label>
-                <p className="text-sm">{viewingAccident.witnesses.join(", ")}</p>
-              </div>
-            )}
+            {viewingAccident.witnesses &&
+              viewingAccident.witnesses.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Témoins</Label>
+                  <p className="text-sm">
+                    {viewingAccident.witnesses.join(", ")}
+                  </p>
+                </div>
+              )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -928,7 +933,9 @@ export default function WorkAccidentsPage() {
 
             {viewingAccident.workStoppage && (
               <div>
-                <Label className="text-muted-foreground">Arrêt de travail</Label>
+                <Label className="text-muted-foreground">
+                  Arrêt de travail
+                </Label>
                 <div className="text-sm">
                   {viewingAccident.workStoppageStart && (
                     <p>

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -421,68 +422,39 @@ export default function EmployeesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Employés
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockStats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {mockStats.active} actifs
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Total Employés"
+          value={mockStats.total}
+          subtext={`${mockStats.active} actifs`}
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actifs</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockStats.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {((mockStats.active / mockStats.total) * 100).toFixed(1)}% du
-              total
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={UserCheck}
+          title="Actifs"
+          value={mockStats.active}
+          subtext={`${((mockStats.active / mockStats.total) * 100).toFixed(1)}% du total`}
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Alertes expiration
-            </CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockStats.expiringCertifications}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Certificats à renouveler
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={AlertCircle}
+          title="Alertes expiration"
+          value={mockStats.expiringCertifications}
+          subtext="Certificats à renouveler"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Contrats en attente
-            </CardTitle>
-            <FileWarning className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockStats.pendingContracts}
-            </div>
-            <p className="text-xs text-muted-foreground">Signatures requises</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={FileWarning}
+          title="Contrats en attente"
+          value={mockStats.pendingContracts}
+          subtext="Signatures requises"
+          color="blue"
+        />
+      </InfoCardContainer>
 
       {/* Bulk Actions Toolbar */}
       {selectedEmployees.length > 0 && (

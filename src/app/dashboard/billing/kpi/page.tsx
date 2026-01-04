@@ -1,8 +1,15 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import {
+  Download,
+  DollarSign,
+  Clock,
+  TrendingUp,
+  FileText,
+} from "lucide-react";
 import { mockBillingInvoices } from "@/data/billing-invoices";
 import { mockBillingClients } from "@/data/billing-clients";
 
@@ -65,76 +72,43 @@ export default function BillingKPIPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Chiffre d&apos;affaires Total
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalRevenue.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">TTC</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={DollarSign}
+          title="Chiffre d'affaires Total"
+          value={`${totalRevenue.toLocaleString("fr-FR")} €`}
+          subtext="TTC"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Heures Facturées
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalHoursBilled} h</div>
-            <p className="text-xs text-muted-foreground">
-              vs {totalHoursRealized} h réalisées
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="Heures Facturées"
+          value={`${totalHoursBilled} h`}
+          subtext={`vs ${totalHoursRealized} h réalisées`}
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Taux d&apos;écart
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                varianceRate >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {varianceRate >= 0 ? "+" : ""}
-              {varianceRate.toFixed(1)}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Planning / Facturation
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={TrendingUp}
+          title="Taux d'écart"
+          value={`${varianceRate >= 0 ? "+" : ""}${varianceRate.toFixed(1)}%`}
+          subtext="Planning / Facturation"
+          color="purple"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Factures Envoyées
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                invoices.filter(
-                  (inv) => inv.status === "Envoyée" || inv.status === "Payée",
-                ).length
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">
-              sur {invoices.length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={FileText}
+          title="Factures Envoyées"
+          value={
+            invoices.filter(
+              (inv) => inv.status === "Envoyée" || inv.status === "Payée",
+            ).length
+          }
+          subtext={`sur ${invoices.length}`}
+          color="orange"
+        />
+      </InfoCardContainer>
 
       {/* Revenue by Client */}
       <Card>

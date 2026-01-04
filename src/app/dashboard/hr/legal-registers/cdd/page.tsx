@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -174,7 +175,9 @@ export default function CDDRegisterPage() {
       contractNumber: entry.contractNumber,
       contractType: entry.contractType,
       entryDate: entry.entryDate.toISOString().split("T")[0],
-      exitDate: entry.exitDate ? entry.exitDate.toISOString().split("T")[0] : "",
+      exitDate: entry.exitDate
+        ? entry.exitDate.toISOString().split("T")[0]
+        : "",
       expectedEndDate: entry.expectedEndDate.toISOString().split("T")[0],
       actualEndDate: entry.actualEndDate
         ? entry.actualEndDate.toISOString().split("T")[0]
@@ -370,9 +373,7 @@ export default function CDDRegisterPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
-            Registre CDD Entrées / Sorties
-          </h1>
+          <h1 className="text-3xl font-bold">Registre CDD Entrées / Sorties</h1>
           <p className="text-muted-foreground">
             Suivi réglementaire des contrats à durée déterminée
           </p>
@@ -389,53 +390,39 @@ export default function CDDRegisterPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalEntries}</div>
-            <p className="text-xs text-muted-foreground">
-              Contrats enregistrés
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileText}
+          title="Total"
+          value={totalEntries}
+          subtext="Contrats enregistrés"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeContracts}</div>
-            <p className="text-xs text-muted-foreground">Contrats actifs</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={UserCheck}
+          title="En cours"
+          value={activeContracts}
+          subtext="Contrats actifs"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Terminés</CardTitle>
-            <UserX className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{exitedContracts}</div>
-            <p className="text-xs text-muted-foreground">Contrats clôturés</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={UserX}
+          title="Terminés"
+          value={exitedContracts}
+          subtext="Contrats clôturés"
+          color="red"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Renouvellements</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalRenewals}</div>
-            <p className="text-xs text-muted-foreground">Total cumulé</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Calendar}
+          title="Renouvellements"
+          value={totalRenewals}
+          subtext="Total cumulé"
+          color="blue"
+        />
+      </InfoCardContainer>
 
       <Card>
         <CardHeader>
@@ -649,9 +636,7 @@ export default function CDDRegisterPage() {
 
           {Number(formData.renewalCount) > 0 && (
             <div>
-              <Label htmlFor="previousContractId">
-                N° contrat précédent
-              </Label>
+              <Label htmlFor="previousContractId">N° contrat précédent</Label>
               <Input
                 id="previousContractId"
                 value={formData.previousContractId}
@@ -787,7 +772,9 @@ export default function CDDRegisterPage() {
               <div>
                 <Label className="text-muted-foreground">Type de contrat</Label>
                 <div className="mt-1">
-                  <Badge variant={contractTypeColors[viewingEntry.contractType]}>
+                  <Badge
+                    variant={contractTypeColors[viewingEntry.contractType]}
+                  >
                     {contractTypeLabels[viewingEntry.contractType]}
                   </Badge>
                 </div>
@@ -800,7 +787,9 @@ export default function CDDRegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date d&apos;entrée</Label>
+                <Label className="text-muted-foreground">
+                  Date d&apos;entrée
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.entryDate.toLocaleDateString("fr-FR")}
                 </p>
@@ -817,15 +806,15 @@ export default function CDDRegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Motif du recours</Label>
+                <Label className="text-muted-foreground">
+                  Motif du recours
+                </Label>
                 <p className="text-sm font-medium">
                   {reasonLabels[viewingEntry.reason]}
                 </p>
               </div>
               <div>
-                <Label className="text-muted-foreground">
-                  Renouvellements
-                </Label>
+                <Label className="text-muted-foreground">Renouvellements</Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.renewalCount}
                 </p>
@@ -856,7 +845,9 @@ export default function CDDRegisterPage() {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Date de sortie</Label>
+                    <Label className="text-muted-foreground">
+                      Date de sortie
+                    </Label>
                     <p className="text-sm font-medium">
                       {viewingEntry.exitDate.toLocaleDateString("fr-FR")}
                     </p>

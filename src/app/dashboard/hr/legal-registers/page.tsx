@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,14 +15,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Download,
   FileSearch,
+  CheckCircle2,
+  FileText,
+  Download,
+  Calendar,
   Users,
   AlertTriangle,
   GraduationCap,
-  FileText,
-  CheckCircle2,
-  Calendar,
 } from "lucide-react";
 
 type RegisterType =
@@ -131,52 +132,31 @@ export default function LegalRegistersExportPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Registres disponibles
-            </CardTitle>
-            <FileSearch className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{registers.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Registres réglementaires
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileSearch}
+          title="Registres disponibles"
+          value={registers.length}
+          subtext="Registres réglementaires"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Sélectionnés
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{selectedRegisters.size}</div>
-            <p className="text-xs text-muted-foreground">
-              Pour l&apos;export en cours
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle2}
+          title="Sélectionnés"
+          value={selectedRegisters.size}
+          subtext="Pour l'export en cours"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Format</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {exportFormat.toUpperCase()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {exportFormat === "pdf" ? "Conforme CNAPS" : "Tableur"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={FileText}
+          title="Format"
+          value={exportFormat.toUpperCase()}
+          subtext={exportFormat === "pdf" ? "Conforme CNAPS" : "Tableur"}
+          color="green"
+        />
+      </InfoCardContainer>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
@@ -245,7 +225,8 @@ export default function LegalRegistersExportPage() {
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
                 <p>
-                  Exports conformes aux exigences de l&apos;inspection du travail
+                  Exports conformes aux exigences de l&apos;inspection du
+                  travail
                 </p>
               </div>
               <div className="flex items-start gap-2">
@@ -254,9 +235,7 @@ export default function LegalRegistersExportPage() {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
-                <p>
-                  Conservation des données selon les obligations légales
-                </p>
+                <p>Conservation des données selon les obligations légales</p>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
@@ -274,14 +253,17 @@ export default function LegalRegistersExportPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="exportFormat">Format de fichier</Label>
-                <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as "pdf" | "excel")}>
+                <Select
+                  value={exportFormat}
+                  onValueChange={(value) =>
+                    setExportFormat(value as "pdf" | "excel")
+                  }
+                >
                   <SelectTrigger id="exportFormat" className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pdf">
-                      PDF (Réglementaire)
-                    </SelectItem>
+                    <SelectItem value="pdf">PDF (Réglementaire)</SelectItem>
                     <SelectItem value="excel">Excel (Analyse)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -304,11 +286,11 @@ export default function LegalRegistersExportPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">
-                      Toutes les données
-                    </SelectItem>
+                    <SelectItem value="all">Toutes les données</SelectItem>
                     <SelectItem value="year">Année en cours</SelectItem>
-                    <SelectItem value="custom">Période personnalisée</SelectItem>
+                    <SelectItem value="custom">
+                      Période personnalisée
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

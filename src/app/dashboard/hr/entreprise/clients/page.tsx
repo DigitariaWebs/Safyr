@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ import {
   Euro,
 } from "lucide-react";
 import { Client, ClientContract, ClientGift } from "@/lib/types";
+import { useState } from "react";
 
 const requiredDocuments = [
   { type: "contrat_cadre", name: "Contrat cadre", category: "contrat" },
@@ -465,61 +466,37 @@ export default function ClientsPage() {
       </div>
 
       {/* Statistiques */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total clients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{clients.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Contrats actifs
-            </CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {contracts.filter((c) => c.status === "active").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Documents expirés
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {documents.filter((d) => d.status === "expired").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Cadeaux cette année
-            </CardTitle>
-            <Gift className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                gifts.filter(
-                  (g) =>
-                    new Date(g.date).getFullYear() === new Date().getFullYear(),
-                ).length
-              }
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Total clients"
+          value={clients.length}
+          color="gray"
+        />
+        <InfoCard
+          icon={FileCheck}
+          title="Contrats actifs"
+          value={contracts.filter((c) => c.status === "active").length}
+          color="green"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="Documents expirés"
+          value={documents.filter((d) => d.status === "expired").length}
+          color="red"
+        />
+        <InfoCard
+          icon={Gift}
+          title="Cadeaux cette année"
+          value={
+            gifts.filter(
+              (g) =>
+                new Date(g.date).getFullYear() === new Date().getFullYear(),
+            ).length
+          }
+          color="purple"
+        />
+      </InfoCardContainer>
 
       {/* Liste des clients */}
       <Card>

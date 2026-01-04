@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -117,12 +118,10 @@ export default function PersonnelRegisterPage() {
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<PersonnelRegisterEntry | null>(
-    null,
-  );
-  const [viewingEntry, setViewingEntry] = useState<PersonnelRegisterEntry | null>(
-    null,
-  );
+  const [editingEntry, setEditingEntry] =
+    useState<PersonnelRegisterEntry | null>(null);
+  const [viewingEntry, setViewingEntry] =
+    useState<PersonnelRegisterEntry | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterContractType, setFilterContractType] = useState<string>("all");
 
@@ -345,10 +344,12 @@ export default function PersonnelRegisterPage() {
 
   // Calculate stats
   const activeCount = entries.filter((e) => !e.exitDate).length;
-  const cdiCount = entries.filter((e) => e.contractType === "CDI" && !e.exitDate)
-    .length;
-  const cddCount = entries.filter((e) => e.contractType === "CDD" && !e.exitDate)
-    .length;
+  const cdiCount = entries.filter(
+    (e) => e.contractType === "CDI" && !e.exitDate,
+  ).length;
+  const cddCount = entries.filter(
+    (e) => e.contractType === "CDD" && !e.exitDate,
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -371,53 +372,39 @@ export default function PersonnelRegisterPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{entries.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Enregistrements totaux
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Total"
+          value={entries.length}
+          subtext="Enregistrements totaux"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En poste</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeCount}</div>
-            <p className="text-xs text-muted-foreground">Employés actifs</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={UserCheck}
+          title="En poste"
+          value={activeCount}
+          subtext="Employés actifs"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CDI</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cdiCount}</div>
-            <p className="text-xs text-muted-foreground">Contrats CDI actifs</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={FileText}
+          title="CDI"
+          value={cdiCount}
+          subtext="Contrats CDI actifs"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CDD</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cddCount}</div>
-            <p className="text-xs text-muted-foreground">Contrats CDD actifs</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Calendar}
+          title="CDD"
+          value={cddCount}
+          subtext="Contrats CDD actifs"
+          color="orange"
+        />
+      </InfoCardContainer>
 
       <Card>
         <CardHeader>
@@ -507,7 +494,10 @@ export default function PersonnelRegisterPage() {
                 id="registrationNumber"
                 value={formData.registrationNumber}
                 onChange={(e) =>
-                  setFormData({ ...formData, registrationNumber: e.target.value })
+                  setFormData({
+                    ...formData,
+                    registrationNumber: e.target.value,
+                  })
                 }
                 placeholder="Ex: 2024-001"
               />
@@ -522,7 +512,8 @@ export default function PersonnelRegisterPage() {
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    contractType: value as PersonnelRegisterEntry["contractType"],
+                    contractType:
+                      value as PersonnelRegisterEntry["contractType"],
                   })
                 }
               >
@@ -631,9 +622,7 @@ export default function PersonnelRegisterPage() {
           </div>
 
           <div>
-            <Label htmlFor="socialSecurityNumber">
-              N° de sécurité sociale
-            </Label>
+            <Label htmlFor="socialSecurityNumber">N° de sécurité sociale</Label>
             <Input
               id="socialSecurityNumber"
               value={formData.socialSecurityNumber}
@@ -692,7 +681,9 @@ export default function PersonnelRegisterPage() {
               <div>
                 <Label className="text-muted-foreground">Type de contrat</Label>
                 <div className="mt-1">
-                  <Badge variant={contractTypeColors[viewingEntry.contractType]}>
+                  <Badge
+                    variant={contractTypeColors[viewingEntry.contractType]}
+                  >
                     {contractTypeLabels[viewingEntry.contractType]}
                   </Badge>
                 </div>
@@ -712,13 +703,17 @@ export default function PersonnelRegisterPage() {
               </div>
               <div>
                 <Label className="text-muted-foreground">Nationalité</Label>
-                <p className="text-sm font-medium">{viewingEntry.nationality}</p>
+                <p className="text-sm font-medium">
+                  {viewingEntry.nationality}
+                </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date de naissance</Label>
+                <Label className="text-muted-foreground">
+                  Date de naissance
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.birthDate.toLocaleDateString("fr-FR")}
                 </p>
@@ -733,7 +728,9 @@ export default function PersonnelRegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date d&apos;entrée</Label>
+                <Label className="text-muted-foreground">
+                  Date d&apos;entrée
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.entryDate.toLocaleDateString("fr-FR")}
                 </p>

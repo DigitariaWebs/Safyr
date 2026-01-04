@@ -1,11 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  BookOpen,
-  FileText,
   TrendingUp,
   DollarSign,
   Calculator,
@@ -13,15 +12,10 @@ import {
   Download,
   Receipt,
 } from "lucide-react";
-import { mockAccountingPlans } from "@/data/accounting-plans";
 import { mockBankAccounts } from "@/data/banking-accounts";
 import { mockBillingInvoices } from "@/data/billing-invoices";
 
 export default function AccountingDashboard() {
-  const activeAccounts = mockAccountingPlans.filter(
-    (a) => a.status === "Actif",
-  ).length;
-
   // Current treasury
   const currentTreasury = mockBankAccounts.reduce(
     (acc, a) => acc + a.balance,
@@ -83,74 +77,39 @@ export default function AccountingDashboard() {
         <p className="text-muted-foreground">Gestion comptable et financière</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Trésorerie actuelle
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {currentTreasury.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">Disponible</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={DollarSign}
+          title="Trésorerie actuelle"
+          value={`${currentTreasury.toLocaleString("fr-FR")} €`}
+          subtext="Disponible"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Chiffre d&apos;affaires
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {monthlyTurnover.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Ce mois • {yearlyTurnover.toLocaleString("fr-FR")} € annuel
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={TrendingUp}
+          title="Chiffre d'affaires"
+          value={`${monthlyTurnover.toLocaleString("fr-FR")} €`}
+          subtext={`Ce mois • ${yearlyTurnover.toLocaleString("fr-FR")} € annuel`}
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Résultat estimé instantané
-            </CardTitle>
-            <Calculator className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                estimatedResult >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {estimatedResult >= 0 ? "+" : ""}
-              {estimatedResult.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">Estimation annuelle</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Calculator}
+          title="Résultat estimé instantané"
+          value={`${estimatedResult >= 0 ? "+" : ""}${estimatedResult.toLocaleString("fr-FR")} €`}
+          subtext="Estimation annuelle"
+          color="purple"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Factures en retard
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {overdueInvoices}
-            </div>
-            <p className="text-xs text-muted-foreground">À relancer</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={AlertTriangle}
+          title="Factures en retard"
+          value={overdueInvoices}
+          subtext="À relancer"
+          color="red"
+        />
+      </InfoCardContainer>
 
       {/* VAT Section */}
       <Card>

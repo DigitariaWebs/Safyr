@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Mock DUERP data
 interface DUERP {
@@ -257,46 +259,31 @@ export default function DUERPPage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total DUERP</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{duerpDocuments.length}</div>
-            <p className="text-xs text-muted-foreground">Documents actifs</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileText}
+          title="Total DUERP"
+          value={duerpDocuments.length}
+          subtext="Documents actifs"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              À mettre à jour
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {duerpDocuments.filter((d) => d.status === "expired").length}
-            </div>
-            <p className="text-xs text-muted-foreground">Documents expirés</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={AlertTriangle}
+          title="À mettre à jour"
+          value={duerpDocuments.filter((d) => d.status === "expired").length}
+          subtext="Documents expirés"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Risque élevé</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {duerpDocuments.filter((d) => d.riskLevel === "high").length}
-            </div>
-            <p className="text-xs text-muted-foreground">Postes à risque</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={AlertTriangle}
+          title="Risque élevé"
+          value={duerpDocuments.filter((d) => d.riskLevel === "high").length}
+          subtext="Postes à risque"
+          color="red"
+        />
+      </InfoCardContainer>
     </div>
   );
 }

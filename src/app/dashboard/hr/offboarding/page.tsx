@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -18,13 +18,19 @@ import {
 } from "@/components/ui/select";
 import { Plus, Download, FileText, CheckCircle, Clock } from "lucide-react";
 import { mockEmployees } from "@/data/employees";
-import { mockOffboardingProcesses, type OffboardingProcess } from "@/data/hr-offboarding";
+import {
+  mockOffboardingProcesses,
+  type OffboardingProcess,
+} from "@/data/hr-offboarding";
 
 export default function OffboardingPage() {
-  const [processes, setProcesses] = useState<OffboardingProcess[]>(mockOffboardingProcesses);
+  const [processes, setProcesses] = useState<OffboardingProcess[]>(
+    mockOffboardingProcesses,
+  );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedProcess, setSelectedProcess] = useState<OffboardingProcess | null>(null);
+  const [selectedProcess, setSelectedProcess] =
+    useState<OffboardingProcess | null>(null);
   const [formData, setFormData] = useState({
     employeeId: "",
     contractEndDate: "",
@@ -56,30 +62,36 @@ export default function OffboardingPage() {
       key: "status",
       label: "Statut",
       render: (process) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           "En cours": "default",
-          "Terminé": "secondary",
-          "Annulé": "destructive",
+          Terminé: "secondary",
+          Annulé: "destructive",
         };
-        return <Badge variant={variants[process.status]}>{process.status}</Badge>;
+        return (
+          <Badge variant={variants[process.status]}>{process.status}</Badge>
+        );
       },
     },
     {
       key: "equipmentReturned",
       label: "Matériel",
-      render: (process) => (
+      render: (process) =>
         process.equipmentReturned ? (
           <CheckCircle className="h-4 w-4 text-green-600" />
         ) : (
           <Clock className="h-4 w-4 text-orange-600" />
-        )
-      ),
+        ),
     },
     {
       key: "documentsGenerated",
       label: "Documents",
       render: (process) => {
-        const count = Object.values(process.documentsGenerated).filter(Boolean).length;
+        const count = Object.values(process.documentsGenerated).filter(
+          Boolean,
+        ).length;
         return <Badge variant="outline">{count}/3</Badge>;
       },
     },
@@ -133,7 +145,10 @@ export default function OffboardingPage() {
     setIsViewModalOpen(true);
   };
 
-  const handleGenerateDocument = (processId: string, docType: keyof OffboardingProcess["documentsGenerated"]) => {
+  const handleGenerateDocument = (
+    processId: string,
+    docType: keyof OffboardingProcess["documentsGenerated"],
+  ) => {
     setProcesses(
       processes.map((p) =>
         p.id === processId
@@ -141,22 +156,28 @@ export default function OffboardingPage() {
               ...p,
               documentsGenerated: { ...p.documentsGenerated, [docType]: true },
             }
-          : p
-      )
+          : p,
+      ),
     );
     alert(`Document ${docType} généré avec succès!`);
   };
 
   const handleExportPayroll = (processId: string) => {
     setProcesses(
-      processes.map((p) => (p.id === processId ? { ...p, payrollExported: true } : p))
+      processes.map((p) =>
+        p.id === processId ? { ...p, payrollExported: true } : p,
+      ),
     );
     alert("Export paie effectué avec succès!");
   };
 
   const handleArchiveFile = (processId: string) => {
     setProcesses(
-      processes.map((p) => (p.id === processId ? { ...p, fileArchived: true, status: "Terminé" as const } : p))
+      processes.map((p) =>
+        p.id === processId
+          ? { ...p, fileArchived: true, status: "Terminé" as const }
+          : p,
+      ),
     );
     alert("Dossier archivé avec succès!");
   };
@@ -167,7 +188,8 @@ export default function OffboardingPage() {
         <div>
           <h1 className="text-3xl font-bold">Fin de Contrat / Offboarding</h1>
           <p className="text-muted-foreground">
-            Gestion des fins de contrat, préavis, retour d&apos;équipement et documents obligatoires
+            Gestion des fins de contrat, préavis, retour d&apos;équipement et
+            documents obligatoires
           </p>
         </div>
         <Button onClick={handleCreate}>
@@ -177,29 +199,23 @@ export default function OffboardingPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgress}</div>
-            <p className="text-xs text-muted-foreground">Processus actifs</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Clock}
+          title="En cours"
+          value={inProgress}
+          subtext="Processus actifs"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Terminés</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completed}</div>
-            <p className="text-xs text-muted-foreground">Cette année</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={CheckCircle}
+          title="Terminés"
+          value={completed}
+          subtext="Cette année"
+          color="green"
+        />
+      </InfoCardContainer>
 
       <DataTable
         data={processes}
@@ -233,7 +249,9 @@ export default function OffboardingPage() {
             <Label htmlFor="employeeId">Employé</Label>
             <Select
               value={formData.employeeId}
-              onValueChange={(value) => setFormData({ ...formData, employeeId: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, employeeId: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un employé..." />
@@ -254,7 +272,9 @@ export default function OffboardingPage() {
               id="contractEndDate"
               type="date"
               value={formData.contractEndDate}
-              onChange={(e) => setFormData({ ...formData, contractEndDate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, contractEndDate: e.target.value })
+              }
             />
           </div>
 
@@ -266,7 +286,10 @@ export default function OffboardingPage() {
               min="0"
               value={formData.noticePeriodDays}
               onChange={(e) =>
-                setFormData({ ...formData, noticePeriodDays: parseInt(e.target.value) || 0 })
+                setFormData({
+                  ...formData,
+                  noticePeriodDays: parseInt(e.target.value) || 0,
+                })
               }
             />
           </div>
@@ -293,7 +316,9 @@ export default function OffboardingPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Employé</Label>
-                <p className="text-sm font-medium">{selectedProcess.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {selectedProcess.employeeName}
+                </p>
               </div>
               <div>
                 <Label>Statut</Label>
@@ -306,13 +331,17 @@ export default function OffboardingPage() {
               <div>
                 <Label>Date de fin de contrat</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedProcess.contractEndDate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedProcess.contractEndDate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
               <div>
                 <Label>Début du préavis</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedProcess.noticePeriodStart).toLocaleDateString("fr-FR")}
+                  {new Date(
+                    selectedProcess.noticePeriodStart,
+                  ).toLocaleDateString("fr-FR")}
                 </p>
               </div>
             </div>
@@ -355,7 +384,12 @@ export default function OffboardingPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleGenerateDocument(selectedProcess.id, "workCertificate")}
+                      onClick={() =>
+                        handleGenerateDocument(
+                          selectedProcess.id,
+                          "workCertificate",
+                        )
+                      }
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Générer
@@ -377,7 +411,12 @@ export default function OffboardingPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleGenerateDocument(selectedProcess.id, "poleEmploiCertificate")}
+                      onClick={() =>
+                        handleGenerateDocument(
+                          selectedProcess.id,
+                          "poleEmploiCertificate",
+                        )
+                      }
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Générer
@@ -388,7 +427,9 @@ export default function OffboardingPage() {
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-2">
                     <FileText className="h-4 w-4" />
-                    <span className="text-sm">Reçu pour solde de tout compte</span>
+                    <span className="text-sm">
+                      Reçu pour solde de tout compte
+                    </span>
                   </div>
                   {selectedProcess.documentsGenerated.finalSettlement ? (
                     <Badge variant="default">
@@ -399,7 +440,12 @@ export default function OffboardingPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleGenerateDocument(selectedProcess.id, "finalSettlement")}
+                      onClick={() =>
+                        handleGenerateDocument(
+                          selectedProcess.id,
+                          "finalSettlement",
+                        )
+                      }
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Générer
@@ -433,13 +479,15 @@ export default function OffboardingPage() {
                 </Button>
               )}
 
-              {selectedProcess.payrollExported && selectedProcess.fileArchived && (
-                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <p className="text-sm text-green-600 font-medium">
-                    ✓ Processus terminé - Tous les documents ont été générés et le dossier est archivé
-                  </p>
-                </div>
-              )}
+              {selectedProcess.payrollExported &&
+                selectedProcess.fileArchived && (
+                  <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <p className="text-sm text-green-600 font-medium">
+                      ✓ Processus terminé - Tous les documents ont été générés
+                      et le dossier est archivé
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
         )}
@@ -447,4 +495,3 @@ export default function OffboardingPage() {
     </div>
   );
 }
-

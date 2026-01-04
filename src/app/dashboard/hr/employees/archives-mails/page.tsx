@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import {
   User,
   Send,
   Inbox,
+  Paperclip,
 } from "lucide-react";
 import { mockEmployees } from "@/data/employees";
 
@@ -303,59 +305,34 @@ export default function ArchivesMailsPage() {
       />
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total communications
-            </CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredCommunications.length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Envoyés</CardTitle>
-            <Send className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredCommunications.filter((c) => c.type === "sent").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reçus</CardTitle>
-            <Inbox className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                filteredCommunications.filter((c) => c.type === "received")
-                  .length
-              }
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avec PJ</CardTitle>
-            <Badge variant="outline" className="h-4 w-4 p-0">
-              📎
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredCommunications.filter((c) => c.hasAttachments).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Mail}
+          title="Total communications"
+          value={filteredCommunications.length}
+          color="gray"
+        />
+        <InfoCard
+          icon={Send}
+          title="Envoyés"
+          value={filteredCommunications.filter((c) => c.type === "sent").length}
+          color="blue"
+        />
+        <InfoCard
+          icon={Inbox}
+          title="Reçus"
+          value={
+            filteredCommunications.filter((c) => c.type === "received").length
+          }
+          color="green"
+        />
+        <InfoCard
+          icon={Paperclip}
+          title="Avec PJ"
+          value={filteredCommunications.filter((c) => c.hasAttachments).length}
+          color="orange"
+        />
+      </InfoCardContainer>
     </div>
   );
 }

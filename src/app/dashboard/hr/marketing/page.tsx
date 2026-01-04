@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -193,47 +194,26 @@ export default function MarketingPage() {
       {activeTab === "posts" && (
         <>
           <div className="flex justify-between items-center">
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Publications planifiées
-                  </CardTitle>
-                  <Calendar className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {posts.filter((p) => p.status === "Planifié").length}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Publications publiées
-                  </CardTitle>
-                  <Share2 className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {posts.filter((p) => p.status === "Publié").length}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Engagement moyen
-                  </CardTitle>
-                  <TrendingUp className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {averageEngagement.toFixed(1)}%
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <InfoCardContainer>
+              <InfoCard
+                icon={Calendar}
+                title="Publications planifiées"
+                value={posts.filter((p) => p.status === "Planifié").length}
+                color="blue"
+              />
+              <InfoCard
+                icon={Share2}
+                title="Publications publiées"
+                value={posts.filter((p) => p.status === "Publié").length}
+                color="green"
+              />
+              <InfoCard
+                icon={TrendingUp}
+                title="Engagement moyen"
+                value={`${averageEngagement.toFixed(1)}%`}
+                color="orange"
+              />
+            </InfoCardContainer>
             <Button onClick={handleCreatePost}>
               <Plus className="h-4 w-4 mr-2" />
               Nouvelle publication

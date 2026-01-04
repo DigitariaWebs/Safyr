@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -185,55 +185,39 @@ export default function OccupationalMedicinePage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">À planifier</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{toSchedule}</div>
-            <p className="text-xs text-muted-foreground">Visites à organiser</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Clock}
+          title="À planifier"
+          value={toSchedule}
+          subtext="Visites à organiser"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En retard</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdue}</div>
-            <p className="text-xs text-muted-foreground">Visites dépassées</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={AlertCircle}
+          title="En retard"
+          value={overdue}
+          subtext="Visites dépassées"
+          color="red"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Effectuées</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completed}</div>
-            <p className="text-xs text-muted-foreground">Cette année</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle}
+          title="Effectuées"
+          value={completed}
+          subtext="Cette année"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Alertes envoyées
-            </CardTitle>
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {visits.filter((v) => v.alertSent).length}
-            </div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={AlertCircle}
+          title="Alertes envoyées"
+          value={visits.filter((v) => v.alertSent).length}
+          subtext="Ce mois"
+          color="blue"
+        />
+      </InfoCardContainer>
 
       <DataTable
         data={visits}

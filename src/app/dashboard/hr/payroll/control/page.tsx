@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -311,72 +313,47 @@ export default function PayrollControlPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total anomalies
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={AlertTriangle}
+          title="Total anomalies"
+          value={stats.total}
+          subtext="Ce mois-ci"
+          color="gray"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ouvertes</CardTitle>
-            <AlertCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.open}</div>
-            <p className="text-xs text-muted-foreground">
-              Nécessitent attention
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={AlertCircle}
+          title="Ouvertes"
+          value={stats.open}
+          subtext="Nécessitent attention"
+          color="red"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <RefreshCw className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {stats.investigating}
-            </div>
-            <p className="text-xs text-muted-foreground">En investigation</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={RefreshCw}
+          title="En cours"
+          value={stats.investigating}
+          subtext="En investigation"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Résolues</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.resolved}
-            </div>
-            <p className="text-xs text-muted-foreground">Ce mois-ci</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CheckCircle}
+          title="Résolues"
+          value={stats.resolved}
+          subtext="Ce mois-ci"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critiques</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.critical}
-            </div>
-            <p className="text-xs text-muted-foreground">Priorité haute</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={XCircle}
+          title="Critiques"
+          value={stats.critical}
+          subtext="Priorité haute"
+          color="red"
+        />
+      </InfoCardContainer>
 
       {/* Filters */}
       <Card>

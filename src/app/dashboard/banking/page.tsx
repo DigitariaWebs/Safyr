@@ -1,11 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
-  Building2,
   TrendingUp,
   ArrowLeftRight,
-  Wifi,
   DollarSign,
   CreditCard,
   Receipt,
@@ -16,9 +15,6 @@ import { Badge } from "@/components/ui/badge";
 
 export default function BankingDashboard() {
   const totalBalance = mockBankAccounts.reduce((acc, a) => acc + a.balance, 0);
-  const connectedAccounts = mockBankAccounts.filter(
-    (a) => a.apiConnected,
-  ).length;
 
   // Calculate current month transactions
   const currentMonth = new Date().getMonth();
@@ -49,65 +45,39 @@ export default function BankingDashboard() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Trésorerie</CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalBalance.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Solde total disponible
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={DollarSign}
+          title="Trésorerie"
+          value={`${totalBalance.toLocaleString("fr-FR")} €`}
+          subtext="Solde total disponible"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Recettes du mois
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              +{totalRevenues.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">Entrées ce mois</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={TrendingUp}
+          title="Recettes du mois"
+          value={`+${totalRevenues.toLocaleString("fr-FR")} €`}
+          subtext="Entrées ce mois"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Dépenses du mois
-            </CardTitle>
-            <CreditCard className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              -{totalExpenses.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">Sorties ce mois</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CreditCard}
+          title="Dépenses du mois"
+          value={`-${totalExpenses.toLocaleString("fr-FR")} €`}
+          subtext="Sorties ce mois"
+          color="red"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-            <ArrowLeftRight className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {monthlyTransactions.length}
-            </div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={ArrowLeftRight}
+          title="Transactions"
+          value={monthlyTransactions.length}
+          subtext="Ce mois"
+          color="orange"
+        />
+      </InfoCardContainer>
 
       {/* Recent Transactions */}
       <Card>

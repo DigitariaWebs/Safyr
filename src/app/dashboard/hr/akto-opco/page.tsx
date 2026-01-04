@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,8 @@ export default function AKTOOPCOPage() {
   const [dossiers, setDossiers] = useState<AKTOOPCODossier[]>(mockDossiers);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedDossier, setSelectedDossier] = useState<AKTOOPCODossier | null>(null);
+  const [selectedDossier, setSelectedDossier] =
+    useState<AKTOOPCODossier | null>(null);
   const [formData, setFormData] = useState({
     type: "AKTO" as "AKTO" | "OPCO",
     title: "",
@@ -136,21 +138,28 @@ export default function AKTOOPCOPage() {
       key: "amount",
       label: "Montant",
       render: (dossier) => (
-        <span className="font-semibold">{dossier.amount.toLocaleString("fr-FR")} €</span>
+        <span className="font-semibold">
+          {dossier.amount.toLocaleString("fr-FR")} €
+        </span>
       ),
     },
     {
       key: "status",
       label: "Statut",
       render: (dossier) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           "À créer": "outline",
           "En cours": "default",
-          "Soumis": "secondary",
-          "Validé": "default",
-          "Refusé": "destructive",
+          Soumis: "secondary",
+          Validé: "default",
+          Refusé: "destructive",
         };
-        return <Badge variant={variants[dossier.status]}>{dossier.status}</Badge>;
+        return (
+          <Badge variant={variants[dossier.status]}>{dossier.status}</Badge>
+        );
       },
     },
   ];
@@ -195,9 +204,13 @@ export default function AKTOOPCOPage() {
     setDossiers(
       dossiers.map((d) =>
         d.id === dossierId
-          ? { ...d, status: "Soumis" as const, submittedAt: new Date().toISOString().split("T")[0] }
-          : d
-      )
+          ? {
+              ...d,
+              status: "Soumis" as const,
+              submittedAt: new Date().toISOString().split("T")[0],
+            }
+          : d,
+      ),
     );
     alert("Dossier soumis avec succès!");
   };
@@ -208,7 +221,8 @@ export default function AKTOOPCOPage() {
         <div>
           <h1 className="text-3xl font-bold">AKTO et OPCO</h1>
           <p className="text-muted-foreground">
-            Accès direct aux comptes, création et suivi des dossiers de formation
+            Accès direct aux comptes, création et suivi des dossiers de
+            formation
           </p>
         </div>
         <div className="flex gap-2">
@@ -232,47 +246,35 @@ export default function AKTOOPCOPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dossiers AKTO</CardTitle>
-            <FileText className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aktoDossiers.length}</div>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileText}
+          title="Dossiers AKTO"
+          value={aktoDossiers.length}
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Dossiers OPCO</CardTitle>
-            <FileText className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{opcoDossiers.length}</div>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={FileText}
+          title="Dossiers OPCO"
+          value={opcoDossiers.length}
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En cours</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgress}</div>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Clock}
+          title="En cours"
+          value={inProgress}
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Validés</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{validated}</div>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={CheckCircle}
+          title="Validés"
+          value={validated}
+          color="green"
+        />
+      </InfoCardContainer>
 
       <DataTable
         data={dossiers}
@@ -325,17 +327,23 @@ export default function AKTOOPCOPage() {
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               placeholder="Ex: Formation SSIAP 1 - Jean Dupont"
             />
           </div>
 
           <div>
-            <Label htmlFor="employeeName">Employé (optionnel - laisser vide pour formation groupe)</Label>
+            <Label htmlFor="employeeName">
+              Employé (optionnel - laisser vide pour formation groupe)
+            </Label>
             <Input
               id="employeeName"
               value={formData.employeeName}
-              onChange={(e) => setFormData({ ...formData, employeeName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, employeeName: e.target.value })
+              }
               placeholder="Nom de l'employé"
             />
           </div>
@@ -344,7 +352,9 @@ export default function AKTOOPCOPage() {
             <Label htmlFor="trainingType">Type de formation</Label>
             <Select
               value={formData.trainingType}
-              onValueChange={(value) => setFormData({ ...formData, trainingType: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, trainingType: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner..." />
@@ -366,7 +376,9 @@ export default function AKTOOPCOPage() {
               id="amount"
               type="number"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, amount: e.target.value })
+              }
               placeholder="1200"
             />
           </div>
@@ -377,7 +389,9 @@ export default function AKTOOPCOPage() {
               id="accountUrl"
               type="url"
               value={formData.accountUrl}
-              onChange={(e) => setFormData({ ...formData, accountUrl: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, accountUrl: e.target.value })
+              }
               placeholder="https://..."
             />
           </div>
@@ -403,11 +417,17 @@ export default function AKTOOPCOPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Référence</Label>
-                <p className="text-sm font-medium">{selectedDossier.reference}</p>
+                <p className="text-sm font-medium">
+                  {selectedDossier.reference}
+                </p>
               </div>
               <div>
                 <Label>Type</Label>
-                <Badge variant={selectedDossier.type === "AKTO" ? "default" : "secondary"}>
+                <Badge
+                  variant={
+                    selectedDossier.type === "AKTO" ? "default" : "secondary"
+                  }
+                >
                   {selectedDossier.type}
                 </Badge>
               </div>
@@ -421,14 +441,18 @@ export default function AKTOOPCOPage() {
             {selectedDossier.employeeName && (
               <div>
                 <Label>Employé</Label>
-                <p className="text-sm font-medium">{selectedDossier.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {selectedDossier.employeeName}
+                </p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Type de formation</Label>
-                <p className="text-sm font-medium">{selectedDossier.trainingType}</p>
+                <p className="text-sm font-medium">
+                  {selectedDossier.trainingType}
+                </p>
               </div>
               <div>
                 <Label>Montant</Label>
@@ -447,7 +471,11 @@ export default function AKTOOPCOPage() {
               <div>
                 <Label>Lien vers le compte</Label>
                 <Button variant="outline" size="sm" asChild className="mt-2">
-                  <a href={selectedDossier.accountUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={selectedDossier.accountUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Ouvrir le compte
                   </a>
@@ -459,14 +487,18 @@ export default function AKTOOPCOPage() {
               <div>
                 <Label>Date de création</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedDossier.createdAt).toLocaleDateString("fr-FR")}
+                  {new Date(selectedDossier.createdAt).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
               {selectedDossier.submittedAt && (
                 <div>
                   <Label>Date de soumission</Label>
                   <p className="text-sm font-medium">
-                    {new Date(selectedDossier.submittedAt).toLocaleDateString("fr-FR")}
+                    {new Date(selectedDossier.submittedAt).toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </p>
                 </div>
               )}
@@ -476,13 +508,17 @@ export default function AKTOOPCOPage() {
               <div>
                 <Label>Date de validation</Label>
                 <p className="text-sm font-medium text-green-600">
-                  {new Date(selectedDossier.validatedAt).toLocaleDateString("fr-FR")}
+                  {new Date(selectedDossier.validatedAt).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             )}
 
             <div className="pt-4 border-t">
-              <Label className="text-base font-semibold mb-3 block">Documents</Label>
+              <Label className="text-base font-semibold mb-3 block">
+                Documents
+              </Label>
               {selectedDossier.documents.length > 0 ? (
                 <div className="space-y-2">
                   {selectedDossier.documents.map((doc, index) => (
@@ -498,7 +534,9 @@ export default function AKTOOPCOPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucun document ajouté</p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun document ajouté
+                </p>
               )}
             </div>
 
@@ -530,7 +568,10 @@ export default function AKTOOPCOPage() {
                 <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                   <p className="text-sm text-green-600 font-medium">
                     <CheckCircle className="h-4 w-4 inline mr-1" />
-                    Dossier validé le {new Date(selectedDossier.validatedAt!).toLocaleDateString("fr-FR")}
+                    Dossier validé le{" "}
+                    {new Date(selectedDossier.validatedAt!).toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </p>
                 </div>
               )}
@@ -541,4 +582,3 @@ export default function AKTOOPCOPage() {
     </div>
   );
 }
-

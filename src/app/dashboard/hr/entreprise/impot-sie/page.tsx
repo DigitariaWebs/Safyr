@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -469,95 +470,52 @@ export default function ImpotSIEPage() {
       </div>
 
       {/* Vue d'ensemble */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Receipt className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  TVA {selectedYear}
-                </p>
-                <p className="text-2xl font-bold">
-                  {
-                    tvaDossiers.filter(
-                      (d) => d.annee === selectedYear && d.statut === "complet",
-                    ).length
-                  }
-                  /12
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Receipt}
+          title={`TVA ${selectedYear}`}
+          value={`${
+            tvaDossiers.filter(
+              (d) => d.annee === selectedYear && d.statut === "complet",
+            ).length
+          }/12`}
+          color="blue"
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-full">
-                <Building className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">CFE</p>
-                <p className="text-2xl font-bold">
-                  {cfeDossiers
-                    .find((d) => d.annee === selectedYear)
-                    ?.montant.toLocaleString() || "0"}
-                  €
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Building}
+          title="CFE"
+          value={`${
+            cfeDossiers
+              .find((d) => d.annee === selectedYear)
+              ?.montant.toLocaleString() || "0"
+          } €`}
+          color="green"
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <CreditCard className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Prél. Source {selectedYear}
-                </p>
-                <p className="text-2xl font-bold">
-                  {prelevements
-                    .filter((p) => p.periode.includes(selectedYear.toString()))
-                    .reduce((sum, p) => sum + p.montant, 0)
-                    .toLocaleString()}
-                  €
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={CreditCard}
+          title={`Prél. Source ${selectedYear}`}
+          value={`${prelevements
+            .filter((p) => p.periode.includes(selectedYear.toString()))
+            .reduce((sum, p) => sum + p.montant, 0)
+            .toLocaleString()} €`}
+          color="purple"
+        />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 rounded-full">
-                <Mail className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Courriers {selectedYear}
-                </p>
-                <p className="text-2xl font-bold">
-                  {
-                    courriers.filter(
-                      (c) =>
-                        c.date.startsWith(selectedYear.toString()) &&
-                        c.statut === "en_cours",
-                    ).length
-                  }
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Mail}
+          title={`Courriers ${selectedYear}`}
+          value={
+            courriers.filter(
+              (c) =>
+                c.date.startsWith(selectedYear.toString()) &&
+                c.statut === "en_cours",
+            ).length
+          }
+          color="orange"
+        />
+      </InfoCardContainer>
 
       <Tabs
         value={activeTab}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -14,14 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  TrendingUp,
-  Euro,
-  Users,
-  Calculator,
-  Download,
-  Filter,
-} from "lucide-react";
+import { Euro, Users, Calculator, Download, Filter } from "lucide-react";
 import type { PersonnelCost } from "@/lib/types";
 
 // Mock data
@@ -258,94 +252,47 @@ export default function PersonnelCostPage() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Masse salariale brute
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalCosts.grossPayroll.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 text-green-600 mr-1" />
-              +3.2% vs mois dernier
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Euro}
+          title="Masse salariale brute"
+          value={`${totalCosts.grossPayroll.toLocaleString("fr-FR")} €`}
+          subtext="+3.2% vs mois dernier"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Masse salariale nette
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalCosts.netPayroll.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              80.2% de la masse brute
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Euro}
+          title="Masse salariale nette"
+          value={`${totalCosts.netPayroll.toLocaleString("fr-FR")} €`}
+          subtext="80.2% de la masse brute"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Charges patronales
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalCosts.employerContributions.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              25.1% de la masse brute
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Euro}
+          title="Charges patronales"
+          value={`${totalCosts.employerContributions.toLocaleString("fr-FR")} €`}
+          subtext="25.1% de la masse brute"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Coût total employeur
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {totalCosts.totalEmployerCost.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <TrendingUp className="inline h-3 w-3 text-green-600 mr-1" />
-              +2.8% vs mois dernier
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Euro}
+          title="Coût total employeur"
+          value={`${totalCosts.totalEmployerCost.toLocaleString("fr-FR")} €`}
+          subtext="+2.8% vs mois dernier"
+          color="purple"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Coût moyen / heure
-            </CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalCosts.avgCostPerHour.toFixed(2)} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Par heure travaillée
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Calculator}
+          title="Coût moyen / heure"
+          value={`${totalCosts.avgCostPerHour.toFixed(2)} €`}
+          subtext="Par heure travaillée"
+          color="gray"
+        />
+      </InfoCardContainer>
 
       {/* Department Breakdown */}
       <div className="grid gap-4 md:grid-cols-2">

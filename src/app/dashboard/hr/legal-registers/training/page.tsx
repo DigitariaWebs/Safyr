@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -133,9 +134,8 @@ const fundingSourceLabels = {
 };
 
 export default function TrainingRegisterPage() {
-  const [trainings, setTrainings] = useState<TrainingRegisterEntry[]>(
-    mockTrainingRegister,
-  );
+  const [trainings, setTrainings] =
+    useState<TrainingRegisterEntry[]>(mockTrainingRegister);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingTraining, setEditingTraining] =
@@ -401,7 +401,9 @@ export default function TrainingRegisterPage() {
   const totalTrainings = trainings.length;
   const totalCost = trainings.reduce((sum, t) => sum + t.cost, 0);
   const totalHours = trainings.reduce((sum, t) => sum + t.duration, 0);
-  const certifiedCount = trainings.filter((t) => t.certificationObtained).length;
+  const certifiedCount = trainings.filter(
+    (t) => t.certificationObtained,
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -424,51 +426,39 @@ export default function TrainingRegisterPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Formations</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTrainings}</div>
-            <p className="text-xs text-muted-foreground">Total enregistré</p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={GraduationCap}
+          title="Formations"
+          value={totalTrainings}
+          subtext="Total enregistré"
+          color="blue"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Heures</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalHours}h</div>
-            <p className="text-xs text-muted-foreground">Durée totale</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Calendar}
+          title="Heures"
+          value={`${totalHours}h`}
+          subtext="Durée totale"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget</CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalCost.toFixed(0)} €</div>
-            <p className="text-xs text-muted-foreground">Coût total</p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={Euro}
+          title="Budget"
+          value={`${totalCost.toFixed(0)} €`}
+          subtext="Coût total"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Certifications</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{certifiedCount}</div>
-            <p className="text-xs text-muted-foreground">Obtenues</p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={Award}
+          title="Certifications"
+          value={certifiedCount}
+          subtext="Obtenues"
+          color="purple"
+        />
+      </InfoCardContainer>
 
       <Card>
         <CardHeader>
@@ -561,7 +551,8 @@ export default function TrainingRegisterPage() {
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    trainingType: value as TrainingRegisterEntry["trainingType"],
+                    trainingType:
+                      value as TrainingRegisterEntry["trainingType"],
                   })
                 }
               >
@@ -793,7 +784,9 @@ export default function TrainingRegisterPage() {
               <div>
                 <Label className="text-muted-foreground">Type</Label>
                 <div className="mt-1">
-                  <Badge variant={trainingTypeColors[viewingTraining.trainingType]}>
+                  <Badge
+                    variant={trainingTypeColors[viewingTraining.trainingType]}
+                  >
                     {trainingTypeLabels[viewingTraining.trainingType]}
                   </Badge>
                 </div>
