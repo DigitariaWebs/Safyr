@@ -1571,3 +1571,33 @@ export interface SignatureFilters {
   dateTo?: Date;
   search?: string;
 }
+
+// Agenda Types
+export type CalendarScope = "global" | "personal";
+export type CalendarViewMode = "month" | "week" | "day";
+
+export interface CalendarSettings {
+  defaultView: CalendarViewMode;
+  defaultScope: CalendarScope;
+  showWeekends: boolean;
+  startHour: number;
+  endHour: number;
+}
+
+export interface Appointment {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  attendees?: string;
+  type: "meeting" | "call" | "event" | "other";
+  color: string;
+  scope: CalendarScope;
+  userId?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+}

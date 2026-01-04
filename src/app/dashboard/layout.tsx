@@ -18,10 +18,20 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  Link2,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";
+import { AgendaProvider, useAgenda } from "@/contexts/AgendaContext";
+import {
+  LiensUtilesProvider,
+  useLiensUtiles,
+} from "@/contexts/LiensUtilesContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { AgendaModal } from "@/components/modals/AgendaModal";
+import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 interface Module {
@@ -108,6 +118,8 @@ const modules: Module[] = [
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { sidebarMode, setSidebarMode, isHidden, setIsHidden } = useSidebar();
+  const { openAgenda } = useAgenda();
+  const { openLiensUtiles } = useLiensUtiles();
 
   const isExpandedDisplay = sidebarMode === "expanded";
 
@@ -137,28 +149,71 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-center border-b relative">
+          <div
+            className={cn(
+              "flex h-20 border-b relative px-4",
+              isExpandedDisplay
+                ? "items-center justify-between"
+                : "items-center justify-center",
+            )}
+          >
             {isExpandedDisplay ? (
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <Image
-                  src="/favicon.png"
-                  alt="Safyr"
-                  width={32}
-                  height={32}
-                  className="transition-transform hover:scale-110"
-                />
-                <span className="font-serif text-xl font-light">Safyr</span>
-              </Link>
+              <>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2 min-w-0"
+                  >
+                    <Image
+                      src="/favicon.png"
+                      alt="Safyr"
+                      width={32}
+                      height={32}
+                      className="transition-transform hover:scale-110 shrink-0"
+                    />
+                    <span className="font-serif text-xl font-light truncate">
+                      Safyr
+                    </span>
+                  </Link>
+                </div>
+                <div className="flex flex-col gap-2 shrink-0">
+                  <Button
+                    onClick={() => openAgenda()}
+                    size="sm"
+                    className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+                    title="Agenda"
+                  >
+                    <CalendarDays className="h-4 w-4 text-primary" />
+                  </Button>
+                  <Button
+                    onClick={() => openLiensUtiles()}
+                    size="sm"
+                    className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+                    title="Liens Utiles"
+                  >
+                    <Link2 className="h-4 w-4 text-primary" />
+                  </Button>
+                </div>
+              </>
             ) : (
-              <Link href="/dashboard">
-                <Image
-                  src="/favicon.png"
-                  alt="Safyr"
-                  width={32}
-                  height={32}
-                  className="transition-transform hover:scale-110"
-                />
-              </Link>
+              <div className="flex gap-2 items-center">
+                <Button
+                  onClick={() => openAgenda()}
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+                  title="Agenda"
+                >
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                </Button>
+                <Button
+                  onClick={() => openLiensUtiles()}
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+                  title="Liens Utiles"
+                >
+                  <Link2 className="h-4 w-4 text-primary" />
+                </Button>
+              </div>
             )}
           </div>
 
@@ -169,7 +224,7 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
                 sidebarMode === "expanded" ? "collapsed" : "expanded",
               )
             }
-            className="absolute -right-3 top-16 z-20 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-md hover:bg-accent transition-colors"
+            className="absolute -right-3 top-20 z-20 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-md hover:bg-accent transition-colors"
             aria-label={
               sidebarMode === "expanded" ? "Collapse sidebar" : "Expand sidebar"
             }
@@ -258,6 +313,10 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 
       {/* Main Content Area - This will contain the module-specific sidebar + content */}
       <div className="flex-1 overflow-hidden">{children}</div>
+
+      {/* Modals */}
+      <AgendaModal />
+      <LiensUtilesModal />
     </div>
   );
 }
@@ -266,7 +325,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
       <SendEmailProvider>
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        <AgendaProvider>
+          <LiensUtilesProvider>
+            <DashboardLayoutContent>{children}</DashboardLayoutContent>
+          </LiensUtilesProvider>
+        </AgendaProvider>
       </SendEmailProvider>
     </SidebarProvider>
   );
