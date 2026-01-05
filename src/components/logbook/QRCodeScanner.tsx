@@ -93,4 +93,3 @@ export function QRCodeScanner({ onScan }: QRCodeScannerProps) {
     </>
   );
 }
-

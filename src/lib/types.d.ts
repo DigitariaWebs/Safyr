@@ -114,7 +114,9 @@ export interface ClientGift {
   clientId: string;
   giftDescription: string;
   date: Date;
-  value?: number;
+  valueHT?: number; // Hors Tax
+  tva?: number; // TVA
+  valueTTC?: number; // Toutes Taxes Comprises
   notes?: string;
 }
 

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export interface UsefulLink {
   id: string;
@@ -22,7 +28,9 @@ interface LiensUtilesContextType {
   deleteLink: (id: string) => void;
 }
 
-const LiensUtilesContext = createContext<LiensUtilesContextType | undefined>(undefined);
+const LiensUtilesContext = createContext<LiensUtilesContextType | undefined>(
+  undefined,
+);
 
 const defaultLinks: UsefulLink[] = [
   {
@@ -137,7 +145,8 @@ export function LiensUtilesProvider({ children }: { children: ReactNode }) {
   };
 
   const addLink = (linkData: Omit<UsefulLink, "id">) => {
-    const generateId = () => `link-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const generateId = () =>
+      `link-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     const newLink: UsefulLink = {
       ...linkData,
@@ -152,7 +161,7 @@ export function LiensUtilesProvider({ children }: { children: ReactNode }) {
 
   const updateLink = (id: string, updates: Partial<UsefulLink>) => {
     const updatedLinks = links.map((link) =>
-      link.id === id ? { ...link, ...updates } : link
+      link.id === id ? { ...link, ...updates } : link,
     );
     setLinks(updatedLinks);
     saveCustomLinks(updatedLinks);

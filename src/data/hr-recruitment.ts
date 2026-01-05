@@ -25,7 +25,12 @@ export interface Verification {
   id: string;
   applicationId: string;
   candidateName: string;
-  type: "identity" | "diploma" | "certification" | "criminal_record" | "reference";
+  type:
+    | "identity"
+    | "diploma"
+    | "certification"
+    | "criminal_record"
+    | "reference";
   status: "pending" | "in_progress" | "validated" | "rejected";
   requestedAt: string;
   completedAt?: string;
@@ -65,7 +70,8 @@ export const mockApplications: Application[] = [
     resumeUrl: "/resumes/marc_lefebvre.pdf",
     coverLetterUrl: "/cover-letters/marc_lefebvre.pdf",
     interviewDate: "2024-12-28T14:00:00Z",
-    interviewNotes: "Bon profil, expérience confirmée. À revoir pour décision finale.",
+    interviewNotes:
+      "Bon profil, expérience confirmée. À revoir pour décision finale.",
     createdAt: "2024-12-15T10:30:00Z",
     updatedAt: "2024-12-20T09:00:00Z",
   },
@@ -95,7 +101,8 @@ export const mockApplications: Application[] = [
     status: "offer",
     resumeUrl: "/resumes/nicolas_petit.pdf",
     interviewDate: "2024-12-18T15:00:00Z",
-    interviewNotes: "Excellent candidat, certifications à jour. Offre préparée.",
+    interviewNotes:
+      "Excellent candidat, certifications à jour. Offre préparée.",
     offerDetails: {
       salary: 2500,
       startDate: "2025-01-15",
@@ -201,7 +208,10 @@ export const mockVerifications: Verification[] = [
     completedAt: "2024-12-13T14:00:00Z",
     verifiedBy: "Marie Martin",
     notes: "SSIAP1 et SST valides",
-    documents: ["certificat_ssiap1_nicolas_petit.pdf", "certificat_sst_nicolas_petit.pdf"],
+    documents: [
+      "certificat_ssiap1_nicolas_petit.pdf",
+      "certificat_sst_nicolas_petit.pdf",
+    ],
     createdAt: "2024-12-11T09:00:00Z",
     updatedAt: "2024-12-13T14:00:00Z",
   },
@@ -285,5 +295,3 @@ export const mockOnboardingTasks: OnboardingTask[] = [
     updatedAt: "2024-12-22T10:00:00Z",
   },
 ];
-
-

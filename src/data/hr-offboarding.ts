@@ -6,7 +6,12 @@ export interface OffboardingProcess {
   contractEndDate: string;
   noticePeriodStart: string;
   noticePeriodEnd: string;
-  reason: "resignation" | "end_of_contract" | "dismissal" | "retirement" | "other";
+  reason:
+    | "resignation"
+    | "end_of_contract"
+    | "dismissal"
+    | "retirement"
+    | "other";
   status: "En cours" | "Terminé" | "Annulé";
   equipmentReturned: boolean;
   equipmentReturnDate?: string;
@@ -91,5 +96,3 @@ export const mockOffboardingProcesses: OffboardingProcess[] = [
     updatedAt: "2025-01-15",
   },
 ];
-
-

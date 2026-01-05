@@ -34,10 +34,10 @@ const mockMaintenanceData: SalaryMaintenance[] = [
     startDate: "2024-12-01",
     endDate: "2024-12-15",
     days: 15,
-    grossSalary: 2400.00,
-    ijss: 42.50,
-    employerMaintenance: 37.50,
-    totalPaid: 1200.00,
+    grossSalary: 2400.0,
+    ijss: 42.5,
+    employerMaintenance: 37.5,
+    totalPaid: 1200.0,
     maintenanceRate: 90,
     status: "Terminé",
   },
@@ -49,8 +49,8 @@ const mockMaintenanceData: SalaryMaintenance[] = [
     startDate: "2024-11-20",
     endDate: "2024-12-20",
     days: 31,
-    grossSalary: 2600.00,
-    ijss: 52.00,
+    grossSalary: 2600.0,
+    ijss: 52.0,
     employerMaintenance: 34.67,
     totalPaid: 2686.77,
     maintenanceRate: 100,
@@ -64,8 +64,8 @@ const mockMaintenanceData: SalaryMaintenance[] = [
     startDate: "2024-10-01",
     endDate: "2024-12-15",
     days: 76,
-    grossSalary: 2800.00,
-    ijss: 89.00,
+    grossSalary: 2800.0,
+    ijss: 89.0,
     employerMaintenance: 4.67,
     totalPaid: 7116.92,
     maintenanceRate: 100,
@@ -76,10 +76,14 @@ const mockMaintenanceData: SalaryMaintenance[] = [
 export default function SalaryMaintenanceAnalysisPage() {
   const [maintenances] = useState<SalaryMaintenance[]>(mockMaintenanceData);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedMaintenance, setSelectedMaintenance] = useState<SalaryMaintenance | null>(null);
+  const [selectedMaintenance, setSelectedMaintenance] =
+    useState<SalaryMaintenance | null>(null);
 
-  const totalIJSS = maintenances.reduce((sum, m) => sum + (m.ijss * m.days), 0);
-  const totalEmployerMaintenance = maintenances.reduce((sum, m) => sum + (m.employerMaintenance * m.days), 0);
+  const totalIJSS = maintenances.reduce((sum, m) => sum + m.ijss * m.days, 0);
+  const totalEmployerMaintenance = maintenances.reduce(
+    (sum, m) => sum + m.employerMaintenance * m.days,
+    0,
+  );
   const totalPaid = maintenances.reduce((sum, m) => sum + m.totalPaid, 0);
 
   const columns: ColumnDef<SalaryMaintenance>[] = [
@@ -93,11 +97,15 @@ export default function SalaryMaintenanceAnalysisPage() {
       label: "Type",
       render: (maintenance) => {
         const variants: Record<string, "default" | "secondary" | "outline"> = {
-          "Maladie": "secondary",
+          Maladie: "secondary",
           "Accident de travail": "outline",
           "Maternité/Paternité": "default",
         };
-        return <Badge variant={variants[maintenance.type] || "outline"}>{maintenance.type}</Badge>;
+        return (
+          <Badge variant={variants[maintenance.type] || "outline"}>
+            {maintenance.type}
+          </Badge>
+        );
       },
     },
     {
@@ -117,7 +125,9 @@ export default function SalaryMaintenanceAnalysisPage() {
     {
       key: "days",
       label: "Jours",
-      render: (maintenance) => <span className="font-medium">{maintenance.days}j</span>,
+      render: (maintenance) => (
+        <span className="font-medium">{maintenance.days}j</span>
+      ),
     },
     {
       key: "ijss",
@@ -139,7 +149,9 @@ export default function SalaryMaintenanceAnalysisPage() {
       key: "totalPaid",
       label: "Total payé",
       render: (maintenance) => (
-        <span className="font-semibold">{maintenance.totalPaid.toLocaleString("fr-FR")} €</span>
+        <span className="font-semibold">
+          {maintenance.totalPaid.toLocaleString("fr-FR")} €
+        </span>
       ),
     },
     {
@@ -153,7 +165,9 @@ export default function SalaryMaintenanceAnalysisPage() {
       key: "status",
       label: "Statut",
       render: (maintenance) => (
-        <Badge variant={maintenance.status === "En cours" ? "default" : "secondary"}>
+        <Badge
+          variant={maintenance.status === "En cours" ? "default" : "secondary"}
+        >
           {maintenance.status}
         </Badge>
       ),
@@ -173,7 +187,9 @@ export default function SalaryMaintenanceAnalysisPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Analyses de Maintien de Salaire</h1>
+          <h1 className="text-3xl font-bold">
+            Analyses de Maintien de Salaire
+          </h1>
           <p className="text-muted-foreground">
             Suivi des IJSS, calculs de maintien (maladie, AT, maternité…)
           </p>
@@ -188,7 +204,9 @@ export default function SalaryMaintenanceAnalysisPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total IJSS reçues</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total IJSS reçues
+            </CardTitle>
             <TrendingDown className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -261,7 +279,9 @@ export default function SalaryMaintenanceAnalysisPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Employé</Label>
-                <p className="text-sm font-medium">{selectedMaintenance.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {selectedMaintenance.employeeName}
+                </p>
               </div>
               <div>
                 <Label>Type d&apos;absence</Label>
@@ -273,14 +293,18 @@ export default function SalaryMaintenanceAnalysisPage() {
               <div>
                 <Label>Date de début</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedMaintenance.startDate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedMaintenance.startDate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
               <div>
                 <Label>Date de fin</Label>
                 <p className="text-sm font-medium">
                   {selectedMaintenance.endDate
-                    ? new Date(selectedMaintenance.endDate).toLocaleDateString("fr-FR")
+                    ? new Date(selectedMaintenance.endDate).toLocaleDateString(
+                        "fr-FR",
+                      )
                     : "En cours"}
                 </p>
               </div>
@@ -288,14 +312,18 @@ export default function SalaryMaintenanceAnalysisPage() {
 
             <div>
               <Label>Nombre de jours</Label>
-              <p className="text-sm font-medium">{selectedMaintenance.days} jours</p>
+              <p className="text-sm font-medium">
+                {selectedMaintenance.days} jours
+              </p>
             </div>
 
             <div className="pt-4 border-t">
               <Label className="text-base font-semibold">Calculs</Label>
               <div className="space-y-3 mt-3">
                 <div className="flex justify-between">
-                  <span className="text-sm">Salaire journalier de référence:</span>
+                  <span className="text-sm">
+                    Salaire journalier de référence:
+                  </span>
                   <span className="text-sm font-medium">
                     {(selectedMaintenance.grossSalary / 21.67).toFixed(2)} €
                   </span>
@@ -313,9 +341,14 @@ export default function SalaryMaintenanceAnalysisPage() {
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
-                  <span className="text-sm font-semibold">Total IJSS reçues:</span>
+                  <span className="text-sm font-semibold">
+                    Total IJSS reçues:
+                  </span>
                   <span className="text-sm font-semibold text-green-600">
-                    {(selectedMaintenance.ijss * selectedMaintenance.days).toFixed(2)} €
+                    {(
+                      selectedMaintenance.ijss * selectedMaintenance.days
+                    ).toFixed(2)}{" "}
+                    €
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -323,11 +356,17 @@ export default function SalaryMaintenanceAnalysisPage() {
                     Total maintien employeur:
                   </span>
                   <span className="text-sm font-semibold text-orange-600">
-                    {(selectedMaintenance.employerMaintenance * selectedMaintenance.days).toFixed(2)} €
+                    {(
+                      selectedMaintenance.employerMaintenance *
+                      selectedMaintenance.days
+                    ).toFixed(2)}{" "}
+                    €
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
-                  <span className="text-base font-bold">Total versé à l&apos;employé:</span>
+                  <span className="text-base font-bold">
+                    Total versé à l&apos;employé:
+                  </span>
                   <span className="text-base font-bold text-blue-600">
                     {selectedMaintenance.totalPaid.toLocaleString("fr-FR")} €
                   </span>
@@ -337,7 +376,9 @@ export default function SalaryMaintenanceAnalysisPage() {
 
             <div className="pt-4 border-t">
               <Label>Taux de maintien</Label>
-              <p className="text-2xl font-bold">{selectedMaintenance.maintenanceRate}%</p>
+              <p className="text-2xl font-bold">
+                {selectedMaintenance.maintenanceRate}%
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Selon la convention collective et l&apos;ancienneté
               </p>
@@ -348,4 +389,3 @@ export default function SalaryMaintenanceAnalysisPage() {
     </div>
   );
 }
-

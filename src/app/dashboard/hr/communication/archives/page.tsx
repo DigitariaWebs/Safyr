@@ -65,12 +65,15 @@ const mockArchivedEmails: ArchivedEmail[] = [
 export default function CommunicationArchivesPage() {
   const [emails] = useState<ArchivedEmail[]>(mockArchivedEmails);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedEmail, setSelectedEmail] = useState<ArchivedEmail | null>(null);
+  const [selectedEmail, setSelectedEmail] = useState<ArchivedEmail | null>(
+    null,
+  );
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const filteredEmails = emails.filter((email) => {
-    const typeMatch = filterType === "all" || email.recipientType === filterType;
+    const typeMatch =
+      filterType === "all" || email.recipientType === filterType;
     const statusMatch = filterStatus === "all" || email.status === filterStatus;
     return typeMatch && statusMatch;
   });
@@ -92,9 +95,7 @@ export default function CommunicationArchivesPage() {
     {
       key: "subject",
       label: "Objet",
-      render: (email) => (
-        <span className="font-medium">{email.subject}</span>
-      ),
+      render: (email) => <span className="font-medium">{email.subject}</span>,
     },
     {
       key: "recipientType",
@@ -121,9 +122,7 @@ export default function CommunicationArchivesPage() {
       key: "recipients",
       label: "Destinataires",
       render: (email) => (
-        <span className="text-sm">
-          {email.recipients.join(", ")}
-        </span>
+        <span className="text-sm">{email.recipients.join(", ")}</span>
       ),
     },
     {
@@ -139,9 +138,12 @@ export default function CommunicationArchivesPage() {
       key: "status",
       label: "Statut",
       render: (email) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-          "Envoyé": "default",
-          "Échec": "destructive",
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
+          Envoyé: "default",
+          Échec: "destructive",
           "En attente": "secondary",
         };
         return <Badge variant={variants[email.status]}>{email.status}</Badge>;
@@ -164,7 +166,8 @@ export default function CommunicationArchivesPage() {
         <div>
           <h1 className="text-3xl font-bold">Archives des Communications</h1>
           <p className="text-muted-foreground">
-            Historique complet de toutes les communications envoyées depuis la plateforme
+            Historique complet de toutes les communications envoyées depuis la
+            plateforme
           </p>
         </div>
         <Button variant="outline" onClick={handleExport}>
@@ -244,7 +247,9 @@ export default function CommunicationArchivesPage() {
 
             <div>
               <Label>Destinataires</Label>
-              <p className="text-sm font-medium">{selectedEmail.recipients.join(", ")}</p>
+              <p className="text-sm font-medium">
+                {selectedEmail.recipients.join(", ")}
+              </p>
               <Badge variant="secondary" className="mt-1">
                 {selectedEmail.recipientType}
               </Badge>
@@ -258,28 +263,31 @@ export default function CommunicationArchivesPage() {
             <div>
               <Label>Message</Label>
               <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm whitespace-pre-wrap">{selectedEmail.body}</p>
+                <p className="text-sm whitespace-pre-wrap">
+                  {selectedEmail.body}
+                </p>
               </div>
             </div>
 
-            {selectedEmail.attachments && selectedEmail.attachments.length > 0 && (
-              <div>
-                <Label>Pièces jointes</Label>
-                <div className="space-y-2 mt-2">
-                  {selectedEmail.attachments.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 bg-muted rounded-lg"
-                    >
-                      <span className="text-sm">{file}</span>
-                      <Button variant="ghost" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+            {selectedEmail.attachments &&
+              selectedEmail.attachments.length > 0 && (
+                <div>
+                  <Label>Pièces jointes</Label>
+                  <div className="space-y-2 mt-2">
+                    {selectedEmail.attachments.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                      >
+                        <span className="text-sm">{file}</span>
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div>
               <Label>Statut</Label>
@@ -301,4 +309,3 @@ export default function CommunicationArchivesPage() {
     </div>
   );
 }
-

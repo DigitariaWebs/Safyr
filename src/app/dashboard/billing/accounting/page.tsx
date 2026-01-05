@@ -75,9 +75,12 @@ export default function BillingAccountingPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Intégration avec la Comptabilité</h1>
+          <h1 className="text-3xl font-bold">
+            Intégration avec la Comptabilité
+          </h1>
           <p className="text-muted-foreground">
-            Génération automatique des écritures comptables, synchronisation avec journaux, préparation FEC
+            Génération automatique des écritures comptables, synchronisation
+            avec journaux, préparation FEC
           </p>
         </div>
         <Button variant="outline" onClick={handleExportFEC}>
@@ -88,21 +91,25 @@ export default function BillingAccountingPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="border rounded-lg p-4">
-          <Label className="text-sm text-muted-foreground">Écritures générées</Label>
+          <Label className="text-sm text-muted-foreground">
+            Écritures générées
+          </Label>
           <p className="text-2xl font-bold">
             {
               invoices.filter(
-                (inv) => inv.accountingEntries?.status === "Generated"
+                (inv) => inv.accountingEntries?.status === "Generated",
               ).length
             }
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <Label className="text-sm text-muted-foreground">Écritures exportées</Label>
+          <Label className="text-sm text-muted-foreground">
+            Écritures exportées
+          </Label>
           <p className="text-2xl font-bold">
             {
               invoices.filter(
-                (inv) => inv.accountingEntries?.status === "Exported"
+                (inv) => inv.accountingEntries?.status === "Exported",
               ).length
             }
           </p>
@@ -112,7 +119,9 @@ export default function BillingAccountingPage() {
           <p className="text-2xl font-bold">
             {
               invoices.filter(
-                (inv) => inv.accountingEntries?.status === "Pending" || !inv.accountingEntries
+                (inv) =>
+                  inv.accountingEntries?.status === "Pending" ||
+                  !inv.accountingEntries,
               ).length
             }
           </p>
@@ -129,4 +138,3 @@ export default function BillingAccountingPage() {
     </div>
   );
 }
-

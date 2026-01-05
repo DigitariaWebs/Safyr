@@ -1,7 +1,16 @@
 "use client";
 
-import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
-import { Settings, Calculator, FileCheck, TrendingUp, DollarSign } from "lucide-react";
+import {
+  ModuleNavigationBar,
+  NavItem,
+} from "@/components/ui/module-navigation-bar";
+import {
+  Settings,
+  Calculator,
+  FileCheck,
+  TrendingUp,
+  DollarSign,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -54,4 +63,3 @@ export function PayrollNavigationBar({
     />
   );
 }
-

@@ -4,12 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -34,7 +29,11 @@ import {
   FileText,
   Clock,
 } from "lucide-react";
-import { PersonalInfoChangeRequest, HRRequestStatus, Employee } from "@/lib/types";
+import {
+  PersonalInfoChangeRequest,
+  HRRequestStatus,
+  Employee,
+} from "@/lib/types";
 import Link from "next/link";
 
 // Mock employees
@@ -124,7 +123,10 @@ const statusLabels: Record<HRRequestStatus, string> = {
   cancelled: "Annulée",
 };
 
-const statusColors: Record<HRRequestStatus, "default" | "secondary" | "destructive"> = {
+const statusColors: Record<
+  HRRequestStatus,
+  "default" | "secondary" | "destructive"
+> = {
   pending: "default",
   in_progress: "secondary",
   validated: "secondary",
@@ -142,13 +144,18 @@ const civilStatusLabels: Record<Employee["civilStatus"], string> = {
 
 export default function PersonalInfoChangePage() {
   const [activeTab, setActiveTab] = useState("bank_details");
-  const [bankDetailsRequests, setBankDetailsRequests] = useState(mockBankDetailsRequests);
+  const [bankDetailsRequests, setBankDetailsRequests] = useState(
+    mockBankDetailsRequests,
+  );
   const [addressRequests, setAddressRequests] = useState(mockAddressRequests);
-  const [civilStatusRequests, setCivilStatusRequests] = useState(mockCivilStatusRequests);
-  
+  const [civilStatusRequests, setCivilStatusRequests] = useState(
+    mockCivilStatusRequests,
+  );
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingRequest, setViewingRequest] = useState<PersonalInfoChangeRequest | null>(null);
+  const [viewingRequest, setViewingRequest] =
+    useState<PersonalInfoChangeRequest | null>(null);
 
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -312,7 +319,9 @@ export default function PersonalInfoChangePage() {
         changeType: "civil_status",
         currentCivilStatus: "single",
         newCivilStatus: formData.newCivilStatus,
-        effectiveDate: formData.effectiveDate ? new Date(formData.effectiveDate) : undefined,
+        effectiveDate: formData.effectiveDate
+          ? new Date(formData.effectiveDate)
+          : undefined,
       };
       setCivilStatusRequests([newRequest, ...civilStatusRequests]);
     }
@@ -321,7 +330,9 @@ export default function PersonalInfoChangePage() {
     alert("Demande créée avec succès!");
   };
 
-  const createColumns = (changeType: string): ColumnDef<PersonalInfoChangeRequest>[] => [
+  const createColumns = (
+    changeType: string,
+  ): ColumnDef<PersonalInfoChangeRequest>[] => [
     {
       key: "id",
       label: "N° Demande",
@@ -333,7 +344,10 @@ export default function PersonalInfoChangePage() {
       key: "employeeName",
       label: "Employé",
       render: (req: PersonalInfoChangeRequest) => (
-        <Link href={`/dashboard/hr/employees/${req.employeeId}`} className="hover:underline">
+        <Link
+          href={`/dashboard/hr/employees/${req.employeeId}`}
+          className="hover:underline"
+        >
           <div className="font-medium">{req.employeeName}</div>
           <div className="text-sm text-muted-foreground">{req.department}</div>
         </Link>
@@ -364,8 +378,9 @@ export default function PersonalInfoChangePage() {
         } else {
           return (
             <div className="text-sm">
-              {req.currentCivilStatus && civilStatusLabels[req.currentCivilStatus]} →{" "}
-              {req.newCivilStatus && civilStatusLabels[req.newCivilStatus]}
+              {req.currentCivilStatus &&
+                civilStatusLabels[req.currentCivilStatus]}{" "}
+              → {req.newCivilStatus && civilStatusLabels[req.newCivilStatus]}
             </div>
           );
         }
@@ -374,13 +389,16 @@ export default function PersonalInfoChangePage() {
     {
       key: "submittedAt",
       label: "Date de soumission",
-      render: (req: PersonalInfoChangeRequest) => req.submittedAt.toLocaleDateString("fr-FR"),
+      render: (req: PersonalInfoChangeRequest) =>
+        req.submittedAt.toLocaleDateString("fr-FR"),
     },
     {
       key: "status",
       label: "Statut",
       render: (req: PersonalInfoChangeRequest) => (
-        <Badge variant={statusColors[req.status]}>{statusLabels[req.status]}</Badge>
+        <Badge variant={statusColors[req.status]}>
+          {statusLabels[req.status]}
+        </Badge>
       ),
     },
     {
@@ -398,10 +416,14 @@ export default function PersonalInfoChangePage() {
       label: "Actions",
       render: (req: PersonalInfoChangeRequest) => (
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => {
-            setViewingRequest(req);
-            setIsViewModalOpen(true);
-          }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setViewingRequest(req);
+              setIsViewModalOpen(true);
+            }}
+          >
             <Eye className="h-4 w-4" />
           </Button>
           {req.status === "pending" && (
@@ -410,7 +432,11 @@ export default function PersonalInfoChangePage() {
                 <CheckCircle className="mr-1 h-3 w-3" />
                 Valider
               </Button>
-              <Button variant="destructive" size="sm" onClick={() => handleRefuse(req)}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleRefuse(req)}
+              >
                 <XCircle className="mr-1 h-3 w-3" />
                 Refuser
               </Button>
@@ -424,7 +450,8 @@ export default function PersonalInfoChangePage() {
   const bankDetailsStats = {
     total: bankDetailsRequests.length,
     pending: bankDetailsRequests.filter((r) => r.status === "pending").length,
-    validated: bankDetailsRequests.filter((r) => r.status === "validated").length,
+    validated: bankDetailsRequests.filter((r) => r.status === "validated")
+      .length,
   };
 
   const addressStats = {
@@ -437,9 +464,12 @@ export default function PersonalInfoChangePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Changements d&apos;Informations Personnelles</h1>
+          <h1 className="text-3xl font-bold">
+            Changements d&apos;Informations Personnelles
+          </h1>
           <p className="text-muted-foreground">
-            Gestion des demandes de modification de coordonnées bancaires, adresse et statut civil
+            Gestion des demandes de modification de coordonnées bancaires,
+            adresse et statut civil
           </p>
         </div>
         <div className="flex gap-2">
@@ -478,16 +508,22 @@ export default function PersonalInfoChangePage() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{bankDetailsStats.total}</div>
+                <div className="text-2xl font-bold">
+                  {bankDetailsStats.total}
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">En attente</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  En attente
+                </CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{bankDetailsStats.pending}</div>
+                <div className="text-2xl font-bold">
+                  {bankDetailsStats.pending}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -496,16 +532,23 @@ export default function PersonalInfoChangePage() {
                 <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{bankDetailsStats.validated}</div>
+                <div className="text-2xl font-bold">
+                  {bankDetailsStats.validated}
+                </div>
               </CardContent>
             </Card>
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Demandes de changement de coordonnées bancaires</CardTitle>
+              <CardTitle>
+                Demandes de changement de coordonnées bancaires
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable columns={createColumns("bank_details")} data={bankDetailsRequests} />
+              <DataTable
+                columns={createColumns("bank_details")}
+                data={bankDetailsRequests}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -523,7 +566,9 @@ export default function PersonalInfoChangePage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">En attente</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  En attente
+                </CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -536,7 +581,9 @@ export default function PersonalInfoChangePage() {
                 <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{addressStats.validated}</div>
+                <div className="text-2xl font-bold">
+                  {addressStats.validated}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -545,7 +592,10 @@ export default function PersonalInfoChangePage() {
               <CardTitle>Demandes de changement d&apos;adresse</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable columns={createColumns("address")} data={addressRequests} />
+              <DataTable
+                columns={createColumns("address")}
+                data={addressRequests}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -556,7 +606,10 @@ export default function PersonalInfoChangePage() {
               <CardTitle>Demandes de changement de statut civil</CardTitle>
             </CardHeader>
             <CardContent>
-              <DataTable columns={createColumns("civil_status")} data={civilStatusRequests} />
+              <DataTable
+                columns={createColumns("civil_status")}
+                data={civilStatusRequests}
+              />
               {civilStatusRequests.length === 0 && (
                 <div className="py-8 text-center text-muted-foreground">
                   Aucune demande de changement de statut civil
@@ -573,25 +626,37 @@ export default function PersonalInfoChangePage() {
         onOpenChange={setIsCreateModalOpen}
         type="form"
         title={`Nouvelle demande de changement${
-          activeTab === "bank_details" ? " de coordonnées bancaires" :
-          activeTab === "address" ? " d&apos;adresse" : " de statut civil"
+          activeTab === "bank_details"
+            ? " de coordonnées bancaires"
+            : activeTab === "address"
+              ? " d&apos;adresse"
+              : " de statut civil"
         }`}
         size="lg"
         actions={{
           primary: { label: "Enregistrer", onClick: handleSave },
-          secondary: { label: "Annuler", onClick: () => setIsCreateModalOpen(false), variant: "outline" },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCreateModalOpen(false),
+            variant: "outline",
+          },
         }}
       >
         <div className="space-y-4">
           <div>
             <Label>Employé *</Label>
-            <Select value={formData.employeeId} onValueChange={(v) => setFormData({ ...formData, employeeId: v })}>
+            <Select
+              value={formData.employeeId}
+              onValueChange={(v) => setFormData({ ...formData, employeeId: v })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner" />
               </SelectTrigger>
               <SelectContent>
                 {mockEmployees.map((e) => (
-                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -601,15 +666,32 @@ export default function PersonalInfoChangePage() {
             <>
               <div>
                 <Label>IBAN *</Label>
-                <Input value={formData.newIban} onChange={(e) => setFormData({ ...formData, newIban: e.target.value })} placeholder="FR76 ..." />
+                <Input
+                  value={formData.newIban}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newIban: e.target.value })
+                  }
+                  placeholder="FR76 ..."
+                />
               </div>
               <div>
                 <Label>BIC *</Label>
-                <Input value={formData.newBic} onChange={(e) => setFormData({ ...formData, newBic: e.target.value })} placeholder="BNPAFRPP" />
+                <Input
+                  value={formData.newBic}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newBic: e.target.value })
+                  }
+                  placeholder="BNPAFRPP"
+                />
               </div>
               <div>
                 <Label>Nom de la banque *</Label>
-                <Input value={formData.newBankName} onChange={(e) => setFormData({ ...formData, newBankName: e.target.value })} />
+                <Input
+                  value={formData.newBankName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newBankName: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label>RIB (document justificatif)</Label>
@@ -625,21 +707,44 @@ export default function PersonalInfoChangePage() {
             <>
               <div>
                 <Label>Rue *</Label>
-                <Input value={formData.newStreet} onChange={(e) => setFormData({ ...formData, newStreet: e.target.value })} />
+                <Input
+                  value={formData.newStreet}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newStreet: e.target.value })
+                  }
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Code postal *</Label>
-                  <Input value={formData.newPostalCode} onChange={(e) => setFormData({ ...formData, newPostalCode: e.target.value })} />
+                  <Input
+                    value={formData.newPostalCode}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        newPostalCode: e.target.value,
+                      })
+                    }
+                  />
                 </div>
                 <div>
                   <Label>Ville *</Label>
-                  <Input value={formData.newCity} onChange={(e) => setFormData({ ...formData, newCity: e.target.value })} />
+                  <Input
+                    value={formData.newCity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, newCity: e.target.value })
+                    }
+                  />
                 </div>
               </div>
               <div>
                 <Label>Pays *</Label>
-                <Input value={formData.newCountry} onChange={(e) => setFormData({ ...formData, newCountry: e.target.value })} />
+                <Input
+                  value={formData.newCountry}
+                  onChange={(e) =>
+                    setFormData({ ...formData, newCountry: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label>Justificatif de domicile</Label>
@@ -655,20 +760,36 @@ export default function PersonalInfoChangePage() {
             <>
               <div>
                 <Label>Nouveau statut civil *</Label>
-                <Select value={formData.newCivilStatus} onValueChange={(v) => setFormData({ ...formData, newCivilStatus: v as Employee["civilStatus"] })}>
+                <Select
+                  value={formData.newCivilStatus}
+                  onValueChange={(v) =>
+                    setFormData({
+                      ...formData,
+                      newCivilStatus: v as Employee["civilStatus"],
+                    })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(civilStatusLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>Date d&apos;effet</Label>
-                <Input type="date" value={formData.effectiveDate} onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })} />
+                <Input
+                  type="date"
+                  value={formData.effectiveDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, effectiveDate: e.target.value })
+                  }
+                />
               </div>
               <div>
                 <Label>Document justificatif</Label>
@@ -705,46 +826,62 @@ export default function PersonalInfoChangePage() {
               </div>
             </div>
 
-            {viewingRequest.changeType === "bank_details" && viewingRequest.newBankDetails && (
-              <div className="space-y-2">
-                <h3 className="font-semibold">Nouvelles coordonnées bancaires</h3>
-                <div className="rounded-lg border p-4 space-y-2">
-                  <div>
-                    <Label className="text-muted-foreground">Banque</Label>
-                    <p>{viewingRequest.newBankDetails.bankName}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">IBAN</Label>
-                    <p className="font-mono text-sm">{viewingRequest.newBankDetails.iban}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">BIC</Label>
-                    <p className="font-mono text-sm">{viewingRequest.newBankDetails.bic}</p>
+            {viewingRequest.changeType === "bank_details" &&
+              viewingRequest.newBankDetails && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold">
+                    Nouvelles coordonnées bancaires
+                  </h3>
+                  <div className="rounded-lg border p-4 space-y-2">
+                    <div>
+                      <Label className="text-muted-foreground">Banque</Label>
+                      <p>{viewingRequest.newBankDetails.bankName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">IBAN</Label>
+                      <p className="font-mono text-sm">
+                        {viewingRequest.newBankDetails.iban}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">BIC</Label>
+                      <p className="font-mono text-sm">
+                        {viewingRequest.newBankDetails.bic}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {viewingRequest.changeType === "address" && viewingRequest.newAddress && (
-              <div className="space-y-2">
-                <h3 className="font-semibold">Nouvelle adresse</h3>
-                <div className="rounded-lg border p-4">
-                  <p>{viewingRequest.newAddress.street}</p>
-                  <p>{viewingRequest.newAddress.postalCode} {viewingRequest.newAddress.city}</p>
-                  <p>{viewingRequest.newAddress.country}</p>
+            {viewingRequest.changeType === "address" &&
+              viewingRequest.newAddress && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold">Nouvelle adresse</h3>
+                  <div className="rounded-lg border p-4">
+                    <p>{viewingRequest.newAddress.street}</p>
+                    <p>
+                      {viewingRequest.newAddress.postalCode}{" "}
+                      {viewingRequest.newAddress.city}
+                    </p>
+                    <p>{viewingRequest.newAddress.country}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div>
-              <Label className="text-muted-foreground">Date de soumission</Label>
+              <Label className="text-muted-foreground">
+                Date de soumission
+              </Label>
               <p>{viewingRequest.submittedAt.toLocaleDateString("fr-FR")}</p>
             </div>
 
             {viewingRequest.processedAt && (
               <div>
                 <Label className="text-muted-foreground">Traité par</Label>
-                <p>{viewingRequest.processedByName} le {viewingRequest.processedAt.toLocaleDateString("fr-FR")}</p>
+                <p>
+                  {viewingRequest.processedByName} le{" "}
+                  {viewingRequest.processedAt.toLocaleDateString("fr-FR")}
+                </p>
               </div>
             )}
           </div>

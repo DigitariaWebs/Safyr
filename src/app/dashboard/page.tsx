@@ -8,7 +8,8 @@ export default function DashboardPage() {
   const modules = [
     {
       title: "Ressources Humaines",
-      description: "Gestion complète du personnel, paie, formations et conformité",
+      description:
+        "Gestion complète du personnel, paie, formations et conformité",
       icon: Users,
       href: "/dashboard/hr",
       color: "text-blue-500",
@@ -16,7 +17,8 @@ export default function DashboardPage() {
     },
     {
       title: "Main Courante Digitale",
-      description: "Suivi des événements, incidents et validation en temps réel",
+      description:
+        "Suivi des événements, incidents et validation en temps réel",
       icon: BookOpen,
       href: "/dashboard/logbook",
       color: "text-emerald-500",
@@ -43,7 +45,9 @@ export default function DashboardPage() {
               <Link key={module.href} href={module.href}>
                 <Card className="glass-card border-border/40 hover:border-primary/50 transition-all h-full group cursor-pointer">
                   <CardHeader>
-                    <div className={`${module.bgColor} w-16 h-16 rounded-lg flex items-center justify-center mb-4`}>
+                    <div
+                      className={`${module.bgColor} w-16 h-16 rounded-lg flex items-center justify-center mb-4`}
+                    >
                       <Icon className={`h-8 w-8 ${module.color}`} />
                     </div>
                     <CardTitle className="text-2xl font-light">
@@ -55,7 +59,9 @@ export default function DashboardPage() {
                       {module.description}
                     </p>
                     <div className="flex items-center gap-2 text-primary group-hover:gap-3 transition-all">
-                      <span className="text-sm font-medium">Accéder au module</span>
+                      <span className="text-sm font-medium">
+                        Accéder au module
+                      </span>
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </CardContent>

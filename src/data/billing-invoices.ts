@@ -9,7 +9,13 @@ export interface BillingInvoice {
     start: string;
     end: string;
   };
-  status: "Brouillon" | "En attente" | "Validée" | "Envoyée" | "Payée" | "Annulée";
+  status:
+    | "Brouillon"
+    | "En attente"
+    | "Validée"
+    | "Envoyée"
+    | "Payée"
+    | "Annulée";
   // Sources de données
   planningHours?: number; // heures planifiées
   realizedHours?: number; // heures réalisées (géoloc/main courante)
@@ -91,10 +97,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 715,
     overtimeHours: 0,
     replacements: 0,
-    subtotal: 18232.50,
+    subtotal: 18232.5,
     vatRate: 20,
-    vatAmount: 3646.50,
-    total: 21879.00,
+    vatAmount: 3646.5,
+    total: 21879.0,
     variance: {
       planned: 720,
       realized: 715,
@@ -111,7 +117,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-1",
         type: "Manual",
-        amount: 150.00,
+        amount: 150.0,
         reason: "Majoration pour intervention urgente le 15/01",
         createdAt: "2024-02-01T09:30:00",
         createdBy: "Admin",
@@ -147,10 +153,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 480,
     overtimeHours: 5,
     replacements: 0,
-    subtotal: 13520.00,
+    subtotal: 13520.0,
     vatRate: 20,
-    vatAmount: 2704.00,
-    total: 16224.00,
+    vatAmount: 2704.0,
+    total: 16224.0,
     variance: {
       planned: 480,
       realized: 485,
@@ -166,7 +172,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-2",
         type: "Exception",
-        amount: 200.00,
+        amount: 200.0,
         reason: "Refacturation heures supplémentaires non prévues",
         createdAt: "2024-02-01T13:45:00",
         createdBy: "Admin",
@@ -202,10 +208,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 120,
     overtimeHours: 0,
     replacements: 0,
-    subtotal: 2640.00,
+    subtotal: 2640.0,
     vatRate: 10,
-    vatAmount: 264.00,
-    total: 2904.00,
+    vatAmount: 264.0,
+    total: 2904.0,
     previewed: false,
     payrollAlignment: {
       hoursPaid: 120,
@@ -239,10 +245,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 670,
     overtimeHours: 5,
     replacements: 1,
-    subtotal: 17250.00,
+    subtotal: 17250.0,
     vatRate: 20,
-    vatAmount: 3450.00,
-    total: 20700.00,
+    vatAmount: 3450.0,
+    total: 20700.0,
     variance: {
       planned: 680,
       realized: 675,
@@ -255,7 +261,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-3",
         type: "Manual",
-        amount: -100.00,
+        amount: -100.0,
         reason: "Réduction pour service non conforme le 10/02",
         createdAt: "2024-03-01T08:30:00",
         createdBy: "Supervisor",
@@ -265,7 +271,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "cred-1",
         creditNumber: "AVO-2024-001",
-        amount: 500.00,
+        amount: 500.0,
         reason: "Avoir pour panne matériel le 15/02",
         createdAt: "2024-02-20T10:00:00",
       },
@@ -300,10 +306,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 480,
     overtimeHours: 10,
     replacements: 0,
-    subtotal: 13720.00,
+    subtotal: 13720.0,
     vatRate: 20,
-    vatAmount: 2744.00,
-    total: 16464.00,
+    vatAmount: 2744.0,
+    total: 16464.0,
     variance: {
       planned: 480,
       realized: 490,
@@ -340,10 +346,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 920,
     overtimeHours: 35,
     replacements: 2,
-    subtotal: 25480.00,
+    subtotal: 25480.0,
     vatRate: 5.5,
-    vatAmount: 1401.40,
-    total: 26881.40,
+    vatAmount: 1401.4,
+    total: 26881.4,
     variance: {
       planned: 960,
       realized: 955,
@@ -360,7 +366,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-4",
         type: "Manual",
-        amount: 300.00,
+        amount: 300.0,
         reason: "Majoration heures de nuit supplémentaires",
         createdAt: "2024-02-01T10:45:00",
         createdBy: "Admin",
@@ -396,10 +402,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 1400,
     overtimeHours: 35,
     replacements: 3,
-    subtotal: 38450.00,
+    subtotal: 38450.0,
     vatRate: 20,
-    vatAmount: 7690.00,
-    total: 46140.00,
+    vatAmount: 7690.0,
+    total: 46140.0,
     variance: {
       planned: 1440,
       realized: 1435,
@@ -415,7 +421,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-5",
         type: "Exception",
-        amount: 500.00,
+        amount: 500.0,
         reason: "Refacturation remplacement urgent",
         createdAt: "2024-02-01T15:30:00",
         createdBy: "Admin",
@@ -423,7 +429,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "adj-6",
         type: "Manual",
-        amount: -200.00,
+        amount: -200.0,
         reason: "Ajustement pour absence non remplacée",
         createdAt: "2024-02-01T15:45:00",
         createdBy: "Admin",
@@ -433,7 +439,7 @@ export const mockBillingInvoices: BillingInvoice[] = [
       {
         id: "cred-2",
         creditNumber: "AVO-2024-002",
-        amount: 1000.00,
+        amount: 1000.0,
         reason: "Avoir pour service non conforme période 10-15/01",
         createdAt: "2024-01-20T14:00:00",
       },
@@ -468,10 +474,10 @@ export const mockBillingInvoices: BillingInvoice[] = [
     normalHours: 240,
     overtimeHours: 5,
     replacements: 0,
-    subtotal: 5390.00,
+    subtotal: 5390.0,
     vatRate: 10,
-    vatAmount: 539.00,
-    total: 5929.00,
+    vatAmount: 539.0,
+    total: 5929.0,
     variance: {
       planned: 240,
       realized: 245,
@@ -493,4 +499,3 @@ export const mockBillingInvoices: BillingInvoice[] = [
     updatedAt: "2024-03-01T11:00:00",
   },
 ];
-

@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { mockLogbookEvents, mockSites, mockAgents, LogbookEvent } from "@/data/logbook-events";
+import {
+  mockLogbookEvents,
+  mockSites,
+  mockAgents,
+  LogbookEvent,
+} from "@/data/logbook-events";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +37,9 @@ export default function ValidationPage() {
   const [events, setEvents] = useState<LogbookEvent[]>(mockLogbookEvents);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [comment, setComment] = useState("");
-  const [action, setAction] = useState<"approve" | "reject" | "modify" | null>(null);
+  const [action, setAction] = useState<"approve" | "reject" | "modify" | null>(
+    null,
+  );
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<LogbookEvent | null>(null);
@@ -126,7 +133,10 @@ export default function ValidationPage() {
       ...updatedEvents[eventIndex],
       severity: modifyData.severity as LogbookEvent["severity"],
       type: modifyData.type as LogbookEvent["type"],
-      tags: modifyData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      tags: modifyData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
       clientNotified: modifyData.notifyClient,
     };
 
@@ -139,7 +149,9 @@ export default function ValidationPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGenerateReport = (type: "daily" | "weekly" | "monthly") => {
-    alert(`Génération du rapport ${type === "daily" ? "quotidien" : type === "weekly" ? "hebdomadaire" : "mensuel"} en cours...`);
+    alert(
+      `Génération du rapport ${type === "daily" ? "quotidien" : type === "weekly" ? "hebdomadaire" : "mensuel"} en cours...`,
+    );
   };
 
   return (
@@ -200,7 +212,8 @@ export default function ValidationPage() {
                   <div>
                     <span className="text-muted-foreground">Site:</span>
                     <span className="ml-2 font-medium">
-                      {mockSites.find((s) => s.id === event.siteId)?.name || event.site}
+                      {mockSites.find((s) => s.id === event.siteId)?.name ||
+                        event.site}
                     </span>
                   </div>
                   {event.zone && (
@@ -212,7 +225,8 @@ export default function ValidationPage() {
                   <div>
                     <span className="text-muted-foreground">Agent:</span>
                     <span className="ml-2 font-medium">
-                      {mockAgents.find((a) => a.id === event.agentId)?.name || event.agentName}
+                      {mockAgents.find((a) => a.id === event.agentId)?.name ||
+                        event.agentName}
                     </span>
                   </div>
                   <div>
@@ -252,7 +266,10 @@ export default function ValidationPage() {
                   </Badge>
                 )}
 
-                <div className="flex gap-2 pt-4" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="flex gap-2 pt-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button
                     onClick={() => handleValidation(event.id, "approve")}
                     className="flex-1 gap-2"
@@ -268,8 +285,8 @@ export default function ValidationPage() {
                     <XCircle className="h-4 w-4" />
                     Rejeter
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="gap-2"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -279,8 +296,8 @@ export default function ValidationPage() {
                     <Edit className="h-4 w-4" />
                     Modifier
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="gap-2"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -325,7 +342,8 @@ export default function ValidationPage() {
               <div>
                 <Label>Site</Label>
                 <p className="text-sm">
-                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name || "N/A"}
+                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name ||
+                    "N/A"}
                 </p>
               </div>
               <div>
@@ -341,7 +359,9 @@ export default function ValidationPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingEvent.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingEvent.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -365,7 +385,8 @@ export default function ValidationPage() {
               <div>
                 <Label>Agent</Label>
                 <p className="text-sm">
-                  {mockAgents.find((a) => a.id === viewingEvent.agentId)?.name || "N/A"}
+                  {mockAgents.find((a) => a.id === viewingEvent.agentId)
+                    ?.name || "N/A"}
                 </p>
               </div>
             </div>
@@ -376,7 +397,8 @@ export default function ValidationPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
-                    {viewingEvent.location.lat.toFixed(4)}, {viewingEvent.location.lng.toFixed(4)}
+                    {viewingEvent.location.lat.toFixed(4)},{" "}
+                    {viewingEvent.location.lng.toFixed(4)}
                   </span>
                 </div>
               </div>
@@ -386,24 +408,30 @@ export default function ValidationPage() {
               <div>
                 <Label>Médias</Label>
                 <div className="flex gap-4 text-sm">
-                  {viewingEvent.media.photos && viewingEvent.media.photos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
-                      <span>{viewingEvent.media.photos.length} photo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.videos && viewingEvent.media.videos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      <span>{viewingEvent.media.videos.length} vidéo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.voiceNotes && viewingEvent.media.voiceNotes.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Mic className="h-4 w-4" />
-                      <span>{viewingEvent.media.voiceNotes.length} note(s) vocale(s)</span>
-                    </div>
-                  )}
+                  {viewingEvent.media.photos &&
+                    viewingEvent.media.photos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        <span>{viewingEvent.media.photos.length} photo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.videos &&
+                    viewingEvent.media.videos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4" />
+                        <span>{viewingEvent.media.videos.length} vidéo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.voiceNotes &&
+                    viewingEvent.media.voiceNotes.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Mic className="h-4 w-4" />
+                        <span>
+                          {viewingEvent.media.voiceNotes.length} note(s)
+                          vocale(s)
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -423,9 +451,7 @@ export default function ValidationPage() {
         }}
         type="form"
         title={
-          action === "approve"
-            ? "Valider l'événement"
-            : "Rejeter l'événement"
+          action === "approve" ? "Valider l'événement" : "Rejeter l'événement"
         }
         size="md"
         actions={{
@@ -448,7 +474,9 @@ export default function ValidationPage() {
       >
         <div className="space-y-4">
           <div>
-            <Label htmlFor="comment">Commentaire {action === "reject" && "(requis)"}</Label>
+            <Label htmlFor="comment">
+              Commentaire {action === "reject" && "(requis)"}
+            </Label>
             <Textarea
               id="comment"
               value={comment}
@@ -482,7 +510,12 @@ export default function ValidationPage() {
             onClick: () => {
               setIsModifyModalOpen(false);
               setSelectedEvent(null);
-              setModifyData({ severity: "", type: "", tags: "", notifyClient: false });
+              setModifyData({
+                severity: "",
+                type: "",
+                tags: "",
+                notifyClient: false,
+              });
               setAction(null);
             },
             variant: "outline",
@@ -494,7 +527,9 @@ export default function ValidationPage() {
             <Label htmlFor="severity">Gravité</Label>
             <Select
               value={modifyData.severity}
-              onValueChange={(value) => setModifyData({ ...modifyData, severity: value })}
+              onValueChange={(value) =>
+                setModifyData({ ...modifyData, severity: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner..." />
@@ -512,7 +547,9 @@ export default function ValidationPage() {
             <Label htmlFor="type">Type</Label>
             <Select
               value={modifyData.type}
-              onValueChange={(value) => setModifyData({ ...modifyData, type: value })}
+              onValueChange={(value) =>
+                setModifyData({ ...modifyData, type: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner..." />
@@ -532,7 +569,9 @@ export default function ValidationPage() {
             <Input
               id="tags"
               value={modifyData.tags}
-              onChange={(e) => setModifyData({ ...modifyData, tags: e.target.value })}
+              onChange={(e) =>
+                setModifyData({ ...modifyData, tags: e.target.value })
+              }
               placeholder="ex: urgent, police, incendie"
             />
           </div>
@@ -542,7 +581,9 @@ export default function ValidationPage() {
               type="checkbox"
               id="notifyClient"
               checked={modifyData.notifyClient}
-              onChange={(e) => setModifyData({ ...modifyData, notifyClient: e.target.checked })}
+              onChange={(e) =>
+                setModifyData({ ...modifyData, notifyClient: e.target.checked })
+              }
               className="rounded border-gray-300"
             />
             <Label htmlFor="notifyClient" className="cursor-pointer">
@@ -554,4 +595,3 @@ export default function ValidationPage() {
     </div>
   );
 }
-

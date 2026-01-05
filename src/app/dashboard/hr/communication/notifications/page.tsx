@@ -254,18 +254,16 @@ export default function NotificationsPage() {
             <div className="space-y-2">
               <Label>Canaux activés</Label>
               <div className="flex gap-2">
-                {settings.pushEnabled && (
-                  <Badge variant="default">Push</Badge>
-                )}
-                {settings.smsEnabled && (
-                  <Badge variant="secondary">SMS</Badge>
-                )}
+                {settings.pushEnabled && <Badge variant="default">Push</Badge>}
+                {settings.smsEnabled && <Badge variant="secondary">SMS</Badge>}
                 {settings.emailEnabled && (
                   <Badge variant="outline">Email</Badge>
                 )}
-                {!settings.pushEnabled && !settings.smsEnabled && !settings.emailEnabled && (
-                  <Badge variant="destructive">Aucun canal activé</Badge>
-                )}
+                {!settings.pushEnabled &&
+                  !settings.smsEnabled &&
+                  !settings.emailEnabled && (
+                    <Badge variant="destructive">Aucun canal activé</Badge>
+                  )}
               </div>
             </div>
 
@@ -280,7 +278,8 @@ export default function NotificationsPage() {
 
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">
-                La notification sera envoyée uniquement à votre compte pour tester le système.
+                La notification sera envoyée uniquement à votre compte pour
+                tester le système.
               </p>
             </div>
           </CardContent>
@@ -289,5 +288,3 @@ export default function NotificationsPage() {
     </div>
   );
 }
-
-

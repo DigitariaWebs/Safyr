@@ -31,9 +31,14 @@ export const mockTenders: Tender[] = [
     deadline: "2025-01-15",
     status: "En cours",
     dossierCreated: true,
-    documents: ["dossier_technique.pdf", "dossier_financier.pdf", "cv_equipe.pdf"],
+    documents: [
+      "dossier_technique.pdf",
+      "dossier_financier.pdf",
+      "cv_equipe.pdf",
+    ],
     estimatedValue: 150000,
-    notes: "Appel d'offres important. Dossier technique en cours de finalisation.",
+    notes:
+      "Appel d'offres important. Dossier technique en cours de finalisation.",
     createdAt: "2024-12-05",
   },
   {
@@ -123,5 +128,3 @@ export const mockTenders: Tender[] = [
     createdAt: "2024-12-18",
   },
 ];
-
-

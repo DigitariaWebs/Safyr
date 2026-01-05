@@ -22,7 +22,7 @@ export default function OCRDocumentsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<OCRDocument | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState<Partial<OCRDocument>>({});
 
@@ -58,7 +58,15 @@ export default function OCRDocumentsPage() {
       key: "confidence",
       label: "Confiance",
       render: (doc) => (
-        <span className={doc.confidence >= 90 ? "text-green-600" : doc.confidence >= 70 ? "text-orange-600" : "text-red-600"}>
+        <span
+          className={
+            doc.confidence >= 90
+              ? "text-green-600"
+              : doc.confidence >= 70
+                ? "text-orange-600"
+                : "text-red-600"
+          }
+        >
           {doc.confidence > 0 ? `${doc.confidence}%` : "-"}
         </span>
       ),
@@ -94,8 +102,8 @@ export default function OCRDocumentsPage() {
     if (formData.id) {
       setDocuments(
         documents.map((d) =>
-          d.id === formData.id ? { ...d, ...formData } : d
-        )
+          d.id === formData.id ? { ...d, ...formData } : d,
+        ),
       );
     } else {
       const newDocument: OCRDocument = {
@@ -348,7 +356,9 @@ export default function OCRDocumentsPage() {
               <div>
                 <Label>Date de téléversement</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedDocument.uploadDate).toLocaleString("fr-FR")}
+                  {new Date(selectedDocument.uploadDate).toLocaleString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
 
@@ -365,7 +375,7 @@ export default function OCRDocumentsPage() {
                         </span>
                         <span className="text-sm font-medium">
                           {selectedDocument.extractedData.amount.toLocaleString(
-                            "fr-FR"
+                            "fr-FR",
                           )}{" "}
                           €
                         </span>
@@ -411,5 +421,3 @@ export default function OCRDocumentsPage() {
     </div>
   );
 }
-
-

@@ -13,29 +13,54 @@ import {
   CheckCircle,
   Users,
 } from "lucide-react";
-import { mockAPIConnections, mockSecurityConfigs } from "@/data/logbook-security";
+import {
+  mockAPIConnections,
+  mockSecurityConfigs,
+} from "@/data/logbook-security";
 
 export default function SecurityPage() {
-  const encryptionConfig = mockSecurityConfigs.find((c) => c.key === "encryption_enabled");
-  const auditConfig = mockSecurityConfigs.find((c) => c.key === "audit_log_enabled");
-  const backupConfig = mockSecurityConfigs.find((c) => c.key === "auto_backup_enabled");
-  const twoFAConfig = mockSecurityConfigs.find((c) => c.key === "two_factor_auth");
-  const rgpdConfig = mockSecurityConfigs.find((c) => c.key === "rgpd_compliant");
-  const maskingConfig = mockSecurityConfigs.find((c) => c.key === "data_masking_enabled");
+  const encryptionConfig = mockSecurityConfigs.find(
+    (c) => c.key === "encryption_enabled",
+  );
+  const auditConfig = mockSecurityConfigs.find(
+    (c) => c.key === "audit_log_enabled",
+  );
+  const backupConfig = mockSecurityConfigs.find(
+    (c) => c.key === "auto_backup_enabled",
+  );
+  const twoFAConfig = mockSecurityConfigs.find(
+    (c) => c.key === "two_factor_auth",
+  );
+  const rgpdConfig = mockSecurityConfigs.find(
+    (c) => c.key === "rgpd_compliant",
+  );
+  const maskingConfig = mockSecurityConfigs.find(
+    (c) => c.key === "data_masking_enabled",
+  );
 
   const [encryptionEnabled] = useState(encryptionConfig?.value === true);
-  const [auditLogEnabled, setAuditLogEnabled] = useState(auditConfig?.value === true);
-  const [autoBackupEnabled, setAutoBackupEnabled] = useState(backupConfig?.value === true);
+  const [auditLogEnabled, setAuditLogEnabled] = useState(
+    auditConfig?.value === true,
+  );
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(
+    backupConfig?.value === true,
+  );
   const [twoFAEnabled, setTwoFAEnabled] = useState(twoFAConfig?.value === true);
   const [rgpdCompliant] = useState(rgpdConfig?.value === true);
-  const [dataMaskingEnabled, setDataMaskingEnabled] = useState(maskingConfig?.value === true);
+  const [dataMaskingEnabled, setDataMaskingEnabled] = useState(
+    maskingConfig?.value === true,
+  );
 
   const apiConnections = mockAPIConnections;
 
   const roles = [
     {
       name: "Agent",
-      permissions: ["Créer événements", "Consulter ses événements", "Upload médias"],
+      permissions: [
+        "Créer événements",
+        "Consulter ses événements",
+        "Upload médias",
+      ],
     },
     {
       name: "Superviseur",
@@ -282,4 +307,3 @@ export default function SecurityPage() {
     </div>
   );
 }
-

@@ -22,7 +22,7 @@ export default function EquipmentPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState<Partial<Equipment>>({});
 
@@ -40,9 +40,7 @@ export default function EquipmentPage() {
     {
       key: "category",
       label: "Catégorie",
-      render: (equip) => (
-        <Badge variant="secondary">{equip.category}</Badge>
-      ),
+      render: (equip) => <Badge variant="secondary">{equip.category}</Badge>,
     },
     {
       key: "brand",
@@ -54,9 +52,7 @@ export default function EquipmentPage() {
       render: (equip) => (
         <span
           className={
-            equip.quantity < 20
-              ? "text-red-600 font-semibold"
-              : "font-semibold"
+            equip.quantity < 20 ? "text-red-600 font-semibold" : "font-semibold"
           }
         >
           {equip.quantity}
@@ -99,7 +95,9 @@ export default function EquipmentPage() {
   const handleSave = () => {
     if (formData.id) {
       setEquipment(
-        equipment.map((e) => (e.id === formData.id ? { ...e, ...formData } : e))
+        equipment.map((e) =>
+          e.id === formData.id ? { ...e, ...formData } : e,
+        ),
       );
     } else {
       const newEquipment: Equipment = {
@@ -428,7 +426,7 @@ export default function EquipmentPage() {
                 <Label>Dernière mise à jour</Label>
                 <p className="text-sm font-medium">
                   {new Date(selectedEquipment.lastUpdate).toLocaleDateString(
-                    "fr-FR"
+                    "fr-FR",
                   )}
                 </p>
               </div>
@@ -439,4 +437,3 @@ export default function EquipmentPage() {
     </div>
   );
 }
-

@@ -45,4 +45,3 @@ export {
 } from "./stock-equipment";
 export * from "./ocr-documents";
 export * from "./payroll-conventions";
-

@@ -1,6 +1,9 @@
 "use client";
 
-import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
+import {
+  ModuleNavigationBar,
+  NavItem,
+} from "@/components/ui/module-navigation-bar";
 import { Package, Users, TrendingUp, FileText, Settings } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -54,4 +57,3 @@ export function StockNavigationBar({
     />
   );
 }
-

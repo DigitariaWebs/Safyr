@@ -162,5 +162,3 @@ export const mockAmendments: Amendment[] = [
     createdAt: "2023-12-15",
   },
 ];
-
-

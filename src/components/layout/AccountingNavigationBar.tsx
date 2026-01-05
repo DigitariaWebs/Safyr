@@ -1,7 +1,16 @@
 "use client";
 
-import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
-import { BookOpen, FileText, CreditCard, Building2, TrendingUp } from "lucide-react";
+import {
+  ModuleNavigationBar,
+  NavItem,
+} from "@/components/ui/module-navigation-bar";
+import {
+  BookOpen,
+  FileText,
+  CreditCard,
+  Building2,
+  TrendingUp,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -54,4 +63,3 @@ export function AccountingNavigationBar({
     />
   );
 }
-

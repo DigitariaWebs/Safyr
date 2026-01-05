@@ -17,10 +17,7 @@ interface DigitalSignatureProps {
   signature: string | null;
 }
 
-export function DigitalSignature({
-  onSign,
-  signature,
-}: DigitalSignatureProps) {
+export function DigitalSignature({ onSign, signature }: DigitalSignatureProps) {
   const [isOpen, setIsOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -180,4 +177,3 @@ export function DigitalSignature({
     </>
   );
 }
-

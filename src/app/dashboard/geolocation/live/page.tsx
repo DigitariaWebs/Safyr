@@ -15,7 +15,7 @@ export default function LiveTrackingPage() {
   const [agents] = useState<GeolocationAgent[]>(mockGeolocationAgents);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<GeolocationAgent | null>(
-    null
+    null,
   );
 
   const columns: ColumnDef<GeolocationAgent>[] = [
@@ -74,9 +74,7 @@ export default function LiveTrackingPage() {
       render: (agent) => {
         const diff = Date.now() - new Date(agent.lastUpdate).getTime();
         const minutes = Math.floor(diff / 60000);
-        return minutes === 0
-          ? "À l'instant"
-          : `il y a ${minutes} min`;
+        return minutes === 0 ? "À l'instant" : `il y a ${minutes} min`;
       },
     },
   ];
@@ -152,7 +150,9 @@ export default function LiveTrackingPage() {
                 <div className="flex items-center gap-2 mt-1">
                   <Clock className="h-4 w-4" />
                   <span className="text-sm font-medium">
-                    {new Date(selectedAgent.lastUpdate).toLocaleTimeString("fr-FR")}
+                    {new Date(selectedAgent.lastUpdate).toLocaleTimeString(
+                      "fr-FR",
+                    )}
                   </span>
                 </div>
               </div>
@@ -180,7 +180,9 @@ export default function LiveTrackingPage() {
 
               <div>
                 <Label>Direction</Label>
-                <p className="text-sm font-medium">{selectedAgent.direction}°</p>
+                <p className="text-sm font-medium">
+                  {selectedAgent.direction}°
+                </p>
               </div>
 
               <div>
@@ -210,4 +212,3 @@ export default function LiveTrackingPage() {
     </div>
   );
 }
-

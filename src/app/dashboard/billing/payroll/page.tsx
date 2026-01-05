@@ -80,39 +80,47 @@ export default function BillingPayrollPage() {
       <div>
         <h1 className="text-3xl font-bold">Facturation Liée à la Paie</h1>
         <p className="text-muted-foreground">
-          Alignement facturation ↔ paie, identification des écarts, analyse de rentabilité par mission
+          Alignement facturation ↔ paie, identification des écarts, analyse de
+          rentabilité par mission
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="border rounded-lg p-4">
-          <Label className="text-sm text-muted-foreground">Total heures payées</Label>
+          <Label className="text-sm text-muted-foreground">
+            Total heures payées
+          </Label>
           <p className="text-2xl font-bold">
             {invoicesWithPayroll.reduce(
               (sum, inv) => sum + (inv.payrollAlignment?.hoursPaid || 0),
-              0
+              0,
             )}{" "}
             h
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <Label className="text-sm text-muted-foreground">Total heures facturables</Label>
+          <Label className="text-sm text-muted-foreground">
+            Total heures facturables
+          </Label>
           <p className="text-2xl font-bold">
             {invoicesWithPayroll.reduce(
               (sum, inv) => sum + (inv.payrollAlignment?.hoursBillable || 0),
-              0
+              0,
             )}{" "}
             h
           </p>
         </div>
         <div className="border rounded-lg p-4">
-          <Label className="text-sm text-muted-foreground">Rentabilité moyenne</Label>
+          <Label className="text-sm text-muted-foreground">
+            Rentabilité moyenne
+          </Label>
           <p className="text-2xl font-bold text-green-600">
             {invoicesWithPayroll.length > 0
               ? (
                   invoicesWithPayroll.reduce(
-                    (sum, inv) => sum + (inv.payrollAlignment?.profitability || 0),
-                    0
+                    (sum, inv) =>
+                      sum + (inv.payrollAlignment?.profitability || 0),
+                    0,
                   ) / invoicesWithPayroll.length
                 ).toFixed(1)
               : 0}
@@ -131,4 +139,3 @@ export default function BillingPayrollPage() {
     </div>
   );
 }
-

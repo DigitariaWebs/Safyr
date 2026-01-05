@@ -799,7 +799,7 @@ export default function DiversDocumentsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nom">Nom de l'organisme</Label>
+              <Label htmlFor="nom">Nom de l&apos;organisme</Label>
               <Input
                 id="nom"
                 value={newOrganisme.nom}

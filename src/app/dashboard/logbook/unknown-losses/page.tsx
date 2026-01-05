@@ -130,14 +130,16 @@ export default function UnknownLossesPage() {
     {
       key: "createdAt",
       label: "Date",
-      render: (loss) =>
-        new Date(loss.createdAt).toLocaleDateString("fr-FR"),
+      render: (loss) => new Date(loss.createdAt).toLocaleDateString("fr-FR"),
     },
     {
       key: "status",
       label: "Statut",
       render: (loss) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           pending: "outline",
           validated: "secondary",
           resolved: "default",
@@ -147,7 +149,9 @@ export default function UnknownLossesPage() {
           validated: "Validé",
           resolved: "Résolu",
         };
-        return <Badge variant={variants[loss.status]}>{labels[loss.status]}</Badge>;
+        return (
+          <Badge variant={variants[loss.status]}>{labels[loss.status]}</Badge>
+        );
       },
     },
   ];
@@ -203,8 +207,12 @@ export default function UnknownLossesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les sites</SelectItem>
-                  <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                  <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                  <SelectItem value="SITE-001">
+                    Centre Commercial Atlantis
+                  </SelectItem>
+                  <SelectItem value="SITE-002">
+                    Tour de Bureaux Skyline
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -267,7 +275,9 @@ export default function UnknownLossesPage() {
       {/* Table */}
       <Card className="glass-card border-border/40">
         <CardHeader>
-          <CardTitle className="text-lg font-light">Liste des démarques inconnues</CardTitle>
+          <CardTitle className="text-lg font-light">
+            Liste des démarques inconnues
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -307,14 +317,20 @@ export default function UnknownLossesPage() {
             <Label htmlFor="site">Site</Label>
             <Select
               value={formData.siteId}
-              onValueChange={(value) => setFormData({ ...formData, siteId: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, siteId: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un site" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                <SelectItem value="SITE-001">
+                  Centre Commercial Atlantis
+                </SelectItem>
+                <SelectItem value="SITE-002">
+                  Tour de Bureaux Skyline
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -323,7 +339,9 @@ export default function UnknownLossesPage() {
             <Label htmlFor="category">Catégorisation</Label>
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner une catégorie" />
@@ -343,7 +361,9 @@ export default function UnknownLossesPage() {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Description détaillée de la démarque inconnue..."
               rows={4}
             />
@@ -356,7 +376,9 @@ export default function UnknownLossesPage() {
               type="number"
               step="0.01"
               value={formData.estimatedAmount}
-              onChange={(e) => setFormData({ ...formData, estimatedAmount: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, estimatedAmount: e.target.value })
+              }
               placeholder="0.00"
             />
           </div>
@@ -437,12 +459,16 @@ export default function UnknownLossesPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingLoss.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingLoss.description}
+              </p>
             </div>
 
             <div>
               <Label>Montant estimé</Label>
-              <p className="text-sm font-medium text-lg">{viewingLoss.estimatedAmount.toFixed(2)} €</p>
+              <p className="text-sm font-medium text-lg">
+                {viewingLoss.estimatedAmount.toFixed(2)} €
+              </p>
             </div>
 
             {viewingLoss.photo && (
@@ -478,4 +504,3 @@ export default function UnknownLossesPage() {
     </div>
   );
 }
-

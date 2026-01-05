@@ -6,13 +6,13 @@ import { mockPlanningAgents } from "@/data/planning-agents";
 
 export default function PlanningDashboard() {
   const availableAgents = mockPlanningAgents.filter(
-    (a) => a.availabilityStatus === "Disponible"
+    (a) => a.availabilityStatus === "Disponible",
   ).length;
   const onMission = mockPlanningAgents.filter(
-    (a) => a.availabilityStatus === "En mission"
+    (a) => a.availabilityStatus === "En mission",
   ).length;
   const onLeave = mockPlanningAgents.filter(
-    (a) => a.availabilityStatus === "Congé"
+    (a) => a.availabilityStatus === "Congé",
   ).length;
 
   return (
@@ -70,7 +70,9 @@ export default function PlanningDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockPlanningAgents.length}</div>
+            <div className="text-2xl font-bold">
+              {mockPlanningAgents.length}
+            </div>
             <p className="text-xs text-muted-foreground">
               Agents dans le système
             </p>
@@ -80,5 +82,3 @@ export default function PlanningDashboard() {
     </div>
   );
 }
-
-

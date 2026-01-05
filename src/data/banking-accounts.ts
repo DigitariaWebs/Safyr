@@ -20,7 +20,7 @@ export const mockBankAccounts: BankAccount[] = [
     iban: "FR76 3000 4000 0100 0001 2345 625",
     bic: "BNPAFRPPXXX",
     accountType: "Compte courant",
-    balance: 125000.50,
+    balance: 125000.5,
     currency: "EUR",
     status: "Actif",
     lastSync: new Date().toISOString(),
@@ -33,7 +33,7 @@ export const mockBankAccounts: BankAccount[] = [
     iban: "FR76 3000 3000 0100 0009 8765 432",
     bic: "SOGEFRPPXXX",
     accountType: "Compte de dépôt",
-    balance: 50000.00,
+    balance: 50000.0,
     currency: "EUR",
     status: "Actif",
     lastSync: new Date(Date.now() - 3600000).toISOString(),
@@ -46,12 +46,10 @@ export const mockBankAccounts: BankAccount[] = [
     iban: "FR76 1234 5123 4500 0001 1122 233",
     bic: "AGRIFRPPXXX",
     accountType: "Compte de caution",
-    balance: 10000.00,
+    balance: 10000.0,
     currency: "EUR",
     status: "Actif",
     lastSync: new Date(Date.now() - 7200000).toISOString(),
     apiConnected: false,
   },
 ];
-
-

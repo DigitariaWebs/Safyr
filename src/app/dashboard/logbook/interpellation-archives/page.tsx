@@ -14,13 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Search,
-  FileText,
-  MapPin,
-  Shield,
-  Download,
-} from "lucide-react";
+import { Search, FileText, MapPin, Shield, Download } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 
 interface InterpellationRecord {
@@ -47,7 +41,8 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     reason: "Comportement suspect",
-    description: "Personne suspecte observée dans le parking. Contrôle d'identité effectué.",
+    description:
+      "Personne suspecte observée dans le parking. Contrôle d'identité effectué.",
     personInterpellated: "M. X",
     status: "archived",
     archivedAt: "2024-12-24T15:00:00Z",
@@ -61,7 +56,8 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     agentId: "AGT-126",
     agentName: "Marie Martin",
     reason: "Tentative d'intrusion",
-    description: "Tentative d'accès non autorisé détectée. Intervention immédiate.",
+    description:
+      "Tentative d'accès non autorisé détectée. Intervention immédiate.",
     status: "archived",
     archivedAt: "2024-12-23T11:00:00Z",
     archivedBy: "Pierre Durand",
@@ -92,7 +88,8 @@ const reasons = [
 
 export default function InterpellationArchivesPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewingRecord, setViewingRecord] = useState<InterpellationRecord | null>(null);
+  const [viewingRecord, setViewingRecord] =
+    useState<InterpellationRecord | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     site: "all",
     agent: "",
@@ -105,31 +102,37 @@ export default function InterpellationArchivesPage() {
   let filteredRecords = mockInterpellationRecords;
 
   if (searchFilters.site !== "all") {
-    filteredRecords = filteredRecords.filter((r) => r.siteId === searchFilters.site);
+    filteredRecords = filteredRecords.filter(
+      (r) => r.siteId === searchFilters.site,
+    );
   }
   if (searchFilters.agent) {
     filteredRecords = filteredRecords.filter((r) =>
-      r.agentName.toLowerCase().includes(searchFilters.agent.toLowerCase())
+      r.agentName.toLowerCase().includes(searchFilters.agent.toLowerCase()),
     );
   }
   if (searchFilters.reason !== "all") {
-    filteredRecords = filteredRecords.filter((r) => r.reason === searchFilters.reason);
+    filteredRecords = filteredRecords.filter(
+      (r) => r.reason === searchFilters.reason,
+    );
   }
   if (searchFilters.startDate) {
     filteredRecords = filteredRecords.filter(
-      (r) => new Date(r.date) >= new Date(searchFilters.startDate)
+      (r) => new Date(r.date) >= new Date(searchFilters.startDate),
     );
   }
   if (searchFilters.endDate) {
     filteredRecords = filteredRecords.filter(
-      (r) => new Date(r.date) <= new Date(searchFilters.endDate)
+      (r) => new Date(r.date) <= new Date(searchFilters.endDate),
     );
   }
   if (searchFilters.searchTerm) {
     filteredRecords = filteredRecords.filter(
       (r) =>
-        r.description.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()) ||
-        r.id.toLowerCase().includes(searchFilters.searchTerm.toLowerCase())
+        r.description
+          .toLowerCase()
+          .includes(searchFilters.searchTerm.toLowerCase()) ||
+        r.id.toLowerCase().includes(searchFilters.searchTerm.toLowerCase()),
     );
   }
 
@@ -137,18 +140,21 @@ export default function InterpellationArchivesPage() {
     {
       key: "id",
       label: "ID",
-      render: (record) => <span className="font-mono text-xs">{record.id}</span>,
+      render: (record) => (
+        <span className="font-mono text-xs">{record.id}</span>
+      ),
     },
     {
       key: "siteName",
       label: "Site",
-      render: (record) => <span className="font-medium">{record.siteName}</span>,
+      render: (record) => (
+        <span className="font-medium">{record.siteName}</span>
+      ),
     },
     {
       key: "date",
       label: "Date",
-      render: (record) =>
-        new Date(record.date).toLocaleString("fr-FR"),
+      render: (record) => new Date(record.date).toLocaleString("fr-FR"),
     },
     {
       key: "agentName",
@@ -210,8 +216,12 @@ export default function InterpellationArchivesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les sites</SelectItem>
-                  <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                  <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                  <SelectItem value="SITE-001">
+                    Centre Commercial Atlantis
+                  </SelectItem>
+                  <SelectItem value="SITE-002">
+                    Tour de Bureaux Skyline
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -257,7 +267,10 @@ export default function InterpellationArchivesPage() {
                 type="date"
                 value={searchFilters.startDate}
                 onChange={(e) =>
-                  setSearchFilters({ ...searchFilters, startDate: e.target.value })
+                  setSearchFilters({
+                    ...searchFilters,
+                    startDate: e.target.value,
+                  })
                 }
               />
             </div>
@@ -269,7 +282,10 @@ export default function InterpellationArchivesPage() {
                 type="date"
                 value={searchFilters.endDate}
                 onChange={(e) =>
-                  setSearchFilters({ ...searchFilters, endDate: e.target.value })
+                  setSearchFilters({
+                    ...searchFilters,
+                    endDate: e.target.value,
+                  })
                 }
               />
             </div>
@@ -280,7 +296,10 @@ export default function InterpellationArchivesPage() {
                 id="searchTerm"
                 value={searchFilters.searchTerm}
                 onChange={(e) =>
-                  setSearchFilters({ ...searchFilters, searchTerm: e.target.value })
+                  setSearchFilters({
+                    ...searchFilters,
+                    searchTerm: e.target.value,
+                  })
                 }
                 placeholder="Rechercher dans les descriptions..."
               />
@@ -327,7 +346,9 @@ export default function InterpellationArchivesPage() {
 
         <Card className="glass-card border-border/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sites concernés</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Sites concernés
+            </CardTitle>
             <MapPin className="h-4 w-4" />
           </CardHeader>
           <CardContent>
@@ -341,7 +362,9 @@ export default function InterpellationArchivesPage() {
       {/* Table */}
       <Card className="glass-card border-border/40">
         <CardHeader>
-          <CardTitle className="text-lg font-light">Fiches d&apos;interpellation</CardTitle>
+          <CardTitle className="text-lg font-light">
+            Fiches d&apos;interpellation
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -362,7 +385,7 @@ export default function InterpellationArchivesPage() {
         open={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         type="details"
-        title="Détails de la fiche d&apos;interpellation"
+        title="Détails de la fiche d'interpellation"
         size="lg"
         actions={{
           secondary: {
@@ -404,7 +427,9 @@ export default function InterpellationArchivesPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingRecord.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingRecord.description}
+              </p>
             </div>
 
             {viewingRecord.personInterpellated && (
@@ -417,7 +442,9 @@ export default function InterpellationArchivesPage() {
             <div>
               <Label>Statut</Label>
               <Badge
-                variant={viewingRecord.status === "archived" ? "default" : "secondary"}
+                variant={
+                  viewingRecord.status === "archived" ? "default" : "secondary"
+                }
               >
                 {viewingRecord.status === "archived" ? "Archivé" : "Actif"}
               </Badge>
@@ -443,4 +470,3 @@ export default function InterpellationArchivesPage() {
     </div>
   );
 }
-

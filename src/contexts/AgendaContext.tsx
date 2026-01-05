@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import type { Appointment, CalendarScope, CalendarSettings } from "@/lib/types";
 
 interface AgendaContextType {
@@ -12,7 +18,9 @@ interface AgendaContextType {
   currentUserId: string;
   openAgenda: (date?: Date) => void;
   closeAgenda: () => void;
-  addAppointment: (appointment: Omit<Appointment, "id" | "createdAt" | "createdBy">) => void;
+  addAppointment: (
+    appointment: Omit<Appointment, "id" | "createdAt" | "createdBy">,
+  ) => void;
   updateAppointment: (id: string, appointment: Partial<Appointment>) => void;
   deleteAppointment: (id: string) => void;
   setCalendarScope: (scope: CalendarScope) => void;
@@ -35,7 +43,8 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [calendarScope, setCalendarScope] = useState<CalendarScope>("personal");
-  const [calendarSettings, setCalendarSettings] = useState<CalendarSettings>(defaultSettings);
+  const [calendarSettings, setCalendarSettings] =
+    useState<CalendarSettings>(defaultSettings);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Mock user ID - in a real app, this would come from auth context
@@ -91,8 +100,11 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
     setIsOpen(false);
   };
 
-  const addAppointment = (appointmentData: Omit<Appointment, "id" | "createdAt" | "createdBy">) => {
-    const generateId = () => `apt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const addAppointment = (
+    appointmentData: Omit<Appointment, "id" | "createdAt" | "createdBy">,
+  ) => {
+    const generateId = () =>
+      `apt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     const newAppointment: Appointment = {
       ...appointmentData,
@@ -113,7 +125,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
             ...updates,
             updatedAt: new Date().toISOString(),
           }
-        : apt
+        : apt,
     );
     saveAppointments(updatedAppointments);
   };
@@ -146,7 +158,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
       return appointments.filter(
         (apt) =>
           apt.scope === "global" ||
-          (apt.scope === "personal" && apt.userId === currentUserId)
+          (apt.scope === "personal" && apt.userId === currentUserId),
       );
     }
   };

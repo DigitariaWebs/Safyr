@@ -16,7 +16,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { mockLogbookEvents, mockSites, mockAgents, LogbookEvent } from "@/data/logbook-events";
+import {
+  mockLogbookEvents,
+  mockSites,
+  mockAgents,
+  LogbookEvent,
+} from "@/data/logbook-events";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 
@@ -89,10 +94,10 @@ function StatsCard({
   );
 }
 
-function RecentEventsWidget({ 
+function RecentEventsWidget({
   isLoading,
-  onEventClick 
-}: { 
+  onEventClick,
+}: {
   isLoading: boolean;
   onEventClick: (event: LogbookEvent) => void;
 }) {
@@ -164,7 +169,11 @@ function RecentEventsWidget({
                     {event.title}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {mockSites.find((s) => s.id === event.siteId)?.name || "N/A"} • {mockAgents.find((a) => a.id === event.agentId)?.name || "N/A"}
+                    {mockSites.find((s) => s.id === event.siteId)?.name ||
+                      "N/A"}{" "}
+                    •{" "}
+                    {mockAgents.find((a) => a.id === event.agentId)?.name ||
+                      "N/A"}
                   </p>
                 </div>
                 <Badge variant="outline">{event.status}</Badge>
@@ -261,8 +270,9 @@ export default function LogbookDashboardPage() {
   const pendingValidation = mockLogbookEvents.filter(
     (e) => e.status === "pending" || e.status === "in_progress",
   ).length;
-  const resolvedToday = mockLogbookEvents.filter((e) => e.status === "resolved")
-    .length;
+  const resolvedToday = mockLogbookEvents.filter(
+    (e) => e.status === "resolved",
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -318,7 +328,10 @@ export default function LogbookDashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <RecentEventsWidget isLoading={isLoading} onEventClick={handleEventClick} />
+          <RecentEventsWidget
+            isLoading={isLoading}
+            onEventClick={handleEventClick}
+          />
         </div>
         <div>
           <AlertsWidget isLoading={isLoading} />
@@ -352,7 +365,8 @@ export default function LogbookDashboardPage() {
               <div>
                 <Label>Site</Label>
                 <p className="text-sm">
-                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name || "N/A"}
+                  {mockSites.find((s) => s.id === viewingEvent.siteId)?.name ||
+                    "N/A"}
                 </p>
               </div>
               <div>
@@ -368,7 +382,9 @@ export default function LogbookDashboardPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingEvent.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingEvent.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -378,13 +394,16 @@ export default function LogbookDashboardPage() {
               </div>
               <div>
                 <Label>Gravité</Label>
-                <Badge variant={
-                  viewingEvent.severity === "critical" || viewingEvent.severity === "high"
-                    ? "destructive"
-                    : viewingEvent.severity === "medium"
-                    ? "default"
-                    : "secondary"
-                }>
+                <Badge
+                  variant={
+                    viewingEvent.severity === "critical" ||
+                    viewingEvent.severity === "high"
+                      ? "destructive"
+                      : viewingEvent.severity === "medium"
+                        ? "default"
+                        : "secondary"
+                  }
+                >
                   {viewingEvent.severity}
                 </Badge>
               </div>
@@ -398,7 +417,8 @@ export default function LogbookDashboardPage() {
               <div>
                 <Label>Agent</Label>
                 <p className="text-sm">
-                  {mockAgents.find((a) => a.id === viewingEvent.agentId)?.name || "N/A"}
+                  {mockAgents.find((a) => a.id === viewingEvent.agentId)
+                    ?.name || "N/A"}
                 </p>
               </div>
             </div>
@@ -409,7 +429,8 @@ export default function LogbookDashboardPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="h-4 w-4" />
                   <span>
-                    {viewingEvent.location.lat.toFixed(4)}, {viewingEvent.location.lng.toFixed(4)}
+                    {viewingEvent.location.lat.toFixed(4)},{" "}
+                    {viewingEvent.location.lng.toFixed(4)}
                   </span>
                 </div>
               </div>
@@ -419,24 +440,30 @@ export default function LogbookDashboardPage() {
               <div>
                 <Label>Médias</Label>
                 <div className="flex gap-4 text-sm">
-                  {viewingEvent.media.photos && viewingEvent.media.photos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
-                      <span>{viewingEvent.media.photos.length} photo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.videos && viewingEvent.media.videos.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      <span>{viewingEvent.media.videos.length} vidéo(s)</span>
-                    </div>
-                  )}
-                  {viewingEvent.media.voiceNotes && viewingEvent.media.voiceNotes.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Mic className="h-4 w-4" />
-                      <span>{viewingEvent.media.voiceNotes.length} note(s) vocale(s)</span>
-                    </div>
-                  )}
+                  {viewingEvent.media.photos &&
+                    viewingEvent.media.photos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        <span>{viewingEvent.media.photos.length} photo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.videos &&
+                    viewingEvent.media.videos.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4" />
+                        <span>{viewingEvent.media.videos.length} vidéo(s)</span>
+                      </div>
+                    )}
+                  {viewingEvent.media.voiceNotes &&
+                    viewingEvent.media.voiceNotes.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Mic className="h-4 w-4" />
+                        <span>
+                          {viewingEvent.media.voiceNotes.length} note(s)
+                          vocale(s)
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             )}
@@ -446,4 +473,3 @@ export default function LogbookDashboardPage() {
     </div>
   );
 }
-

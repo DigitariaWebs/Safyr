@@ -16,18 +16,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
-import {
-  mockAccountingPlans,
-  AccountingPlan,
-} from "@/data/accounting-plans";
+import { mockAccountingPlans, AccountingPlan } from "@/data/accounting-plans";
 
 export default function AccountingChartPage() {
   const [plans, setPlans] = useState<AccountingPlan[]>(mockAccountingPlans);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<AccountingPlan | null>(
-    null
-  );
+  const [selectedPlan, setSelectedPlan] = useState<AccountingPlan | null>(null);
   const [formData, setFormData] = useState<Partial<AccountingPlan>>({});
 
   const columns: ColumnDef<AccountingPlan>[] = [
@@ -91,7 +86,7 @@ export default function AccountingChartPage() {
   const handleSave = () => {
     if (formData.id) {
       setPlans(
-        plans.map((p) => (p.id === formData.id ? { ...p, ...formData } : p))
+        plans.map((p) => (p.id === formData.id ? { ...p, ...formData } : p)),
       );
     } else {
       const newPlan: AccountingPlan = {
@@ -316,7 +311,9 @@ export default function AccountingChartPage() {
               <div>
                 <Label>Dernière mise à jour</Label>
                 <p className="text-sm font-medium">
-                  {new Date(selectedPlan.lastUpdate).toLocaleDateString("fr-FR")}
+                  {new Date(selectedPlan.lastUpdate).toLocaleDateString(
+                    "fr-FR",
+                  )}
                 </p>
               </div>
             </div>
@@ -326,4 +323,3 @@ export default function AccountingChartPage() {
     </div>
   );
 }
-

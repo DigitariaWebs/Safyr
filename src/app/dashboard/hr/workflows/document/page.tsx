@@ -47,31 +47,33 @@ const mockEmployees = [
 ];
 
 // Mock data - use data from file, convert dates
-const mockDocumentRequestsData: DocumentRequest[] = mockDocumentRequests.map((req) => ({
-  id: req.id,
-  employeeId: req.employeeId,
-  employeeName: req.employeeName,
-  employeeNumber: req.employeeNumber,
-  department: req.department || "Sécurité",
-  type: "document" as const,
-  documentType: req.documentType,
-  documentDescription: req.documentDescription,
-  period: req.period,
-  year: req.year,
-  specificDetails: req.specificDetails,
-  deliveryMethod: req.deliveryMethod === "post" ? "mail" : req.deliveryMethod,
-  status: req.status as HRRequestStatus,
-  submittedAt: new Date(req.submittedAt),
-  processedAt: req.processedAt ? new Date(req.processedAt) : undefined,
-  processedBy: req.processedBy,
-  processedByName: req.processedBy ? "Sophie Dubois" : undefined,
-  providedAt: req.providedAt ? new Date(req.providedAt) : undefined,
-  documentUrl: req.documentUrl,
-  priority: req.priority,
-  history: [],
-  createdAt: new Date(req.createdAt),
-  updatedAt: new Date(req.updatedAt),
-}));
+const mockDocumentRequestsData: DocumentRequest[] = mockDocumentRequests.map(
+  (req) => ({
+    id: req.id,
+    employeeId: req.employeeId,
+    employeeName: req.employeeName,
+    employeeNumber: req.employeeNumber,
+    department: req.department || "Sécurité",
+    type: "document" as const,
+    documentType: req.documentType,
+    documentDescription: req.documentDescription,
+    period: req.period,
+    year: req.year,
+    specificDetails: req.specificDetails,
+    deliveryMethod: req.deliveryMethod === "post" ? "mail" : req.deliveryMethod,
+    status: req.status as HRRequestStatus,
+    submittedAt: new Date(req.submittedAt),
+    processedAt: req.processedAt ? new Date(req.processedAt) : undefined,
+    processedBy: req.processedBy,
+    processedByName: req.processedBy ? "Sophie Dubois" : undefined,
+    providedAt: req.providedAt ? new Date(req.providedAt) : undefined,
+    documentUrl: req.documentUrl,
+    priority: req.priority,
+    history: [],
+    createdAt: new Date(req.createdAt),
+    updatedAt: new Date(req.updatedAt),
+  }),
+);
 
 const documentTypeLabels: Record<DocumentType, string> = {
   payslip: "Bulletin de paie",
@@ -90,7 +92,10 @@ const statusLabels: Record<HRRequestStatus, string> = {
   cancelled: "Annulée",
 };
 
-const statusColors: Record<HRRequestStatus, "default" | "secondary" | "destructive"> = {
+const statusColors: Record<
+  HRRequestStatus,
+  "default" | "secondary" | "destructive"
+> = {
   pending: "default",
   in_progress: "secondary",
   validated: "secondary",
@@ -130,7 +135,6 @@ export default function DocumentRequestsPage() {
     deliveryAddress: "",
     priority: "normal" as "low" | "normal" | "high" | "urgent",
   });
-
 
   const handleCreate = () => {
     setEditingRequest(null);
@@ -270,7 +274,9 @@ export default function DocumentRequestsPage() {
   let filteredRequests = requests;
 
   if (filterStatus !== "all") {
-    filteredRequests = filteredRequests.filter((r) => r.status === filterStatus);
+    filteredRequests = filteredRequests.filter(
+      (r) => r.status === filterStatus,
+    );
   }
 
   if (filterDocType !== "all") {
@@ -385,7 +391,9 @@ export default function DocumentRequestsPage() {
   // Calculate stats
   const totalRequests = requests.length;
   const pendingRequests = requests.filter((r) => r.status === "pending").length;
-  const validatedRequests = requests.filter((r) => r.status === "validated").length;
+  const validatedRequests = requests.filter(
+    (r) => r.status === "validated",
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -473,7 +481,9 @@ export default function DocumentRequestsPage() {
                   <SelectItem value="contract">Contrat</SelectItem>
                   <SelectItem value="attestation">Attestation</SelectItem>
                   <SelectItem value="tax_document">Document fiscal</SelectItem>
-                  <SelectItem value="social_security">Sécurité sociale</SelectItem>
+                  <SelectItem value="social_security">
+                    Sécurité sociale
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -489,7 +499,11 @@ export default function DocumentRequestsPage() {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         type="form"
-        title={editingRequest ? "Modifier la demande" : "Nouvelle demande de document"}
+        title={
+          editingRequest
+            ? "Modifier la demande"
+            : "Nouvelle demande de document"
+        }
         size="lg"
         actions={{
           primary: {
@@ -544,19 +558,26 @@ export default function DocumentRequestsPage() {
                 <SelectItem value="contract">Contrat de travail</SelectItem>
                 <SelectItem value="attestation">Attestation</SelectItem>
                 <SelectItem value="tax_document">Document fiscal</SelectItem>
-                <SelectItem value="social_security">Sécurité sociale</SelectItem>
+                <SelectItem value="social_security">
+                  Sécurité sociale
+                </SelectItem>
                 <SelectItem value="other">Autre</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="documentDescription">Description du document *</Label>
+            <Label htmlFor="documentDescription">
+              Description du document *
+            </Label>
             <Textarea
               id="documentDescription"
               value={formData.documentDescription}
               onChange={(e) =>
-                setFormData({ ...formData, documentDescription: e.target.value })
+                setFormData({
+                  ...formData,
+                  documentDescription: e.target.value,
+                })
               }
               placeholder="Ex: Bulletins de paie du mois de décembre 2024"
               rows={3}
@@ -655,11 +676,15 @@ export default function DocumentRequestsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-muted-foreground">Employé</Label>
-                <p className="text-sm font-medium">{viewingRequest.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {viewingRequest.employeeName}
+                </p>
               </div>
               <div>
                 <Label className="text-muted-foreground">Département</Label>
-                <p className="text-sm font-medium">{viewingRequest.department}</p>
+                <p className="text-sm font-medium">
+                  {viewingRequest.department}
+                </p>
               </div>
             </div>
 
@@ -691,7 +716,9 @@ export default function DocumentRequestsPage() {
 
             {viewingRequest.specificDetails && (
               <div>
-                <Label className="text-muted-foreground">Détails spécifiques</Label>
+                <Label className="text-muted-foreground">
+                  Détails spécifiques
+                </Label>
                 <p className="text-sm">{viewingRequest.specificDetails}</p>
               </div>
             )}
@@ -705,14 +732,18 @@ export default function DocumentRequestsPage() {
 
             {viewingRequest.deliveryAddress && (
               <div>
-                <Label className="text-muted-foreground">Adresse de livraison</Label>
+                <Label className="text-muted-foreground">
+                  Adresse de livraison
+                </Label>
                 <p className="text-sm">{viewingRequest.deliveryAddress}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date de soumission</Label>
+                <Label className="text-muted-foreground">
+                  Date de soumission
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingRequest.submittedAt.toLocaleDateString("fr-FR")}
                 </p>

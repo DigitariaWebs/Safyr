@@ -153,9 +153,7 @@ const categoryLabels = {
 };
 
 export default function ExpenseHistoryPage() {
-  const [expenses] = useState<ExpenseReport[]>(
-    mockHistoricalExpenses,
-  );
+  const [expenses] = useState<ExpenseReport[]>(mockHistoricalExpenses);
   const [filterEmployee, setFilterEmployee] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterMonth, setFilterMonth] = useState<string>("all");

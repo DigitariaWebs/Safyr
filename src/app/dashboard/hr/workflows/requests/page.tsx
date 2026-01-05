@@ -124,7 +124,10 @@ const statusLabels: Record<HRRequestStatus, string> = {
   cancelled: "Annulée",
 };
 
-const statusColors: Record<HRRequestStatus, "default" | "secondary" | "destructive"> = {
+const statusColors: Record<
+  HRRequestStatus,
+  "default" | "secondary" | "destructive"
+> = {
   pending: "default",
   in_progress: "secondary",
   validated: "secondary",
@@ -155,12 +158,13 @@ const priorityLabels = {
   urgent: "Urgente",
 };
 
-const priorityColors: Record<string, "default" | "secondary" | "destructive"> = {
-  low: "secondary",
-  normal: "default",
-  high: "default",
-  urgent: "destructive",
-};
+const priorityColors: Record<string, "default" | "secondary" | "destructive"> =
+  {
+    low: "secondary",
+    normal: "default",
+    high: "default",
+    urgent: "destructive",
+  };
 
 export default function WorkflowsRequestsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -170,7 +174,9 @@ export default function WorkflowsRequestsPage() {
   let filteredRequests = mockRequests;
 
   if (filterStatus !== "all") {
-    filteredRequests = filteredRequests.filter((r) => r.status === filterStatus);
+    filteredRequests = filteredRequests.filter(
+      (r) => r.status === filterStatus,
+    );
   }
 
   if (filterType !== "all") {
@@ -254,7 +260,9 @@ export default function WorkflowsRequestsPage() {
       key: "assignedTo",
       label: "Assigné à",
       render: (request: HRRequest) =>
-        request.assignedToName || <span className="text-muted-foreground">-</span>,
+        request.assignedToName || (
+          <span className="text-muted-foreground">-</span>
+        ),
     },
   ];
 
@@ -302,7 +310,9 @@ export default function WorkflowsRequestsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.pendingRequests}</div>
+            <div className="text-2xl font-bold">
+              {mockStats.pendingRequests}
+            </div>
             <p className="text-xs text-muted-foreground">
               À traiter rapidement
             </p>
@@ -318,9 +328,7 @@ export default function WorkflowsRequestsPage() {
             <div className="text-2xl font-bold">
               {mockStats.inProgressRequests}
             </div>
-            <p className="text-xs text-muted-foreground">
-              En traitement
-            </p>
+            <p className="text-xs text-muted-foreground">En traitement</p>
           </CardContent>
         </Card>
 

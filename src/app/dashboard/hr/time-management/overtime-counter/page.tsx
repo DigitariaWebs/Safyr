@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Modal } from "@/components/ui/modal";
+
 import { Clock, CheckCircle, AlertTriangle } from "lucide-react";
 
 // Mock data for overtime counter
@@ -23,6 +21,50 @@ const mockOvertimeCounters = [
     remainingHours: 25.5,
     lastPaymentDate: new Date("2024-11-15"),
     nextPaymentDate: new Date("2025-01-15"),
+    monthlyBreakdown: [
+      {
+        month: "Janvier 2024",
+        hours: 8.5,
+        status: "paid",
+        type: "Heures normales",
+        days: 5,
+      },
+      {
+        month: "Février 2024",
+        hours: 6.0,
+        status: "paid",
+        type: "Heures normales",
+        days: 4,
+      },
+      {
+        month: "Mars 2024",
+        hours: 7.5,
+        status: "pending",
+        type: "Heures normales",
+        days: 5,
+      },
+      {
+        month: "Avril 2024",
+        hours: 5.0,
+        status: "pending",
+        type: "Heures de nuit",
+        days: 3,
+      },
+      {
+        month: "Mai 2024",
+        hours: 9.0,
+        status: "pending",
+        type: "Weekend",
+        days: 6,
+      },
+      {
+        month: "Juin 2024",
+        hours: 9.5,
+        status: "pending",
+        type: "Heures normales",
+        days: 6,
+      },
+    ],
   },
   {
     id: "2",
@@ -35,6 +77,50 @@ const mockOvertimeCounters = [
     remainingHours: 17,
     lastPaymentDate: new Date("2024-10-30"),
     nextPaymentDate: new Date("2024-12-30"),
+    monthlyBreakdown: [
+      {
+        month: "Janvier 2024",
+        hours: 4.0,
+        status: "paid",
+        type: "Heures normales",
+        days: 3,
+      },
+      {
+        month: "Février 2024",
+        hours: 5.5,
+        status: "paid",
+        type: "Weekend",
+        days: 4,
+      },
+      {
+        month: "Mars 2024",
+        hours: 6.0,
+        status: "pending",
+        type: "Heures normales",
+        days: 4,
+      },
+      {
+        month: "Avril 2024",
+        hours: 5.5,
+        status: "pending",
+        type: "Heures de nuit",
+        days: 3,
+      },
+      {
+        month: "Mai 2024",
+        hours: 6.0,
+        status: "pending",
+        type: "Heures normales",
+        days: 4,
+      },
+      {
+        month: "Juin 2024",
+        hours: 5.0,
+        status: "pending",
+        type: "Weekend",
+        days: 3,
+      },
+    ],
   },
   {
     id: "3",
@@ -47,37 +133,97 @@ const mockOvertimeCounters = [
     remainingHours: 18.5,
     lastPaymentDate: null,
     nextPaymentDate: new Date("2025-02-15"),
+    monthlyBreakdown: [
+      {
+        month: "Janvier 2024",
+        hours: 3.5,
+        status: "pending",
+        type: "Heures normales",
+        days: 2,
+      },
+      {
+        month: "Février 2024",
+        hours: 4.0,
+        status: "pending",
+        type: "Heures normales",
+        days: 3,
+      },
+      {
+        month: "Mars 2024",
+        hours: 5.0,
+        status: "pending",
+        type: "Weekend",
+        days: 3,
+      },
+      {
+        month: "Avril 2024",
+        hours: 6.0,
+        status: "pending",
+        type: "Heures de nuit",
+        days: 4,
+      },
+    ],
   },
 ];
 
 export default function OvertimeCounterPage() {
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedCounter, setSelectedCounter] = useState<
-    (typeof mockOvertimeCounters)[0] | null
-  >(null);
-  const [paymentAmount, setPaymentAmount] = useState("");
-
-  const handleViewPayment = (counter: (typeof mockOvertimeCounters)[0]) => {
-    setSelectedCounter(counter);
-    setPaymentAmount(counter.remainingHours.toString());
-    setIsPaymentModalOpen(true);
-  };
-
-  const handlePayment = () => {
-    if (!selectedCounter) return;
-    const amount = parseFloat(paymentAmount);
-    if (isNaN(amount) || amount <= 0 || amount > selectedCounter.remainingHours)
-      return;
-
-    console.log("Processing payment:", {
-      counterId: selectedCounter.id,
-      amount,
-    });
-
-    // Reset modal
-    setIsPaymentModalOpen(false);
-    setSelectedCounter(null);
-    setPaymentAmount("");
+  const renderMonthlyBreakdown = (
+    counter: (typeof mockOvertimeCounters)[0],
+  ) => {
+    return (
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm flex items-center gap-2">
+          Répartition mensuelle des heures accumulées
+          <span className="text-xs font-normal text-muted-foreground">
+            ({counter.monthlyBreakdown.length} mois)
+          </span>
+        </h4>
+        <div className="space-y-2">
+          {counter.monthlyBreakdown.map((entry, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between rounded-md border bg-background p-3 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm">{entry.month}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      entry.status === "paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-orange-100 text-orange-700"
+                    }`}
+                  >
+                    {entry.status === "paid" ? "Payé" : "En attente"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {entry.type}
+                  </span>
+                  <span>•</span>
+                  <span>{entry.days} jours</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="font-bold text-blue-600 text-lg">
+                  {entry.hours}h
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between pt-3 border-t">
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Total accumulé</span>
+          </div>
+          <span className="font-bold text-blue-600 text-xl">
+            {counter.accumulatedHours}h
+          </span>
+        </div>
+      </div>
+    );
   };
 
   const overtimeCounterColumns: ColumnDef<(typeof mockOvertimeCounters)[0]>[] =
@@ -135,29 +281,6 @@ export default function OvertimeCounterPage() {
               ? counter.lastPaymentDate.toLocaleDateString("fr-FR")
               : "Aucun"}
           </span>
-        ),
-      },
-      {
-        key: "nextPaymentDate",
-        label: "Prochain paiement",
-        sortable: true,
-        render: (counter) => (
-          <span className="text-sm">
-            {counter.nextPaymentDate.toLocaleDateString("fr-FR")}
-          </span>
-        ),
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (counter) => (
-          <Button
-            size="sm"
-            onClick={() => handleViewPayment(counter)}
-            disabled={counter.remainingHours === 0}
-          >
-            Payer
-          </Button>
         ),
       },
     ];
@@ -239,102 +362,10 @@ export default function OvertimeCounterPage() {
                 ],
               },
             ]}
+            expandableContent={renderMonthlyBreakdown}
           />
         </CardContent>
       </Card>
-
-      {/* Payment Modal */}
-      <Modal
-        open={isPaymentModalOpen}
-        onOpenChange={(open) => {
-          setIsPaymentModalOpen(open);
-          if (!open) {
-            setSelectedCounter(null);
-            setPaymentAmount("");
-          }
-        }}
-        type="form"
-        title="Paiement d'heures supplémentaires"
-        description={`Paiement pour ${selectedCounter?.employeeName}`}
-        actions={{
-          secondary: {
-            label: "Annuler",
-            onClick: () => setIsPaymentModalOpen(false),
-            variant: "outline",
-          },
-          primary: {
-            label: "Confirmer le paiement",
-            onClick: handlePayment,
-            disabled: !paymentAmount || parseFloat(paymentAmount) <= 0,
-          },
-        }}
-      >
-        {selectedCounter && (
-          <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Heures restantes
-                </label>
-                <p className="mt-1 font-medium">
-                  {selectedCounter.remainingHours}h
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Dernier paiement
-                </label>
-                <p className="mt-1 font-medium">
-                  {selectedCounter.lastPaymentDate
-                    ? selectedCounter.lastPaymentDate.toLocaleDateString(
-                        "fr-FR",
-                      )
-                    : "Aucun"}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="paymentAmount">
-                Nombre d&apos;heures à payer{" "}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="paymentAmount"
-                type="number"
-                min="0"
-                max={selectedCounter.remainingHours}
-                step="0.5"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                placeholder="Entrez le nombre d'heures"
-              />
-            </div>
-
-            <div className="rounded-md border border-muted bg-muted/50 p-4">
-              <h4 className="font-medium mb-2">💰 Résumé du paiement</h4>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span>Heures à payer:</span>
-                  <span className="font-semibold">{paymentAmount || 0}h</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Heures restantes après paiement:</span>
-                  <span className="font-semibold">
-                    {Math.max(
-                      0,
-                      selectedCounter.remainingHours -
-                        (parseFloat(paymentAmount) || 0),
-                    )}
-                    h
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

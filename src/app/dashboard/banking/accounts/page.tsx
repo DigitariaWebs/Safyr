@@ -23,7 +23,7 @@ export default function BankAccountsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState<Partial<BankAccount>>({});
 
@@ -95,7 +95,7 @@ export default function BankAccountsPage() {
   const handleSave = () => {
     if (formData.id) {
       setAccounts(
-        accounts.map((a) => (a.id === formData.id ? { ...a, ...formData } : a))
+        accounts.map((a) => (a.id === formData.id ? { ...a, ...formData } : a)),
       );
     } else {
       const newAccount: BankAccount = {
@@ -206,7 +206,9 @@ export default function BankAccountsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Compte courant">Compte courant</SelectItem>
-                  <SelectItem value="Compte de dépôt">Compte de dépôt</SelectItem>
+                  <SelectItem value="Compte de dépôt">
+                    Compte de dépôt
+                  </SelectItem>
                   <SelectItem value="Compte de caution">
                     Compte de caution
                   </SelectItem>
@@ -326,7 +328,9 @@ export default function BankAccountsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label>Banque</Label>
-                <p className="text-sm font-medium">{selectedAccount.bankName}</p>
+                <p className="text-sm font-medium">
+                  {selectedAccount.bankName}
+                </p>
               </div>
 
               <div>
@@ -357,7 +361,9 @@ export default function BankAccountsPage() {
 
               <div>
                 <Label>Devise</Label>
-                <p className="text-sm font-medium">{selectedAccount.currency}</p>
+                <p className="text-sm font-medium">
+                  {selectedAccount.currency}
+                </p>
               </div>
 
               <div>
@@ -401,4 +407,3 @@ export default function BankAccountsPage() {
     </div>
   );
 }
-

@@ -29,26 +29,33 @@ export default function StatisticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
 
   // Calculate KPIs from mock data
-  const totalIncidents = mockLogbookEvents.filter((e) => e.type === "incident").length;
+  const totalIncidents = mockLogbookEvents.filter(
+    (e) => e.type === "incident",
+  ).length;
   const criticalIncidents = mockLogbookEvents.filter(
-    (e) => e.severity === "critical"
+    (e) => e.severity === "critical",
   ).length;
   const resolvedIncidents = mockLogbookEvents.filter(
-    (e) => e.status === "resolved"
+    (e) => e.status === "resolved",
   ).length;
-  const resolutionRate = totalIncidents > 0
-    ? ((resolvedIncidents / totalIncidents) * 100).toFixed(1)
-    : "0";
+  const resolutionRate =
+    totalIncidents > 0
+      ? ((resolvedIncidents / totalIncidents) * 100).toFixed(1)
+      : "0";
   const avgResolutionTime = "2.5h";
   const totalVisitors = 1247; // Mock
   const totalRounds = mockLogbookEvents.filter(
-    (e) => e.type === "action" && e.title.toLowerCase().includes("ronde")
+    (e) => e.type === "action" && e.title.toLowerCase().includes("ronde"),
   ).length;
   const avgRoundInterval = "45 min";
-  const mostImpactedZones = ["Parking Niveau 2", "Entrée Principale", "Zone Technique"];
+  const mostImpactedZones = [
+    "Parking Niveau 2",
+    "Entrée Principale",
+    "Zone Technique",
+  ];
   const agentsInvolved = new Set(mockLogbookEvents.map((e) => e.agentId)).size;
   const hseIncidents = mockLogbookEvents.filter(
-    (e) => e.tags?.includes("hse") || e.tags?.includes("sst")
+    (e) => e.tags?.includes("hse") || e.tags?.includes("sst"),
   ).length;
 
   return (
@@ -90,7 +97,9 @@ export default function StatisticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Incidents / site / période</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Incidents / site / période
+              </CardTitle>
               <AlertTriangle className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -101,7 +110,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Typologie incidents</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Typologie incidents
+              </CardTitle>
               <BarChart3 className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -112,7 +123,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Temps détection → résolution</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Temps détection → résolution
+              </CardTitle>
               <Clock className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -123,7 +136,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taux résolution</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Taux résolution
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -134,7 +149,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Nombre de visiteurs</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Nombre de visiteurs
+              </CardTitle>
               <Users className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -145,7 +162,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rondes effectuées</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Rondes effectuées
+              </CardTitle>
               <MapPin className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -156,7 +175,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Temps moyen entre rondes</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Temps moyen entre rondes
+              </CardTitle>
               <Clock className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -167,11 +188,15 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Zones impactées</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Zones impactées
+              </CardTitle>
               <MapPin className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mostImpactedZones.length}</div>
+              <div className="text-2xl font-bold">
+                {mostImpactedZones.length}
+              </div>
               <p className="text-xs text-muted-foreground">Zones critiques</p>
             </CardContent>
           </Card>
@@ -187,7 +212,9 @@ export default function StatisticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Agents impliqués</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Agents impliqués
+              </CardTitle>
               <Users className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -198,7 +225,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Incidents HSE / SST</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Incidents HSE / SST
+              </CardTitle>
               <AlertTriangle className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
@@ -209,7 +238,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Historique par agent</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Historique par agent
+              </CardTitle>
               <BarChart3 className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -220,7 +251,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Indicateurs qualité</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Indicateurs qualité
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -240,18 +273,24 @@ export default function StatisticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Performance sécurité</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Performance sécurité
+              </CardTitle>
               <Shield className="h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">92%</div>
-              <p className="text-xs text-muted-foreground">Taux de conformité</p>
+              <p className="text-xs text-muted-foreground">
+                Taux de conformité
+              </p>
             </CardContent>
           </Card>
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Qualité service</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Qualité service
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -262,7 +301,9 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Analyse pics incidents</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Analyse pics incidents
+              </CardTitle>
               <BarChart3 className="h-4 w-4" />
             </CardHeader>
             <CardContent>
@@ -273,12 +314,16 @@ export default function StatisticsPage() {
 
           <Card className="glass-card border-border/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Comparaison N/N-1</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Comparaison N/N-1
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-500">-15%</div>
-              <p className="text-xs text-muted-foreground">Réduction incidents</p>
+              <p className="text-xs text-muted-foreground">
+                Réduction incidents
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -322,7 +367,9 @@ export default function StatisticsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm text-muted-foreground">Critiques</Label>
-              <div className="text-3xl font-bold text-red-500">{criticalIncidents}</div>
+              <div className="text-3xl font-bold text-red-500">
+                {criticalIncidents}
+              </div>
             </div>
             <div>
               <Label className="text-sm text-muted-foreground">Mineurs</Label>
@@ -336,4 +383,3 @@ export default function StatisticsPage() {
     </div>
   );
 }
-

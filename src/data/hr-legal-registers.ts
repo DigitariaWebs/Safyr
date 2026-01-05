@@ -148,7 +148,8 @@ export const mockWorkAccidents: WorkAccident[] = [
     date: "2024-09-15",
     time: "14:30",
     location: "Centre Commercial Atlantis - Parking Niveau 2",
-    description: "Chute sur sol glissant lors d'une ronde. Entorse de la cheville droite.",
+    description:
+      "Chute sur sol glissant lors d'une ronde. Entorse de la cheville droite.",
     severity: "moderate",
     cause: "Sol glissant non signalé",
     witness: "Marie Martin",
@@ -157,7 +158,10 @@ export const mockWorkAccidents: WorkAccident[] = [
     workStoppageDays: 5,
     declared: true,
     declaredAt: "2024-09-16",
-    documents: ["declaration_accident_jean_dupont_2024.pdf", "certificat_medical_jean_dupont.pdf"],
+    documents: [
+      "declaration_accident_jean_dupont_2024.pdf",
+      "certificat_medical_jean_dupont.pdf",
+    ],
     createdAt: "2024-09-15",
     updatedAt: "2024-09-16",
   },
@@ -169,7 +173,8 @@ export const mockWorkAccidents: WorkAccident[] = [
     date: "2024-11-20",
     time: "10:15",
     location: "Tour de Bureaux Skyline - Hall d'accueil",
-    description: "Coupure à la main droite avec du verre brisé lors du nettoyage.",
+    description:
+      "Coupure à la main droite avec du verre brisé lors du nettoyage.",
     severity: "light",
     cause: "Manipulation de verre brisé sans protection",
     witness: "Sophie Bernard",
@@ -197,7 +202,10 @@ export const mockWorkAccidents: WorkAccident[] = [
     workStoppageDays: 3,
     declared: true,
     declaredAt: "2024-08-11",
-    documents: ["declaration_accident_luc_moreau_2024.pdf", "certificat_medical_luc_moreau.pdf"],
+    documents: [
+      "declaration_accident_luc_moreau_2024.pdf",
+      "certificat_medical_luc_moreau.pdf",
+    ],
     createdAt: "2024-08-10",
     updatedAt: "2024-08-11",
   },
@@ -296,5 +304,3 @@ export const mockCDDEntries: CDDEntry[] = [
     createdAt: "2025-01-15",
   },
 ];
-
-

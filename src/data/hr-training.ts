@@ -251,5 +251,3 @@ export const mockTrainingAlerts: TrainingAlert[] = [
     createdAt: "2024-03-15",
   },
 ];
-
-

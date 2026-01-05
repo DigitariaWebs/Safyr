@@ -19,10 +19,13 @@ import { Plus } from "lucide-react";
 import { mockBillingInvoices, BillingInvoice } from "@/data/billing-invoices";
 
 export default function BillingAdjustmentsPage() {
-  const [invoices, setInvoices] = useState<BillingInvoice[]>(mockBillingInvoices);
+  const [invoices, setInvoices] =
+    useState<BillingInvoice[]>(mockBillingInvoices);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoice | null>(
+    null,
+  );
   const [formData, setFormData] = useState<{
     invoiceId: string;
     type: "Manual" | "Credit" | "Exception";
@@ -43,11 +46,11 @@ export default function BillingAdjustmentsPage() {
         invoiceNumber: invoice.invoiceNumber,
         clientName: invoice.clientName,
         invoiceId: invoice.id,
-      }))
+      })),
     )
     .filter((adj) => adj);
 
-  const columns: ColumnDef<typeof allAdjustments[0]>[] = [
+  const columns: ColumnDef<(typeof allAdjustments)[0]>[] = [
     {
       key: "invoiceNumber",
       label: "Facture",
@@ -66,14 +69,18 @@ export default function BillingAdjustmentsPage() {
           Credit: "secondary",
           Exception: "outline",
         };
-        return <Badge variant={variants[adj.type] || "outline"}>{adj.type}</Badge>;
+        return (
+          <Badge variant={variants[adj.type] || "outline"}>{adj.type}</Badge>
+        );
       },
     },
     {
       key: "amount",
       label: "Montant",
       render: (adj) => (
-        <span className={`font-semibold ${adj.amount < 0 ? "text-red-600" : "text-green-600"}`}>
+        <span
+          className={`font-semibold ${adj.amount < 0 ? "text-red-600" : "text-green-600"}`}
+        >
           {adj.amount > 0 ? "+" : ""}
           {adj.amount.toLocaleString("fr-FR")} €
         </span>
@@ -135,15 +142,15 @@ export default function BillingAdjustmentsPage() {
               total: newTotal,
               updatedAt: new Date().toISOString(),
             }
-          : i
-      )
+          : i,
+      ),
     );
 
     setIsCreateModalOpen(false);
     setFormData({ invoiceId: "", type: "Manual", amount: 0, reason: "" });
   };
 
-  const handleRowClick = (adjustment: typeof allAdjustments[0]) => {
+  const handleRowClick = (adjustment: (typeof allAdjustments)[0]) => {
     const invoice = invoices.find((i) => i.id === adjustment.invoiceId);
     if (invoice) {
       setSelectedInvoice(invoice);
@@ -155,9 +162,12 @@ export default function BillingAdjustmentsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Gestion des Ajustements & Exceptions</h1>
+          <h1 className="text-3xl font-bold">
+            Gestion des Ajustements & Exceptions
+          </h1>
           <p className="text-muted-foreground">
-            Ajustements manuels, justifications d&apos;écarts, gestion des avoirs et refacturation exceptionnelle
+            Ajustements manuels, justifications d&apos;écarts, gestion des
+            avoirs et refacturation exceptionnelle
           </p>
         </div>
         <Button onClick={handleCreate}>
@@ -233,7 +243,9 @@ export default function BillingAdjustmentsPage() {
                 <SelectContent>
                   <SelectItem value="Manual">Ajustement manuel</SelectItem>
                   <SelectItem value="Credit">Avoir</SelectItem>
-                  <SelectItem value="Exception">Refacturation exceptionnelle</SelectItem>
+                  <SelectItem value="Exception">
+                    Refacturation exceptionnelle
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -295,7 +307,8 @@ export default function BillingAdjustmentsPage() {
               </p>
             </div>
 
-            {selectedInvoice.adjustments && selectedInvoice.adjustments.length > 0 ? (
+            {selectedInvoice.adjustments &&
+            selectedInvoice.adjustments.length > 0 ? (
               <div className="space-y-3">
                 {selectedInvoice.adjustments.map((adj) => (
                   <div
@@ -303,7 +316,11 @@ export default function BillingAdjustmentsPage() {
                     className="border rounded-lg p-4 bg-muted/50"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <Badge variant={adj.type === "Manual" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          adj.type === "Manual" ? "default" : "secondary"
+                        }
+                      >
                         {adj.type}
                       </Badge>
                       <span
@@ -315,7 +332,9 @@ export default function BillingAdjustmentsPage() {
                         {adj.amount.toLocaleString("fr-FR")} €
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{adj.reason}</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {adj.reason}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Par {adj.createdBy} le{" "}
                       {new Date(adj.createdAt).toLocaleString("fr-FR")}
@@ -334,5 +353,3 @@ export default function BillingAdjustmentsPage() {
     </div>
   );
 }
-
-

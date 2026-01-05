@@ -32,7 +32,11 @@ import {
   Clock,
   FileText,
 } from "lucide-react";
-import { CertificateRequest, CertificateType, HRRequestStatus } from "@/lib/types";
+import {
+  CertificateRequest,
+  CertificateType,
+  HRRequestStatus,
+} from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import Link from "next/link";
@@ -129,7 +133,10 @@ const statusLabels: Record<HRRequestStatus, string> = {
   cancelled: "Annulée",
 };
 
-const statusColors: Record<HRRequestStatus, "default" | "secondary" | "destructive"> = {
+const statusColors: Record<
+  HRRequestStatus,
+  "default" | "secondary" | "destructive"
+> = {
   pending: "default",
   in_progress: "secondary",
   validated: "secondary",
@@ -149,12 +156,10 @@ export default function CertificateRequestsPage() {
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [editingRequest, setEditingRequest] = useState<CertificateRequest | null>(
-    null,
-  );
-  const [viewingRequest, setViewingRequest] = useState<CertificateRequest | null>(
-    null,
-  );
+  const [editingRequest, setEditingRequest] =
+    useState<CertificateRequest | null>(null);
+  const [viewingRequest, setViewingRequest] =
+    useState<CertificateRequest | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterCertType, setFilterCertType] = useState<string>("all");
 
@@ -168,7 +173,6 @@ export default function CertificateRequestsPage() {
     deliveryAddress: "",
     priority: "normal" as "low" | "normal" | "high" | "urgent",
   });
-
 
   const handleCreate = () => {
     setEditingRequest(null);
@@ -305,7 +309,9 @@ export default function CertificateRequestsPage() {
   let filteredRequests = requests;
 
   if (filterStatus !== "all") {
-    filteredRequests = filteredRequests.filter((r) => r.status === filterStatus);
+    filteredRequests = filteredRequests.filter(
+      (r) => r.status === filterStatus,
+    );
   }
 
   if (filterCertType !== "all") {
@@ -416,7 +422,9 @@ export default function CertificateRequestsPage() {
   // Calculate stats
   const totalRequests = requests.length;
   const pendingRequests = requests.filter((r) => r.status === "pending").length;
-  const validatedRequests = requests.filter((r) => r.status === "validated").length;
+  const validatedRequests = requests.filter(
+    (r) => r.status === "validated",
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -519,7 +527,11 @@ export default function CertificateRequestsPage() {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         type="form"
-        title={editingRequest ? "Modifier la demande" : "Nouvelle demande de certificat"}
+        title={
+          editingRequest
+            ? "Modifier la demande"
+            : "Nouvelle demande de certificat"
+        }
         size="lg"
         actions={{
           primary: {
@@ -570,7 +582,9 @@ export default function CertificateRequestsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="employment">Certificat d&apos;emploi</SelectItem>
+                <SelectItem value="employment">
+                  Certificat d&apos;emploi
+                </SelectItem>
                 <SelectItem value="salary">Certificat de salaire</SelectItem>
                 <SelectItem value="work">Certificat de travail</SelectItem>
                 <SelectItem value="internship">Attestation de stage</SelectItem>
@@ -678,16 +692,22 @@ export default function CertificateRequestsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-muted-foreground">Employé</Label>
-                <p className="text-sm font-medium">{viewingRequest.employeeName}</p>
+                <p className="text-sm font-medium">
+                  {viewingRequest.employeeName}
+                </p>
               </div>
               <div>
                 <Label className="text-muted-foreground">Département</Label>
-                <p className="text-sm font-medium">{viewingRequest.department}</p>
+                <p className="text-sm font-medium">
+                  {viewingRequest.department}
+                </p>
               </div>
             </div>
 
             <div>
-              <Label className="text-muted-foreground">Type de certificat</Label>
+              <Label className="text-muted-foreground">
+                Type de certificat
+              </Label>
               <p className="text-sm font-medium">
                 {certificateTypeLabels[viewingRequest.certificateType]}
               </p>
@@ -720,14 +740,18 @@ export default function CertificateRequestsPage() {
 
             {viewingRequest.deliveryAddress && (
               <div>
-                <Label className="text-muted-foreground">Adresse de livraison</Label>
+                <Label className="text-muted-foreground">
+                  Adresse de livraison
+                </Label>
                 <p className="text-sm">{viewingRequest.deliveryAddress}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-muted-foreground">Date de soumission</Label>
+                <Label className="text-muted-foreground">
+                  Date de soumission
+                </Label>
                 <p className="text-sm font-medium">
                   {viewingRequest.submittedAt.toLocaleDateString("fr-FR")}
                 </p>
@@ -766,7 +790,9 @@ export default function CertificateRequestsPage() {
 
             {viewingRequest.generatedCertificateUrl && (
               <div>
-                <Label className="text-muted-foreground">Certificat généré</Label>
+                <Label className="text-muted-foreground">
+                  Certificat généré
+                </Label>
                 <Button variant="outline" size="sm" className="mt-2">
                   <Download className="mr-2 h-4 w-4" />
                   Télécharger le certificat

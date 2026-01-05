@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,7 +36,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Search, Filter, Columns, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Columns,
+  ArrowUp,
+  ArrowDown,
+  ChevronRight,
+} from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 export interface ColumnDef<T> {
@@ -70,6 +77,7 @@ interface DataTableProps<T> {
   onSelectionChange?: (selectedItems: T[]) => void;
   getRowId?: (item: T) => string;
   onRowClick?: (item: T) => void;
+  expandableContent?: (item: T) => React.ReactNode;
 }
 
 export function DataTable<T extends object>({
@@ -87,6 +95,7 @@ export function DataTable<T extends object>({
   onSelectionChange,
   getRowId,
   onRowClick,
+  expandableContent,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
@@ -106,6 +115,7 @@ export function DataTable<T extends object>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const filteredData = data.filter((item) => {
     // Search filter
@@ -226,6 +236,22 @@ export function DataTable<T extends object>({
       selectedRows.has(getItemId(item, index)),
     );
 
+  const toggleRowExpansion = (itemId: string) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(itemId)) {
+      newExpandedRows.delete(itemId);
+    } else {
+      newExpandedRows.add(itemId);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
+  const totalColumns =
+    visibleColumnDefs.length +
+    (actions ? 1 : 0) +
+    (selectable ? 1 : 0) +
+    (expandableContent ? 1 : 0);
+
   return (
     <div className="space-y-4 w-full max-w-full overflow-x-hidden">
       {/* Filters */}
@@ -323,6 +349,7 @@ export function DataTable<T extends object>({
         <Table>
           <TableHeader>
             <TableRow>
+              {expandableContent && <TableHead className="w-12"></TableHead>}
               {selectable && (
                 <TableHead className="w-12">
                   <Checkbox
@@ -370,11 +397,7 @@ export function DataTable<T extends object>({
             {paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={
-                    visibleColumnDefs.length +
-                    (actions ? 1 : 0) +
-                    (selectable ? 1 : 0)
-                  }
+                  colSpan={totalColumns}
                   className="text-center py-8 text-muted-foreground"
                 >
                   No data found
@@ -384,59 +407,89 @@ export function DataTable<T extends object>({
               paginatedData.map((item, index) => {
                 const itemId = getItemId(item, index);
                 const isSelected = selectedRows.has(itemId);
+                const isExpanded = expandedRows.has(itemId);
 
                 return (
-                  <TableRow
-                    key={itemId}
-                    className={rowClassName?.(item)}
-                    data-state={isSelected ? "selected" : undefined}
-                    onClick={(e) => {
-                      // Prevent row click when clicking checkboxes or buttons
-                      const target = e.target as HTMLElement;
-                      if (
-                        target.closest("button") ||
-                        target.closest('[role="checkbox"]') ||
-                        target.tagName === "INPUT"
-                      ) {
-                        return;
-                      }
-                      onRowClick?.(item);
-                    }}
-                    style={onRowClick ? { cursor: "pointer" } : undefined}
-                  >
-                    {selectable && (
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) =>
-                            handleSelectRow(item, index, !!checked)
-                          }
-                          aria-label="Select row"
-                          className="data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-primary-foreground"
-                        />
-                      </TableCell>
-                    )}
-                    {visibleColumnDefs.map((col) => (
-                      <TableCell
-                        key={col.key}
-                        className={
-                          col.key === columns[0].key ? "font-medium" : ""
+                  <Fragment key={itemId}>
+                    <TableRow
+                      className={rowClassName?.(item)}
+                      data-state={isSelected ? "selected" : undefined}
+                      onClick={(e) => {
+                        // Prevent row click when clicking checkboxes or buttons
+                        const target = e.target as HTMLElement;
+                        if (
+                          target.closest("button") ||
+                          target.closest('[role="checkbox"]') ||
+                          target.tagName === "INPUT"
+                        ) {
+                          return;
                         }
-                      >
-                        {col.render
-                          ? col.render(item)
-                          : String((item as Record<string, unknown>)[col.key])}
-                      </TableCell>
-                    ))}
-                    {actions && (
-                      <TableCell
-                        className="text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {actions(item)}
-                      </TableCell>
+                        onRowClick?.(item);
+                      }}
+                      style={onRowClick ? { cursor: "pointer" } : undefined}
+                    >
+                      {expandableContent && (
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => toggleRowExpansion(itemId)}
+                          >
+                            <ChevronRight
+                              className={`h-4 w-4 transition-transform ${
+                                isExpanded ? "rotate-90" : ""
+                              }`}
+                            />
+                          </Button>
+                        </TableCell>
+                      )}
+                      {selectable && (
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) =>
+                              handleSelectRow(item, index, !!checked)
+                            }
+                            aria-label="Select row"
+                            className="data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-primary-foreground"
+                          />
+                        </TableCell>
+                      )}
+                      {visibleColumnDefs.map((col) => (
+                        <TableCell
+                          key={col.key}
+                          className={
+                            col.key === columns[0].key ? "font-medium" : ""
+                          }
+                        >
+                          {col.render
+                            ? col.render(item)
+                            : String(
+                                (item as Record<string, unknown>)[col.key],
+                              )}
+                        </TableCell>
+                      ))}
+                      {actions && (
+                        <TableCell
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {actions(item)}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                    {expandableContent && isExpanded && (
+                      <TableRow key={`${itemId}-expanded`}>
+                        <TableCell
+                          colSpan={totalColumns}
+                          className="bg-muted/50 p-4"
+                        >
+                          {expandableContent(item)}
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </TableRow>
+                  </Fragment>
                 );
               })
             )}

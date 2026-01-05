@@ -7,13 +7,13 @@ import { mockOCRDocuments } from "@/data/ocr-documents";
 export default function OCRDashboard() {
   const totalDocuments = mockOCRDocuments.length;
   const processedDocuments = mockOCRDocuments.filter(
-    (d) => d.status === "Traité"
+    (d) => d.status === "Traité",
   ).length;
   const pendingDocuments = mockOCRDocuments.filter(
-    (d) => d.status === "En attente" || d.status === "En traitement"
+    (d) => d.status === "En attente" || d.status === "En traitement",
   ).length;
   const errorDocuments = mockOCRDocuments.filter(
-    (d) => d.status === "Erreur"
+    (d) => d.status === "Erreur",
   ).length;
 
   return (
@@ -41,9 +41,7 @@ export default function OCRDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Traités
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Traités</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -54,9 +52,7 @@ export default function OCRDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              En Attente
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
             <Upload className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -67,9 +63,7 @@ export default function OCRDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Erreurs
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Erreurs</CardTitle>
             <AlertCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -81,5 +75,3 @@ export default function OCRDashboard() {
     </div>
   );
 }
-
-

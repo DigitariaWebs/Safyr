@@ -3,7 +3,13 @@ export interface EmailTemplate {
   name: string;
   subject: string;
   body: string;
-  category: "recruitment" | "onboarding" | "training" | "disciplinary" | "general" | "other";
+  category:
+    | "recruitment"
+    | "onboarding"
+    | "training"
+    | "disciplinary"
+    | "general"
+    | "other";
   variables: string[];
   isDefault: boolean;
   createdAt: string;
@@ -79,7 +85,14 @@ export const mockEmailTemplates: EmailTemplate[] = [
     subject: "Entretien annuel {{year}} - {{employeeName}}",
     body: "Bonjour {{employeeName}},\n\nVous êtes convié(e) à votre entretien annuel le {{date}} à {{time}}.\n\nLieu: {{location}}\n\nCordialement,\n{{managerName}}",
     category: "general",
-    variables: ["employeeName", "year", "date", "time", "location", "managerName"],
+    variables: [
+      "employeeName",
+      "year",
+      "date",
+      "time",
+      "location",
+      "managerName",
+    ],
     isDefault: false,
     createdAt: "2024-01-15",
     updatedAt: "2024-01-15",
@@ -90,7 +103,14 @@ export const mockEmailTemplates: EmailTemplate[] = [
     subject: "Avertissement {{type}} - {{employeeName}}",
     body: "Bonjour {{employeeName}},\n\nPar la présente, nous vous informons d'un avertissement {{type}} concernant: {{reason}}.\n\nDate: {{date}}\n\n{{details}}\n\nCordialement,\n{{issuedBy}}",
     category: "disciplinary",
-    variables: ["employeeName", "type", "reason", "date", "details", "issuedBy"],
+    variables: [
+      "employeeName",
+      "type",
+      "reason",
+      "date",
+      "details",
+      "issuedBy",
+    ],
     isDefault: true,
     createdAt: "2024-01-15",
     updatedAt: "2024-01-15",
@@ -194,7 +214,8 @@ export const mockNotifications: Notification[] = [
     recipientName: "Pierre Bernard",
     recipientType: "employee",
     title: "Nouvelle demande de document",
-    message: "Votre demande de certificat de travail est en cours de traitement",
+    message:
+      "Votre demande de certificat de travail est en cours de traitement",
     status: "read",
     sentAt: "2024-12-20T10:00:00Z",
     deliveredAt: "2024-12-20T10:00:00Z",
@@ -204,5 +225,3 @@ export const mockNotifications: Notification[] = [
     updatedAt: "2024-12-20T11:15:00Z",
   },
 ];
-
-

@@ -13,13 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Download,
-  FileText,
-  Archive,
-  Search,
-  Database,
-} from "lucide-react";
+import { Download, FileText, Archive, Search, Database } from "lucide-react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 
@@ -100,7 +94,9 @@ const mockArchives: Archive[] = [
 ];
 
 export default function ExportsPage() {
-  const [activeTab, setActiveTab] = useState<"exports" | "archives" | "search">("exports");
+  const [activeTab, setActiveTab] = useState<"exports" | "archives" | "search">(
+    "exports",
+  );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportConfig, setExportConfig] = useState({
     type: "PDF",
@@ -132,19 +128,23 @@ export default function ExportsPage() {
     {
       key: "createdAt",
       label: "Créé le",
-      render: (export_) =>
-        new Date(export_.createdAt).toLocaleString("fr-FR"),
+      render: (export_) => new Date(export_.createdAt).toLocaleString("fr-FR"),
     },
     {
       key: "status",
       label: "Statut",
       render: (export_) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           completed: "default",
           processing: "secondary",
           failed: "destructive",
         };
-        return <Badge variant={variants[export_.status]}>{export_.status}</Badge>;
+        return (
+          <Badge variant={variants[export_.status]}>{export_.status}</Badge>
+        );
       },
     },
     {
@@ -212,7 +212,8 @@ export default function ExportsPage() {
             Export, Reporting & Archivage
           </h1>
           <p className="mt-2 text-sm font-light text-muted-foreground">
-            Exports PDF/Excel/CSV, rapports paramétrables et archivage légal 10 ans
+            Exports PDF/Excel/CSV, rapports paramétrables et archivage légal 10
+            ans
           </p>
         </div>
         <Button onClick={() => setIsExportModalOpen(true)}>
@@ -319,8 +320,12 @@ export default function ExportsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tous les sites</SelectItem>
-                      <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                      <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                      <SelectItem value="SITE-001">
+                        Centre Commercial Atlantis
+                      </SelectItem>
+                      <SelectItem value="SITE-002">
+                        Tour de Bureaux Skyline
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -456,7 +461,10 @@ export default function ExportsPage() {
                   type="date"
                   value={exportConfig.startDate}
                   onChange={(e) =>
-                    setExportConfig({ ...exportConfig, startDate: e.target.value })
+                    setExportConfig({
+                      ...exportConfig,
+                      startDate: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -467,7 +475,10 @@ export default function ExportsPage() {
                   type="date"
                   value={exportConfig.endDate}
                   onChange={(e) =>
-                    setExportConfig({ ...exportConfig, endDate: e.target.value })
+                    setExportConfig({
+                      ...exportConfig,
+                      endDate: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -487,8 +498,12 @@ export default function ExportsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les sites</SelectItem>
-                <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                <SelectItem value="SITE-001">
+                  Centre Commercial Atlantis
+                </SelectItem>
+                <SelectItem value="SITE-002">
+                  Tour de Bureaux Skyline
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -497,4 +512,3 @@ export default function ExportsPage() {
     </div>
   );
 }
-

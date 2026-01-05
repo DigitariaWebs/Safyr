@@ -14,7 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Upload, Check, Settings as SettingsIcon } from "lucide-react";
+import {
+  Download,
+  Upload,
+  Check,
+  Settings as SettingsIcon,
+} from "lucide-react";
 
 interface ExportConfig {
   software: "silae" | "sage" | "cegid" | "paie_rh_net" | "custom";
@@ -95,7 +100,8 @@ export default function ExportConfigPage() {
       <div>
         <h1 className="text-3xl font-bold">Export vers Logiciels de Paie</h1>
         <p className="text-muted-foreground">
-          Configuration de l&apos;export automatique vers Silae, Sage et autres logiciels de paie
+          Configuration de l&apos;export automatique vers Silae, Sage et autres
+          logiciels de paie
         </p>
       </div>
 
@@ -115,7 +121,10 @@ export default function ExportConfigPage() {
               <Select
                 value={config.software}
                 onValueChange={(value) =>
-                  setConfig({ ...config, software: value as ExportConfig["software"] })
+                  setConfig({
+                    ...config,
+                    software: value as ExportConfig["software"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -137,7 +146,10 @@ export default function ExportConfigPage() {
               <Select
                 value={config.format}
                 onValueChange={(value) =>
-                  setConfig({ ...config, format: value as ExportConfig["format"] })
+                  setConfig({
+                    ...config,
+                    format: value as ExportConfig["format"],
+                  })
                 }
               >
                 <SelectTrigger>
@@ -208,7 +220,7 @@ export default function ExportConfigPage() {
             {/* Data Inclusion */}
             <div className="space-y-3 pt-4 border-t">
               <Label>Données à inclure</Label>
-              
+
               <div className="flex items-center justify-between">
                 <Label className="font-normal">Variables de paie</Label>
                 <Switch
@@ -391,12 +403,16 @@ export default function ExportConfigPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Enregistrements:</span>
-                <span className="text-sm font-medium">{lastExport.records}</span>
+                <span className="text-sm font-medium">
+                  {lastExport.records}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">Statut:</span>
                 <Badge
-                  variant={lastExport.status === "success" ? "default" : "destructive"}
+                  variant={
+                    lastExport.status === "success" ? "default" : "destructive"
+                  }
                 >
                   {lastExport.status === "success" ? (
                     <>
@@ -424,5 +440,3 @@ export default function ExportConfigPage() {
     </div>
   );
 }
-
-

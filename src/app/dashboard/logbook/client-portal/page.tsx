@@ -37,7 +37,7 @@ export default function ClientPortalPage() {
   // Filter events for client view (only today's events)
   const today = new Date().toISOString().split("T")[0];
   let filteredEvents = mockLogbookEvents.filter(
-    (e) => new Date(e.timestamp).toISOString().split("T")[0] === today
+    (e) => new Date(e.timestamp).toISOString().split("T")[0] === today,
   );
 
   if (selectedSite !== "all") {
@@ -47,12 +47,18 @@ export default function ClientPortalPage() {
     filteredEvents = filteredEvents.filter((e) => e.type === selectedType);
   }
   if (selectedSeverity !== "all") {
-    filteredEvents = filteredEvents.filter((e) => e.severity === selectedSeverity);
+    filteredEvents = filteredEvents.filter(
+      (e) => e.severity === selectedSeverity,
+    );
   }
 
   const totalEvents = filteredEvents.length;
-  const criticalEvents = filteredEvents.filter((e) => e.severity === "critical").length;
-  const resolvedEvents = filteredEvents.filter((e) => e.status === "resolved").length;
+  const criticalEvents = filteredEvents.filter(
+    (e) => e.severity === "critical",
+  ).length;
+  const resolvedEvents = filteredEvents.filter(
+    (e) => e.status === "resolved",
+  ).length;
   const avgResolutionTime = "2.5h"; // Mock data
 
   const columns: ColumnDef<LogbookEvent>[] = [
@@ -79,13 +85,18 @@ export default function ClientPortalPage() {
       key: "severity",
       label: "Criticité",
       render: (event) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           critical: "destructive",
           high: "destructive",
           medium: "default",
           low: "secondary",
         };
-        return <Badge variant={variants[event.severity]}>{event.severity}</Badge>;
+        return (
+          <Badge variant={variants[event.severity]}>{event.severity}</Badge>
+        );
       },
     },
     {
@@ -108,7 +119,9 @@ export default function ClientPortalPage() {
   ];
 
   const handleExportPDF = (type: "daily" | "weekly" | "monthly") => {
-    alert(`Export PDF ${type === "daily" ? "quotidien" : type === "weekly" ? "hebdomadaire" : "mensuel"} en cours...`);
+    alert(
+      `Export PDF ${type === "daily" ? "quotidien" : type === "weekly" ? "hebdomadaire" : "mensuel"} en cours...`,
+    );
   };
 
   return (
@@ -142,7 +155,9 @@ export default function ClientPortalPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="glass-card border-border/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Événements aujourd&apos;hui</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Événements aujourd&apos;hui
+            </CardTitle>
             <FileText className="h-4 w-4" />
           </CardHeader>
           <CardContent>
@@ -152,11 +167,15 @@ export default function ClientPortalPage() {
 
         <Card className="glass-card border-border/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Événements critiques</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Événements critiques
+            </CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{criticalEvents}</div>
+            <div className="text-2xl font-bold text-red-500">
+              {criticalEvents}
+            </div>
           </CardContent>
         </Card>
 
@@ -166,13 +185,17 @@ export default function ClientPortalPage() {
             <BarChart3 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{resolvedEvents}</div>
+            <div className="text-2xl font-bold text-green-500">
+              {resolvedEvents}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="glass-card border-border/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Temps moyen résolution</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Temps moyen résolution
+            </CardTitle>
             <Calendar className="h-4 w-4" />
           </CardHeader>
           <CardContent>
@@ -199,8 +222,12 @@ export default function ClientPortalPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les sites</SelectItem>
-                  <SelectItem value="SITE-001">Centre Commercial Atlantis</SelectItem>
-                  <SelectItem value="SITE-002">Tour de Bureaux Skyline</SelectItem>
+                  <SelectItem value="SITE-001">
+                    Centre Commercial Atlantis
+                  </SelectItem>
+                  <SelectItem value="SITE-002">
+                    Tour de Bureaux Skyline
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -237,7 +264,10 @@ export default function ClientPortalPage() {
 
             <div>
               <Label htmlFor="severity">Niveau de criticité</Label>
-              <Select value={selectedSeverity} onValueChange={setSelectedSeverity}>
+              <Select
+                value={selectedSeverity}
+                onValueChange={setSelectedSeverity}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Tous les niveaux" />
                 </SelectTrigger>
@@ -258,7 +288,9 @@ export default function ClientPortalPage() {
       <Card className="glass-card border-border/40">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-light">Événements du jour</CardTitle>
+            <CardTitle className="text-lg font-light">
+              Événements du jour
+            </CardTitle>
             <Button
               variant="outline"
               size="sm"
@@ -319,7 +351,9 @@ export default function ClientPortalPage() {
 
             <div>
               <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">{viewingEvent.description}</p>
+              <p className="text-sm whitespace-pre-wrap">
+                {viewingEvent.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -331,7 +365,8 @@ export default function ClientPortalPage() {
                 <Label>Criticité</Label>
                 <Badge
                   variant={
-                    viewingEvent.severity === "critical" || viewingEvent.severity === "high"
+                    viewingEvent.severity === "critical" ||
+                    viewingEvent.severity === "high"
                       ? "destructive"
                       : "default"
                   }
@@ -385,4 +420,3 @@ export default function ClientPortalPage() {
     </div>
   );
 }
-

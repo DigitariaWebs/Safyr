@@ -81,5 +81,3 @@ export const mockAccountingPlans: AccountingPlan[] = [
     lastUpdate: "2024-01-01",
   },
 ];
-
-

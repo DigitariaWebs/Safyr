@@ -75,7 +75,7 @@ export default function BillingVATPage() {
   const handleSave = () => {
     if (formData.id) {
       setConfigs(
-        configs.map((c) => (c.id === formData.id ? { ...c, ...formData } : c))
+        configs.map((c) => (c.id === formData.id ? { ...c, ...formData } : c)),
       );
     } else {
       const client = mockBillingClients.find((c) => c.id === formData.clientId);
@@ -108,9 +108,12 @@ export default function BillingVATPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Gestion de la TVA & Conformité Fiscale</h1>
+          <h1 className="text-3xl font-bold">
+            Gestion de la TVA & Conformité Fiscale
+          </h1>
           <p className="text-muted-foreground">
-            Paramétrage TVA par client/prestation, gestion multi-taux, conformité facturation électronique
+            Paramétrage TVA par client/prestation, gestion multi-taux,
+            conformité facturation électronique
           </p>
         </div>
         <div className="flex gap-2">
@@ -138,7 +141,11 @@ export default function BillingVATPage() {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         type="form"
-        title={formData.id ? "Modifier la configuration" : "Nouvelle configuration TVA"}
+        title={
+          formData.id
+            ? "Modifier la configuration"
+            : "Nouvelle configuration TVA"
+        }
         size="lg"
         actions={{
           primary: {
@@ -155,7 +162,9 @@ export default function BillingVATPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <Label htmlFor="clientId">Client (optionnel - pour configuration générale, laisser vide)</Label>
+              <Label htmlFor="clientId">
+                Client (optionnel - pour configuration générale, laisser vide)
+              </Label>
               <Select
                 value={formData.clientId}
                 onValueChange={(value) => {
@@ -182,7 +191,9 @@ export default function BillingVATPage() {
             </div>
 
             <div>
-              <Label htmlFor="serviceType">Type de prestation (optionnel)</Label>
+              <Label htmlFor="serviceType">
+                Type de prestation (optionnel)
+              </Label>
               <Select
                 value={formData.serviceType}
                 onValueChange={(value) =>
@@ -225,7 +236,10 @@ export default function BillingVATPage() {
                 id="electronicInvoice"
                 checked={formData.electronicInvoice}
                 onCheckedChange={(checked) =>
-                  setFormData({ ...formData, electronicInvoice: checked as boolean })
+                  setFormData({
+                    ...formData,
+                    electronicInvoice: checked as boolean,
+                  })
                 }
               />
               <Label
@@ -293,19 +307,29 @@ export default function BillingVATPage() {
 
               <div>
                 <Label>Taux TVA</Label>
-                <p className="text-sm font-semibold">{selectedConfig.vatRate}%</p>
+                <p className="text-sm font-semibold">
+                  {selectedConfig.vatRate}%
+                </p>
               </div>
 
               <div>
                 <Label>Facture électronique</Label>
-                <Badge variant={selectedConfig.electronicInvoice ? "default" : "outline"}>
+                <Badge
+                  variant={
+                    selectedConfig.electronicInvoice ? "default" : "outline"
+                  }
+                >
                   {selectedConfig.electronicInvoice ? "Activée" : "Désactivée"}
                 </Badge>
               </div>
 
               <div>
                 <Label>Statut</Label>
-                <Badge variant={selectedConfig.status === "Actif" ? "default" : "outline"}>
+                <Badge
+                  variant={
+                    selectedConfig.status === "Actif" ? "default" : "outline"
+                  }
+                >
                   {selectedConfig.status}
                 </Badge>
               </div>
@@ -316,4 +340,3 @@ export default function BillingVATPage() {
     </div>
   );
 }
-

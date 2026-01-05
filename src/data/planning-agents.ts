@@ -66,5 +66,3 @@ export const mockPlanningAgents: PlanningAgent[] = [
     email: "sophie.dubois@example.com",
   },
 ];
-
-

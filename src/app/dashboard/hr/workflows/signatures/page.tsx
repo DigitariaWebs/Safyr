@@ -24,7 +24,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { SignatureWorkflow, SignatureStatus, SignatureStats } from "@/lib/types";
+import {
+  SignatureWorkflow,
+  SignatureStatus,
+  SignatureStats,
+} from "@/lib/types";
 
 // Mock data
 const mockStats: SignatureStats = {
@@ -51,14 +55,16 @@ const mockSignatureWorkflows: SignatureWorkflow[] = [
     title: "CDI - Marie Dupont",
     description: "Contrat à durée indéterminée",
     status: "signed",
-    documents: [{
-      id: "doc1",
-      name: "CDI_Marie_Dupont.pdf",
-      type: "contract",
-      documentUrl: "/contracts/cdi-marie.pdf",
-      signedDocumentUrl: "/contracts/cdi-marie-signed.pdf",
-      createdAt: new Date("2024-12-10"),
-    }],
+    documents: [
+      {
+        id: "doc1",
+        name: "CDI_Marie_Dupont.pdf",
+        type: "contract",
+        documentUrl: "/contracts/cdi-marie.pdf",
+        signedDocumentUrl: "/contracts/cdi-marie-signed.pdf",
+        createdAt: new Date("2024-12-10"),
+      },
+    ],
     participants: [
       {
         id: "p1",
@@ -100,13 +106,15 @@ const mockSignatureWorkflows: SignatureWorkflow[] = [
     title: "Remise EPI - Jean Martin",
     description: "Remise des équipements de protection individuelle",
     status: "sent",
-    documents: [{
-      id: "doc2",
-      name: "Bordereau_EPI_Jean.pdf",
-      type: "equipment_delivery",
-      documentUrl: "/equipment/epi-jean.pdf",
-      createdAt: new Date("2024-12-20"),
-    }],
+    documents: [
+      {
+        id: "doc2",
+        name: "Bordereau_EPI_Jean.pdf",
+        type: "equipment_delivery",
+        documentUrl: "/equipment/epi-jean.pdf",
+        createdAt: new Date("2024-12-20"),
+      },
+    ],
     participants: [
       {
         id: "p3",
@@ -138,13 +146,15 @@ const mockSignatureWorkflows: SignatureWorkflow[] = [
     title: "Avertissement - Sophie Leroy",
     description: "Notification d'avertissement",
     status: "pending",
-    documents: [{
-      id: "doc3",
-      name: "Avertissement_Sophie.pdf",
-      type: "disciplinary_sanction",
-      documentUrl: "/sanctions/warning-sophie.pdf",
-      createdAt: new Date("2024-12-19"),
-    }],
+    documents: [
+      {
+        id: "doc3",
+        name: "Avertissement_Sophie.pdf",
+        type: "disciplinary_sanction",
+        documentUrl: "/sanctions/warning-sophie.pdf",
+        createdAt: new Date("2024-12-19"),
+      },
+    ],
     participants: [
       {
         id: "p4",
@@ -179,7 +189,10 @@ const statusLabels: Record<SignatureStatus, string> = {
   cancelled: "Annulée",
 };
 
-const statusColors: Record<SignatureStatus, "default" | "secondary" | "destructive"> = {
+const statusColors: Record<
+  SignatureStatus,
+  "default" | "secondary" | "destructive"
+> = {
   pending: "default",
   sent: "secondary",
   signed: "secondary",
@@ -214,11 +227,13 @@ export default function SignaturesPage() {
   let filteredWorkflows = mockSignatureWorkflows;
 
   if (filterStatus !== "all") {
-    filteredWorkflows = filteredWorkflows.filter((w) => w.status === filterStatus);
+    filteredWorkflows = filteredWorkflows.filter(
+      (w) => w.status === filterStatus,
+    );
   }
 
   if (filterType !== "all") {
-    filteredWorkflows = filteredWorkflows.filter((w) => w.type ===filterType);
+    filteredWorkflows = filteredWorkflows.filter((w) => w.type === filterType);
   }
 
   const columns: ColumnDef<SignatureWorkflow>[] = [
@@ -249,7 +264,9 @@ export default function SignaturesPage() {
         <div>
           <div className="font-medium">{workflow.title}</div>
           {workflow.description && (
-            <div className="text-sm text-muted-foreground">{workflow.description}</div>
+            <div className="text-sm text-muted-foreground">
+              {workflow.description}
+            </div>
           )}
         </div>
       ),
@@ -258,12 +275,18 @@ export default function SignaturesPage() {
       key: "participants",
       label: "Signataires",
       render: (workflow: SignatureWorkflow) => {
-        const signed = workflow.participants.filter((p) => p.status === "signed").length;
+        const signed = workflow.participants.filter(
+          (p) => p.status === "signed",
+        ).length;
         const total = workflow.participants.length;
         return (
           <div className="text-sm">
-            <div className="font-medium">{signed} / {total}</div>
-            <div className="text-muted-foreground">signé{signed > 1 ? "s" : ""}</div>
+            <div className="font-medium">
+              {signed} / {total}
+            </div>
+            <div className="text-muted-foreground">
+              signé{signed > 1 ? "s" : ""}
+            </div>
           </div>
         );
       },
@@ -303,9 +326,12 @@ export default function SignaturesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Signatures Électroniques & Dématérialisation</h1>
+          <h1 className="text-3xl font-bold">
+            Signatures Électroniques & Dématérialisation
+          </h1>
           <p className="text-muted-foreground">
-            Gestion centralisée des signatures électroniques eIDAS et workflows de validation
+            Gestion centralisée des signatures électroniques eIDAS et workflows
+            de validation
           </p>
         </div>
         <div className="flex gap-2">
@@ -337,10 +363,10 @@ export default function SignaturesPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.pendingSignatures}</div>
-            <p className="text-xs text-muted-foreground">
-              À signer
-            </p>
+            <div className="text-2xl font-bold">
+              {mockStats.pendingSignatures}
+            </div>
+            <p className="text-xs text-muted-foreground">À signer</p>
           </CardContent>
         </Card>
 
@@ -350,7 +376,9 @@ export default function SignaturesPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.completedSignatures}</div>
+            <div className="text-2xl font-bold">
+              {mockStats.completedSignatures}
+            </div>
             <p className="text-xs text-muted-foreground">
               Taux: {mockStats.completionRate}%
             </p>
@@ -363,10 +391,10 @@ export default function SignaturesPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockStats.averageCompletionTime}h</div>
-            <p className="text-xs text-muted-foreground">
-              Temps de signature
-            </p>
+            <div className="text-2xl font-bold">
+              {mockStats.averageCompletionTime}h
+            </div>
+            <p className="text-xs text-muted-foreground">Temps de signature</p>
           </CardContent>
         </Card>
       </div>
@@ -380,7 +408,9 @@ export default function SignaturesPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.contractSignatures}</div>
+              <div className="text-2xl font-bold">
+                {mockStats.contractSignatures}
+              </div>
               <p className="text-xs text-muted-foreground">Signatures eIDAS</p>
             </CardContent>
           </Card>
@@ -393,7 +423,9 @@ export default function SignaturesPage() {
               <Scale className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.sanctionSignatures}</div>
+              <div className="text-2xl font-bold">
+                {mockStats.sanctionSignatures}
+              </div>
               <p className="text-xs text-muted-foreground">Notifications</p>
             </CardContent>
           </Card>
@@ -406,8 +438,12 @@ export default function SignaturesPage() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.equipmentSignatures}</div>
-              <p className="text-xs text-muted-foreground">Remises/Restitutions</p>
+              <div className="text-2xl font-bold">
+                {mockStats.equipmentSignatures}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Remises/Restitutions
+              </p>
             </CardContent>
           </Card>
         </Link>
@@ -419,8 +455,12 @@ export default function SignaturesPage() {
               <CheckSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.acknowledgmentSignatures}</div>
-              <p className="text-xs text-muted-foreground">Accusés de réception</p>
+              <div className="text-2xl font-bold">
+                {mockStats.acknowledgmentSignatures}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Accusés de réception
+              </p>
             </CardContent>
           </Card>
         </Link>
@@ -428,12 +468,18 @@ export default function SignaturesPage() {
         <Link href="/dashboard/hr/signatures/validations">
           <Card className="cursor-pointer transition-colors hover:bg-accent">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Validations RH</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Validations RH
+              </CardTitle>
               <FileCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockStats.hrValidationSignatures}</div>
-              <p className="text-xs text-muted-foreground">Approbations internes</p>
+              <div className="text-2xl font-bold">
+                {mockStats.hrValidationSignatures}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Approbations internes
+              </p>
             </CardContent>
           </Card>
         </Link>
@@ -466,9 +512,13 @@ export default function SignaturesPage() {
                 <SelectContent>
                   <SelectItem value="all">Tous les types</SelectItem>
                   <SelectItem value="contract">Contrats</SelectItem>
-                  <SelectItem value="disciplinary_sanction">Sanctions</SelectItem>
+                  <SelectItem value="disciplinary_sanction">
+                    Sanctions
+                  </SelectItem>
                   <SelectItem value="equipment_delivery">Remise EPI</SelectItem>
-                  <SelectItem value="equipment_return">Restitution EPI</SelectItem>
+                  <SelectItem value="equipment_return">
+                    Restitution EPI
+                  </SelectItem>
                   <SelectItem value="acknowledgment">Accusés</SelectItem>
                   <SelectItem value="hr_validation">Validations RH</SelectItem>
                 </SelectContent>

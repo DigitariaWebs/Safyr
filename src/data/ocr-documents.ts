@@ -1,6 +1,6 @@
 export interface OCRDocument {
   id: string;
-  type: 
+  type:
     | "Facture fournisseur"
     | "Avoir"
     | "Dépense diverse"
@@ -35,7 +35,7 @@ export const mockOCRDocuments: OCRDocument[] = [
     status: "Traité",
     confidence: 95,
     extractedData: {
-      amount: 1250.50,
+      amount: 1250.5,
       date: "2024-01-15",
       supplier: "Fournisseur A",
     },
@@ -49,7 +49,7 @@ export const mockOCRDocuments: OCRDocument[] = [
     status: "Traité",
     confidence: 88,
     extractedData: {
-      amount: 45.30,
+      amount: 45.3,
       date: "2024-01-18",
     },
     assignedTo: "RH",
@@ -83,12 +83,10 @@ export const mockOCRDocuments: OCRDocument[] = [
     status: "Traité",
     confidence: 90,
     extractedData: {
-      amount: -150.00,
+      amount: -150.0,
       date: "2024-01-10",
       supplier: "Fournisseur B",
     },
     assignedTo: "Comptabilité",
   },
 ];
-
-

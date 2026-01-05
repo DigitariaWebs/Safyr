@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileSignature, Download, FlipHorizontal } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import QRCode from "qrcode";
+import Image from "next/image";
 
 interface EmployeeBadgesTabProps {
   employee: Employee;
@@ -47,8 +48,11 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
 
   // Generate QR code on mount and when employee or badge type changes
   useEffect(() => {
-    const qrData = `PRODIGE-${employee.employeeNumber}-${selectedBadgeType}-${employee.id}`;
-    generateQRCode(qrData);
+    const generateQR = async () => {
+      const qrData = `PRODIGE-${employee.employeeNumber}-${selectedBadgeType}-${employee.id}`;
+      await generateQRCode(qrData);
+    };
+    generateQR();
   }, [employee.id, employee.employeeNumber, selectedBadgeType]);
 
   const handleDownloadBadge = (badgeType: string) => {
@@ -171,9 +175,11 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
                     {/* Photo - Square */}
                     <div className="shrink-0">
                       <div className="h-20 w-20 border border-gray-300 overflow-hidden">
-                        <img
-                          src={employee.photo}
+                        <Image
+                          src={employee.photo || ""}
                           alt={employee.firstName}
+                          width={80}
+                          height={80}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -252,9 +258,11 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
 
                     <div className="border-2 border-gray-800 p-2 bg-white">
                       {qrCodeUrl ? (
-                        <img
+                        <Image
                           src={qrCodeUrl}
                           alt="QR Code"
+                          width={112}
+                          height={112}
                           className="w-28 h-28"
                         />
                       ) : (

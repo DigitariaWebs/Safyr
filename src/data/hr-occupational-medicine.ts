@@ -50,7 +50,8 @@ export const mockMedicalVisits: MedicalVisit[] = [
     organization: "Médecine du Travail Paris",
     documents: [],
     alertSent: true,
-    notes: "Visite d'information et de prévention à planifier avant fin d'année",
+    notes:
+      "Visite d'information et de prévention à planifier avant fin d'année",
     createdAt: "2024-12-01",
     updatedAt: "2024-12-20",
   },
@@ -141,5 +142,3 @@ export const mockMedicalVisits: MedicalVisit[] = [
     updatedAt: "2024-12-01",
   },
 ];
-
-

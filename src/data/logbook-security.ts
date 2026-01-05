@@ -2,7 +2,13 @@ export interface SecurityConfig {
   id: string;
   key: string;
   value: boolean | string | number;
-  category: "encryption" | "authentication" | "audit" | "backup" | "rgpd" | "api";
+  category:
+    | "encryption"
+    | "authentication"
+    | "audit"
+    | "backup"
+    | "rgpd"
+    | "api";
   description: string;
   updatedAt: string;
   updatedBy: string;
@@ -204,5 +210,3 @@ export const mockAuditLogs: AuditLog[] = [
     timestamp: "2024-12-15T09:00:00Z",
   },
 ];
-
-

@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Users,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  MapPin,
-} from "lucide-react";
+import { Users, Calendar, CheckCircle, XCircle, MapPin } from "lucide-react";
 import { mockLogbookEvents } from "@/data/logbook-events";
 
 interface PlanningConnection {
@@ -37,7 +31,12 @@ interface RHTransmission {
   eventTitle: string;
   agentId: string;
   agentName: string;
-  type: "incident" | "explication" | "eloge" | "accident_travail" | "disciplinaire";
+  type:
+    | "incident"
+    | "explication"
+    | "eloge"
+    | "accident_travail"
+    | "disciplinaire";
   transmittedAt: string;
   status: "pending" | "processed" | "archived";
   rhDossierId?: string;
@@ -154,7 +153,10 @@ export default function PlanningRHPage() {
       key: "status",
       label: "Statut",
       render: (conn) => {
-        const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+        const variants: Record<
+          string,
+          "default" | "secondary" | "outline" | "destructive"
+        > = {
           scheduled: "outline",
           present: "default",
           absent: "destructive",
@@ -179,7 +181,9 @@ export default function PlanningRHPage() {
     {
       key: "eventTitle",
       label: "Événement",
-      render: (trans) => <span className="font-medium">{trans.eventTitle}</span>,
+      render: (trans) => (
+        <span className="font-medium">{trans.eventTitle}</span>
+      ),
     },
     {
       key: "agentName",
@@ -196,14 +200,15 @@ export default function PlanningRHPage() {
           accident_travail: "Accident de travail",
           disciplinaire: "Suivi disciplinaire",
         };
-        return <Badge variant="outline">{labels[trans.type] || trans.type}</Badge>;
+        return (
+          <Badge variant="outline">{labels[trans.type] || trans.type}</Badge>
+        );
       },
     },
     {
       key: "transmittedAt",
       label: "Transmis le",
-      render: (trans) =>
-        new Date(trans.transmittedAt).toLocaleString("fr-FR"),
+      render: (trans) => new Date(trans.transmittedAt).toLocaleString("fr-FR"),
     },
     {
       key: "status",
@@ -230,7 +235,7 @@ export default function PlanningRHPage() {
   ];
 
   const roundsFromPlanning = mockLogbookEvents.filter(
-    (e) => e.type === "action" && e.title.toLowerCase().includes("ronde")
+    (e) => e.type === "action" && e.title.toLowerCase().includes("ronde"),
   );
 
   return (
@@ -241,7 +246,8 @@ export default function PlanningRHPage() {
             Connexion Planning & RH
           </h1>
           <p className="mt-2 text-sm font-light text-muted-foreground">
-            Vérification automatique des affectations et transmission des événements RH
+            Vérification automatique des affectations et transmission des
+            événements RH
           </p>
         </div>
       </div>
@@ -249,7 +255,9 @@ export default function PlanningRHPage() {
       {/* Configuration */}
       <Card className="glass-card border-border/40">
         <CardHeader>
-          <CardTitle className="text-lg font-light">Configuration automatique</CardTitle>
+          <CardTitle className="text-lg font-light">
+            Configuration automatique
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -268,7 +276,8 @@ export default function PlanningRHPage() {
             <div>
               <Label>Transmission automatique vers RH</Label>
               <p className="text-sm text-muted-foreground">
-                Transmission automatique des incidents, éloges et accidents de travail
+                Transmission automatique des incidents, éloges et accidents de
+                travail
               </p>
             </div>
             <Switch
@@ -370,7 +379,10 @@ export default function PlanningRHPage() {
                       <div>
                         <p className="font-medium">{conn.agentName}</p>
                         <p className="text-sm text-muted-foreground">
-                          Présence confirmée à {new Date(conn.actualStart!).toLocaleTimeString("fr-FR")}
+                          Présence confirmée à{" "}
+                          {new Date(conn.actualStart!).toLocaleTimeString(
+                            "fr-FR",
+                          )}
                         </p>
                       </div>
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -405,11 +417,16 @@ export default function PlanningRHPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="glass-card border-border/40">
               <CardHeader>
-                <CardTitle className="text-sm font-light">Incidents impliquant un agent</CardTitle>
+                <CardTitle className="text-sm font-light">
+                  Incidents impliquant un agent
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {mockRHTransmissions.filter((t) => t.type === "incident").length}
+                  {
+                    mockRHTransmissions.filter((t) => t.type === "incident")
+                      .length
+                  }
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Transmissions automatiques
@@ -419,11 +436,17 @@ export default function PlanningRHPage() {
 
             <Card className="glass-card border-border/40">
               <CardHeader>
-                <CardTitle className="text-sm font-light">Dossiers disciplinaires générés</CardTitle>
+                <CardTitle className="text-sm font-light">
+                  Dossiers disciplinaires générés
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {mockRHTransmissions.filter((t) => t.type === "disciplinaire" && t.rhDossierId).length}
+                  {
+                    mockRHTransmissions.filter(
+                      (t) => t.type === "disciplinaire" && t.rhDossierId,
+                    ).length
+                  }
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Créés automatiquement
@@ -436,4 +459,3 @@ export default function PlanningRHPage() {
     </div>
   );
 }
-

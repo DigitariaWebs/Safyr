@@ -31,9 +31,8 @@ export default function AlertsPage() {
 
   const alerts = mockAlerts;
 
-  const filteredAlerts = filterType === "all" 
-    ? alerts 
-    : alerts.filter((a) => a.type === filterType);
+  const filteredAlerts =
+    filterType === "all" ? alerts : alerts.filter((a) => a.type === filterType);
 
   const getAlertIcon = (type: AlertType) => {
     switch (type) {
@@ -85,9 +84,13 @@ export default function AlertsPage() {
           <SelectContent>
             <SelectItem value="all">Tous les types</SelectItem>
             <SelectItem value="grave_incident">Incidents graves</SelectItem>
-            <SelectItem value="effraction">Tentatives d&apos;effraction</SelectItem>
+            <SelectItem value="effraction">
+              Tentatives d&apos;effraction
+            </SelectItem>
             <SelectItem value="incendie">Détection incendie</SelectItem>
-            <SelectItem value="critique_medical">Événements critiques</SelectItem>
+            <SelectItem value="critique_medical">
+              Événements critiques
+            </SelectItem>
             <SelectItem value="absence_ronde">Absence de ronde</SelectItem>
             <SelectItem value="inactivite">Inactivité prolongée</SelectItem>
           </SelectContent>
@@ -98,79 +101,87 @@ export default function AlertsPage() {
         {filteredAlerts.map((alert) => {
           const Icon = getAlertIcon(alert.type);
           return (
-          <Card
-            key={alert.id}
-            className="glass-card border-border/40 hover:border-primary/30 transition-all cursor-pointer"
-            onClick={() => {
-              setViewingAlert(alert);
-              setIsViewModalOpen(true);
-            }}
-          >
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <Icon
-                    className={`h-5 w-5 ${
-                      alert.severity === "critical"
-                        ? "text-red-500"
-                        : alert.severity === "high"
-                          ? "text-orange-500"
-                          : "text-yellow-500"
-                    }`}
-                  />
-                  <CardTitle className="text-xl font-light">
-                    {alert.title}
-                  </CardTitle>
-                </div>
-                <div className="flex gap-2">
-                  <Badge
-                    variant={
-                      alert.severity === "critical"
-                        ? "destructive"
-                        : alert.severity === "high"
+            <Card
+              key={alert.id}
+              className="glass-card border-border/40 hover:border-primary/30 transition-all cursor-pointer"
+              onClick={() => {
+                setViewingAlert(alert);
+                setIsViewModalOpen(true);
+              }}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon
+                      className={`h-5 w-5 ${
+                        alert.severity === "critical"
+                          ? "text-red-500"
+                          : alert.severity === "high"
+                            ? "text-orange-500"
+                            : "text-yellow-500"
+                      }`}
+                    />
+                    <CardTitle className="text-xl font-light">
+                      {alert.title}
+                    </CardTitle>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge
+                      variant={
+                        alert.severity === "critical"
                           ? "destructive"
-                          : "default"
-                    }
-                  >
-                    {alert.severity}
-                  </Badge>
-                  <Badge variant="outline">
-                    {getAlertTypeLabel(alert.type)}
-                  </Badge>
+                          : alert.severity === "high"
+                            ? "destructive"
+                            : "default"
+                      }
+                    >
+                      {alert.severity}
+                    </Badge>
+                    <Badge variant="outline">
+                      {getAlertTypeLabel(alert.type)}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                {alert.description}
-              </p>
-              <div className="flex items-center gap-4 text-sm">
-                <span className="text-muted-foreground">{alert.site}</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">
-                  {new Date(alert.timestamp).toLocaleString("fr-FR")}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 pt-2 border-t mt-2">
-                <div className="flex items-center gap-2 text-xs">
-                  <Bell className="h-3 w-3" />
-                  <span className="text-muted-foreground">Notifié:</span>
-                  {alert.notified.pcSecurite && (
-                    <Badge variant="outline" className="text-xs">PC Sécurité</Badge>
-                  )}
-                  {alert.notified.superviseur && (
-                    <Badge variant="outline" className="text-xs">Superviseur</Badge>
-                  )}
-                  {alert.notified.client && (
-                    <Badge variant="outline" className="text-xs">Client</Badge>
-                  )}
-                  {alert.notified.rh && (
-                    <Badge variant="outline" className="text-xs">RH</Badge>
-                  )}
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {alert.description}
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-muted-foreground">{alert.site}</span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    {new Date(alert.timestamp).toLocaleString("fr-FR")}
+                  </span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex items-center gap-4 pt-2 border-t mt-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Bell className="h-3 w-3" />
+                    <span className="text-muted-foreground">Notifié:</span>
+                    {alert.notified.pcSecurite && (
+                      <Badge variant="outline" className="text-xs">
+                        PC Sécurité
+                      </Badge>
+                    )}
+                    {alert.notified.superviseur && (
+                      <Badge variant="outline" className="text-xs">
+                        Superviseur
+                      </Badge>
+                    )}
+                    {alert.notified.client && (
+                      <Badge variant="outline" className="text-xs">
+                        Client
+                      </Badge>
+                    )}
+                    {alert.notified.rh && (
+                      <Badge variant="outline" className="text-xs">
+                        RH
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
@@ -186,72 +197,88 @@ export default function AlertsPage() {
         {viewingAlert && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Type</Label>
-                <Badge variant="outline">
-                  {getAlertTypeLabel(viewingAlert.type)}
-                </Badge>
-              </div>
-              <div>
-                <Label>Gravité</Label>
-                <Badge
-                  variant={
-                    viewingAlert.severity === "critical"
-                      ? "destructive"
-                      : viewingAlert.severity === "high"
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Type</Label>
+                  <Badge variant="outline">
+                    {getAlertTypeLabel(viewingAlert.type)}
+                  </Badge>
+                </div>
+                <div>
+                  <Label>Gravité</Label>
+                  <Badge
+                    variant={
+                      viewingAlert.severity === "critical"
                         ? "destructive"
-                        : "default"
-                  }
-                >
-                  {viewingAlert.severity}
-                </Badge>
+                        : viewingAlert.severity === "high"
+                          ? "destructive"
+                          : "default"
+                    }
+                  >
+                    {viewingAlert.severity}
+                  </Badge>
+                </div>
               </div>
-            </div>
 
-            <div className="pt-4 border-t">
-              <Label className="text-base font-semibold mb-3 block">
-                Notifications envoyées
-              </Label>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">PC Sécurité</span>
+              <div className="pt-4 border-t">
+                <Label className="text-base font-semibold mb-3 block">
+                  Notifications envoyées
+                </Label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="text-sm">PC Sécurité</span>
+                    </div>
+                    <Badge
+                      variant={
+                        viewingAlert.notified.pcSecurite ? "default" : "outline"
+                      }
+                    >
+                      {viewingAlert.notified.pcSecurite ? "Oui" : "Non"}
+                    </Badge>
                   </div>
-                  <Badge variant={viewingAlert.notified.pcSecurite ? "default" : "outline"}>
-                    {viewingAlert.notified.pcSecurite ? "Oui" : "Non"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">Superviseur</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="text-sm">Superviseur</span>
+                    </div>
+                    <Badge
+                      variant={
+                        viewingAlert.notified.superviseur
+                          ? "default"
+                          : "outline"
+                      }
+                    >
+                      {viewingAlert.notified.superviseur ? "Oui" : "Non"}
+                    </Badge>
                   </div>
-                  <Badge variant={viewingAlert.notified.superviseur ? "default" : "outline"}>
-                    {viewingAlert.notified.superviseur ? "Oui" : "Non"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <span className="text-sm">Client</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span className="text-sm">Client</span>
+                    </div>
+                    <Badge
+                      variant={
+                        viewingAlert.notified.client ? "default" : "outline"
+                      }
+                    >
+                      {viewingAlert.notified.client ? "Oui" : "Non"}
+                    </Badge>
                   </div>
-                  <Badge variant={viewingAlert.notified.client ? "default" : "outline"}>
-                    {viewingAlert.notified.client ? "Oui" : "Non"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">Responsable RH</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="text-sm">Responsable RH</span>
+                    </div>
+                    <Badge
+                      variant={viewingAlert.notified.rh ? "default" : "outline"}
+                    >
+                      {viewingAlert.notified.rh ? "Oui" : "Non"}
+                    </Badge>
                   </div>
-                  <Badge variant={viewingAlert.notified.rh ? "default" : "outline"}>
-                    {viewingAlert.notified.rh ? "Oui" : "Non"}
-                  </Badge>
                 </div>
               </div>
-            </div>
               <div>
                 <Label>Date/Heure</Label>
                 <p className="text-sm">
@@ -280,4 +307,3 @@ export default function AlertsPage() {
     </div>
   );
 }
-

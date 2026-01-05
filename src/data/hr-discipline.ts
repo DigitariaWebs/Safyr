@@ -77,7 +77,8 @@ export const mockWarnings: Warning[] = [
     employeeNumber: "EMP012",
     type: "written",
     reason: "Retards répétés",
-    description: "Plusieurs retards constatés au cours du mois de novembre. Avertissement écrit.",
+    description:
+      "Plusieurs retards constatés au cours du mois de novembre. Avertissement écrit.",
     date: "2024-11-15",
     issuedBy: "Marie Martin",
     acknowledged: true,
@@ -93,7 +94,8 @@ export const mockWarnings: Warning[] = [
     employeeNumber: "EMP003",
     type: "oral",
     reason: "Non-respect des procédures",
-    description: "Rappel oral concernant le respect des procédures de sécurité.",
+    description:
+      "Rappel oral concernant le respect des procédures de sécurité.",
     date: "2024-12-10",
     issuedBy: "Sophie Dubois",
     acknowledged: false,
@@ -108,7 +110,8 @@ export const mockWarnings: Warning[] = [
     employeeNumber: "EMP005",
     type: "final",
     reason: "Absences non justifiées",
-    description: "Avertissement final suite à des absences non justifiées répétées.",
+    description:
+      "Avertissement final suite à des absences non justifiées répétées.",
     date: "2024-10-20",
     issuedBy: "Marie Martin",
     acknowledged: true,
@@ -129,7 +132,8 @@ export const mockSuspensions: Suspension[] = [
     endDate: "2024-12-15",
     duration: 14,
     reason: "Mesure disciplinaire",
-    description: "Suspension de 14 jours suite à manquements répétés aux obligations professionnelles.",
+    description:
+      "Suspension de 14 jours suite à manquements répétés aux obligations professionnelles.",
     type: "disciplinary",
     issuedBy: "Sophie Dubois",
     documents: ["decision_suspension_cegarnier_2024.pdf"],
@@ -147,12 +151,14 @@ export const mockDisciplinaryProcedures: DisciplinaryProcedure[] = [
     type: "suspension",
     status: "resolved",
     reason: "Manquements répétés aux obligations professionnelles",
-    description: "Procédure disciplinaire ouverte suite à retards répétés et absences non justifiées.",
+    description:
+      "Procédure disciplinaire ouverte suite à retards répétés et absences non justifiées.",
     openedAt: "2024-11-01",
     openedBy: "Sophie Dubois",
     resolvedAt: "2024-12-15",
     resolvedBy: "Sophie Dubois",
-    resolution: "Suspension de 14 jours prononcée. Retour au travail avec période d'observation de 3 mois.",
+    resolution:
+      "Suspension de 14 jours prononcée. Retour au travail avec période d'observation de 3 mois.",
     warnings: ["WARN-001"],
     suspensions: ["SUSP-001"],
     documents: ["procedure_disciplinaire_cegarnier_2024.pdf"],
@@ -225,5 +231,3 @@ export const mockSanctions: Sanction[] = [
     updatedAt: "2024-10-20",
   },
 ];
-
-

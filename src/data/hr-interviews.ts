@@ -91,7 +91,8 @@ export const mockAnnualInterviews: AnnualInterview[] = [
         "Formation communication client",
       ],
     },
-    notes: "Très bon entretien. Agent motivé et performant. Objectifs clairs pour 2025.",
+    notes:
+      "Très bon entretien. Agent motivé et performant. Objectifs clairs pour 2025.",
     rating: 4,
     documents: ["entretien_annuel_jean_dupont_2024.pdf"],
     createdAt: "2024-12-01",
@@ -121,10 +122,7 @@ export const mockAnnualInterviews: AnnualInterview[] = [
         "Développer les compétences en leadership",
         "Optimiser les processus de gestion",
       ],
-      training: [
-        "Formation management avancé",
-        "Formation gestion du stress",
-      ],
+      training: ["Formation management avancé", "Formation gestion du stress"],
     },
     notes: "Performance exceptionnelle. Leadership reconnu. À promouvoir.",
     rating: 5,
@@ -169,17 +167,11 @@ export const mockProfessionalInterviews: ProfessionalInterview[] = [
         "Évolution vers poste de chef d'équipe",
         "Développement des compétences managériales",
       ],
-      skills: [
-        "Leadership",
-        "Gestion d'équipe",
-        "Communication",
-      ],
-      development: [
-        "Formation management",
-        "Mentorat avec Marie Martin",
-      ],
+      skills: ["Leadership", "Gestion d'équipe", "Communication"],
+      development: ["Formation management", "Mentorat avec Marie Martin"],
     },
-    notes: "Intéressé par une évolution vers un poste d'encadrement. Profil prometteur.",
+    notes:
+      "Intéressé par une évolution vers un poste d'encadrement. Profil prometteur.",
     nextSteps: [
       "Formation management prévue Q1 2025",
       "Mise en situation d'encadrement progressif",
@@ -199,18 +191,9 @@ export const mockProfessionalInterviews: ProfessionalInterview[] = [
     interviewer: "Sophie Dubois",
     status: "completed",
     topics: {
-      career: [
-        "Spécialisation en sécurité incendie",
-      ],
-      skills: [
-        "SSIAP2",
-        "Intervention incendie",
-        "Formation des équipes",
-      ],
-      development: [
-        "Recyclage SSIAP2",
-        "Formation formateur",
-      ],
+      career: ["Spécialisation en sécurité incendie"],
+      skills: ["SSIAP2", "Intervention incendie", "Formation des équipes"],
+      development: ["Recyclage SSIAP2", "Formation formateur"],
     },
     notes: "Très bonne expertise technique. Potentiel formateur identifié.",
     nextSteps: [
@@ -263,7 +246,8 @@ export const mockObjectives: Objective[] = [
     employeeNumber: "EMP002",
     year: 2024,
     title: "Mise en place de nouvelles procédures",
-    description: "Finaliser la rédaction et la mise en œuvre des nouvelles procédures de sécurité",
+    description:
+      "Finaliser la rédaction et la mise en œuvre des nouvelles procédures de sécurité",
     category: "project",
     targetDate: "2024-12-31",
     status: "completed",
@@ -280,7 +264,8 @@ export const mockObjectives: Objective[] = [
     employeeNumber: "EMP002",
     year: 2025,
     title: "Développer les compétences en leadership",
-    description: "Suivre une formation en management avancé et appliquer les acquis",
+    description:
+      "Suivre une formation en management avancé et appliquer les acquis",
     category: "development",
     targetDate: "2025-09-30",
     status: "not_started",
@@ -306,5 +291,3 @@ export const mockObjectives: Objective[] = [
     updatedAt: "2024-03-15",
   },
 ];
-
-

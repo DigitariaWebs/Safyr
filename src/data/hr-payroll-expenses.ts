@@ -3,7 +3,13 @@ export interface Expense {
   employeeId: string;
   employeeName: string;
   employeeNumber: string;
-  type: "mileage" | "meal" | "accommodation" | "training" | "equipment" | "other";
+  type:
+    | "mileage"
+    | "meal"
+    | "accommodation"
+    | "training"
+    | "equipment"
+    | "other";
   description: string;
   amount: number;
   date: string;
@@ -29,7 +35,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP001",
     type: "mileage",
     description: "Déplacements professionnels - Décembre 2024",
-    amount: 125.50,
+    amount: 125.5,
     date: "2024-12-15",
     receiptUrl: "/receipts/jean_dupont_kilometrage_dec2024.pdf",
     status: "paid",
@@ -47,7 +53,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP002",
     type: "meal",
     description: "Repas d'affaires - Client Centre Commercial",
-    amount: 45.80,
+    amount: 45.8,
     date: "2024-12-18",
     receiptUrl: "/receipts/marie_martin_repas_18122024.pdf",
     status: "validated",
@@ -64,7 +70,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP003",
     type: "training",
     description: "Formation SST - Frais d'inscription",
-    amount: 800.00,
+    amount: 800.0,
     date: "2024-12-10",
     receiptUrl: "/receipts/pierre_bernard_formation_sst.pdf",
     status: "submitted",
@@ -79,7 +85,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP005",
     type: "accommodation",
     description: "Hôtel - Mission sécurité événementielle Lyon",
-    amount: 120.00,
+    amount: 120.0,
     date: "2024-12-05",
     receiptUrl: "/receipts/luc_moreau_hotel_lyon.pdf",
     status: "validated",
@@ -96,14 +102,15 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP006",
     type: "equipment",
     description: "Achat chaussures de sécurité",
-    amount: 89.90,
+    amount: 89.9,
     date: "2024-12-12",
     receiptUrl: "/receipts/claire_petit_chaussures_securite.pdf",
     status: "rejected",
     submittedAt: "2024-12-13T08:00:00Z",
     rejectedAt: "2024-12-14T10:00:00Z",
     rejectedBy: "Sophie Dubois",
-    rejectionReason: "Équipement non conforme aux normes internes. Voir liste des équipements approuvés.",
+    rejectionReason:
+      "Équipement non conforme aux normes internes. Voir liste des équipements approuvés.",
     createdAt: "2024-12-12T16:00:00Z",
     updatedAt: "2024-12-14T10:00:00Z",
   },
@@ -114,7 +121,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP001",
     type: "mileage",
     description: "Déplacements professionnels - Novembre 2024",
-    amount: 98.30,
+    amount: 98.3,
     date: "2024-11-30",
     receiptUrl: "/receipts/jean_dupont_kilometrage_nov2024.pdf",
     status: "paid",
@@ -132,7 +139,7 @@ export const mockExpenses: Expense[] = [
     employeeNumber: "EMP009",
     type: "other",
     description: "Frais de stationnement - Mission client",
-    amount: 12.50,
+    amount: 12.5,
     date: "2024-12-20",
     receiptUrl: "/receipts/alexandre_simon_stationnement.pdf",
     status: "draft",
@@ -140,5 +147,3 @@ export const mockExpenses: Expense[] = [
     updatedAt: "2024-12-20T18:00:00Z",
   },
 ];
-
-

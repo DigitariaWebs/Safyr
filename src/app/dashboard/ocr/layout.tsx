@@ -6,11 +6,7 @@ import { ModuleTopBar } from "@/components/ui/module-top-bar";
 import { FileText } from "lucide-react";
 import { OCRNavigationBar } from "@/components/layout/OCRNavigationBar";
 
-export default function OCRLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function OCRLayout({ children }: { children: React.ReactNode }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     if (typeof window !== "undefined") {
@@ -49,5 +45,3 @@ export default function OCRLayout({
     </>
   );
 }
-
-

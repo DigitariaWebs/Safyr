@@ -1,7 +1,16 @@
 "use client";
 
-import { ModuleNavigationBar, NavItem } from "@/components/ui/module-navigation-bar";
-import { FileText, Upload, CheckCircle, Settings, TrendingUp } from "lucide-react";
+import {
+  ModuleNavigationBar,
+  NavItem,
+} from "@/components/ui/module-navigation-bar";
+import {
+  FileText,
+  Upload,
+  CheckCircle,
+  Settings,
+  TrendingUp,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -54,5 +63,3 @@ export function OCRNavigationBar({
     />
   );
 }
-
-

@@ -3,7 +3,13 @@ export interface Absence {
   employeeId: string;
   employeeName: string;
   employeeNumber: string;
-  type: "sick_leave" | "accident_work" | "maternity" | "paternity" | "unpaid" | "other";
+  type:
+    | "sick_leave"
+    | "accident_work"
+    | "maternity"
+    | "paternity"
+    | "unpaid"
+    | "other";
   startDate: string;
   endDate?: string;
   totalDays: number;
@@ -118,5 +124,3 @@ export const mockAbsences: Absence[] = [
     updatedAt: "2024-12-20",
   },
 ];
-
-

@@ -51,7 +51,7 @@ export const mockPayrollConventions: PayrollConvention[] = [
     name: "Convention Collective Agents de Sûreté Aéroportuaire",
     sector: "Sûreté Aéroportuaire",
     lastUpdate: "2024-01-01",
-    minimumWage: 12.10,
+    minimumWage: 12.1,
     nightBonus: 15,
     sundayBonus: 30,
     holidayBonus: 55,
@@ -61,5 +61,3 @@ export const mockPayrollConventions: PayrollConvention[] = [
     status: "Active",
   },
 ];
-
-

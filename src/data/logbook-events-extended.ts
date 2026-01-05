@@ -13,7 +13,8 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Ronde matinale",
-    description: "Ronde de contrôle matinale effectuée. Tous les points de contrôle vérifiés. RAS.",
+    description:
+      "Ronde de contrôle matinale effectuée. Tous les points de contrôle vérifiés. RAS.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     supervisorId: "SUP-012",
@@ -35,7 +36,8 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     severity: "medium",
     status: "resolved",
     title: "Véhicule mal garé",
-    description: "Véhicule stationné sur une place réservée. Contact avec le propriétaire. Déplacement effectué.",
+    description:
+      "Véhicule stationné sur une place réservée. Contact avec le propriétaire. Déplacement effectué.",
     agentId: "AGT-087",
     agentName: "Sophie Bernard",
     supervisorId: "SUP-012",
@@ -57,7 +59,8 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Nettoyage déversement liquide",
-    description: "Déversement de boisson sur le sol. Nettoyage immédiat effectué. Signalisation mise en place.",
+    description:
+      "Déversement de boisson sur le sol. Nettoyage immédiat effectué. Signalisation mise en place.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     clientNotified: false,
@@ -75,7 +78,8 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Contrôle d'accès",
-    description: "Contrôle d'accès effectué. Vérification des badges. Tout conforme.",
+    description:
+      "Contrôle d'accès effectué. Vérification des badges. Tout conforme.",
     agentId: "AGT-087",
     agentName: "Sophie Bernard",
     clientNotified: false,
@@ -93,7 +97,8 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     severity: "low",
     status: "resolved",
     title: "Fermeture site",
-    description: "Fermeture du site. Vérification de tous les accès. Armement alarme effectué. RAS.",
+    description:
+      "Fermeture du site. Vérification de tous les accès. Armement alarme effectué. RAS.",
     agentId: "AGT-125",
     agentName: "Jean Dupont",
     clientNotified: false,
@@ -105,4 +110,3 @@ export const mockLogbookEventsExtended: LogbookEvent[] = [
     resolvedAt: "2024-12-20T19:15:00Z",
   },
 ];
-

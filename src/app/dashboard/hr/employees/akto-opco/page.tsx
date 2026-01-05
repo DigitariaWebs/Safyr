@@ -81,7 +81,6 @@ const mockDossiers: AKTOOPCODossier[] = [
 ];
 
 const AKTO_URL = "https://www.akto.fr";
-const OPCO_URL = "https://www.opco2i.org";
 
 export default function AKTOOPCOPage() {
   const [dossiers, setDossiers] = useState<AKTOOPCODossier[]>(mockDossiers);
@@ -230,12 +229,6 @@ export default function AKTOOPCOPage() {
             <a href={AKTO_URL} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4 mr-2" />
               AKTO
-            </a>
-          </Button>
-          <Button variant="outline" asChild>
-            <a href={OPCO_URL} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              OPCO
             </a>
           </Button>
           <Button onClick={handleCreate}>

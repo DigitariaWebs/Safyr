@@ -120,7 +120,10 @@ export const mockEquipment: Equipment[] = [
     status: "maintenance",
     location: "Atelier",
     notes: "En réparation - Problème d'antenne",
-    documents: ["fiche_radio_motorola_dp4400.pdf", "bon_maintenance_radio_003.pdf"],
+    documents: [
+      "fiche_radio_motorola_dp4400.pdf",
+      "bon_maintenance_radio_003.pdf",
+    ],
     createdAt: "2024-01-15",
     updatedAt: "2024-12-10",
   },
@@ -208,5 +211,3 @@ export const mockEquipmentAssignments: EquipmentAssignment[] = [
     updatedAt: "2024-01-20",
   },
 ];
-
-

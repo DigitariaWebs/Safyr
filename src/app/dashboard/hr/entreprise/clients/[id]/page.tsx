@@ -71,7 +71,9 @@ interface ClientGift {
   clientId: string;
   giftDescription: string;
   date: Date;
-  value?: number;
+  valueHT?: number; // Hors Tax
+  tva?: number; // TVA
+  valueTTC?: number; // Toutes Taxes Comprises
   notes?: string;
 }
 
@@ -229,7 +231,9 @@ const mockGifts: ClientGift[] = [
     clientId: "1",
     giftDescription: "Panier de Noël",
     date: new Date("2023-12-20"),
-    value: 150,
+    valueHT: 125,
+    tva: 25,
+    valueTTC: 150,
     notes: "Remis au directeur général",
   },
   {
@@ -237,7 +241,9 @@ const mockGifts: ClientGift[] = [
     clientId: "2",
     giftDescription: "Bouteille de champagne",
     date: new Date("2024-01-15"),
-    value: 80,
+    valueHT: 67,
+    tva: 13,
+    valueTTC: 80,
     notes: "Nouvel an - équipe dirigeante",
   },
 ];
@@ -426,10 +432,22 @@ export default function ClientDetailPage({
       render: (gift) => new Date(gift.date).toLocaleDateString("fr-FR"),
     },
     {
-      key: "value",
-      label: "Valeur",
+      key: "valueHT",
+      label: "Hors Tax",
       sortable: true,
-      render: (gift) => (gift.value ? `${gift.value} €` : "-"),
+      render: (gift) => (gift.valueHT ? `${gift.valueHT} €` : "-"),
+    },
+    {
+      key: "tva",
+      label: "TVA",
+      sortable: true,
+      render: (gift) => (gift.tva ? `${gift.tva} €` : "-"),
+    },
+    {
+      key: "valueTTC",
+      label: "TTC",
+      sortable: true,
+      render: (gift) => (gift.valueTTC ? `${gift.valueTTC} €` : "-"),
     },
     {
       key: "notes",

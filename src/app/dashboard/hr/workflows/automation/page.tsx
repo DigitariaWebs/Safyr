@@ -95,9 +95,7 @@ export default function WorkflowAutomationPage() {
     {
       key: "triggerCount",
       label: "Exécutions",
-      render: (rule) => (
-        <Badge variant="secondary">{rule.triggerCount}</Badge>
-      ),
+      render: (rule) => <Badge variant="secondary">{rule.triggerCount}</Badge>,
     },
     {
       key: "lastTriggered",
@@ -150,9 +148,7 @@ export default function WorkflowAutomationPage() {
 
   const handleToggleActive = (ruleId: string) => {
     setRules(
-      rules.map((r) =>
-        r.id === ruleId ? { ...r, isActive: !r.isActive } : r
-      )
+      rules.map((r) => (r.id === ruleId ? { ...r, isActive: !r.isActive } : r)),
     );
   };
 
@@ -178,7 +174,9 @@ export default function WorkflowAutomationPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Règles actives</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Règles actives
+            </CardTitle>
             <Zap className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -191,7 +189,9 @@ export default function WorkflowAutomationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total exécutions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total exécutions
+            </CardTitle>
             <Zap className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -204,14 +204,14 @@ export default function WorkflowAutomationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux de réussite</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Taux de réussite
+            </CardTitle>
             <Zap className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">98.5%</div>
-            <p className="text-xs text-muted-foreground">
-              Exécutions réussies
-            </p>
+            <p className="text-xs text-muted-foreground">Exécutions réussies</p>
           </CardContent>
         </Card>
       </div>
@@ -249,7 +249,9 @@ export default function WorkflowAutomationPage() {
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="Ex: Auto-validation congés courts"
             />
           </div>
@@ -258,17 +260,27 @@ export default function WorkflowAutomationPage() {
             <Label htmlFor="trigger">Déclencheur</Label>
             <Select
               value={formData.trigger}
-              onValueChange={(value) => setFormData({ ...formData, trigger: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, trigger: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisir un déclencheur..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="leave_request">Demande de congé créée</SelectItem>
+                <SelectItem value="leave_request">
+                  Demande de congé créée
+                </SelectItem>
                 <SelectItem value="contract_signed">Contrat signé</SelectItem>
-                <SelectItem value="certification_expired">Certification expirée</SelectItem>
-                <SelectItem value="training_completed">Formation complétée</SelectItem>
-                <SelectItem value="absence_declared">Absence déclarée</SelectItem>
+                <SelectItem value="certification_expired">
+                  Certification expirée
+                </SelectItem>
+                <SelectItem value="training_completed">
+                  Formation complétée
+                </SelectItem>
+                <SelectItem value="absence_declared">
+                  Absence déclarée
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -278,7 +290,9 @@ export default function WorkflowAutomationPage() {
             <Input
               id="condition"
               value={formData.condition}
-              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, condition: e.target.value })
+              }
               placeholder="Ex: Durée ≤ 3 jours ET Solde suffisant"
             />
           </div>
@@ -287,17 +301,25 @@ export default function WorkflowAutomationPage() {
             <Label htmlFor="action">Action</Label>
             <Select
               value={formData.action}
-              onValueChange={(value) => setFormData({ ...formData, action: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, action: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisir une action..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="auto_validate">Valider automatiquement</SelectItem>
+                <SelectItem value="auto_validate">
+                  Valider automatiquement
+                </SelectItem>
                 <SelectItem value="send_email">Envoyer un email</SelectItem>
-                <SelectItem value="send_notification">Envoyer une notification</SelectItem>
+                <SelectItem value="send_notification">
+                  Envoyer une notification
+                </SelectItem>
                 <SelectItem value="create_task">Créer une tâche</SelectItem>
-                <SelectItem value="update_status">Mettre à jour le statut</SelectItem>
+                <SelectItem value="update_status">
+                  Mettre à jour le statut
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -361,7 +383,9 @@ export default function WorkflowAutomationPage() {
                 <Label>Dernière exécution</Label>
                 <p className="text-sm font-medium">
                   {selectedRule.lastTriggered
-                    ? new Date(selectedRule.lastTriggered).toLocaleDateString("fr-FR")
+                    ? new Date(selectedRule.lastTriggered).toLocaleDateString(
+                        "fr-FR",
+                      )
                     : "Jamais"}
                 </p>
               </div>
@@ -395,5 +419,3 @@ export default function WorkflowAutomationPage() {
     </div>
   );
 }
-
-

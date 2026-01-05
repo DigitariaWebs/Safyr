@@ -152,7 +152,9 @@ export default function ClientsPage() {
       clientId: "1",
       giftDescription: "Panier de Noël",
       date: new Date("2023-12-20"),
-      value: 150,
+      valueHT: 125,
+      tva: 25,
+      valueTTC: 150,
       notes: "Remis au directeur général",
     },
     {
@@ -160,7 +162,9 @@ export default function ClientsPage() {
       clientId: "2",
       giftDescription: "Bouteille de champagne",
       date: new Date("2024-01-15"),
-      value: 80,
+      valueHT: 67,
+      tva: 13,
+      valueTTC: 80,
       notes: "Nouvel an - équipe dirigeante",
     },
   ]);

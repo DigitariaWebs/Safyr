@@ -61,5 +61,3 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     battery: 0,
   },
 ];
-
-

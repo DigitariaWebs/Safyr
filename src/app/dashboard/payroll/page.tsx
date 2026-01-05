@@ -6,7 +6,7 @@ import { mockPayrollConventions } from "@/data/payroll-conventions";
 
 export default function PayrollDashboard() {
   const activeConventions = mockPayrollConventions.filter(
-    (c) => c.status === "Active"
+    (c) => c.status === "Active",
   ).length;
 
   return (
@@ -62,9 +62,7 @@ export default function PayrollDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Bilan Social
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Bilan Social</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -76,5 +74,3 @@ export default function PayrollDashboard() {
     </div>
   );
 }
-
-

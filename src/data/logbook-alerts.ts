@@ -47,7 +47,8 @@ export const mockAlerts: Alert[] = [
     id: "ALT-001",
     type: "incendie",
     title: "Détection incendie - Zone Technique",
-    description: "Alarme incendie déclenchée dans la zone technique. Équipe d'intervention en route.",
+    description:
+      "Alarme incendie déclenchée dans la zone technique. Équipe d'intervention en route.",
     timestamp: "2024-12-24T14:00:00Z",
     site: "Centre Commercial Atlantis",
     siteId: "SITE-001",
@@ -102,7 +103,8 @@ export const mockAlerts: Alert[] = [
     id: "ALT-003",
     type: "effraction",
     title: "Tentative d'effraction détectée",
-    description: "Tentative d'effraction sur véhicule dans le parking. Police contactée.",
+    description:
+      "Tentative d'effraction sur véhicule dans le parking. Police contactée.",
     timestamp: "2024-12-24T10:45:00Z",
     site: "Centre Commercial Atlantis",
     siteId: "SITE-001",
@@ -133,7 +135,8 @@ export const mockAlerts: Alert[] = [
     id: "ALT-004",
     type: "critique_medical",
     title: "Intervention médicale urgente",
-    description: "Agent nécessite assistance médicale immédiate. SAMU contacté.",
+    description:
+      "Agent nécessite assistance médicale immédiate. SAMU contacté.",
     timestamp: "2024-12-24T16:30:00Z",
     site: "Tour de Bureaux Skyline",
     siteId: "SITE-002",
@@ -158,7 +161,8 @@ export const mockAlerts: Alert[] = [
     id: "ALT-005",
     type: "inactivite",
     title: "Inactivité prolongée agent",
-    description: "Agent inactif depuis plus de 2 heures. Vérification en cours.",
+    description:
+      "Agent inactif depuis plus de 2 heures. Vérification en cours.",
     timestamp: "2024-12-24T20:00:00Z",
     site: "Centre Commercial Atlantis",
     siteId: "SITE-001",
@@ -179,7 +183,8 @@ export const mockAlerts: Alert[] = [
     id: "ALT-006",
     type: "grave_incident",
     title: "Incident grave - Agression",
-    description: "Agression verbale et physique signalée. Police et secours contactés.",
+    description:
+      "Agression verbale et physique signalée. Police et secours contactés.",
     timestamp: "2024-12-23T15:30:00Z",
     site: "Centre Commercial Atlantis",
     siteId: "SITE-001",
@@ -206,5 +211,3 @@ export const mockAlerts: Alert[] = [
     updatedAt: "2024-12-23T16:00:00Z",
   },
 ];
-
-

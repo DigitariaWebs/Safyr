@@ -13,7 +13,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-001",
     date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 2500.00,
+    amount: 2500.0,
     type: "credit",
     description: "Virement salaire employé",
     accountId: "1",
@@ -23,7 +23,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-002",
     date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 150.50,
+    amount: 150.5,
     type: "debit",
     description: "Paiement fournisseur électricité",
     accountId: "1",
@@ -33,7 +33,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-003",
     date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 3200.00,
+    amount: 3200.0,
     type: "credit",
     description: "Facturation client - Mission sécurité",
     accountId: "1",
@@ -53,7 +53,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-005",
     date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 500.00,
+    amount: 500.0,
     type: "debit",
     description: "Loyer bureau",
     accountId: "1",
@@ -63,7 +63,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-006",
     date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 1200.00,
+    amount: 1200.0,
     type: "credit",
     description: "Paiement client - Contrat annuel",
     accountId: "2",
@@ -73,7 +73,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-007",
     date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 45.20,
+    amount: 45.2,
     type: "debit",
     description: "Frais bancaires",
     accountId: "1",
@@ -83,7 +83,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-008",
     date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 750.00,
+    amount: 750.0,
     type: "debit",
     description: "Achat équipement sécurité",
     accountId: "3",
@@ -93,7 +93,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-009",
     date: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 1800.00,
+    amount: 1800.0,
     type: "credit",
     description: "Virement client - Règlement facture",
     accountId: "1",
@@ -103,7 +103,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-010",
     date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 200.00,
+    amount: 200.0,
     type: "debit",
     description: "Formation équipe",
     accountId: "2",
@@ -113,7 +113,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-011",
     date: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 95.30,
+    amount: 95.3,
     type: "debit",
     description: "Assurance entreprise",
     accountId: "1",
@@ -123,7 +123,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-012",
     date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 3000.00,
+    amount: 3000.0,
     type: "credit",
     description: "Contrat de sécurité - Client ABC",
     accountId: "1",
@@ -133,7 +133,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-013",
     date: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 125.00,
+    amount: 125.0,
     type: "debit",
     description: "Maintenance informatique",
     accountId: "2",
@@ -143,7 +143,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-014",
     date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 650.00,
+    amount: 650.0,
     type: "debit",
     description: "Fournitures de bureau",
     accountId: "1",
@@ -153,7 +153,7 @@ export const mockBankingTransactions: BankingTransaction[] = [
   {
     id: "txn-015",
     date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 2200.00,
+    amount: 2200.0,
     type: "credit",
     description: "Paiement mission spéciale",
     accountId: "3",

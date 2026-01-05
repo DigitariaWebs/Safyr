@@ -45,7 +45,8 @@ export const mockSocialPosts: SocialPost[] = [
   {
     id: "POST-001",
     platform: "LinkedIn",
-    content: "Nous recrutons des agents de sécurité qualifiés! Rejoignez notre équipe et développez vos compétences dans un environnement professionnel. Postes disponibles: Agent de sécurité, Chef d'équipe, Superviseur. #Recrutement #Sécurité",
+    content:
+      "Nous recrutons des agents de sécurité qualifiés! Rejoignez notre équipe et développez vos compétences dans un environnement professionnel. Postes disponibles: Agent de sécurité, Chef d'équipe, Superviseur. #Recrutement #Sécurité",
     scheduledDate: "2024-12-25T09:00:00Z",
     status: "Planifié",
     media: ["/marketing/recruitment-post.jpg"],
@@ -55,7 +56,8 @@ export const mockSocialPosts: SocialPost[] = [
   {
     id: "POST-002",
     platform: "Facebook",
-    content: "Formation SSIAP disponible - Inscriptions ouvertes. Formez-vous aux métiers de la sécurité incendie avec nos experts certifiés.",
+    content:
+      "Formation SSIAP disponible - Inscriptions ouvertes. Formez-vous aux métiers de la sécurité incendie avec nos experts certifiés.",
     scheduledDate: "2024-12-20T10:00:00Z",
     publishedDate: "2024-12-20T10:00:00Z",
     status: "Publié",
@@ -73,7 +75,8 @@ export const mockSocialPosts: SocialPost[] = [
   {
     id: "POST-003",
     platform: "Instagram",
-    content: "Journée sécurité - Nos équipes en action. Découvrez le quotidien de nos agents de sécurité professionnels.",
+    content:
+      "Journée sécurité - Nos équipes en action. Découvrez le quotidien de nos agents de sécurité professionnels.",
     scheduledDate: "2024-12-18T14:00:00Z",
     publishedDate: "2024-12-18T14:00:00Z",
     status: "Publié",
@@ -91,7 +94,8 @@ export const mockSocialPosts: SocialPost[] = [
   {
     id: "POST-004",
     platform: "LinkedIn",
-    content: "Félicitations à nos agents qui ont obtenu leur certification SSIAP2! Continuez à exceller dans votre profession.",
+    content:
+      "Félicitations à nos agents qui ont obtenu leur certification SSIAP2! Continuez à exceller dans votre profession.",
     scheduledDate: "2024-12-22T08:00:00Z",
     publishedDate: "2024-12-22T08:00:00Z",
     status: "Publié",
@@ -109,7 +113,8 @@ export const mockSocialPosts: SocialPost[] = [
   {
     id: "POST-005",
     platform: "Facebook",
-    content: "Nos services de sécurité pour entreprises. Protection 24/7, équipes qualifiées, réactivité garantie.",
+    content:
+      "Nos services de sécurité pour entreprises. Protection 24/7, équipes qualifiées, réactivité garantie.",
     scheduledDate: "2024-12-26T11:00:00Z",
     status: "Planifié",
     media: ["/marketing/services-overview.jpg"],
@@ -237,5 +242,3 @@ export const mockCRMCustomers: CRMCustomer[] = [
     updatedAt: "2024-12-19",
   },
 ];
-
-
