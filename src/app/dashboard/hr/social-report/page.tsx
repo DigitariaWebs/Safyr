@@ -13,6 +13,21 @@ import {
 } from "@/components/ui/select";
 import { Download, TrendingUp, Users, DollarSign } from "lucide-react";
 import { mockEmployees } from "@/data/employees";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface SocialReportData {
   year: number;
@@ -171,6 +186,8 @@ const generateMockReport = (year: number): SocialReportData => {
   };
 };
 
+const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"];
+
 export default function SocialReportPage() {
   const [selectedYear, setSelectedYear] = useState(2024);
   const [report, setReport] = useState<SocialReportData>(
@@ -186,6 +203,76 @@ export default function SocialReportPage() {
   const handleExport = () => {
     alert(`Export du bilan social ${selectedYear} en cours...`);
   };
+
+  // Prepare chart data
+  const genderData = [
+    { name: "Hommes", value: report.employeeDistribution.byGender.male },
+    { name: "Femmes", value: report.employeeDistribution.byGender.female },
+  ];
+
+  const ageData = Object.entries(report.employeeDistribution.byAge).map(
+    ([age, count]) => ({
+      age: `${age} ans`,
+      effectif: count,
+    }),
+  );
+
+  const seniorityData = Object.entries(
+    report.employeeDistribution.bySeniority,
+  ).map(([range, count]) => ({
+    anciennete: `${range} ans`,
+    effectif: count,
+  }));
+
+  const contractData = [
+    { name: "CDI", value: report.contracts.cdi, color: "#3b82f6" },
+    { name: "CDD", value: report.contracts.cdd, color: "#8b5cf6" },
+    {
+      name: "Apprentis",
+      value: report.contracts.apprentices,
+      color: "#10b981",
+    },
+  ];
+
+  const absenceData = Object.entries(report.absences.byType).map(
+    ([type, days]) => ({
+      type:
+        type === "maladie"
+          ? "Maladie"
+          : type === "accidentTravail"
+            ? "Accident travail"
+            : type === "conges"
+              ? "Congés"
+              : "Autres",
+      jours: days,
+    }),
+  );
+
+  const hourlyCostData = Object.entries(report.hourlyCost.byCategory).map(
+    ([category, cost]) => ({
+      categorie: category,
+      cout: cost,
+    }),
+  );
+
+  const payrollComparisonData = [
+    {
+      annee: `${selectedYear - 1}`,
+      masseSalariale: report.comparison.previousYear,
+    },
+    { annee: `${selectedYear}`, masseSalariale: report.payroll.grossTotal },
+  ];
+
+  const genderPayGapData = [
+    {
+      genre: "Hommes",
+      salaire: report.genderPayGap.averageMaleGross,
+    },
+    {
+      genre: "Femmes",
+      salaire: report.genderPayGap.averageFemaleGross,
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -227,7 +314,7 @@ export default function SocialReportPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
             <div>
               <Label className="text-sm text-muted-foreground">
                 Total effectif
@@ -270,36 +357,71 @@ export default function SocialReportPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Gender Distribution Pie Chart */}
             <div>
-              <Label className="text-sm font-semibold mb-2 block">
-                Par tranche d&apos;âge
+              <Label className="text-sm font-semibold mb-4 block">
+                Répartition par genre
               </Label>
-              <div className="space-y-2">
-                {Object.entries(report.employeeDistribution.byAge).map(
-                  ([age, count]) => (
-                    <div key={age} className="flex justify-between">
-                      <span className="text-sm">{age} ans</span>
-                      <span className="text-sm font-medium">{count}</span>
-                    </div>
-                  ),
-                )}
-              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={genderData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(props) => {
+                      const name = (props as { name?: string }).name || "";
+                      const percent =
+                        (props as { percent?: number }).percent || 0;
+                      return `${name} ${(percent * 100).toFixed(0)}%`;
+                    }}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {genderData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
+
+            {/* Age Distribution Bar Chart */}
             <div>
-              <Label className="text-sm font-semibold mb-2 block">
-                Par ancienneté
+              <Label className="text-sm font-semibold mb-4 block">
+                Répartition par tranche d&apos;âge
               </Label>
-              <div className="space-y-2">
-                {Object.entries(report.employeeDistribution.bySeniority).map(
-                  ([range, count]) => (
-                    <div key={range} className="flex justify-between">
-                      <span className="text-sm">{range} ans</span>
-                      <span className="text-sm font-medium">{count}</span>
-                    </div>
-                  ),
-                )}
-              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={ageData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="age" tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="effectif" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Seniority Distribution Bar Chart */}
+            <div>
+              <Label className="text-sm font-semibold mb-4 block">
+                Répartition par ancienneté
+              </Label>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={seniorityData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="anciennete" tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="effectif" fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </CardContent>
@@ -311,37 +433,73 @@ export default function SocialReportPage() {
           <CardTitle>Contrats</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <Label className="text-sm text-muted-foreground">CDI</Label>
-              <p className="text-2xl font-bold">{report.contracts.cdi}</p>
+              <div className="grid gap-4 grid-cols-2 mb-6">
+                <div>
+                  <Label className="text-sm text-muted-foreground">CDI</Label>
+                  <p className="text-2xl font-bold">{report.contracts.cdi}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">CDD</Label>
+                  <p className="text-2xl font-bold">{report.contracts.cdd}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Apprentis
+                  </Label>
+                  <p className="text-2xl font-bold">
+                    {report.contracts.apprentices}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    CDD renouvelés
+                  </Label>
+                  <p className="text-2xl font-bold">
+                    {report.contracts.cddRenewed}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">
+                  Durée moyenne CDD
+                </Label>
+                <p className="text-xl font-semibold">
+                  {report.contracts.averageCddDuration} mois
+                </p>
+              </div>
             </div>
+
             <div>
-              <Label className="text-sm text-muted-foreground">CDD</Label>
-              <p className="text-2xl font-bold">{report.contracts.cdd}</p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">Apprentis</Label>
-              <p className="text-2xl font-bold">
-                {report.contracts.apprentices}
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                CDD renouvelés
+              <Label className="text-sm font-semibold mb-4 block">
+                Répartition des types de contrats
               </Label>
-              <p className="text-2xl font-bold">
-                {report.contracts.cddRenewed}
-              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={contractData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(props) => {
+                      const name = (props as { name?: string }).name || "";
+                      const percent =
+                        (props as { percent?: number }).percent || 0;
+                      return `${name} ${(percent * 100).toFixed(0)}%`;
+                    }}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {contractData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className="mt-4">
-            <Label className="text-sm text-muted-foreground">
-              Durée moyenne CDD
-            </Label>
-            <p className="text-xl font-semibold">
-              {report.contracts.averageCddDuration} mois
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -352,7 +510,7 @@ export default function SocialReportPage() {
           <CardTitle>Turnover</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
             <div>
               <Label className="text-sm text-muted-foreground">Entrées</Label>
               <p className="text-2xl font-bold text-green-600">
@@ -374,6 +532,52 @@ export default function SocialReportPage() {
               </p>
             </div>
           </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <Label className="text-sm font-semibold mb-4 block">
+                Taux par site
+              </Label>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={Object.entries(report.turnover.bySite).map(
+                    ([site, rate]) => ({
+                      site,
+                      taux: rate,
+                    }),
+                  )}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="site" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="taux" fill="#f59e0b" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold mb-4 block">
+                Taux par type de contrat
+              </Label>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={Object.entries(report.turnover.byContractType).map(
+                    ([type, rate]) => ({
+                      type,
+                      taux: rate,
+                    }),
+                  )}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="type" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="taux" fill="#ec4899" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -386,54 +590,142 @@ export default function SocialReportPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <Label className="text-sm text-muted-foreground">
-                Brut total
-              </Label>
-              <p className="text-2xl font-bold">
-                {report.payroll.grossTotal.toLocaleString("fr-FR")} €
-              </p>
+              <div className="grid gap-4 md:grid-cols-2 mb-6">
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Brut total
+                  </Label>
+                  <p className="text-2xl font-bold">
+                    {report.payroll.grossTotal.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Net total
+                  </Label>
+                  <p className="text-2xl font-bold">
+                    {report.payroll.netTotal.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Charges patronales
+                  </Label>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {report.payroll.employerContributions.toLocaleString(
+                      "fr-FR",
+                    )}{" "}
+                    €
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Coût total employeur
+                  </Label>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {report.payroll.totalCost.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Salaire brut moyen
+                  </Label>
+                  <p className="text-xl font-semibold">
+                    {report.payroll.averageGross.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Salaire net moyen
+                  </Label>
+                  <p className="text-xl font-semibold">
+                    {report.payroll.averageNet.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+              </div>
             </div>
+
             <div>
-              <Label className="text-sm text-muted-foreground">Net total</Label>
-              <p className="text-2xl font-bold">
-                {report.payroll.netTotal.toLocaleString("fr-FR")} €
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                Charges patronales
+              <Label className="text-sm font-semibold mb-4 block">
+                Évolution de la masse salariale
               </Label>
-              <p className="text-2xl font-bold text-orange-600">
-                {report.payroll.employerContributions.toLocaleString("fr-FR")} €
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                Coût total employeur
-              </Label>
-              <p className="text-2xl font-bold text-blue-600">
-                {report.payroll.totalCost.toLocaleString("fr-FR")} €
-              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={payrollComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="annee" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="masseSalariale"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    name="Masse salariale (€)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                Salaire brut moyen
-              </Label>
-              <p className="text-xl font-semibold">
-                {report.payroll.averageGross.toLocaleString("fr-FR")} €
-              </p>
+        </CardContent>
+      </Card>
+
+      {/* Gender Pay Gap */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Écart salarial Hommes / Femmes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm text-muted-foreground">
+                  Salaire moyen brut Hommes
+                </Label>
+                <p className="text-2xl font-bold">
+                  {report.genderPayGap.averageMaleGross.toLocaleString("fr-FR")}{" "}
+                  €
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">
+                  Salaire moyen brut Femmes
+                </Label>
+                <p className="text-2xl font-bold">
+                  {report.genderPayGap.averageFemaleGross.toLocaleString(
+                    "fr-FR",
+                  )}{" "}
+                  €
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Écart</Label>
+                <p className="text-2xl font-bold text-orange-600">
+                  {report.genderPayGap.gap.toLocaleString("fr-FR")} €{" "}
+                  <span className="text-sm">
+                    ({report.genderPayGap.gapPercentage}%)
+                  </span>
+                </p>
+              </div>
             </div>
+
             <div>
-              <Label className="text-sm text-muted-foreground">
-                Salaire net moyen
+              <Label className="text-sm font-semibold mb-4 block">
+                Comparaison visuelle
               </Label>
-              <p className="text-xl font-semibold">
-                {report.payroll.averageNet.toLocaleString("fr-FR")} €
-              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={genderPayGapData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="genre" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="salaire" fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </CardContent>
@@ -445,34 +737,85 @@ export default function SocialReportPage() {
           <CardTitle>Absences</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <Label className="text-sm text-muted-foreground">
-                Total jours
-              </Label>
-              <p className="text-2xl font-bold">{report.absences.totalDays}</p>
+              <div className="grid gap-4 md:grid-cols-2 mb-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Total jours
+                  </Label>
+                  <p className="text-2xl font-bold">
+                    {report.absences.totalDays}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Coût total
+                  </Label>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {report.absences.cost.toLocaleString("fr-FR")} €
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm">Maladie</span>
+                  <span className="text-sm font-medium">
+                    {report.absences.byType.maladie} jours
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Accident travail</span>
+                  <span className="text-sm font-medium">
+                    {report.absences.byType.accidentTravail} jours
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Congés</span>
+                  <span className="text-sm font-medium">
+                    {report.absences.byType.conges} jours
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Autres</span>
+                  <span className="text-sm font-medium">
+                    {report.absences.byType.autres} jours
+                  </span>
+                </div>
+              </div>
             </div>
+
             <div>
-              <Label className="text-sm text-muted-foreground">Maladie</Label>
-              <p className="text-xl font-semibold">
-                {report.absences.byType.maladie} jours
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                Accident travail
+              <Label className="text-sm font-semibold mb-4 block">
+                Répartition des absences par type
               </Label>
-              <p className="text-xl font-semibold">
-                {report.absences.byType.accidentTravail} jours
-              </p>
-            </div>
-            <div>
-              <Label className="text-sm text-muted-foreground">
-                Coût total
-              </Label>
-              <p className="text-xl font-semibold text-orange-600">
-                {report.absences.cost.toLocaleString("fr-FR")} €
-              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={absenceData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(props) => {
+                      const type = (props as { type?: string }).type || "";
+                      const percent =
+                        (props as { percent?: number }).percent || 0;
+                      return `${type} ${(percent * 100).toFixed(0)}%`;
+                    }}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="jours"
+                  >
+                    {absenceData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </CardContent>
@@ -517,19 +860,14 @@ export default function SocialReportPage() {
           <CardTitle>Coût Horaire</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <div>
               <Label className="text-sm text-muted-foreground">
                 Coût moyen/heure
               </Label>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold mb-6">
                 {report.hourlyCost.average.toFixed(2)} €
               </p>
-            </div>
-            <div>
-              <Label className="text-sm font-semibold mb-2 block">
-                Par catégorie
-              </Label>
               <div className="space-y-2">
                 {Object.entries(report.hourlyCost.byCategory).map(
                   ([category, cost]) => (
@@ -542,6 +880,21 @@ export default function SocialReportPage() {
                   ),
                 )}
               </div>
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold mb-4 block">
+                Coût horaire par catégorie
+              </Label>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={hourlyCostData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="categorie" tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="cout" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </CardContent>

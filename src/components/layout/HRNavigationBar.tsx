@@ -49,10 +49,6 @@ const navItems: NavItem[] = [
     icon: Users,
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
-      {
-        label: "Archives Mails",
-        href: "/dashboard/hr/employees/archives-mails",
-      },
       { label: "AKTO", href: "/dashboard/hr/employees/akto-opco" },
       {
         label: "Contrats & avenants",
@@ -101,14 +97,6 @@ const navItems: NavItem[] = [
       {
         label: "Notes de frais",
         href: "/dashboard/hr/payroll/expenses",
-      },
-      {
-        label: "Validation frais",
-        href: "/dashboard/hr/payroll/expenses/validation",
-      },
-      {
-        label: "Historique frais",
-        href: "/dashboard/hr/payroll/expenses/history",
       },
       {
         label: "Contrôle paie",

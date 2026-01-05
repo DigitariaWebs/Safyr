@@ -6,6 +6,7 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
   Select,
   SelectContent,
@@ -325,13 +326,10 @@ export default function PlanningAgentsPage() {
 
             <div>
               <Label htmlFor="phone">Téléphone</Label>
-              <Input
+              <PhoneInput
                 id="phone"
                 value={formData.phone || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="06 12 34 56 78"
+                onChange={(value) => setFormData({ ...formData, phone: value })}
               />
             </div>
 

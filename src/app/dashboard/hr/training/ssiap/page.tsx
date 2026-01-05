@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -21,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   Plus,
   CheckCircle,
@@ -32,6 +32,7 @@ import {
   Users,
   Eye,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import type {
   TrainingCertification,
@@ -111,6 +112,9 @@ export default function SSIAPPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedCertification, setSelectedCertification] =
     useState<TrainingCertification | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedCertificationForDelete, setSelectedCertificationForDelete] =
+    useState<TrainingCertification | null>(null);
   const [employeeSearchOpen, setEmployeeSearchOpen] = useState(false);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
   const employeeSearchRef = useRef<HTMLDivElement>(null);
@@ -158,10 +162,24 @@ export default function SSIAPPage() {
           : c,
       ),
     );
+    setIsViewModalOpen(false);
   };
 
   const handleReject = (certification: TrainingCertification) => {
     setCertifications(certifications.filter((c) => c.id !== certification.id));
+    setIsViewModalOpen(false);
+  };
+
+  const handleDeleteCertification = () => {
+    if (selectedCertificationForDelete) {
+      setCertifications(
+        certifications.filter(
+          (c) => c.id !== selectedCertificationForDelete.id,
+        ),
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedCertificationForDelete(null);
+    }
   };
 
   const handleSelectEmployee = (employee: Employee) => {
@@ -188,7 +206,7 @@ export default function SSIAPPage() {
       number: certification.number,
       issueDate: certification.issueDate.toISOString().split("T")[0],
       expiryDate: certification.expiryDate.toISOString().split("T")[0],
-      issuer: certification.issuer,
+      issuer: "SDIS",
     });
     setIsEditMode(true);
     setIsCertificationModalOpen(true);
@@ -265,7 +283,7 @@ export default function SSIAPPage() {
       number: "",
       issueDate: "",
       expiryDate: "",
-      issuer: "CNAPS",
+      issuer: "SDIS",
     });
     setIsCertificationModalOpen(true);
   };
@@ -376,63 +394,36 @@ export default function SSIAPPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total SSIAP</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{certifications.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Certifications actives
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valides</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {validCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              En cours de validité
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Expirent bientôt
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {expiringSoonCount}
-            </div>
-            <p className="text-xs text-muted-foreground">Dans les 3 mois</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expirées</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {expiredCount}
-            </div>
-            <p className="text-xs text-muted-foreground">À renouveler</p>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Award}
+          title="Total SSIAP"
+          value={certifications.length}
+          subtext="Certifications actives"
+          color="blue"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Valides"
+          value={validCount}
+          subtext="En cours de validité"
+          color="green"
+        />
+        <InfoCard
+          icon={Clock}
+          title="Expirent bientôt"
+          value={expiringSoonCount}
+          subtext="Dans les 3 mois"
+          color="orange"
+        />
+        <InfoCard
+          icon={XCircle}
+          title="Expirées"
+          value={expiredCount}
+          subtext="À renouveler"
+          color="red"
+        />
+      </InfoCardContainer>
 
       {/* Certifications DataTable */}
       <DataTable
@@ -444,28 +435,6 @@ export default function SSIAPPage() {
         }
         searchPlaceholder="Rechercher par employé ou numéro..."
         getRowId={(certification) => certification.id}
-        filters={[
-          {
-            key: "status",
-            label: "Statut",
-            options: [
-              { value: "all", label: "Tous" },
-              { value: "valid", label: "Valide" },
-              { value: "expiring-soon", label: "Expire bientôt" },
-              { value: "expired", label: "Expiré" },
-            ],
-          },
-          {
-            key: "level",
-            label: "Niveau",
-            options: [
-              { value: "all", label: "Tous" },
-              { value: "1", label: "SSIAP 1" },
-              { value: "2", label: "SSIAP 2" },
-              { value: "3", label: "SSIAP 3" },
-            ],
-          },
-        ]}
         actions={(certification) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -479,7 +448,7 @@ export default function SSIAPPage() {
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Voir
+                Examiner
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleEditCertification(certification)}
@@ -488,24 +457,16 @@ export default function SSIAPPage() {
                 <Pencil className="h-4 w-4" />
                 Modifier
               </DropdownMenuItem>
-              {!certification.validated && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => handleValidate(certification)}
-                    className="flex items-center gap-2"
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Valider
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleReject(certification)}
-                    className="gap-2 text-destructive"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Rejeter
-                  </DropdownMenuItem>
-                </>
-              )}
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCertificationForDelete(certification);
+                  setIsDeleteModalOpen(true);
+                }}
+                className="flex items-center gap-2 text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -609,6 +570,25 @@ export default function SSIAPPage() {
                 {selectedCertification.updatedAt.toLocaleDateString("fr-FR")}
               </div>
             </div>
+            {!selectedCertification.validated && (
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={() => handleValidate(selectedCertification)}
+                  className="gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Valider
+                </Button>
+                <Button
+                  onClick={() => handleReject(selectedCertification)}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Rejeter
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
@@ -735,6 +715,7 @@ export default function SSIAPPage() {
                   }))
                 }
                 placeholder="SDIS, INRS..."
+                readOnly={isEditMode}
               />
             </div>
           </div>
@@ -788,6 +769,34 @@ export default function SSIAPPage() {
             </div>
           </div>
         </div>
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="confirmation"
+        title="Confirmer la suppression"
+        size="sm"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeleteCertification,
+            variant: "destructive",
+          },
+        }}
+      >
+        <p>Êtes-vous sûr de vouloir supprimer cette certification SSIAP ?</p>
+        {selectedCertificationForDelete && (
+          <p className="text-sm text-muted-foreground mt-2">
+            {selectedCertificationForDelete.employeeName} -{" "}
+            {ssiapLevelLabels[selectedCertificationForDelete.level || "1"]}
+          </p>
+        )}
       </Modal>
     </div>
   );

@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -514,13 +515,12 @@ export default function MarketingPage() {
 
           <div>
             <Label htmlFor="phone">Téléphone</Label>
-            <Input
+            <PhoneInput
               id="phone"
               value={crmFormData.phone}
-              onChange={(e) =>
-                setCrmFormData({ ...crmFormData, phone: e.target.value })
+              onChange={(value) =>
+                setCrmFormData({ ...crmFormData, phone: value })
               }
-              placeholder="+33 6 12 34 56 78"
             />
           </div>
 

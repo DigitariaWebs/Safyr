@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { FileSignature, Download, FlipHorizontal } from "lucide-react";
 import type { Employee } from "@/lib/types";
 import QRCode from "qrcode";
@@ -14,19 +14,9 @@ interface EmployeeBadgesTabProps {
 }
 
 export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
-  const [selectedBadgeType, setSelectedBadgeType] = useState<string>("access");
+  const selectedBadgeType = "access";
   const [isFlipped, setIsFlipped] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
-
-  const badgeTypes = [
-    { id: "access", label: "Badge d'accès", description: "Accès aux locaux" },
-    { id: "parking", label: "Badge parking", description: "Accès au parking" },
-    {
-      id: "equipment",
-      label: "Badge équipements",
-      description: "Accès aux équipements",
-    },
-  ];
 
   const generateQRCode = async (data: string) => {
     try {
@@ -64,31 +54,6 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Badge Types */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {badgeTypes.map((type) => (
-          <Card
-            key={type.id}
-            className={`cursor-pointer transition-colors ${
-              selectedBadgeType === type.id ? "border-primary bg-primary/5" : ""
-            }`}
-            onClick={() => setSelectedBadgeType(type.id)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <FileSignature className="h-4 w-4" />
-                {type.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-muted-foreground">
-                {type.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       {/* Badge Preview */}
       <Card>
         <CardHeader>
@@ -112,7 +77,7 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
 
             {/* Badge Card with flip animation */}
             <div
-              className="relative w-full max-w-sm"
+              className="relative w-full max-w-lg"
               style={{ perspective: "1000px" }}
             >
               <div
@@ -133,7 +98,7 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
                   <div className="flex items-start justify-between p-3 pb-2">
                     {/* Logo Section */}
                     <div className="flex flex-col items-start">
-                      <div className="w-16 h-16 mb-1">
+                      <div className="w-20 h-20 mb-1">
                         <div className="relative w-full h-full">
                           {/* Diamond pattern logo placeholder */}
                           <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -174,12 +139,12 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
 
                     {/* Photo - Square */}
                     <div className="shrink-0">
-                      <div className="h-20 w-20 border border-gray-300 overflow-hidden">
+                      <div className="h-24 w-24 border border-gray-300 overflow-hidden">
                         <Image
                           src={employee.photo || ""}
                           alt={employee.firstName}
-                          width={80}
-                          height={80}
+                          width={96}
+                          height={96}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -249,10 +214,7 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
                         Code QR de vérification
                       </h3>
                       <p className="text-xs text-gray-700">
-                        {
-                          badgeTypes.find((t) => t.id === selectedBadgeType)
-                            ?.label
-                        }
+                        Badge d&apos;accès
                       </p>
                     </div>
 
@@ -261,12 +223,12 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
                         <Image
                           src={qrCodeUrl}
                           alt="QR Code"
-                          width={112}
-                          height={112}
-                          className="w-28 h-28"
+                          width={144}
+                          height={144}
+                          className="w-36 h-36"
                         />
                       ) : (
-                        <div className="w-28 h-28 bg-gray-200 flex items-center justify-center">
+                        <div className="w-36 h-36 bg-gray-200 flex items-center justify-center">
                           <span className="text-xs text-gray-500">
                             Génération...
                           </span>
@@ -295,41 +257,6 @@ export function EmployeeBadgesTab({ employee }: EmployeeBadgesTabProps) {
               <Download className="h-4 w-4" />
               Télécharger le badge
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Badge History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Historique des badges</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-3">
-                <FileSignature className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="font-medium">Badge d&apos;accès</p>
-                  <p className="text-sm text-muted-foreground">
-                    Généré le 15/01/2024
-                  </p>
-                </div>
-              </div>
-              <Badge variant="default">Actif</Badge>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-3">
-                <FileSignature className="h-5 w-5 text-gray-400" />
-                <div>
-                  <p className="font-medium">Badge parking</p>
-                  <p className="text-sm text-muted-foreground">
-                    Généré le 10/12/2023
-                  </p>
-                </div>
-              </div>
-              <Badge variant="secondary">Expiré</Badge>
-            </div>
           </div>
         </CardContent>
       </Card>

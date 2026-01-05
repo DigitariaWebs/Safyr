@@ -6,6 +6,8 @@ import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
   Select,
   SelectContent,
@@ -19,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
@@ -54,12 +55,19 @@ const mockPersonnelRegister: PersonnelRegisterEntry[] = [
     registrationNumber: "2024-001",
     entryDate: new Date("2024-01-15"),
     contractType: "CDI",
+    contractWorkTime: "complet",
     position: "Agent de sécurité",
     qualification: "CQP APS",
     nationality: "Française",
+    sex: "F",
     birthDate: new Date("1995-03-20"),
     birthPlace: "Paris (75)",
+    address: "15 rue de la République, 75001 Paris",
+    phone: "06 12 34 56 78",
+    email: "marie.dupont@example.com",
     socialSecurityNumber: "1 95 03 75 123 456 78",
+    cnapsProfessionalCardNumber: "CNAPS-2024-001",
+    ssiapDiplomaNumber: "SSIAP1-2020-456",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-15"),
   },
@@ -69,12 +77,19 @@ const mockPersonnelRegister: PersonnelRegisterEntry[] = [
     registrationNumber: "2024-002",
     entryDate: new Date("2024-02-01"),
     contractType: "CDI",
+    contractWorkTime: "complet",
     position: "Chef d'équipe",
     qualification: "SSIAP 2",
     nationality: "Française",
+    sex: "M",
     birthDate: new Date("1988-07-12"),
     birthPlace: "Lyon (69)",
+    address: "8 avenue Victor Hugo, 69002 Lyon",
+    phone: "06 23 45 67 89",
+    email: "jean.martin@example.com",
     socialSecurityNumber: "1 88 07 69 234 567 89",
+    cnapsProfessionalCardNumber: "CNAPS-2023-045",
+    ssiapDiplomaNumber: "SSIAP2-2019-789",
     createdAt: new Date("2024-02-01"),
     updatedAt: new Date("2024-02-01"),
   },
@@ -85,12 +100,19 @@ const mockPersonnelRegister: PersonnelRegisterEntry[] = [
     entryDate: new Date("2024-03-10"),
     exitDate: new Date("2024-09-10"),
     contractType: "CDD",
+    contractWorkTime: "partiel",
     position: "Agent de sécurité",
     qualification: "CQP APS",
     nationality: "Française",
+    sex: "F",
     birthDate: new Date("1992-11-05"),
     birthPlace: "Marseille (13)",
+    address: "22 cours Julien, 13006 Marseille",
+    phone: "06 34 56 78 90",
+    email: "sophie.leroy@example.com",
     socialSecurityNumber: "2 92 11 13 345 678 90",
+    cnapsProfessionalCardNumber: "CNAPS-2024-012",
+    ssiapDiplomaNumber: "SSIAP1-2021-123",
     createdAt: new Date("2024-03-10"),
     updatedAt: new Date("2024-09-10"),
   },
@@ -131,12 +153,19 @@ export default function PersonnelRegisterPage() {
     entryDate: "",
     exitDate: "",
     contractType: "CDI" as PersonnelRegisterEntry["contractType"],
+    contractWorkTime: "complet" as PersonnelRegisterEntry["contractWorkTime"],
     position: "",
     qualification: "",
     nationality: "Française",
+    sex: "M" as PersonnelRegisterEntry["sex"],
     birthDate: "",
     birthPlace: "",
+    address: "",
+    phone: "",
+    email: "",
     socialSecurityNumber: "",
+    cnapsProfessionalCardNumber: "",
+    ssiapDiplomaNumber: "",
     notes: "",
   });
 
@@ -152,12 +181,19 @@ export default function PersonnelRegisterPage() {
       entryDate: "",
       exitDate: "",
       contractType: "CDI",
+      contractWorkTime: "complet",
       position: "",
       qualification: "",
       nationality: "Française",
+      sex: "M",
       birthDate: "",
       birthPlace: "",
+      address: "",
+      phone: "",
+      email: "",
       socialSecurityNumber: "",
+      cnapsProfessionalCardNumber: "",
+      ssiapDiplomaNumber: "",
       notes: "",
     });
     setIsCreateModalOpen(true);
@@ -173,12 +209,19 @@ export default function PersonnelRegisterPage() {
         ? entry.exitDate.toISOString().split("T")[0]
         : "",
       contractType: entry.contractType,
+      contractWorkTime: entry.contractWorkTime || "complet",
       position: entry.position,
       qualification: entry.qualification,
       nationality: entry.nationality,
+      sex: entry.sex || "M",
       birthDate: entry.birthDate.toISOString().split("T")[0],
       birthPlace: entry.birthPlace,
+      address: entry.address || "",
+      phone: entry.phone || "",
+      email: entry.email || "",
       socialSecurityNumber: entry.socialSecurityNumber || "",
+      cnapsProfessionalCardNumber: entry.cnapsProfessionalCardNumber || "",
+      ssiapDiplomaNumber: entry.ssiapDiplomaNumber || "",
       notes: entry.notes || "",
     });
     setIsCreateModalOpen(true);
@@ -202,13 +245,20 @@ export default function PersonnelRegisterPage() {
       entryDate: new Date(formData.entryDate),
       exitDate: formData.exitDate ? new Date(formData.exitDate) : undefined,
       contractType: formData.contractType,
+      contractWorkTime: formData.contractWorkTime,
       position: formData.position,
       qualification: formData.qualification,
       nationality: formData.nationality,
+      sex: formData.sex,
       birthDate: new Date(formData.birthDate),
       birthPlace: formData.birthPlace,
-      socialSecurityNumber: formData.socialSecurityNumber || undefined,
-      notes: formData.notes || undefined,
+      address: formData.address,
+      phone: formData.phone,
+      email: formData.email,
+      socialSecurityNumber: formData.socialSecurityNumber,
+      cnapsProfessionalCardNumber: formData.cnapsProfessionalCardNumber,
+      ssiapDiplomaNumber: formData.ssiapDiplomaNumber,
+      notes: formData.notes,
     };
 
     if (editingEntry) {
@@ -504,7 +554,7 @@ export default function PersonnelRegisterPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="contractType">Type de contrat *</Label>
               <Select
@@ -531,6 +581,28 @@ export default function PersonnelRegisterPage() {
             </div>
 
             <div>
+              <Label htmlFor="contractWorkTime">Temps de travail</Label>
+              <Select
+                value={formData.contractWorkTime}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    contractWorkTime:
+                      value as PersonnelRegisterEntry["contractWorkTime"],
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="complet">Temps complet</SelectItem>
+                  <SelectItem value="partiel">Temps partiel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label htmlFor="position">Poste *</Label>
               <Input
                 id="position"
@@ -543,7 +615,7 @@ export default function PersonnelRegisterPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="qualification">Qualification *</Label>
               <Input
@@ -566,6 +638,27 @@ export default function PersonnelRegisterPage() {
                 }
                 placeholder="Ex: Française"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="sex">Sexe</Label>
+              <Select
+                value={formData.sex}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    sex: value as PersonnelRegisterEntry["sex"],
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="M">Masculin</SelectItem>
+                  <SelectItem value="F">Féminin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -622,17 +715,100 @@ export default function PersonnelRegisterPage() {
           </div>
 
           <div>
-            <Label htmlFor="socialSecurityNumber">N° de sécurité sociale</Label>
+            <Label htmlFor="address">Adresse</Label>
             <Input
-              id="socialSecurityNumber"
-              value={formData.socialSecurityNumber}
+              id="address"
+              value={formData.address}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  socialSecurityNumber: e.target.value,
+                  address: e.target.value,
                 })
               }
-              placeholder="Ex: 1 95 03 75 123 456 78"
+              placeholder="Ex: 15 rue de la République, 75001 Paris"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="phone">Téléphone</Label>
+              <PhoneInput
+                id="phone"
+                value={formData.phone}
+                onChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    phone: value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email">Adresse mail</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    email: e.target.value,
+                  })
+                }
+                placeholder="Ex: exemple@email.com"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="socialSecurityNumber">
+                N° de sécurité sociale
+              </Label>
+              <Input
+                id="socialSecurityNumber"
+                value={formData.socialSecurityNumber}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    socialSecurityNumber: e.target.value,
+                  })
+                }
+                placeholder="Ex: 1 95 03 75 123 456 78"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="cnapsProfessionalCardNumber">
+                N° carte Pro CNAPS
+              </Label>
+              <Input
+                id="cnapsProfessionalCardNumber"
+                value={formData.cnapsProfessionalCardNumber}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    cnapsProfessionalCardNumber: e.target.value,
+                  })
+                }
+                placeholder="Ex: CNAPS-2024-001"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="ssiapDiplomaNumber">N° Diplôme SSIAP</Label>
+            <Input
+              id="ssiapDiplomaNumber"
+              value={formData.ssiapDiplomaNumber}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  ssiapDiplomaNumber: e.target.value,
+                })
+              }
+              placeholder="Ex: SSIAP1-2020-456"
             />
           </div>
 
@@ -677,7 +853,7 @@ export default function PersonnelRegisterPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className="text-muted-foreground">Type de contrat</Label>
                 <div className="mt-1">
@@ -689,12 +865,22 @@ export default function PersonnelRegisterPage() {
                 </div>
               </div>
               <div>
+                <Label className="text-muted-foreground">
+                  Temps de travail
+                </Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.contractWorkTime === "complet"
+                    ? "Temps complet"
+                    : "Temps partiel"}
+                </p>
+              </div>
+              <div>
                 <Label className="text-muted-foreground">Poste</Label>
                 <p className="text-sm font-medium">{viewingEntry.position}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className="text-muted-foreground">Qualification</Label>
                 <p className="text-sm font-medium">
@@ -705,6 +891,12 @@ export default function PersonnelRegisterPage() {
                 <Label className="text-muted-foreground">Nationalité</Label>
                 <p className="text-sm font-medium">
                   {viewingEntry.nationality}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Sexe</Label>
+                <p className="text-sm font-medium">
+                  {viewingEntry.sex === "M" ? "Masculin" : "Féminin"}
                 </p>
               </div>
             </div>
@@ -745,13 +937,58 @@ export default function PersonnelRegisterPage() {
               </div>
             </div>
 
-            {viewingEntry.socialSecurityNumber && (
+            {viewingEntry.address && (
+              <div>
+                <Label className="text-muted-foreground">Adresse</Label>
+                <p className="text-sm font-medium">{viewingEntry.address}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              {viewingEntry.phone && (
+                <div>
+                  <Label className="text-muted-foreground">Téléphone</Label>
+                  <p className="text-sm font-medium">{viewingEntry.phone}</p>
+                </div>
+              )}
+              {viewingEntry.email && (
+                <div>
+                  <Label className="text-muted-foreground">Adresse mail</Label>
+                  <p className="text-sm font-medium">{viewingEntry.email}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {viewingEntry.socialSecurityNumber && (
+                <div>
+                  <Label className="text-muted-foreground">
+                    N° de sécurité sociale
+                  </Label>
+                  <p className="text-sm font-medium">
+                    {viewingEntry.socialSecurityNumber}
+                  </p>
+                </div>
+              )}
+              {viewingEntry.cnapsProfessionalCardNumber && (
+                <div>
+                  <Label className="text-muted-foreground">
+                    N° carte Pro CNAPS
+                  </Label>
+                  <p className="text-sm font-medium">
+                    {viewingEntry.cnapsProfessionalCardNumber}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {viewingEntry.ssiapDiplomaNumber && (
               <div>
                 <Label className="text-muted-foreground">
-                  N° de sécurité sociale
+                  N° Diplôme SSIAP
                 </Label>
                 <p className="text-sm font-medium">
-                  {viewingEntry.socialSecurityNumber}
+                  {viewingEntry.ssiapDiplomaNumber}
                 </p>
               </div>
             )}

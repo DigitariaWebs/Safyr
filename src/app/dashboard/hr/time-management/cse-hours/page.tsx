@@ -18,14 +18,33 @@ import {
 import { Modal } from "@/components/ui/modal";
 import { Progress } from "@/components/ui/progress";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Users, Clock, CheckCircle, Calendar, Plus } from "lucide-react";
+import {
+  Users,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  Plus,
+  MoreVertical,
+  Eye,
+  Trash2,
+} from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { mockCSEDelegationHours } from "@/data/time-management";
 import { mockEmployees } from "@/data/employees";
 
 export default function CSEHoursPage() {
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<
+    (typeof allSessions)[0] | null
+  >(null);
+  const [sessionToDelete, setSessionToDelete] = useState<
     (typeof allSessions)[0] | null
   >(null);
   const [validationComment, setValidationComment] = useState("");
@@ -42,15 +61,17 @@ export default function CSEHoursPage() {
   });
 
   // Flatten sessions for table display
-  const allSessions = mockCSEDelegationHours.flatMap((member) =>
-    member.sessions.map((session) => ({
-      ...session,
-      employeeName: member.employeeName,
-      employeeId: member.employeeId,
-      cseRole: member.cseRole,
-      allocatedHours: member.allocatedHours,
-      usedHours: member.usedHours,
-    })),
+  const [allSessions, setAllSessions] = useState(
+    mockCSEDelegationHours.flatMap((member) =>
+      member.sessions.map((session) => ({
+        ...session,
+        employeeName: member.employeeName,
+        employeeId: member.employeeId,
+        cseRole: member.cseRole,
+        allocatedHours: member.allocatedHours,
+        usedHours: member.usedHours,
+      })),
+    ),
   );
 
   const totalAllocated = mockCSEDelegationHours.reduce(
@@ -92,21 +113,52 @@ export default function CSEHoursPage() {
     setIsDetailsModalOpen(true);
   };
 
-  const handleValidation = (approved: boolean) => {
-    if (!selectedSession) return;
-
+  const handleValidation = (
+    approved: boolean,
+    sessionId: string,
+    comment?: string,
+  ) => {
     // TODO: API call to validate/reject session
     console.log("Validation:", {
       approved,
-      comment: validationComment,
-      sessionId: selectedSession.id,
+      comment,
+      sessionId,
     });
 
-    // Update session status
-    // For now, just close modal
-    setIsDetailsModalOpen(false);
-    setSelectedSession(null);
-    setValidationComment("");
+    // Update sessions
+    setAllSessions((prev) =>
+      prev.map((session) =>
+        session.id === sessionId
+          ? {
+              ...session,
+              validated: approved,
+              validatedBy: "Current User",
+              validatedAt: new Date(),
+              validationComment: comment || "",
+            }
+          : session,
+      ),
+    );
+
+    // If modal is open for this session, close it
+    if (selectedSession?.id === sessionId) {
+      setIsDetailsModalOpen(false);
+      setSelectedSession(null);
+      setValidationComment("");
+    }
+  };
+
+  const handleDeleteClick = (session: (typeof allSessions)[0]) => {
+    setSessionToDelete(session);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (sessionToDelete) {
+      setAllSessions((prev) => prev.filter((s) => s.id !== sessionToDelete.id));
+      setIsDeleteModalOpen(false);
+      setSessionToDelete(null);
+    }
   };
 
   const sessionColumns: ColumnDef<(typeof allSessions)[0]>[] = [
@@ -184,6 +236,53 @@ export default function CSEHoursPage() {
         ),
     },
   ];
+
+  const sessionActions = (session: (typeof allSessions)[0]) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-48">
+        <div className="px-2 py-1.5 text-sm font-semibold">Actions</div>
+        <div className="border-t my-1" />
+        <button
+          className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm"
+          onClick={() => handleViewDetails(session)}
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          Voir
+        </button>
+        {session.validated === false && (
+          <>
+            <button
+              className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm"
+              onClick={() => handleValidation(true, session.id)}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approuver
+            </button>
+            <button
+              className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-red-600"
+              onClick={() => handleValidation(false, session.id)}
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Refuser
+            </button>
+          </>
+        )}
+        <div className="border-t my-1" />
+        <button
+          className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-red-600"
+          onClick={() => handleDeleteClick(session)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Supprimer
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <div className="flex-1 space-y-6 p-8 max-w-full overflow-x-hidden">
@@ -272,7 +371,7 @@ export default function CSEHoursPage() {
                 ],
               },
             ]}
-            onRowClick={handleViewDetails}
+            actions={sessionActions}
           />
         </CardContent>
       </Card>
@@ -304,7 +403,22 @@ export default function CSEHoursPage() {
                 },
                 primary: {
                   label: "Approuver",
-                  onClick: () => handleValidation(true),
+                  onClick: () =>
+                    handleValidation(
+                      true,
+                      selectedSession.id,
+                      validationComment,
+                    ),
+                },
+                tertiary: {
+                  label: "Refuser",
+                  onClick: () =>
+                    handleValidation(
+                      false,
+                      selectedSession.id,
+                      validationComment,
+                    ),
+                  variant: "destructive",
                 },
               }
             : {
@@ -641,6 +755,32 @@ export default function CSEHoursPage() {
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="confirmation"
+        title="Supprimer la séance"
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeleteConfirm,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <p>
+          Êtes-vous sûr de vouloir supprimer la séance de{" "}
+          <span className="font-semibold">{sessionToDelete?.employeeName}</span>{" "}
+          ({sessionToDelete ? getSessionTypeLabel(sessionToDelete.type) : ""}) ?
+          Cette action est irréversible.
+        </p>
       </Modal>
     </div>
   );

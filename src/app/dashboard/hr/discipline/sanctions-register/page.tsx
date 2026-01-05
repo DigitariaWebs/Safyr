@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download } from "lucide-react";
 import jsPDF from "jspdf";
-import { Sanction, SanctionsRegister } from "@/lib/types";
+import { MiseAPied, MisesAPiedRegister } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 
-interface SanctionRow {
+interface MiseAPiedRow {
   id: string;
   employeeId: string;
   employeeName: string;
@@ -30,11 +30,11 @@ const mockEmployees = [
 ];
 
 // Mock data - replace with API call
-const mockSanctionsRegisters: SanctionsRegister[] = [
+const mockMisesAPiedRegisters: MisesAPiedRegister[] = [
   {
     id: "1",
     employeeId: "1",
-    sanctions: [
+    misesAPied: [
       {
         id: "1",
         employeeId: "1",
@@ -55,7 +55,7 @@ const mockSanctionsRegisters: SanctionsRegister[] = [
   {
     id: "2",
     employeeId: "2",
-    sanctions: [
+    misesAPied: [
       {
         id: "2",
         employeeId: "2",
@@ -105,22 +105,22 @@ export default function SanctionsRegisterPage() {
     return employee ? employee.name : "Employé inconnu";
   };
 
-  // Flatten sanctions data, excluding suspensions
-  const sanctionRows: SanctionRow[] = mockSanctionsRegisters
+  // Flatten mises à pied data, excluding suspensions
+  const miseAPiedRows: MiseAPiedRow[] = mockMisesAPiedRegisters
     .flatMap((register) =>
-      register.sanctions
-        .filter((sanction: Sanction) => sanction.type !== "Suspension")
-        .map((sanction: Sanction) => ({
-          ...sanction,
-          employeeId: sanction.employeeId,
-          employeeName: getEmployeeName(sanction.employeeId),
+      register.misesAPied
+        .filter((miseAPied: MiseAPied) => miseAPied.type !== "Suspension")
+        .map((miseAPied: MiseAPied) => ({
+          ...miseAPied,
+          employeeId: miseAPied.employeeId,
+          employeeName: getEmployeeName(miseAPied.employeeId),
         })),
     )
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  const handleExportSinglePDF = (row: SanctionRow) => {
+  const handleExportSinglePDF = (row: MiseAPiedRow) => {
     const doc = new jsPDF();
-    doc.text("Sanction", 20, 20);
+    doc.text("Mise à pied", 20, 20);
     doc.text(
       "Note: Ceci est un exemple de PDF et non l'implémentation finale.",
       20,
@@ -133,14 +133,14 @@ export default function SanctionsRegisterPage() {
     doc.text(`Description: ${row.description}`, 20, 90);
     doc.text(`Émis par: ${row.issuedBy}`, 20, 100);
     doc.text(`Sévérité: ${severityLabels[row.severity]}`, 20, 110);
-    doc.save(`sanction-${row.id}.pdf`);
+    doc.save(`mise-a-pied-${row.id}.pdf`);
   };
 
-  const columns: ColumnDef<SanctionRow>[] = [
+  const columns: ColumnDef<MiseAPiedRow>[] = [
     {
       key: "employeeName",
       label: "Employé",
-      render: (row: SanctionRow) => (
+      render: (row: MiseAPiedRow) => (
         <div className="font-medium">
           <Link
             href={`/dashboard/hr/employees/${row.employeeId}`}
@@ -154,22 +154,22 @@ export default function SanctionsRegisterPage() {
     {
       key: "date",
       label: "Date",
-      render: (row: SanctionRow) => row.date.toLocaleDateString("fr-FR"),
+      render: (row: MiseAPiedRow) => row.date.toLocaleDateString("fr-FR"),
     },
     {
       key: "type",
       label: "Type",
-      render: (row: SanctionRow) => row.type,
+      render: (row: MiseAPiedRow) => row.type,
     },
     {
       key: "reason",
       label: "Raison",
-      render: (row: SanctionRow) => row.reason,
+      render: (row: MiseAPiedRow) => row.reason,
     },
     {
       key: "description",
       label: "Description",
-      render: (row: SanctionRow) => (
+      render: (row: MiseAPiedRow) => (
         <div className="max-w-xs truncate" title={row.description}>
           {row.description}
         </div>
@@ -178,12 +178,12 @@ export default function SanctionsRegisterPage() {
     {
       key: "issuedBy",
       label: "Émis par",
-      render: (row: SanctionRow) => row.issuedBy,
+      render: (row: MiseAPiedRow) => row.issuedBy,
     },
     {
       key: "severity",
       label: "Sévérité",
-      render: (row: SanctionRow) => (
+      render: (row: MiseAPiedRow) => (
         <Badge variant={severityColors[row.severity]}>
           {severityLabels[row.severity]}
         </Badge>
@@ -192,7 +192,7 @@ export default function SanctionsRegisterPage() {
     {
       key: "actions",
       label: "Actions",
-      render: (row: SanctionRow) => (
+      render: (row: MiseAPiedRow) => (
         <Button
           variant="ghost"
           size="sm"
@@ -210,26 +210,26 @@ export default function SanctionsRegisterPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Registre des sanctions
+          Registre des mises à pied
         </h1>
         <p className="text-muted-foreground">
-          Historique des sanctions par employé
+          Historique des mises à pied par employé
         </p>
       </div>
 
-      {/* Sanctions Register Table */}
+      {/* Mises à pied Register Table */}
       <Card>
         <CardHeader>
           <CardTitle>
-            Registre des sanctions ({sanctionRows.length} sanctions)
+            Registre des mises à pied ({miseAPiedRows.length} mises à pied)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
-            data={sanctionRows}
+            data={miseAPiedRows}
             columns={columns}
             searchKeys={["employeeName", "type", "reason"]}
-            searchPlaceholder="Rechercher une sanction..."
+            searchPlaceholder="Rechercher une mise à pied..."
           />
         </CardContent>
       </Card>

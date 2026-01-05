@@ -1,13 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Download, TrendingDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Download,
+  TrendingDown,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react";
 
 interface SalaryMaintenance {
   id: string;
@@ -74,10 +95,16 @@ const mockMaintenanceData: SalaryMaintenance[] = [
 ];
 
 export default function SalaryMaintenanceAnalysisPage() {
-  const [maintenances] = useState<SalaryMaintenance[]>(mockMaintenanceData);
+  const [maintenances, setMaintenances] =
+    useState<SalaryMaintenance[]>(mockMaintenanceData);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedMaintenance, setSelectedMaintenance] =
     useState<SalaryMaintenance | null>(null);
+  const [editType, setEditType] =
+    useState<SalaryMaintenance["type"]>("Maladie");
+  const [editMaintenanceRate, setEditMaintenanceRate] = useState(0);
 
   const totalIJSS = maintenances.reduce((sum, m) => sum + m.ijss * m.days, 0);
   const totalEmployerMaintenance = maintenances.reduce(
@@ -174,9 +201,49 @@ export default function SalaryMaintenanceAnalysisPage() {
     },
   ];
 
-  const handleRowClick = (maintenance: SalaryMaintenance) => {
+  const handleViewDetails = (maintenance: SalaryMaintenance) => {
     setSelectedMaintenance(maintenance);
     setIsViewModalOpen(true);
+  };
+
+  const handleEdit = (maintenance: SalaryMaintenance) => {
+    setSelectedMaintenance(maintenance);
+    setEditType(maintenance.type);
+    setEditMaintenanceRate(maintenance.maintenanceRate);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (maintenance: SalaryMaintenance) => {
+    setSelectedMaintenance(maintenance);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmEdit = () => {
+    if (selectedMaintenance) {
+      setMaintenances(
+        maintenances.map((m) =>
+          m.id === selectedMaintenance.id
+            ? {
+                ...m,
+                type: editType,
+                maintenanceRate: editMaintenanceRate,
+              }
+            : m,
+        ),
+      );
+      setIsEditModalOpen(false);
+      setSelectedMaintenance(null);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (selectedMaintenance) {
+      setMaintenances(
+        maintenances.filter((m) => m.id !== selectedMaintenance.id),
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedMaintenance(null);
+    }
   };
 
   const handleExport = () => {
@@ -201,78 +268,71 @@ export default function SalaryMaintenanceAnalysisPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total IJSS reçues
-            </CardTitle>
-            <TrendingDown className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {totalIJSS.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Remboursées par la Sécurité Sociale
-            </p>
-          </CardContent>
-        </Card>
+      <InfoCardContainer>
+        <InfoCard
+          icon={TrendingDown}
+          title="Total IJSS reçues"
+          value={`${totalIJSS.toLocaleString("fr-FR")} €`}
+          subtext="Remboursées par la Sécurité Sociale"
+          color="green"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Maintien employeur
-            </CardTitle>
-            <TrendingDown className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {totalEmployerMaintenance.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              À charge de l&apos;entreprise
-            </p>
-          </CardContent>
-        </Card>
+        <InfoCard
+          icon={TrendingDown}
+          title="Maintien employeur"
+          value={`${totalEmployerMaintenance.toLocaleString("fr-FR")} €`}
+          subtext="À charge de l'entreprise"
+          color="orange"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total versé</CardTitle>
-            <TrendingDown className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {totalPaid.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Somme totale payée aux employés
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <InfoCard
+          icon={TrendingDown}
+          title="Total versé"
+          value={`${totalPaid.toLocaleString("fr-FR")} €`}
+          subtext="Somme totale payée aux employés"
+          color="blue"
+        />
+      </InfoCardContainer>
 
       <DataTable
         data={maintenances}
         columns={columns}
-        searchKey="employeeName"
+        searchKeys={["employeeName"]}
+        getSearchValue={(maintenance) => maintenance.employeeName}
         searchPlaceholder="Rechercher un employé..."
-        onRowClick={handleRowClick}
+        getRowId={(maintenance) => maintenance.id}
+        actions={(maintenance) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleViewDetails(maintenance)}>
+                <Eye className="h-4 w-4 mr-2" />
+                Examiner
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleEdit(maintenance)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Modifier
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(maintenance)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       />
 
-      {/* View Modal */}
+      {/* Examine Modal */}
       <Modal
         open={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         type="details"
-        title="Détails du maintien de salaire"
+        title="Examiner le maintien de salaire"
         size="lg"
-        actions={{
-          secondary: {
-            label: "Fermer",
-            onClick: () => setIsViewModalOpen(false),
-          },
-        }}
       >
         {selectedMaintenance && (
           <div className="space-y-4">
@@ -384,6 +444,100 @@ export default function SalaryMaintenanceAnalysisPage() {
               </p>
             </div>
           </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        type="form"
+        title="Modifier le maintien de salaire"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsEditModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Enregistrer",
+            onClick: confirmEdit,
+          },
+        }}
+      >
+        {selectedMaintenance && (
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium">
+                {selectedMaintenance.employeeName}
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                {selectedMaintenance.type}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Type</Label>
+                <Select
+                  value={editType}
+                  onValueChange={(value) =>
+                    setEditType(value as SalaryMaintenance["type"])
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Maladie">Maladie</SelectItem>
+                    <SelectItem value="Accident de travail">
+                      Accident de travail
+                    </SelectItem>
+                    <SelectItem value="Maternité/Paternité">
+                      Maternité/Paternité
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-rate">Taux de maintien (%)</Label>
+                <Input
+                  id="edit-rate"
+                  type="number"
+                  value={editMaintenanceRate}
+                  onChange={(e) =>
+                    setEditMaintenanceRate(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="form"
+        title="Confirmer la suppression"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: confirmDelete,
+          },
+        }}
+      >
+        {selectedMaintenance && (
+          <p>
+            Êtes-vous sûr de vouloir supprimer ce maintien de salaire pour{" "}
+            {selectedMaintenance.employeeName} ?
+          </p>
         )}
       </Modal>
     </div>

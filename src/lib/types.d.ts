@@ -93,6 +93,7 @@ export interface Client {
   phone?: string;
   email?: string;
   siret?: string;
+  numTVA?: string;
   sector?: string;
   dirigeant?: DirigeantInfo;
   contracts: ClientContract[];
@@ -701,30 +702,14 @@ export interface WorkedHours {
   employeeName: string;
   date: Date;
   regularHours: number;
-  overtimeHours: number;
   supplementaryHours25: number; // 25% increase
   supplementaryHours50: number; // 50% increase
   complementaryHours10: number; // 10% for part-time employees
   nightHours: number;
-  nightHours25: number; // Night hours with 25% increase
-  nightHours50: number; // Night hours with 50% increase
-  nightHours10: number; // Night hours with 10% increase
   sundayHours: number;
   sundayNightHours: number; // Sunday night hours
-  sundayHours25: number; // Sunday hours with 25% increase
-  sundayHours50: number; // Sunday hours with 50% increase
-  sundayHours10: number; // Sunday hours with 10% increase
   holidayHours: number;
   holidayNightHours: number; // Holiday night hours
-  holidayHours25: number; // Holiday hours with 25% increase
-  holidayHours50: number; // Holiday hours with 50% increase
-  holidayHours10: number; // Holiday hours with 10% increase
-  totalHours: number;
-  validated: boolean;
-  validatedBy?: string;
-  validatedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface CSEDelegationHours {
@@ -1101,6 +1086,18 @@ export interface SanctionsRegister {
   lastUpdated: Date;
 }
 
+// Alias types for Mises à pied (disciplinary suspensions)
+export type MiseAPied = Sanction;
+
+export interface MisesAPiedRegister {
+  id: string;
+  employeeId: string;
+  misesAPied: MiseAPied[];
+  totalWarnings: number;
+  totalSuspensions: number;
+  lastUpdated: Date;
+}
+
 // ============================================================================
 // EXPENSE REPORTS & ALLOWANCES TYPES
 // ============================================================================
@@ -1113,6 +1110,7 @@ export interface ExpenseItem {
   date: Date;
   receipt?: string; // File URL
   notes?: string;
+  status: "draft" | "submitted" | "approved" | "rejected";
 }
 
 export interface ExpenseReport {
@@ -1147,12 +1145,19 @@ export interface PersonnelRegisterEntry {
   entryDate: Date;
   exitDate?: Date;
   contractType: "CDI" | "CDD" | "apprentice" | "interim" | "other";
+  contractWorkTime?: "partiel" | "complet";
   position: string;
   qualification: string;
   nationality: string;
+  sex?: "M" | "F";
   birthDate: Date;
   birthPlace: string;
+  address?: string;
+  phone?: string;
+  email?: string;
   socialSecurityNumber?: string;
+  cnapsProfessionalCardNumber?: string;
+  ssiapDiplomaNumber?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;

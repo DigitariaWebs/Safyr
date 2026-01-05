@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { IbanInput } from "@/components/ui/IbanInput";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import {
@@ -664,35 +665,21 @@ export default function PersonalInfoChangePage() {
 
           {activeTab === "bank_details" && (
             <>
-              <div>
-                <Label>IBAN *</Label>
-                <Input
-                  value={formData.newIban}
-                  onChange={(e) =>
-                    setFormData({ ...formData, newIban: e.target.value })
-                  }
-                  placeholder="FR76 ..."
-                />
-              </div>
-              <div>
-                <Label>BIC *</Label>
-                <Input
-                  value={formData.newBic}
-                  onChange={(e) =>
-                    setFormData({ ...formData, newBic: e.target.value })
-                  }
-                  placeholder="BNPAFRPP"
-                />
-              </div>
-              <div>
-                <Label>Nom de la banque *</Label>
-                <Input
-                  value={formData.newBankName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, newBankName: e.target.value })
-                  }
-                />
-              </div>
+              <IbanInput
+                ibanValue={formData.newIban}
+                bicValue={formData.newBic}
+                bankNameValue={formData.newBankName}
+                onIbanChange={(value) =>
+                  setFormData({ ...formData, newIban: value })
+                }
+                onBicChange={(value) =>
+                  setFormData({ ...formData, newBic: value })
+                }
+                onBankNameChange={(value) =>
+                  setFormData({ ...formData, newBankName: value })
+                }
+                required
+              />
               <div>
                 <Label>RIB (document justificatif)</Label>
                 <Button variant="outline" className="w-full">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -15,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   Plus,
   Calendar,
@@ -26,6 +26,7 @@ import {
   Eye,
   Pencil,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 import type { TrainingPlan, TrainingBudget } from "@/lib/types";
 
@@ -115,6 +116,9 @@ export default function TrainingPlanPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<TrainingPlan | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPlanForDelete, setSelectedPlanForDelete] =
+    useState<TrainingPlan | null>(null);
   const [planForm, setPlanForm] = useState({
     title: "",
     description: "",
@@ -145,6 +149,16 @@ export default function TrainingPlanPage() {
     });
     setIsEditMode(true);
     setIsPlanModalOpen(true);
+  };
+
+  const handleDeletePlan = () => {
+    if (selectedPlanForDelete) {
+      setTrainingPlans(
+        trainingPlans.filter((p) => p.id !== selectedPlanForDelete.id),
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedPlanForDelete(null);
+    }
   };
 
   const handleCreateOrUpdatePlan = () => {
@@ -321,76 +335,36 @@ export default function TrainingPlanPage() {
       </div>
 
       {/* Budget Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Budget total 2024
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockTrainingBudget.totalBudget.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">Budget annuel</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Budget utilisé
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalBudgetUsed.toLocaleString("fr-FR")} €
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {(
-                (totalBudgetUsed / mockTrainingBudget.totalBudget) *
-                100
-              ).toFixed(1)}
-              % du budget
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Budget restant
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {(
-                mockTrainingBudget.totalBudget - totalBudgetUsed
-              ).toLocaleString("fr-FR")}{" "}
-              €
-            </div>
-            <p className="text-xs text-muted-foreground">Disponible</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Formations planifiées
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{trainingPlans.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {confirmedCount} confirmées, {completedCount} terminées
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Euro}
+          title="Budget total 2024"
+          value={`${mockTrainingBudget.totalBudget.toLocaleString("fr-FR")} €`}
+          subtext="Budget annuel"
+          color="blue"
+        />
+        <InfoCard
+          icon={TrendingUp}
+          title="Budget utilisé"
+          value={`${totalBudgetUsed.toLocaleString("fr-FR")} €`}
+          subtext={`${((totalBudgetUsed / mockTrainingBudget.totalBudget) * 100).toFixed(1)}% du budget`}
+          color="orange"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Budget restant"
+          value={`${(mockTrainingBudget.totalBudget - totalBudgetUsed).toLocaleString("fr-FR")} €`}
+          subtext="Disponible"
+          color="green"
+        />
+        <InfoCard
+          icon={Calendar}
+          title="Formations planifiées"
+          value={trainingPlans.length}
+          subtext={`${confirmedCount} confirmées, ${completedCount} terminées`}
+          color="purple"
+        />
+      </InfoCardContainer>
 
       {/* Training Plans DataTable */}
       <DataTable
@@ -402,18 +376,6 @@ export default function TrainingPlanPage() {
         }
         searchPlaceholder="Rechercher par titre, description ou formateur..."
         getRowId={(plan) => plan.id}
-        filters={[
-          {
-            key: "status",
-            label: "Statut",
-            options: [
-              { value: "all", label: "Toutes" },
-              { value: "planned", label: "Planifiées" },
-              { value: "confirmed", label: "Confirmées" },
-              { value: "completed", label: "Terminées" },
-            ],
-          },
-        ]}
         actions={(plan) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -427,7 +389,7 @@ export default function TrainingPlanPage() {
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Voir
+                Examiner
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleEditPlan(plan)}
@@ -435,6 +397,16 @@ export default function TrainingPlanPage() {
               >
                 <Pencil className="h-4 w-4" />
                 Modifier
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedPlanForDelete(plan);
+                  setIsDeleteModalOpen(true);
+                }}
+                className="flex items-center gap-2 text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -553,7 +525,12 @@ export default function TrainingPlanPage() {
       {/* Plan Modal (Create/Edit) */}
       <Modal
         open={isPlanModalOpen}
-        onOpenChange={setIsPlanModalOpen}
+        onOpenChange={(open) => {
+          setIsPlanModalOpen(open);
+          if (!open) {
+            setIsEditMode(false);
+          }
+        }}
         type="form"
         title={isEditMode ? "Modifier la formation" : "Nouvelle formation"}
         size="lg"
@@ -702,6 +679,36 @@ export default function TrainingPlanPage() {
               placeholder="2400.00"
             />
           </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="confirmation"
+        title="Confirmer la suppression"
+        size="sm"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeletePlan,
+            variant: "destructive",
+          },
+        }}
+      >
+        <div>
+          <p>Êtes-vous sûr de vouloir supprimer cette formation ?</p>
+          {selectedPlanForDelete && (
+            <p className="text-sm text-muted-foreground mt-2">
+              {selectedPlanForDelete.title}
+            </p>
+          )}
         </div>
       </Modal>
     </div>

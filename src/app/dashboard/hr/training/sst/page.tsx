@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -21,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   CheckCircle,
   XCircle,
@@ -32,6 +32,8 @@ import {
   Eye,
   RotateCcw,
   Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import type { TrainingCertification } from "@/lib/types";
 
@@ -101,7 +103,11 @@ export default function SSTPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCertificationModalOpen, setIsCertificationModalOpen] =
     useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCertification, setSelectedCertification] =
+    useState<TrainingCertification | null>(null);
+  const [selectedCertificationForDelete, setSelectedCertificationForDelete] =
     useState<TrainingCertification | null>(null);
   const [recycleForm, setRecycleForm] = useState({
     recycleDate: "",
@@ -116,6 +122,27 @@ export default function SSTPage() {
     expiryDate: "",
     issuer: "INRS",
   });
+
+  const handleValidate = (certification: TrainingCertification) => {
+    setCertifications(
+      certifications.map((c) =>
+        c.id === certification.id
+          ? {
+              ...c,
+              validated: true,
+              validatedBy: "Admin",
+              validatedAt: new Date(),
+            }
+          : c,
+      ),
+    );
+    setIsViewModalOpen(false);
+  };
+
+  const handleReject = (certification: TrainingCertification) => {
+    setCertifications(certifications.filter((c) => c.id !== certification.id));
+    setIsViewModalOpen(false);
+  };
 
   const handleAddRecycle = (certification: TrainingCertification) => {
     setSelectedCertification(certification);
@@ -132,7 +159,34 @@ export default function SSTPage() {
     setIsViewModalOpen(true);
   };
 
+  const handleEditCertification = (certification: TrainingCertification) => {
+    setSelectedCertification(certification);
+    setCertificationForm({
+      employeeId: certification.employeeId,
+      employeeName: certification.employeeName,
+      number: certification.number,
+      issueDate: certification.issueDate.toISOString().split("T")[0],
+      expiryDate: certification.expiryDate.toISOString().split("T")[0],
+      issuer: "SDIS",
+    });
+    setIsEditMode(true);
+    setIsCertificationModalOpen(true);
+  };
+
+  const handleDeleteCertification = () => {
+    if (selectedCertificationForDelete) {
+      setCertifications(
+        certifications.filter(
+          (c) => c.id !== selectedCertificationForDelete.id,
+        ),
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedCertificationForDelete(null);
+    }
+  };
+
   const handleOpenCreateModal = () => {
+    setIsEditMode(false);
     setCertificationForm({
       employeeId: "",
       employeeName: "",
@@ -144,28 +198,56 @@ export default function SSTPage() {
     setIsCertificationModalOpen(true);
   };
 
-  const handleCreateCertification = () => {
-    const certification: TrainingCertification = {
-      id: `SST-${Date.now()}`,
-      employeeId: certificationForm.employeeId,
-      employeeName: certificationForm.employeeName,
-      type: "SST",
-      number: certificationForm.number,
-      issueDate: new Date(certificationForm.issueDate),
-      expiryDate: new Date(certificationForm.expiryDate),
-      issuer: certificationForm.issuer,
-      status: "valid",
-      lastRenewalDate: new Date(certificationForm.issueDate),
-      nextRenewalDate: new Date(certificationForm.expiryDate),
-      validated: true,
-      validatedBy: "Admin",
-      validatedAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  const handleCreateOrUpdateCertification = () => {
+    if (isEditMode && selectedCertification) {
+      // Update existing certification
+      setCertifications(
+        certifications.map((c) =>
+          c.id === selectedCertification.id
+            ? {
+                ...c,
+                employeeId: certificationForm.employeeId,
+                employeeName: certificationForm.employeeName,
+                number: certificationForm.number,
+                issueDate: new Date(certificationForm.issueDate),
+                expiryDate: new Date(certificationForm.expiryDate),
+                issuer: certificationForm.issuer,
+                updatedAt: new Date(),
+              }
+            : c,
+        ),
+      );
+    } else {
+      // Create new certification
+      const certification: TrainingCertification = {
+        id: `SST-${Date.now()}`,
+        employeeId: certificationForm.employeeId,
+        employeeName: certificationForm.employeeName,
+        type: "SST",
+        number: certificationForm.number,
+        issueDate: new Date(certificationForm.issueDate),
+        expiryDate: new Date(certificationForm.expiryDate),
+        issuer: certificationForm.issuer,
+        status: "valid",
+        lastRenewalDate: new Date(certificationForm.issueDate),
+        nextRenewalDate: new Date(certificationForm.expiryDate),
+        validated: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setCertifications([...certifications, certification]);
+    }
 
-    setCertifications([...certifications, certification]);
     setIsCertificationModalOpen(false);
+    setIsEditMode(false);
+    setCertificationForm({
+      employeeId: "",
+      employeeName: "",
+      number: "",
+      issueDate: "",
+      expiryDate: "",
+      issuer: "INRS",
+    });
   };
 
   const handleCreateRecycle = () => {
@@ -295,63 +377,36 @@ export default function SSTPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total SST</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{certifications.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Certifications actives
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valides</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {validCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              En cours de validité
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Recyclages dus
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {expiringSoonCount}
-            </div>
-            <p className="text-xs text-muted-foreground">Dans les 3 mois</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expirées</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {expiredCount}
-            </div>
-            <p className="text-xs text-muted-foreground">À recycler</p>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Award}
+          title="Total SST"
+          value={certifications.length}
+          subtext="Certifications actives"
+          color="blue"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Valides"
+          value={validCount}
+          subtext="En cours de validité"
+          color="green"
+        />
+        <InfoCard
+          icon={Clock}
+          title="Recyclages dus"
+          value={expiringSoonCount}
+          subtext="Dans les 3 mois"
+          color="orange"
+        />
+        <InfoCard
+          icon={XCircle}
+          title="Expirées"
+          value={expiredCount}
+          subtext="À recycler"
+          color="red"
+        />
+      </InfoCardContainer>
 
       {/* Certifications DataTable */}
       <DataTable
@@ -363,18 +418,6 @@ export default function SSTPage() {
         }
         searchPlaceholder="Rechercher par employé ou numéro..."
         getRowId={(certification) => certification.id}
-        filters={[
-          {
-            key: "status",
-            label: "Statut",
-            options: [
-              { value: "all", label: "Tous" },
-              { value: "valid", label: "Valide" },
-              { value: "expiring-soon", label: "Expire bientôt" },
-              { value: "expired", label: "Expiré" },
-            ],
-          },
-        ]}
         actions={(certification) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -388,7 +431,14 @@ export default function SSTPage() {
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Voir
+                Examiner
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleEditCertification(certification)}
+                className="flex items-center gap-2"
+              >
+                <Pencil className="h-4 w-4" />
+                Modifier
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleAddRecycle(certification)}
@@ -396,6 +446,16 @@ export default function SSTPage() {
               >
                 <RotateCcw className="h-4 w-4" />
                 Ajouter recyclage
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedCertificationForDelete(certification);
+                  setIsDeleteModalOpen(true);
+                }}
+                className="flex items-center gap-2 text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -491,6 +551,25 @@ export default function SSTPage() {
                 {selectedCertification.updatedAt.toLocaleDateString("fr-FR")}
               </div>
             </div>
+            {!selectedCertification.validated && (
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  onClick={() => handleValidate(selectedCertification)}
+                  className="gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Valider
+                </Button>
+                <Button
+                  onClick={() => handleReject(selectedCertification)}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  <XCircle className="h-4 w-4" />
+                  Rejeter
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
@@ -585,12 +664,21 @@ export default function SSTPage() {
         </div>
       </Modal>
 
-      {/* Certification Modal (Create) */}
+      {/* Certification Modal (Create/Edit) */}
       <Modal
         open={isCertificationModalOpen}
-        onOpenChange={setIsCertificationModalOpen}
+        onOpenChange={(open) => {
+          setIsCertificationModalOpen(open);
+          if (!open) {
+            setIsEditMode(false);
+          }
+        }}
         type="form"
-        title="Nouvelle certification SST"
+        title={
+          isEditMode
+            ? "Modifier la certification SST"
+            : "Nouvelle certification SST"
+        }
         size="md"
         actions={{
           secondary: {
@@ -599,8 +687,8 @@ export default function SSTPage() {
             variant: "outline",
           },
           primary: {
-            label: "Créer",
-            onClick: handleCreateCertification,
+            label: isEditMode ? "Mettre à jour" : "Créer",
+            onClick: handleCreateOrUpdateCertification,
             disabled:
               !certificationForm.employeeName || !certificationForm.number,
           },
@@ -650,6 +738,7 @@ export default function SSTPage() {
                 onValueChange={(value) =>
                   setCertificationForm((prev) => ({ ...prev, issuer: value }))
                 }
+                disabled={isEditMode}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -694,6 +783,35 @@ export default function SSTPage() {
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="confirmation"
+        title="Confirmer la suppression"
+        size="sm"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeleteCertification,
+            variant: "destructive",
+          },
+        }}
+      >
+        <p>Êtes-vous sûr de vouloir supprimer cette certification SST ?</p>
+        {selectedCertificationForDelete && (
+          <p className="text-sm text-muted-foreground mt-2">
+            {selectedCertificationForDelete.employeeName} -{" "}
+            {selectedCertificationForDelete.number}
+          </p>
+        )}
       </Modal>
     </div>
   );

@@ -45,6 +45,7 @@ export default function ClientsPage() {
       phone: "01 23 45 67 89",
       email: "contact@abcindustries.fr",
       siret: "12345678901234",
+      numTVA: "FR12345678901",
       sector: "Industrie",
       dirigeant: {
         nom: "Dupont",
@@ -73,6 +74,7 @@ export default function ClientsPage() {
       phone: "04 56 78 90 12",
       email: "contact@xyzservices.fr",
       siret: "56789012345678",
+      numTVA: "FR98765432109",
       sector: "Services",
       dirigeant: {
         nom: "Martin",
@@ -101,6 +103,7 @@ export default function ClientsPage() {
       phone: "04 91 23 45 67",
       email: "contact@defsolutions.fr",
       siret: "90123456789012",
+      numTVA: "FR11223344556",
       sector: "Technologie",
       dirigeant: {
         nom: "Durand",
@@ -183,6 +186,7 @@ export default function ClientsPage() {
     phone: "",
     email: "",
     siret: "",
+    numTVA: "",
     sector: "",
   });
 
@@ -220,6 +224,7 @@ export default function ClientsPage() {
       phone: "",
       email: "",
       siret: "",
+      numTVA: "",
       sector: "",
     });
   };
@@ -484,6 +489,17 @@ export default function ClientsPage() {
                 setNewClient({ ...newClient, siret: e.target.value })
               }
               placeholder="Numéro SIRET"
+            />
+          </div>
+          <div>
+            <Label htmlFor="numTVA">Num TVA</Label>
+            <Input
+              id="numTVA"
+              value={newClient.numTVA}
+              onChange={(e) =>
+                setNewClient({ ...newClient, numTVA: e.target.value })
+              }
+              placeholder="Numéro TVA"
             />
           </div>
           <div>

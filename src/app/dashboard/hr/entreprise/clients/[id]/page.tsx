@@ -26,6 +26,7 @@ import {
   Calendar,
   Gift,
   User,
+  Eye,
 } from "lucide-react";
 
 interface DirigeantInfo {
@@ -53,6 +54,7 @@ interface Client {
   phone?: string;
   email?: string;
   siret?: string;
+  numTVA?: string;
   sector?: string;
   dirigeant?: DirigeantInfo;
 }
@@ -82,6 +84,7 @@ interface Document {
   clientId: string;
   name: string;
   type: string;
+  description?: string;
   uploadDate: string;
   expiryDate?: string;
   status: "valid" | "expiring" | "expired";
@@ -90,32 +93,7 @@ interface Document {
 
 const requiredDocuments = [
   { type: "contrat_cadre", name: "Contrat cadre", category: "contrat" },
-  {
-    type: "conditions_generales",
-    name: "Conditions générales",
-    category: "contrat",
-  },
   { type: "kbis_client", name: "Kbis du client", category: "juridique" },
-  {
-    type: "attestation_assurance",
-    name: "Attestation d'assurance",
-    category: "assurance",
-  },
-  {
-    type: "autorisation_cnaps",
-    name: "Autorisation CNAPS",
-    category: "reglementaire",
-  },
-];
-
-const optionalDocuments = [
-  { type: "avenant", name: "Avenant au contrat", category: "contrat" },
-  { type: "cahier_charges", name: "Cahier des charges", category: "technique" },
-  {
-    type: "plan_intervention",
-    name: "Plan d'intervention",
-    category: "technique",
-  },
 ];
 
 const mockClients: Client[] = [
@@ -130,6 +108,7 @@ const mockClients: Client[] = [
     phone: "01 23 45 67 89",
     email: "contact@abcindustries.fr",
     siret: "12345678901234",
+    numTVA: "FR12345678901",
     sector: "Industrie",
     dirigeant: {
       nom: "Dupont",
@@ -156,6 +135,7 @@ const mockClients: Client[] = [
     phone: "04 56 78 90 12",
     email: "contact@xyzservices.fr",
     siret: "56789012345678",
+    numTVA: "FR98765432109",
     sector: "Services",
     dirigeant: {
       nom: "Martin",
@@ -182,6 +162,7 @@ const mockClients: Client[] = [
     phone: "04 91 23 45 67",
     email: "contact@defsolutions.fr",
     siret: "90123456789012",
+    numTVA: "FR11223344556",
     sector: "Technologie",
     dirigeant: {
       nom: "Durand",
@@ -299,7 +280,7 @@ export default function ClientDetailPage({
   const [gifts] = useState<ClientGift[]>(
     mockGifts.filter((g) => g.clientId === id),
   );
-  const [documents] = useState<Document[]>(
+  const [documents, setDocuments] = useState<Document[]>(
     mockDocuments.filter((doc) => doc.clientId === id),
   );
   const [isEditing, setIsEditing] = useState(
@@ -307,6 +288,11 @@ export default function ClientDetailPage({
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [isCustomDocModalOpen, setIsCustomDocModalOpen] = useState(false);
+  const [newCustomDoc, setNewCustomDoc] = useState({
+    name: "",
+    description: "",
+  });
 
   if (!client) {
     return (
@@ -354,6 +340,30 @@ export default function ClientDetailPage({
   const handleSave = () => {
     console.log("Saving:", client);
     setIsEditing(false);
+  };
+
+  const handlePreview = (doc: Document) => {
+    console.log("Preview:", doc);
+    // In a real app, open a modal or new window with the document
+  };
+
+  const handleDownload = (doc: Document) => {
+    console.log("Download:", doc);
+    // In a real app, trigger download of the file
+  };
+
+  const handleUpload = (docType: { name: string; type: string }) => {
+    // For mock purposes, simulate upload by adding the document
+    const newDoc: Document = {
+      id: Date().toString(),
+      clientId: id,
+      name: docType.name,
+      type: docType.type,
+      uploadDate: new Date().toISOString().split("T")[0],
+      status: "valid",
+      required: true,
+    };
+    setDocuments([...documents, newDoc]);
   };
 
   const handleCancel = () => {
@@ -474,11 +484,15 @@ export default function ClientDetailPage({
       label: "Type",
       sortable: true,
       render: (doc) => {
-        const docType = [...requiredDocuments, ...optionalDocuments].find(
-          (d) => d.type === doc.type,
-        );
+        const docType = requiredDocuments.find((d) => d.type === doc.type);
         return docType?.name || doc.type;
       },
+    },
+    {
+      key: "description",
+      label: "Description",
+      sortable: false,
+      render: (doc) => doc.description || "-",
     },
     {
       key: "uploadDate",
@@ -641,6 +655,20 @@ export default function ClientDetailPage({
                     />
                   ) : (
                     <p className="text-sm mt-1">{client.siret || "-"}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="numTVA">Num TVA</Label>
+                  {isEditing ? (
+                    <Input
+                      id="numTVA"
+                      value={client.numTVA || ""}
+                      onChange={(e) =>
+                        setClient({ ...client, numTVA: e.target.value })
+                      }
+                    />
+                  ) : (
+                    <p className="text-sm mt-1">{client.numTVA || "-"}</p>
                   )}
                 </div>
                 <div>
@@ -1096,7 +1124,10 @@ export default function ClientDetailPage({
                       Télécharger ({selectedDocuments.length})
                     </Button>
                   )}
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    onClick={() => setIsCustomDocModalOpen(true)}
+                  >
                     <Upload className="h-4 w-4 mr-2" />
                     Ajouter un document
                   </Button>
@@ -1117,85 +1148,61 @@ export default function ClientDetailPage({
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Documents requis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {requiredDocuments.map((docType) => {
-                    const existingDoc = documents.find(
-                      (d) => d.type === docType.type,
-                    );
-                    return (
-                      <div
-                        key={docType.type}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm font-medium">
-                              {docType.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {docType.category}
-                            </p>
-                          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Documents requis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {requiredDocuments.map((docType) => {
+                  const existingDoc = documents.find(
+                    (d) => d.type === docType.type,
+                  );
+                  return (
+                    <div
+                      key={docType.type}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">{docType.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {docType.category}
+                          </p>
                         </div>
-                        {existingDoc ? (
-                          <Badge variant="default">Présent</Badge>
-                        ) : (
-                          <Badge variant="destructive">Manquant</Badge>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Documents optionnels
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {optionalDocuments.map((docType) => {
-                    const existingDoc = documents.find(
-                      (d) => d.type === docType.type,
-                    );
-                    return (
-                      <div
-                        key={docType.type}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm font-medium">
-                              {docType.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {docType.category}
-                            </p>
-                          </div>
+                      {existingDoc ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handlePreview(existingDoc)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Aperçu
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownload(existingDoc)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Télécharger
+                          </Button>
                         </div>
-                        {existingDoc ? (
-                          <Badge variant="default">Présent</Badge>
-                        ) : (
-                          <Badge variant="secondary">Non fourni</Badge>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                      ) : (
+                        <Button size="sm" onClick={() => handleUpload(docType)}>
+                          <Upload className="h-4 w-4 mr-1" />
+                          Téléverser
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
@@ -1223,6 +1230,66 @@ export default function ClientDetailPage({
           est irréversible et supprimera également tous les contrats, cadeaux et
           documents associés.
         </p>
+      </Modal>
+
+      <Modal
+        open={isCustomDocModalOpen}
+        onOpenChange={setIsCustomDocModalOpen}
+        type="form"
+        title="Ajouter un document personnalisé"
+        actions={{
+          primary: {
+            label: "Ajouter",
+            onClick: () => {
+              const newDoc: Document = {
+                id: Date.now().toString(),
+                clientId: id,
+                name: newCustomDoc.name,
+                type: "custom",
+                description: newCustomDoc.description,
+                uploadDate: new Date().toISOString().split("T")[0],
+                status: "valid",
+                required: false,
+              };
+              setDocuments([...documents, newDoc]);
+              setIsCustomDocModalOpen(false);
+              setNewCustomDoc({ name: "", description: "" });
+            },
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsCustomDocModalOpen(false),
+            variant: "outline" as const,
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="doc-name">Nom du document</Label>
+            <Input
+              id="doc-name"
+              value={newCustomDoc.name}
+              onChange={(e) =>
+                setNewCustomDoc({ ...newCustomDoc, name: e.target.value })
+              }
+              placeholder="Nom du document"
+            />
+          </div>
+          <div>
+            <Label htmlFor="doc-description">Description</Label>
+            <Input
+              id="doc-description"
+              value={newCustomDoc.description}
+              onChange={(e) =>
+                setNewCustomDoc({
+                  ...newCustomDoc,
+                  description: e.target.value,
+                })
+              }
+              placeholder="Description du document"
+            />
+          </div>
+        </div>
       </Modal>
     </div>
   );

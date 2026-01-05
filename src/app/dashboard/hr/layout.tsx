@@ -27,8 +27,7 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/dashboard/hr/employees/") &&
     !pathname.endsWith("duerp") &&
     !pathname.endsWith("akto-opco") &&
-    !pathname.endsWith("employees") &&
-    !pathname.endsWith("archives-mails");
+    !pathname.endsWith("employees");
 
   React.useEffect(() => {
     localStorage.setItem("moduleNavCollapsed", String(isCollapsed));

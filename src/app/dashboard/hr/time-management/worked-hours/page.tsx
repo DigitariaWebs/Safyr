@@ -3,70 +3,59 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 import { Modal } from "@/components/ui/modal";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Clock, Sun, Calendar, CheckCircle, XCircle, Plus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Clock,
+  Sun,
+  Calendar,
+  MoreHorizontal,
+  Eye,
+  Edit3,
+  Trash2,
+} from "lucide-react";
 import { mockWorkedHours } from "@/data/time-management";
 import { mockEmployees } from "@/data/employees";
 
 const CategoryTable = ({
-  category,
   hours,
 }: {
-  category: "supplementary" | "night" | "sunday" | "holiday";
+  category: "supplementary";
   hours: (typeof mockWorkedHours)[0];
 }) => {
   const variants = [
     {
       label: "25%",
-      value: hours[`${category}Hours25`],
+      value: hours.supplementaryHours25,
     },
     {
       label: "50%",
-      value: hours[`${category}Hours50`],
+      value: hours.supplementaryHours50,
     },
     {
       label: "10%",
-      value:
-        category === "supplementary"
-          ? hours.complementaryHours10
-          : hours[`${category}Hours10`],
+      value: hours.complementaryHours10,
     },
   ];
 
-  const bgColor =
-    category === "supplementary"
-      ? "bg-green-50 dark:bg-green-950/10"
-      : category === "night"
-        ? "bg-purple-50 dark:bg-purple-950/10"
-        : category === "sunday"
-          ? "bg-orange-50 dark:bg-orange-950/10"
-          : "bg-red-50 dark:bg-red-950/10";
+  const bgColor = "bg-green-50 dark:bg-green-950/10";
 
-  const getTextColor = (cat: string, label: string) => {
-    if (cat === "supplementary") {
-      if (label === "25%") return "text-green-600";
-      if (label === "50%") return "text-teal-600";
-      if (label === "10%") return "text-cyan-600";
-    } else if (cat === "night") {
-      if (label === "25%") return "text-purple-400";
-      if (label === "50%") return "text-purple-500";
-      if (label === "10%") return "text-purple-300";
-    } else if (cat === "sunday") {
-      if (label === "25%") return "text-orange-400";
-      if (label === "50%") return "text-orange-500";
-      if (label === "10%") return "text-orange-300";
-    } else if (cat === "holiday") {
-      if (label === "25%") return "text-red-400";
-      if (label === "50%") return "text-red-500";
-      if (label === "10%") return "text-red-300";
-    }
+  const getTextColor = (label: string) => {
+    if (label === "25%") return "text-green-600";
+    if (label === "50%") return "text-teal-600";
+    if (label === "10%") return "text-cyan-600";
     return "";
   };
 
@@ -78,9 +67,7 @@ const CategoryTable = ({
           className={`flex flex-col items-center p-1 rounded ${bgColor} min-w-0 flex-1`}
         >
           <span className="text-xs text-gray-600">{variant.label}</span>
-          <span
-            className={`font-semibold ${getTextColor(category, variant.label)}`}
-          >
+          <span className={`font-semibold ${getTextColor(variant.label)}`}>
             {variant.value}h
           </span>
         </div>
@@ -90,81 +77,57 @@ const CategoryTable = ({
 };
 
 export default function WorkedHoursPage() {
-  const [isDeclareModalOpen, setIsDeclareModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedHours, setSelectedHours] = useState<
     (typeof mockWorkedHours)[0] | null
   >(null);
-  const [validationComment, setValidationComment] = useState("");
-  const [employeeSearch, setEmployeeSearch] = useState("");
-  const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState({
     employeeId: "",
     date: new Date().toISOString().split("T")[0],
     regularHours: 0,
-    overtimeHours: 0,
     supplementaryHours25: 0,
     supplementaryHours50: 0,
     complementaryHours10: 0,
     nightHours: 0,
-    nightHours25: 0,
-    nightHours50: 0,
-    nightHours10: 0,
     sundayHours: 0,
     sundayNightHours: 0,
-    sundayHours25: 0,
-    sundayHours50: 0,
-    sundayHours10: 0,
     holidayHours: 0,
     holidayNightHours: 0,
-    holidayHours25: 0,
-    holidayHours50: 0,
-    holidayHours10: 0,
   });
-
-  // Filter employees based on search
-  const filteredEmployees = mockEmployees.filter(
-    (employee) =>
-      employee.firstName.toLowerCase().includes(employeeSearch.toLowerCase()) ||
-      employee.lastName.toLowerCase().includes(employeeSearch.toLowerCase()) ||
-      employee.employeeNumber
-        .toLowerCase()
-        .includes(employeeSearch.toLowerCase()) ||
-      employee.department.toLowerCase().includes(employeeSearch.toLowerCase()),
-  );
-
-  const handleEmployeeSelect = (employee: (typeof mockEmployees)[0]) => {
-    setFormData({ ...formData, employeeId: employee.id });
-    setEmployeeSearch(
-      `${employee.firstName} ${employee.lastName} (${employee.employeeNumber})`,
-    );
-    setIsEmployeeDropdownOpen(false);
-  };
 
   const handleViewDetails = (hours: (typeof mockWorkedHours)[0]) => {
     setSelectedHours(hours);
-    setValidationComment("");
+    setIsEditMode(false);
     setIsDetailsModalOpen(true);
   };
 
-  const handleValidation = (approved: boolean) => {
-    if (!selectedHours) return;
-
-    // TODO: API call to validate/reject hours
-    console.log("Validation:", {
-      approved,
-      comment: validationComment,
-      hoursId: selectedHours.id,
+  const handleEdit = (hours: (typeof mockWorkedHours)[0]) => {
+    setSelectedHours(hours);
+    setIsEditMode(true);
+    setFormData({
+      employeeId: hours.employeeId,
+      date: hours.date.toISOString().split("T")[0],
+      regularHours: hours.regularHours,
+      supplementaryHours25: hours.supplementaryHours25,
+      supplementaryHours50: hours.supplementaryHours50,
+      complementaryHours10: hours.complementaryHours10,
+      nightHours: hours.nightHours,
+      sundayHours: hours.sundayHours,
+      sundayNightHours: hours.sundayNightHours,
+      holidayHours: hours.holidayHours,
+      holidayNightHours: hours.holidayNightHours,
     });
-
-    // Update hours status
-    // For now, just close modal
-    setIsDetailsModalOpen(false);
-    setSelectedHours(null);
-    setValidationComment("");
+    setIsDetailsModalOpen(true);
   };
 
-  const totalPending = mockWorkedHours.filter((h) => !h.validated).length;
+  const handleDelete = (hours: (typeof mockWorkedHours)[0]) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ces heures ?")) {
+      // TODO: Implement delete logic
+      console.log("Delete hours:", hours.id);
+    }
+  };
+
   const totalRegularHours = mockWorkedHours.reduce(
     (sum, h) => sum + h.regularHours,
     0,
@@ -290,7 +253,42 @@ export default function WorkedHoursPage() {
     },
   ];
 
-  const workedHoursColumns = allWorkedHoursColumns;
+  const workedHoursColumns = [
+    ...allWorkedHoursColumns,
+    {
+      key: "actions",
+      label: "Actions",
+      render: (hours: (typeof mockWorkedHours)[0]) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleViewDetails(hours)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Voir
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEdit(hours)}>
+              <Edit3 className="mr-2 h-4 w-4" />
+              Modifier
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleDelete(hours)}
+              className="text-red-600"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <div className="flex-1 space-y-6 p-8 max-w-full overflow-x-hidden">
@@ -304,22 +302,10 @@ export default function WorkedHoursPage() {
             Suivi des heures pour la préparation de la paie
           </p>
         </div>
-        <Button onClick={() => setIsDeclareModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Déclarer des heures
-        </Button>
       </div>
 
       {/* Statistics Cards */}
       <InfoCardContainer>
-        <InfoCard
-          icon={Clock}
-          title="Total Déclarations"
-          value={mockWorkedHours.length}
-          subtext="Ce mois-ci"
-          color="gray"
-        />
-
         <InfoCard
           icon={Sun}
           title="Heures Normales"
@@ -340,15 +326,10 @@ export default function WorkedHoursPage() {
           icon={Clock}
           title="Heures de Nuit"
           value={`${mockWorkedHours.reduce(
-            (sum, h) =>
-              sum +
-              h.nightHours +
-              (h.nightHours25 || 0) +
-              (h.nightHours50 || 0) +
-              (h.nightHours10 || 0),
+            (sum, h) => sum + h.nightHours,
             0,
           )}h`}
-          subtext="Toutes variantes"
+          subtext="Base"
           color="purple"
         />
 
@@ -356,15 +337,10 @@ export default function WorkedHoursPage() {
           icon={Clock}
           title="Dimanche"
           value={`${mockWorkedHours.reduce(
-            (sum, h) =>
-              sum +
-              h.sundayHours +
-              (h.sundayHours25 || 0) +
-              (h.sundayHours50 || 0) +
-              (h.sundayHours10 || 0),
+            (sum, h) => sum + h.sundayHours,
             0,
           )}h`}
-          subtext="Toutes variantes"
+          subtext="Base"
           color="orange"
         />
 
@@ -372,24 +348,11 @@ export default function WorkedHoursPage() {
           icon={Clock}
           title="Jours Fériés"
           value={`${mockWorkedHours.reduce(
-            (sum, h) =>
-              sum +
-              h.holidayHours +
-              (h.holidayHours25 || 0) +
-              (h.holidayHours50 || 0) +
-              (h.holidayHours10 || 0),
+            (sum, h) => sum + h.holidayHours,
             0,
           )}h`}
-          subtext="Toutes variantes"
+          subtext="Base"
           color="red"
-        />
-
-        <InfoCard
-          icon={XCircle}
-          title="En Attente"
-          value={totalPending}
-          subtext="À valider"
-          color="yellow"
         />
       </InfoCardContainer>
 
@@ -405,533 +368,58 @@ export default function WorkedHoursPage() {
             searchKeys={["employeeName"]}
             searchPlaceholder="Rechercher par nom d'employé..."
             itemsPerPage={10}
-            filters={[
-              {
-                key: "validated",
-                label: "Statut",
-                options: [
-                  { value: "all", label: "Tous" },
-                  { value: "true", label: "Validées" },
-                  { value: "false", label: "En attente" },
-                ],
-              },
-            ]}
-            onRowClick={handleViewDetails}
           />
         </CardContent>
       </Card>
 
-      {/* Declare Hours Modal */}
-      <Modal
-        open={isDeclareModalOpen}
-        onOpenChange={(open) => {
-          setIsDeclareModalOpen(open);
-          if (!open) {
-            setFormData({
-              employeeId: "",
-              date: new Date().toISOString().split("T")[0],
-              regularHours: 0,
-              overtimeHours: 0,
-              supplementaryHours25: 0,
-              supplementaryHours50: 0,
-              complementaryHours10: 0,
-              nightHours: 0,
-              nightHours25: 0,
-              nightHours50: 0,
-              nightHours10: 0,
-              sundayHours: 0,
-              sundayNightHours: 0,
-              sundayHours25: 0,
-              sundayHours50: 0,
-              sundayHours10: 0,
-              holidayHours: 0,
-              holidayNightHours: 0,
-              holidayHours25: 0,
-              holidayHours50: 0,
-              holidayHours10: 0,
-            });
-            setEmployeeSearch("");
-            setIsEmployeeDropdownOpen(false);
-          }
-        }}
-        type="form"
-        title="Déclarer des heures travaillées"
-        description="Saisissez les heures travaillées pour un employé"
-        actions={{
-          primary: {
-            label: "Déclarer",
-            onClick: () => {
-              console.log("Declaring hours:", formData);
-              setFormData({
-                employeeId: "",
-                date: new Date().toISOString().split("T")[0],
-                regularHours: 0,
-                overtimeHours: 0,
-                supplementaryHours25: 0,
-                supplementaryHours50: 0,
-                complementaryHours10: 0,
-                nightHours: 0,
-                nightHours25: 0,
-                nightHours50: 0,
-                nightHours10: 0,
-                sundayHours: 0,
-                sundayNightHours: 0,
-                sundayHours25: 0,
-                sundayHours50: 0,
-                sundayHours10: 0,
-                holidayHours: 0,
-                holidayNightHours: 0,
-                holidayHours25: 0,
-                holidayHours50: 0,
-                holidayHours10: 0,
-              });
-              setEmployeeSearch("");
-              setIsDeclareModalOpen(false);
-            },
-          },
-          secondary: {
-            label: "Annuler",
-            onClick: () => setIsDeclareModalOpen(false),
-          },
-        }}
-      >
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="employeeSearch">Employé</Label>
-            <div className="relative">
-              <Input
-                id="employeeSearch"
-                type="text"
-                placeholder="Rechercher et sélectionner un employé..."
-                value={employeeSearch}
-                onChange={(e) => {
-                  setEmployeeSearch(e.target.value);
-                  setIsEmployeeDropdownOpen(true);
-                }}
-                onFocus={() => setIsEmployeeDropdownOpen(true)}
-                onBlur={() => {
-                  // Delay closing to allow click on options
-                  setTimeout(() => setIsEmployeeDropdownOpen(false), 200);
-                }}
-              />
-              {isEmployeeDropdownOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-auto">
-                  {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee) => (
-                      <button
-                        key={employee.id}
-                        type="button"
-                        className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
-                        onClick={() => handleEmployeeSelect(employee)}
-                      >
-                        <div className="font-medium">
-                          {employee.firstName} {employee.lastName}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {employee.employeeNumber} - {employee.department}
-                        </div>
-                      </button>
-                    ))
-                  ) : employeeSearch ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      Aucun employé trouvé
-                    </div>
-                  ) : (
-                    mockEmployees.slice(0, 5).map((employee) => (
-                      <button
-                        key={employee.id}
-                        type="button"
-                        className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
-                        onClick={() => handleEmployeeSelect(employee)}
-                      >
-                        <div className="font-medium">
-                          {employee.firstName} {employee.lastName}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {employee.employeeNumber} - {employee.department}
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="regularHours">Heures normales</Label>
-              <Input
-                id="regularHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.regularHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    regularHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="overtimeHours">Heures supplémentaires</Label>
-              <Input
-                id="overtimeHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.overtimeHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    overtimeHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="supplementaryHours25">Heures supp. 25%</Label>
-              <Input
-                id="supplementaryHours25"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.supplementaryHours25}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    supplementaryHours25: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="supplementaryHours50">Heures supp. 50%</Label>
-              <Input
-                id="supplementaryHours50"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.supplementaryHours50}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    supplementaryHours50: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="complementaryHours10">Heures comp. 10%</Label>
-              <Input
-                id="complementaryHours10"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.complementaryHours10}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    complementaryHours10: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nightHours">Heures de nuit</Label>
-              <Input
-                id="nightHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.nightHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sundayHours">Heures dimanche</Label>
-              <Input
-                id="sundayHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.sundayHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="holidayHours">Heures jours fériés</Label>
-              <Input
-                id="holidayHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.holidayHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sundayNightHours">Heures dimanche nuit</Label>
-              <Input
-                id="sundayNightHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.sundayNightHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayNightHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="holidayNightHours">
-                Heures jours fériés nuit
-              </Label>
-              <Input
-                id="holidayNightHours"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.holidayNightHours}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayNightHours: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nightHours25">Heures nuit 25%</Label>
-              <Input
-                id="nightHours25"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.nightHours25}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightHours25: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nightHours50">Heures nuit 50%</Label>
-              <Input
-                id="nightHours50"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.nightHours50}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightHours50: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nightHours10">Heures nuit 10%</Label>
-              <Input
-                id="nightHours10"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.nightHours10}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightHours10: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sundayHours25">Dimanche 25%</Label>
-              <Input
-                id="sundayHours25"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.sundayHours25}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayHours25: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sundayHours50">Dimanche 50%</Label>
-              <Input
-                id="sundayHours50"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.sundayHours50}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayHours50: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sundayHours10">Dimanche 10%</Label>
-              <Input
-                id="sundayHours10"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.sundayHours10}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayHours10: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="holidayHours25">Jours fériés 25%</Label>
-              <Input
-                id="holidayHours25"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.holidayHours25}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayHours25: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="holidayHours50">Jours fériés 50%</Label>
-              <Input
-                id="holidayHours50"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.holidayHours50}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayHours50: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="holidayHours10">Jours fériés 10%</Label>
-              <Input
-                id="holidayHours10"
-                type="number"
-                min="0"
-                step="0.5"
-                value={formData.holidayHours10}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayHours10: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Details Modal */}
+      {/* Details/Edit Modal */}
       <Modal
         open={isDetailsModalOpen}
         onOpenChange={(open) => {
           setIsDetailsModalOpen(open);
           if (!open) {
             setSelectedHours(null);
-            setValidationComment("");
+            setIsEditMode(false);
+            setFormData({
+              employeeId: "",
+              date: new Date().toISOString().split("T")[0],
+              regularHours: 0,
+              supplementaryHours25: 0,
+              supplementaryHours50: 0,
+              complementaryHours10: 0,
+              nightHours: 0,
+              sundayHours: 0,
+              sundayNightHours: 0,
+              holidayHours: 0,
+              holidayNightHours: 0,
+            });
           }
         }}
-        type="details"
-        title={`Heures travaillées - ${selectedHours?.employeeName}`}
+        type={isEditMode ? "form" : "details"}
+        title={
+          isEditMode
+            ? "Modifier les heures travaillées"
+            : `Heures travaillées - ${selectedHours?.employeeName}`
+        }
         description={
           selectedHours
             ? `Déclaration du ${new Date(selectedHours.date).toLocaleDateString("fr-FR")}`
             : ""
         }
         actions={
-          selectedHours?.validated === false
+          isEditMode
             ? {
-                secondary: {
-                  label: "Fermer",
-                  onClick: () => setIsDetailsModalOpen(false),
-                  variant: "outline",
-                },
                 primary: {
-                  label: "Approuver",
-                  onClick: () => handleValidation(true),
+                  label: "Sauvegarder",
+                  onClick: () => {
+                    console.log("Saving edited hours:", formData);
+                    setIsDetailsModalOpen(false);
+                    setIsEditMode(false);
+                  },
                 },
-                tertiary: {
-                  label: "Refuser",
-                  onClick: () => handleValidation(false),
-                  variant: "destructive",
+                secondary: {
+                  label: "Annuler",
+                  onClick: () => setIsDetailsModalOpen(false),
                 },
               }
             : {
@@ -943,184 +431,287 @@ export default function WorkedHoursPage() {
               }
         }
       >
-        {selectedHours && (
-          <div className="space-y-6">
-            {/* Status Badge */}
-            <div className="flex justify-center">
-              {selectedHours.validated ? (
-                <Badge variant="outline" className="text-green-600">
-                  <CheckCircle className="mr-1 h-4 w-4" />
-                  Validé
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-orange-600">
-                  <Clock className="mr-1 h-4 w-4" />
-                  En attente
-                </Badge>
-              )}
+        {isEditMode ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+              />
             </div>
 
-            {/* Hours Details */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Date
-                </label>
-                <p className="mt-1 font-medium">
-                  {new Date(selectedHours.date).toLocaleDateString("fr-FR", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Total d&apos;heures
-                </label>
-                <p className="mt-1 font-medium">{selectedHours.totalHours}h</p>
-              </div>
-            </div>
-
-            {/* Hours Breakdown */}
-            <div className="space-y-4">
-              <h4 className="font-medium">D&eacute;tail des heures</h4>
-
-              {/* Regular & Supplementary Hours */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h5 className="text-sm font-medium text-muted-foreground">
-                  Heures normales et supplémentaires
-                </h5>
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between items-center rounded bg-muted/30 p-2">
-                    <span className="text-gray-600">Normales:</span>
-                    <span className="font-semibold">
-                      {selectedHours.regularHours}h
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 rounded bg-blue-50 dark:bg-blue-950/20">
-                    <span className="text-gray-600">Supplémentaires:</span>
-                    <span className="font-semibold text-blue-600">
-                      {selectedHours.overtimeHours}h
-                    </span>
-                  </div>
-                  <CategoryTable
-                    category="supplementary"
-                    hours={selectedHours}
-                  />
-                </div>
-              </div>
-
-              {/* Night Hours */}
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium text-muted-foreground">
-                  Heures de nuit
-                </h5>
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between items-center p-2 rounded bg-purple-50 dark:bg-purple-950/20">
-                    <span className="text-gray-600">Base:</span>
-                    <span className="font-semibold text-purple-600">
-                      {selectedHours.nightHours}h
-                    </span>
-                  </div>
-                  <CategoryTable category="night" hours={selectedHours} />
-                </div>
-              </div>
-
-              {/* Sunday Hours */}
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium text-muted-foreground">
-                  Dimanche
-                </h5>
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between items-center p-2 rounded bg-orange-50 dark:bg-orange-950/20">
-                    <span className="text-gray-600">Base:</span>
-                    <span className="font-semibold text-orange-600">
-                      {selectedHours.sundayHours}h
-                    </span>
-                  </div>
-                  <CategoryTable category="sunday" hours={selectedHours} />
-                </div>
-              </div>
-
-              {/* Holiday Hours */}
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium text-muted-foreground">
-                  Jours fériés
-                </h5>
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between items-center p-2 rounded bg-red-50 dark:bg-red-950/20">
-                    <span className="text-gray-600">Base:</span>
-                    <span className="font-semibold text-red-600">
-                      {selectedHours.holidayHours}h
-                    </span>
-                  </div>
-                  <CategoryTable category="holiday" hours={selectedHours} />
-                </div>
-              </div>
-            </div>
-
-            {/* Employee Info */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-              <div className="flex-1">
-                <p className="font-semibold">{selectedHours.employeeName}</p>
-                <p className="text-sm text-muted-foreground">
-                  {
-                    mockEmployees.find((e) => e.id === selectedHours.employeeId)
-                      ?.employeeNumber
-                  }{" "}
-                  -{" "}
-                  {
-                    mockEmployees.find((e) => e.id === selectedHours.employeeId)
-                      ?.department
+                <Label htmlFor="regularHours">Heures normales</Label>
+                <Input
+                  id="regularHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.regularHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      regularHours: parseFloat(e.target.value) || 0,
+                    })
                   }
-                </p>
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplementaryHours25">Heures supp. 25%</Label>
+                <Input
+                  id="supplementaryHours25"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.supplementaryHours25}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      supplementaryHours25: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplementaryHours50">Heures supp. 50%</Label>
+                <Input
+                  id="supplementaryHours50"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.supplementaryHours50}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      supplementaryHours50: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="complementaryHours10">Heures comp. 10%</Label>
+                <Input
+                  id="complementaryHours10"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.complementaryHours10}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      complementaryHours10: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="nightHours">Heures de nuit</Label>
+                <Input
+                  id="nightHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.nightHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      nightHours: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sundayHours">Heures dimanche</Label>
+                <Input
+                  id="sundayHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.sundayHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sundayHours: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="holidayHours">Heures jours fériés</Label>
+                <Input
+                  id="holidayHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.holidayHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      holidayHours: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sundayNightHours">Heures dimanche nuit</Label>
+                <Input
+                  id="sundayNightHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.sundayNightHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      sundayNightHours: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="holidayNightHours">
+                  Heures jours fériés nuit
+                </Label>
+                <Input
+                  id="holidayNightHours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={formData.holidayNightHours}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      holidayNightHours: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                />
               </div>
             </div>
-
-            {/* Validation Section */}
-            {selectedHours.validated === false && (
-              <>
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">
-                    Commentaire (optionnel)
-                  </Label>
-                  <Textarea
-                    value={validationComment}
-                    onChange={(e) => setValidationComment(e.target.value)}
-                    placeholder="Ajouter un commentaire..."
-                    rows={3}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Validation History */}
-            {selectedHours.validated && selectedHours.validatedBy && (
-              <>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="font-medium">
-                      Validé par {selectedHours.validatedBy}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Le{" "}
-                    {new Date(selectedHours.validatedAt!).toLocaleDateString(
-                      "fr-FR",
-                    )}{" "}
-                    à{" "}
-                    {new Date(selectedHours.validatedAt!).toLocaleTimeString(
-                      "fr-FR",
-                    )}
+          </div>
+        ) : (
+          selectedHours && (
+            <div className="space-y-6">
+              {/* Hours Details */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Date
+                  </label>
+                  <p className="mt-1 font-medium">
+                    {new Date(selectedHours.date).toLocaleDateString("fr-FR", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </p>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+
+              {/* Hours Breakdown */}
+              <div className="space-y-4">
+                <h4 className="font-medium">D&eacute;tail des heures</h4>
+
+                {/* Regular & Supplementary Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-muted-foreground">
+                    Heures normales et supplémentaires
+                  </h5>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between items-center rounded bg-muted/30 p-2">
+                      <span className="text-gray-600">Normales:</span>
+                      <span className="font-semibold">
+                        {selectedHours.regularHours}h
+                      </span>
+                    </div>
+                    <CategoryTable
+                      category="supplementary"
+                      hours={selectedHours}
+                    />
+                  </div>
+                </div>
+
+                {/* Night Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-muted-foreground">
+                    Heures de nuit
+                  </h5>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between items-center p-2 rounded bg-purple-50 dark:bg-purple-950/20">
+                      <span className="text-gray-600">Base:</span>
+                      <span className="font-semibold text-purple-600">
+                        {selectedHours.nightHours}h
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sunday Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-muted-foreground">
+                    Dimanche
+                  </h5>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between items-center p-2 rounded bg-orange-50 dark:bg-orange-950/20">
+                      <span className="text-gray-600">Base:</span>
+                      <span className="font-semibold text-orange-600">
+                        {selectedHours.sundayHours}h
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Holiday Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium text-muted-foreground">
+                    Jours fériés
+                  </h5>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between items-center p-2 rounded bg-red-50 dark:bg-red-950/20">
+                      <span className="text-gray-600">Base:</span>
+                      <span className="font-semibold text-red-600">
+                        {selectedHours.holidayHours}h
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Employee Info */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                <div className="flex-1">
+                  <p className="font-semibold">{selectedHours.employeeName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {
+                      mockEmployees.find(
+                        (e) => e.id === selectedHours.employeeId,
+                      )?.employeeNumber
+                    }{" "}
+                    -{" "}
+                    {
+                      mockEmployees.find(
+                        (e) => e.id === selectedHours.employeeId,
+                      )?.department
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
         )}
       </Modal>
     </div>

@@ -18,15 +18,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   AlertTriangle,
   CheckCircle,
   XCircle,
   Eye,
-  Filter,
   Download,
   RefreshCw,
   AlertCircle,
   Users,
+  MoreHorizontal,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import type { PayrollAnomaly, PayrollAnomalyType } from "@/lib/types";
 
@@ -144,28 +152,30 @@ export default function PayrollControlPage() {
     null,
   );
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedSeverity, setSelectedSeverity] = useState("all");
-  const [selectedType, setSelectedType] = useState("all");
-
-  const filteredAnomalies = anomalies.filter((anomaly) => {
-    if (selectedStatus !== "all" && anomaly.status !== selectedStatus)
-      return false;
-    if (selectedSeverity !== "all" && anomaly.severity !== selectedSeverity)
-      return false;
-    if (selectedType !== "all" && anomaly.type !== selectedType) return false;
-    return true;
-  });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editDescription, setEditDescription] = useState("");
+  const [editSeverity, setEditSeverity] = useState<
+    "low" | "medium" | "high" | "critical"
+  >("low");
+  const [editType, setEditType] = useState<PayrollAnomalyType>("missing_hours");
 
   const handleViewDetails = (anomaly: PayrollAnomaly) => {
     setSelectedAnomaly(anomaly);
     setIsDetailsModalOpen(true);
   };
 
-  const handleResolve = (anomaly: PayrollAnomaly) => {
+  const handleEdit = (anomaly: PayrollAnomaly) => {
     setSelectedAnomaly(anomaly);
-    setIsResolveModalOpen(true);
+    setEditDescription(anomaly.description);
+    setEditSeverity(anomaly.severity);
+    setEditType(anomaly.type);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (anomaly: PayrollAnomaly) => {
+    setSelectedAnomaly(anomaly);
+    setIsDeleteModalOpen(true);
   };
 
   const confirmResolve = (notes: string) => {
@@ -184,7 +194,34 @@ export default function PayrollControlPage() {
             : a,
         ),
       );
-      setIsResolveModalOpen(false);
+      setSelectedAnomaly(null);
+    }
+  };
+
+  const confirmEdit = () => {
+    if (selectedAnomaly) {
+      setAnomalies(
+        anomalies.map((a) =>
+          a.id === selectedAnomaly.id
+            ? {
+                ...a,
+                description: editDescription,
+                severity: editSeverity,
+                type: editType,
+                updatedAt: new Date(),
+              }
+            : a,
+        ),
+      );
+      setIsEditModalOpen(false);
+      setSelectedAnomaly(null);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (selectedAnomaly) {
+      setAnomalies(anomalies.filter((a) => a.id !== selectedAnomaly.id));
+      setIsDeleteModalOpen(false);
       setSelectedAnomaly(null);
     }
   };
@@ -355,72 +392,6 @@ export default function PayrollControlPage() {
         />
       </InfoCardContainer>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Filtres</span>
-            </div>
-            <div className="flex gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Statut</Label>
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="open">Ouvert</SelectItem>
-                    <SelectItem value="investigating">En cours</SelectItem>
-                    <SelectItem value="resolved">Résolu</SelectItem>
-                    <SelectItem value="dismissed">Rejeté</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="severity">Sévérité</Label>
-                <Select
-                  value={selectedSeverity}
-                  onValueChange={setSelectedSeverity}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Toutes</SelectItem>
-                    <SelectItem value="low">Faible</SelectItem>
-                    <SelectItem value="medium">Moyen</SelectItem>
-                    <SelectItem value="high">Élevé</SelectItem>
-                    <SelectItem value="critical">Critique</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    {Object.entries(anomalyTypeLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Anomalies Table */}
       <Card>
         <CardHeader>
@@ -428,7 +399,7 @@ export default function PayrollControlPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            data={filteredAnomalies}
+            data={anomalies}
             columns={columns}
             searchKeys={["employeeName", "description"]}
             getSearchValue={(anomaly) =>
@@ -437,35 +408,27 @@ export default function PayrollControlPage() {
             searchPlaceholder="Rechercher par employé ou description..."
             getRowId={(anomaly) => anomaly.id}
             actions={(anomaly) => (
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleViewDetails(anomaly)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                {anomaly.status === "open" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleResolve(anomaly)}
-                      className="text-green-600"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDismiss(anomaly)}
-                      className="text-red-600"
-                    >
-                      <XCircle className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleViewDetails(anomaly)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Examiner
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEdit(anomaly)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifier
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(anomaly)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           />
         </CardContent>
@@ -475,9 +438,40 @@ export default function PayrollControlPage() {
       <Modal
         open={isDetailsModalOpen}
         onOpenChange={setIsDetailsModalOpen}
-        type="details"
-        title="Détails de l'anomalie"
+        type="form"
+        title="Examiner l'anomalie"
         size="lg"
+        actions={
+          selectedAnomaly?.status === "open"
+            ? {
+                secondary: {
+                  label: "Refuser",
+                  onClick: () => {
+                    if (selectedAnomaly) {
+                      handleDismiss(selectedAnomaly);
+                      setIsDetailsModalOpen(false);
+                    }
+                  },
+                  variant: "outline",
+                },
+                primary: {
+                  label: "Approuver",
+                  onClick: () => {
+                    if (selectedAnomaly) {
+                      const notes =
+                        (
+                          document.getElementById(
+                            "examine-notes",
+                          ) as HTMLTextAreaElement
+                        )?.value || "";
+                      confirmResolve(notes);
+                      setIsDetailsModalOpen(false);
+                    }
+                  },
+                },
+              }
+            : undefined
+        }
       >
         {selectedAnomaly && (
           <div className="space-y-6">
@@ -559,6 +553,17 @@ export default function PayrollControlPage() {
               </div>
             )}
 
+            {selectedAnomaly.status === "open" && (
+              <div className="space-y-2">
+                <Label htmlFor="examine-notes">Notes de résolution</Label>
+                <Textarea
+                  id="examine-notes"
+                  placeholder="Décrivez la résolution apportée..."
+                  rows={3}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
               <div>
                 Créée le {selectedAnomaly.createdAt.toLocaleDateString("fr-FR")}
@@ -572,29 +577,21 @@ export default function PayrollControlPage() {
         )}
       </Modal>
 
-      {/* Resolve Modal */}
+      {/* Edit Modal */}
       <Modal
-        open={isResolveModalOpen}
-        onOpenChange={setIsResolveModalOpen}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
         type="form"
-        title="Résoudre l'anomalie"
+        title="Modifier l'anomalie"
         actions={{
           secondary: {
             label: "Annuler",
-            onClick: () => setIsResolveModalOpen(false),
+            onClick: () => setIsEditModalOpen(false),
             variant: "outline",
           },
           primary: {
-            label: "Résoudre",
-            onClick: () => {
-              const notes =
-                (
-                  document.getElementById(
-                    "resolve-notes",
-                  ) as HTMLTextAreaElement
-                )?.value || "";
-              confirmResolve(notes);
-            },
+            label: "Enregistrer",
+            onClick: confirmEdit,
           },
         }}
       >
@@ -608,14 +605,85 @@ export default function PayrollControlPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="resolve-notes">Notes de résolution</Label>
+              <Label htmlFor="edit-description">Description</Label>
               <Textarea
-                id="resolve-notes"
-                placeholder="Décrivez la résolution apportée..."
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
                 rows={3}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-severity">Sévérité</Label>
+                <Select
+                  value={editSeverity}
+                  onValueChange={(value) =>
+                    setEditSeverity(
+                      value as "low" | "medium" | "high" | "critical",
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Faible</SelectItem>
+                    <SelectItem value="medium">Moyen</SelectItem>
+                    <SelectItem value="high">Élevé</SelectItem>
+                    <SelectItem value="critical">Critique</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Type</Label>
+                <Select
+                  value={editType}
+                  onValueChange={(value) =>
+                    setEditType(value as PayrollAnomalyType)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(anomalyTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="form"
+        title="Confirmer la suppression"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: confirmDelete,
+          },
+        }}
+      >
+        {selectedAnomaly && (
+          <p>
+            Êtes-vous sûr de vouloir supprimer cette anomalie pour{" "}
+            {selectedAnomaly.employeeName} ?
+          </p>
         )}
       </Modal>
     </div>

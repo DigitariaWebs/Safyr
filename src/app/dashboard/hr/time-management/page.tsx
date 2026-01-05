@@ -28,7 +28,15 @@ import {
   Clock,
   Users,
   Download,
+  Eye,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type { TimeOffRequest } from "@/lib/types";
 import {
   mockTimeOffRequests,
@@ -36,9 +44,14 @@ import {
 } from "@/data/time-management";
 
 export default function TimeManagementPage() {
-  const [requests] = useState<TimeOffRequest[]>(mockTimeOffRequests);
+  const [requests, setRequests] =
+    useState<TimeOffRequest[]>(mockTimeOffRequests);
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<TimeOffRequest | null>(
+    null,
+  );
   const [selectedRequest, setSelectedRequest] = useState<TimeOffRequest | null>(
     null,
   );
@@ -216,21 +229,52 @@ export default function TimeManagementPage() {
     setIsDetailsModalOpen(true);
   };
 
-  const handleValidation = (approved: boolean) => {
-    if (!selectedRequest) return;
-
+  const handleValidation = (
+    approved: boolean,
+    requestId: string,
+    comment?: string,
+  ) => {
     // TODO: API call to validate/reject request
     console.log("Validation:", {
       approved,
-      comment: validationComment,
-      requestId: selectedRequest.id,
+      comment,
+      requestId,
     });
 
-    // Update request status
-    // For now, just close modal
-    setIsDetailsModalOpen(false);
-    setSelectedRequest(null);
-    setValidationComment("");
+    // Update requests
+    setRequests((prev) =>
+      prev.map((req) =>
+        req.id === requestId
+          ? {
+              ...req,
+              status: approved ? "approved" : "rejected",
+              validatedBy: "Current User",
+              validatedAt: new Date(),
+              validationComment: comment || "",
+            }
+          : req,
+      ),
+    );
+
+    // If modal is open for this request, close it
+    if (selectedRequest?.id === requestId) {
+      setIsDetailsModalOpen(false);
+      setSelectedRequest(null);
+      setValidationComment("");
+    }
+  };
+
+  const handleDeleteClick = (request: TimeOffRequest) => {
+    setRequestToDelete(request);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (requestToDelete) {
+      setRequests(requests.filter((r) => r.id !== requestToDelete.id));
+      setIsDeleteModalOpen(false);
+      setRequestToDelete(null);
+    }
   };
 
   const requestColumns: ColumnDef<TimeOffRequest>[] = [
@@ -310,6 +354,53 @@ export default function TimeManagementPage() {
       },
     },
   ];
+
+  const requestActions = (request: TimeOffRequest) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-48">
+        <div className="px-2 py-1.5 text-sm font-semibold">Actions</div>
+        <div className="border-t my-1" />
+        <button
+          className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm"
+          onClick={() => handleViewDetails(request)}
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          Voir
+        </button>
+        {request.status === "pending" && (
+          <>
+            <button
+              className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm"
+              onClick={() => handleValidation(true, request.id)}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approuver
+            </button>
+            <button
+              className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-red-600"
+              onClick={() => handleValidation(false, request.id)}
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Refuser
+            </button>
+          </>
+        )}
+        <div className="border-t my-1" />
+        <button
+          className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-red-600"
+          onClick={() => handleDeleteClick(request)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Supprimer
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -412,7 +503,7 @@ export default function TimeManagementPage() {
                 ],
               },
             ]}
-            onRowClick={handleViewDetails}
+            actions={requestActions}
           />
         </CardContent>
       </Card>
@@ -632,11 +723,21 @@ export default function TimeManagementPage() {
                 },
                 primary: {
                   label: "Approuver",
-                  onClick: () => handleValidation(true),
+                  onClick: () =>
+                    handleValidation(
+                      true,
+                      selectedRequest.id,
+                      validationComment,
+                    ),
                 },
                 tertiary: {
                   label: "Refuser",
-                  onClick: () => handleValidation(false),
+                  onClick: () =>
+                    handleValidation(
+                      false,
+                      selectedRequest.id,
+                      validationComment,
+                    ),
                   variant: "destructive",
                 },
               }
@@ -812,6 +913,31 @@ export default function TimeManagementPage() {
             )}
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="confirmation"
+        title="Supprimer la demande"
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeleteConfirm,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <p>
+          Êtes-vous sûr de vouloir supprimer la demande de congé de{" "}
+          <span className="font-semibold">{requestToDelete?.employeeName}</span>{" "}
+          ({requestToDelete?.type}) ? Cette action est irréversible.
+        </p>
       </Modal>
     </div>
   );

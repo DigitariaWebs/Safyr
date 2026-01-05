@@ -6,16 +6,25 @@ import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-
+import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Euro, Users, Calculator, Download, Filter } from "lucide-react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Euro,
+  Users,
+  Calculator,
+  Download,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import type { PersonnelCost } from "@/lib/types";
 
 // Mock data
@@ -84,34 +93,77 @@ const departmentBreakdown = {
 };
 
 export default function PersonnelCostPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState("2024-12");
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [personnelCosts, setPersonnelCosts] =
+    useState<PersonnelCost[]>(mockPersonnelCosts);
+  const [selectedCost, setSelectedCost] = useState<PersonnelCost | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [editGrossSalary, setEditGrossSalary] = useState(0);
+  const [editWorkedHours, setEditWorkedHours] = useState(0);
 
-  const filteredCosts = mockPersonnelCosts.filter((cost) => {
-    if (selectedDepartment !== "all") {
-      // In real app, would filter by department
-      return true;
+  const handleViewDetails = (cost: PersonnelCost) => {
+    setSelectedCost(cost);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleEdit = (cost: PersonnelCost) => {
+    setSelectedCost(cost);
+    setEditGrossSalary(cost.grossSalary);
+    setEditWorkedHours(cost.workedHours);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (cost: PersonnelCost) => {
+    setSelectedCost(cost);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmEdit = () => {
+    if (selectedCost) {
+      setPersonnelCosts(
+        personnelCosts.map((c) =>
+          c.employeeId === selectedCost.employeeId
+            ? {
+                ...c,
+                grossSalary: editGrossSalary,
+                workedHours: editWorkedHours,
+              }
+            : c,
+        ),
+      );
+      setIsEditModalOpen(false);
+      setSelectedCost(null);
     }
-    return cost.period === selectedPeriod;
-  });
+  };
+
+  const confirmDelete = () => {
+    if (selectedCost) {
+      setPersonnelCosts(
+        personnelCosts.filter((c) => c.employeeId !== selectedCost.employeeId),
+      );
+      setIsDeleteModalOpen(false);
+      setSelectedCost(null);
+    }
+  };
 
   const totalCosts = {
-    grossPayroll: filteredCosts.reduce(
+    grossPayroll: personnelCosts.reduce(
       (sum, cost) => sum + cost.grossSalary,
       0,
     ),
-    netPayroll: filteredCosts.reduce((sum, cost) => sum + cost.netSalary, 0),
-    employerContributions: filteredCosts.reduce(
+    netPayroll: personnelCosts.reduce((sum, cost) => sum + cost.netSalary, 0),
+    employerContributions: personnelCosts.reduce(
       (sum, cost) => sum + cost.employerContributions,
       0,
     ),
-    totalEmployerCost: filteredCosts.reduce(
+    totalEmployerCost: personnelCosts.reduce(
       (sum, cost) => sum + cost.totalEmployerCost,
       0,
     ),
     avgCostPerHour:
-      filteredCosts.reduce((sum, cost) => sum + cost.costPerHour, 0) /
-      filteredCosts.length,
+      personnelCosts.reduce((sum, cost) => sum + cost.costPerHour, 0) /
+      personnelCosts.length,
   };
 
   const columns: ColumnDef<PersonnelCost>[] = [
@@ -203,54 +255,6 @@ export default function PersonnelCostPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Filtres</span>
-            </div>
-            <div className="flex gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="period">Période</Label>
-                <Select
-                  value={selectedPeriod}
-                  onValueChange={setSelectedPeriod}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2024-12">Décembre 2024</SelectItem>
-                    <SelectItem value="2024-11">Novembre 2024</SelectItem>
-                    <SelectItem value="2024-10">Octobre 2024</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="department">Département</Label>
-                <Select
-                  value={selectedDepartment}
-                  onValueChange={setSelectedDepartment}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="Sécurité">Sécurité</SelectItem>
-                    <SelectItem value="Direction">Direction</SelectItem>
-                    <SelectItem value="RH">RH</SelectItem>
-                    <SelectItem value="Commercial">Commercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Summary Cards */}
       <InfoCardContainer>
         <InfoCard
@@ -334,7 +338,7 @@ export default function PersonnelCostPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {filteredCosts
+              {personnelCosts
                 .sort((a, b) => b.totalEmployerCost - a.totalEmployerCost)
                 .slice(0, 5)
                 .map((cost) => (
@@ -365,15 +369,221 @@ export default function PersonnelCostPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            data={filteredCosts}
+            data={personnelCosts}
             columns={columns}
             searchKeys={["employeeName", "employeeId"]}
             getSearchValue={(cost) => `${cost.employeeName} ${cost.employeeId}`}
             searchPlaceholder="Rechercher par nom ou numéro d'employé..."
             getRowId={(cost) => cost.employeeId}
+            actions={(cost) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleViewDetails(cost)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Examiner
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEdit(cost)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Modifier
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(cost)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           />
         </CardContent>
       </Card>
+
+      {/* Details Modal */}
+      <Modal
+        open={isDetailsModalOpen}
+        onOpenChange={setIsDetailsModalOpen}
+        type="details"
+        title="Examiner le coût salarial"
+        size="lg"
+      >
+        {selectedCost && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Employé</Label>
+                <p className="text-sm text-muted-foreground">
+                  {selectedCost.employeeName} ({selectedCost.employeeId})
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Période</Label>
+                <p className="text-sm text-muted-foreground">
+                  {selectedCost.period}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Salaire brut</Label>
+                <p className="text-sm font-mono">
+                  {selectedCost.grossSalary.toLocaleString("fr-FR")}{" "}
+                  {selectedCost.currency}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Salaire net</Label>
+                <p className="text-sm font-mono">
+                  {selectedCost.netSalary.toLocaleString("fr-FR")}{" "}
+                  {selectedCost.currency}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Charges employeur</Label>
+                <p className="text-sm font-mono">
+                  {selectedCost.employerContributions.toLocaleString("fr-FR")}{" "}
+                  {selectedCost.currency}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">
+                  Coût total employeur
+                </Label>
+                <p className="text-sm font-mono">
+                  {selectedCost.totalEmployerCost.toLocaleString("fr-FR")}{" "}
+                  {selectedCost.currency}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">
+                  Heures travaillées
+                </Label>
+                <p className="text-sm font-mono">{selectedCost.workedHours}h</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Coût par heure</Label>
+                <p className="text-sm font-mono">
+                  {selectedCost.costPerHour.toFixed(2)} {selectedCost.currency}
+                  /h
+                </p>
+              </div>
+            </div>
+
+            {(selectedCost.allowances > 0 ||
+              selectedCost.bonuses > 0 ||
+              selectedCost.maintenance > 0) && (
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Indemnités</Label>
+                  <p className="text-sm font-mono">
+                    {selectedCost.allowances.toLocaleString("fr-FR")}{" "}
+                    {selectedCost.currency}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Primes</Label>
+                  <p className="text-sm font-mono">
+                    {selectedCost.bonuses.toLocaleString("fr-FR")}{" "}
+                    {selectedCost.currency}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Maintenance</Label>
+                  <p className="text-sm font-mono">
+                    {selectedCost.maintenance.toLocaleString("fr-FR")}{" "}
+                    {selectedCost.currency}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        type="form"
+        title="Modifier le coût salarial"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsEditModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Enregistrer",
+            onClick: confirmEdit,
+          },
+        }}
+      >
+        {selectedCost && (
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium">{selectedCost.employeeName}</h4>
+              <p className="text-sm text-muted-foreground">
+                {selectedCost.employeeId}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-gross-salary">Salaire brut</Label>
+                <Input
+                  id="edit-gross-salary"
+                  type="number"
+                  value={editGrossSalary}
+                  onChange={(e) =>
+                    setEditGrossSalary(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-worked-hours">Heures travaillées</Label>
+                <Input
+                  id="edit-worked-hours"
+                  type="number"
+                  value={editWorkedHours}
+                  onChange={(e) =>
+                    setEditWorkedHours(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="form"
+        title="Confirmer la suppression"
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer",
+            onClick: confirmDelete,
+          },
+        }}
+      >
+        {selectedCost && (
+          <p>
+            Êtes-vous sûr de vouloir supprimer les coûts pour{" "}
+            {selectedCost.employeeName} ?
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

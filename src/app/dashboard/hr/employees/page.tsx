@@ -13,6 +13,8 @@ import { Modal } from "@/components/ui/modal";
 import { Stepper, Step } from "@/components/ui/stepper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { IbanInput } from "@/components/ui/IbanInput";
 import {
   Select,
   SelectContent,
@@ -920,13 +922,11 @@ export default function EmployeesPage() {
                     <Label htmlFor="phone">
                       Téléphone <span className="text-destructive">*</span>
                     </Label>
-                    <Input
+                    <PhoneInput
                       id="phone"
-                      type="tel"
-                      placeholder="+33 6 12 34 56 78"
                       value={newEmployeeData.phone}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("phone", e.target.value)
+                      onChange={(value) =>
+                        handleNewEmployeeChange("phone", value)
                       }
                     />
                   </div>
@@ -1147,48 +1147,19 @@ export default function EmployeesPage() {
             {/* Step 3: Bank Details */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="iban">
-                      IBAN <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="iban"
-                      placeholder="FR76 1234 5678 9012 3456 7890 123"
-                      value={newEmployeeData.iban}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("iban", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bic">
-                      BIC <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="bic"
-                      placeholder="BNPAFRPP"
-                      value={newEmployeeData.bic}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("bic", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2 col-span-2">
-                    <Label htmlFor="bankName">
-                      Nom de la banque{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="bankName"
-                      placeholder="BNP Paribas"
-                      value={newEmployeeData.bankName}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("bankName", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
+                <IbanInput
+                  ibanValue={newEmployeeData.iban}
+                  bicValue={newEmployeeData.bic}
+                  bankNameValue={newEmployeeData.bankName}
+                  onIbanChange={(value) =>
+                    handleNewEmployeeChange("iban", value)
+                  }
+                  onBicChange={(value) => handleNewEmployeeChange("bic", value)}
+                  onBankNameChange={(value) =>
+                    handleNewEmployeeChange("bankName", value)
+                  }
+                  required
+                />
               </div>
             )}
           </div>

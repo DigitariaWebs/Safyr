@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
   Select,
   SelectContent,
@@ -429,12 +430,10 @@ export default function ApplicationsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Téléphone *</Label>
-              <Input
+              <PhoneInput
                 id="phone"
-                type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="+33 6 12 34 56 78"
+                onChange={(value) => handleInputChange("phone", value)}
                 required
               />
             </div>

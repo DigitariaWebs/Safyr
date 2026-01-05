@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -13,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   AlertTriangle,
   Clock,
@@ -260,74 +260,43 @@ export default function TrainingAlertsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total alertes</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{alerts.length}</div>
-            <p className="text-xs text-muted-foreground">Alertes actives</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Critiques</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {criticalCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Action immédiate requise
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Élevées</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {highCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Renouvellement urgent
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Moyennes</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {mediumCount}
-            </div>
-            <p className="text-xs text-muted-foreground">À surveiller</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Acquittées</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {acknowledgedCount}
-            </div>
-            <p className="text-xs text-muted-foreground">Traitées</p>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={Bell}
+          title="Total alertes"
+          value={alerts.length}
+          subtext="Alertes actives"
+          color="blue"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="Critiques"
+          value={criticalCount}
+          subtext="Action immédiate requise"
+          color="red"
+        />
+        <InfoCard
+          icon={Clock}
+          title="Élevées"
+          value={highCount}
+          subtext="Renouvellement urgent"
+          color="orange"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Moyennes"
+          value={mediumCount}
+          subtext="À surveiller"
+          color="yellow"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Acquittées"
+          value={acknowledgedCount}
+          subtext="Traitées"
+          color="green"
+        />
+      </InfoCardContainer>
 
       {/* Alerts DataTable */}
       <DataTable
@@ -337,42 +306,6 @@ export default function TrainingAlertsPage() {
         getSearchValue={(alert) => `${alert.employeeName} ${alert.number}`}
         searchPlaceholder="Rechercher par employé ou numéro..."
         getRowId={(alert) => alert.id}
-        filters={[
-          {
-            key: "severity",
-            label: "Sévérité",
-            options: [
-              { value: "all", label: "Toutes" },
-              { value: "critical", label: "Critique" },
-              { value: "high", label: "Élevé" },
-              { value: "medium", label: "Moyen" },
-              { value: "low", label: "Faible" },
-            ],
-          },
-          {
-            key: "status",
-            label: "Statut",
-            options: [
-              { value: "all", label: "Tous" },
-              { value: "pending", label: "En attente" },
-              { value: "acknowledged", label: "Acquitté" },
-            ],
-          },
-          {
-            key: "type",
-            label: "Type",
-            options: [
-              { value: "all", label: "Tous" },
-              { value: "SSIAP1", label: "SSIAP 1" },
-              { value: "SSIAP2", label: "SSIAP 2" },
-              { value: "SSIAP3", label: "SSIAP 3" },
-              { value: "SST", label: "SST" },
-              { value: "H0B0", label: "H0B0" },
-              { value: "FIRE", label: "Habilitation incendie" },
-              { value: "OTHER", label: "Autre" },
-            ],
-          },
-        ]}
         actions={(alert) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -386,7 +319,7 @@ export default function TrainingAlertsPage() {
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Voir
+                Examiner
               </DropdownMenuItem>
               {alert.status !== "acknowledged" && (
                 <DropdownMenuItem

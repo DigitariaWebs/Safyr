@@ -796,6 +796,14 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
       >
         <div className="space-y-4">
           <div>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedEquipmentId("add-new")}
+              className="mb-4"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un nouvel équipement
+            </Button>
             <Label htmlFor="equipment-select">Équipement disponible</Label>
             <Select
               value={selectedEquipmentId}
@@ -805,14 +813,6 @@ export function EmployeeEquipmentTab({ employee }: EmployeeEquipmentTabProps) {
                 <SelectValue placeholder="Sélectionnez un équipement..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="add-new">
-                  <div className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    <span className="font-medium">
-                      Ajouter un nouvel équipement
-                    </span>
-                  </div>
-                </SelectItem>
                 {availableEquipment.map((eq) => (
                   <SelectItem key={eq.id} value={eq.id}>
                     <div className="flex items-center gap-2">
