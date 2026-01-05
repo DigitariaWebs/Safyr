@@ -1,42 +1,57 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Modal } from "@/components/ui/modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   Users,
-  FileText,
-  Download,
-  AlertTriangle,
-  FileCheck,
   Plus,
   Edit3,
-  Archive,
-  ExternalLink,
+  Eye,
+  Trash2,
+  MoreVertical,
   Building2,
-  Upload,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface DirigeantInfo {
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  nationalite: string;
+  adresse: string;
+  email: string;
+  telephone: string;
+  fonction: string;
+  dateNomination: string;
+  numeroSecuriteSociale: string;
+}
 
 interface SousTraitant {
   id: string;
   name: string;
   siret: string;
   address: string;
-  dirigeant: string;
+  dirigeant: DirigeantInfo;
   email: string;
   telephone: string;
   capitalSocial: string;
@@ -46,61 +61,27 @@ interface SousTraitant {
   prochainRenouvellement: string;
 }
 
-interface Document {
-  id: string;
-  sousTraitantId: string;
-  name: string;
-  type: string;
-  uploadDate: string;
-  expiryDate?: string;
-  status: "valid" | "expiring" | "expired";
-  required: boolean;
-}
-
-const requiredDocuments = [
-  { type: "cni_dirigeant", name: "CNI du dirigeant", category: "dirigeant" },
-  {
-    type: "carte_pro_dirigeant",
-    name: "Carte pro CNAPS du dirigeant",
-    category: "dirigeant",
-  },
-  {
-    type: "carte_pro_entreprise",
-    name: "Carte pro CNAPS de l'entreprise",
-    category: "entreprise",
-  },
-  { type: "kbis", name: "Kbis", category: "entreprise" },
-  {
-    type: "urssaf",
-    name: "Attestation de vigilance URSSAF",
-    category: "attestations",
-  },
-  {
-    type: "fiscale",
-    name: "Attestation de régularité Fiscale",
-    category: "attestations",
-  },
-  {
-    type: "assurance_rc",
-    name: "Attestation d'assurance RC PRO",
-    category: "attestations",
-  },
-  { type: "rib", name: "RIB", category: "bancaire" },
-];
-
-const optionalDocuments = [
-  { type: "statuts", name: "Statuts", category: "juridique" },
-  { type: "pv_ag", name: "PV Assemblée Générale", category: "juridique" },
-];
-
 export default function SousTraitantsPage() {
-  const [sousTraitants] = useState<SousTraitant[]>([
+  const router = useRouter();
+  const [sousTraitants, setSousTraitants] = useState<SousTraitant[]>([
     {
       id: "1",
       name: "Gardiennage Plus",
       siret: "12345678901234",
       address: "456 Avenue de la Garde, 69001 Lyon",
-      dirigeant: "Marie Martin",
+      dirigeant: {
+        nom: "Martin",
+        prenom: "Marie",
+        dateNaissance: "1985-03-20",
+        lieuNaissance: "Lyon, France",
+        nationalite: "Française",
+        adresse: "12 Rue de la Paix, 69002 Lyon",
+        email: "marie.martin@gardiennage-plus.fr",
+        telephone: "06 11 22 33 44",
+        fonction: "Gérante",
+        dateNomination: "2020-06-01",
+        numeroSecuriteSociale: "2 85 03 69 123 456 78",
+      },
       email: "contact@gardiennage-plus.fr",
       telephone: "04 78 12 34 56",
       capitalSocial: "25000",
@@ -114,7 +95,19 @@ export default function SousTraitantsPage() {
       name: "SecuriTech Solutions",
       siret: "98765432109876",
       address: "789 Rue de la Sécurité, 13001 Marseille",
-      dirigeant: "Pierre Dubois",
+      dirigeant: {
+        nom: "Dubois",
+        prenom: "Pierre",
+        dateNaissance: "1978-11-15",
+        lieuNaissance: "Marseille, France",
+        nationalite: "Française",
+        adresse: "98 Avenue du Prado, 13008 Marseille",
+        email: "pierre.dubois@securitech.fr",
+        telephone: "06 55 66 77 88",
+        fonction: "Président",
+        dateNomination: "2019-03-15",
+        numeroSecuriteSociale: "1 78 11 13 234 567 89",
+      },
       email: "info@securitech.fr",
       telephone: "04 91 23 45 67",
       capitalSocial: "75000",
@@ -128,7 +121,19 @@ export default function SousTraitantsPage() {
       name: "Protection Services",
       siret: "11223344556677",
       address: "321 Boulevard Sécurité, 33000 Bordeaux",
-      dirigeant: "Sophie Bernard",
+      dirigeant: {
+        nom: "Bernard",
+        prenom: "Sophie",
+        dateNaissance: "1982-07-10",
+        lieuNaissance: "Bordeaux, France",
+        nationalite: "Française",
+        adresse: "45 Cours de l'Intendance, 33000 Bordeaux",
+        email: "sophie.bernard@protection-services.fr",
+        telephone: "06 99 88 77 66",
+        fonction: "Directrice Générale",
+        dateNomination: "2021-01-10",
+        numeroSecuriteSociale: "2 82 07 33 345 678 90",
+      },
       email: "contact@protection-services.fr",
       telephone: "05 56 78 90 12",
       capitalSocial: "50000",
@@ -139,44 +144,6 @@ export default function SousTraitantsPage() {
     },
   ]);
 
-  const [documents] = useState<Document[]>([
-    {
-      id: "1",
-      sousTraitantId: "1",
-      name: "CNI Marie Martin",
-      type: "cni_dirigeant",
-      uploadDate: "2024-10-15",
-      expiryDate: "2029-10-15",
-      status: "valid",
-      required: true,
-    },
-    {
-      id: "2",
-      sousTraitantId: "1",
-      name: "Carte Pro CNAPS - Marie Martin",
-      type: "carte_pro_dirigeant",
-      uploadDate: "2024-08-10",
-      expiryDate: "2025-03-15",
-      status: "expiring",
-      required: true,
-    },
-    {
-      id: "3",
-      sousTraitantId: "2",
-      name: "Kbis SecuriTech",
-      type: "kbis",
-      uploadDate: "2024-11-01",
-      expiryDate: "2025-02-01",
-      status: "expiring",
-      required: true,
-    },
-  ]);
-
-  const [selectedSousTraitant, setSelectedSousTraitant] =
-    useState<SousTraitant | null>(null);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isNewSousTraitantModalOpen, setIsNewSousTraitantModalOpen] =
     useState(false);
   const [newSousTraitant, setNewSousTraitant] = useState<
@@ -185,16 +152,26 @@ export default function SousTraitantsPage() {
     name: "",
     siret: "",
     address: "",
-    dirigeant: "",
+    dirigeant: {
+      nom: "",
+      prenom: "",
+      dateNaissance: "",
+      lieuNaissance: "",
+      nationalite: "Française",
+      adresse: "",
+      email: "",
+      telephone: "",
+      fonction: "",
+      dateNomination: "",
+      numeroSecuriteSociale: "",
+    },
     email: "",
     telephone: "",
     capitalSocial: "",
     numeroAutorisation: "",
-    dateDebut: new Date().toISOString().split("T")[0],
+    dateDebut: "",
     statut: "actif",
-    prochainRenouvellement: new Date(Date() + 6 * 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    prochainRenouvellement: "",
   });
 
   const getStatusColor = (status: string) => {
@@ -224,9 +201,26 @@ export default function SousTraitantsPage() {
   };
 
   const handleRowClick = (sousTraitant: SousTraitant) => {
-    setSelectedSousTraitant(sousTraitant);
-    setSelectedDocuments([]);
-    setIsModalOpen(true);
+    router.push(`/dashboard/hr/entreprise/sous-traitants/${sousTraitant.id}`);
+  };
+
+  const handleView = (sousTraitant: SousTraitant) => {
+    router.push(`/dashboard/hr/entreprise/sous-traitants/${sousTraitant.id}`);
+  };
+
+  const handleEdit = (sousTraitant: SousTraitant) => {
+    router.push(
+      `/dashboard/hr/entreprise/sous-traitants/${sousTraitant.id}?edit=true`,
+    );
+  };
+
+  const handleDelete = (sousTraitant: SousTraitant) => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer ${sousTraitant.name} ?`)) {
+      setSousTraitants((prev) =>
+        prev.filter((st) => st.id !== sousTraitant.id),
+      );
+      console.log("Deleted:", sousTraitant.id);
+    }
   };
 
   const handleNewSousTraitantClick = () => {
@@ -234,16 +228,26 @@ export default function SousTraitantsPage() {
       name: "",
       siret: "",
       address: "",
-      dirigeant: "",
+      dirigeant: {
+        nom: "",
+        prenom: "",
+        dateNaissance: "",
+        lieuNaissance: "",
+        nationalite: "Française",
+        adresse: "",
+        email: "",
+        telephone: "",
+        fonction: "",
+        dateNomination: "",
+        numeroSecuriteSociale: "",
+      },
       email: "",
       telephone: "",
       capitalSocial: "",
       numeroAutorisation: "",
-      dateDebut: new Date().toISOString().split("T")[0],
+      dateDebut: "",
       statut: "actif",
-      prochainRenouvellement: new Date(
-        Date.now() + 6 * 30 * 24 * 60 * 60 * 1000,
-      )
+      prochainRenouvellement: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split("T")[0],
     });
@@ -257,56 +261,68 @@ export default function SousTraitantsPage() {
     setIsNewSousTraitantModalOpen(false);
   };
 
-  const getSousTraitantDocuments = (sousTraitantId: string) => {
-    return documents.filter((doc) => doc.sousTraitantId === sousTraitantId);
-  };
-
-  const handleExportPdf = (allDocuments: boolean) => {
-    if (!selectedSousTraitant) return;
-    const docs = getSousTraitantDocuments(selectedSousTraitant.id);
-    const docsToExport = allDocuments
-      ? docs
-      : docs.filter((doc) => doc.required);
-    console.log("Exporting documents:", docsToExport);
-  };
-
-  const handleDocumentUpload = (type: string) => {
-    console.log("Uploading document for type:", type);
-  };
-
-  const handleBulkDownload = () => {
-    if (!selectedSousTraitant) return;
-    const sousTraitantDocs = getSousTraitantDocuments(selectedSousTraitant.id);
-    const selectedDocs = sousTraitantDocs.filter((doc) =>
-      selectedDocuments.includes(doc.id),
-    );
-    console.log("Downloading documents:", selectedDocs);
-    alert(`Téléchargement de ${selectedDocs.length} document(s) en cours...`);
-  };
-
-  const toggleDocumentSelection = (docId: string) => {
-    setSelectedDocuments((prev) =>
-      prev.includes(docId)
-        ? prev.filter((id) => id !== docId)
-        : [...prev, docId],
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (!selectedSousTraitant) return;
-    const sousTraitantDocs = getSousTraitantDocuments(selectedSousTraitant.id);
-    if (selectedDocuments.length === sousTraitantDocs.length) {
-      setSelectedDocuments([]);
-    } else {
-      setSelectedDocuments(sousTraitantDocs.map((doc) => doc.id));
-    }
-  };
-
-  const quickLinks = [
-    { name: "URSSAF", url: "https://urssaf.fr", icon: ExternalLink },
-    { name: "Impôts", url: "https://impots.gouv.fr", icon: ExternalLink },
-    { name: "Infogreffe", url: "https://infogreffe.fr", icon: ExternalLink },
+  const sousTraitantColumns: ColumnDef<SousTraitant>[] = [
+    {
+      key: "name",
+      label: "Entreprise",
+      sortable: true,
+      render: (st) => (
+        <div>
+          <p className="font-semibold">{st.name}</p>
+          <p className="text-sm text-muted-foreground">{st.address}</p>
+        </div>
+      ),
+    },
+    {
+      key: "dirigeant",
+      label: "Dirigeant",
+      sortable: true,
+      sortValue: (st) => `${st.dirigeant.prenom} ${st.dirigeant.nom}`,
+      render: (st) => `${st.dirigeant.prenom} ${st.dirigeant.nom}`,
+    },
+    {
+      key: "siret",
+      label: "SIRET",
+      sortable: true,
+      render: (st) => <span className="font-mono text-sm">{st.siret}</span>,
+    },
+    {
+      key: "statut",
+      label: "Statut",
+      sortable: true,
+      render: (st) => (
+        <Badge className={getStatusColor(st.statut)}>
+          {getStatusText(st.statut)}
+        </Badge>
+      ),
+    },
+    {
+      key: "prochainRenouvellement",
+      label: "Prochain renouvellement",
+      sortable: true,
+      render: (st) =>
+        new Date(st.prochainRenouvellement).toLocaleDateString("fr-FR"),
+    },
+    {
+      key: "email",
+      label: "Contact",
+      render: (st) => (
+        <div className="text-sm">
+          <p>{st.email}</p>
+          <p className="text-muted-foreground">{st.telephone}</p>
+        </div>
+      ),
+    },
   ];
+
+  const totalSousTraitants = sousTraitants.length;
+  const actifCount = sousTraitants.filter((st) => st.statut === "actif").length;
+  const inactifCount = sousTraitants.filter(
+    (st) => st.statut === "inactif",
+  ).length;
+  const suspenduCount = sousTraitants.filter(
+    (st) => st.statut === "suspendu",
+  ).length;
 
   return (
     <div className="container mx-auto p-3 space-y-6">
@@ -326,6 +342,38 @@ export default function SousTraitantsPage() {
         </Button>
       </div>
 
+      {/* Statistics Overview */}
+      <InfoCardContainer>
+        <InfoCard
+          icon={Users}
+          title="Total"
+          value={totalSousTraitants}
+          subtext="sous-traitants"
+          color="blue"
+        />
+        <InfoCard
+          icon={CheckCircle2}
+          title="Actifs"
+          value={actifCount}
+          subtext={`${((actifCount / totalSousTraitants) * 100).toFixed(0)}% du total`}
+          color="green"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="Suspendus"
+          value={suspenduCount}
+          subtext={suspenduCount > 0 ? "nécessite attention" : "aucun"}
+          color="orange"
+        />
+        <InfoCard
+          icon={XCircle}
+          title="Inactifs"
+          value={inactifCount}
+          subtext="archivés"
+          color="red"
+        />
+      </InfoCardContainer>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -334,508 +382,49 @@ export default function SousTraitantsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Entreprise</TableHead>
-                <TableHead>Dirigeant</TableHead>
-                <TableHead>SIRET</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Prochain renouvellement</TableHead>
-                <TableHead>Contact</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sousTraitants.map((sousTraitant) => (
-                <TableRow
-                  key={sousTraitant.id}
-                  onClick={() => handleRowClick(sousTraitant)}
-                  className="cursor-pointer hover:bg-accent"
-                >
-                  <TableCell className="font-medium">
-                    <div>
-                      <p className="font-semibold">{sousTraitant.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {sousTraitant.address}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{sousTraitant.dirigeant}</TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {sousTraitant.siret}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(sousTraitant.statut)}>
-                      {getStatusText(sousTraitant.statut)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(
-                      sousTraitant.prochainRenouvellement,
-                    ).toLocaleDateString("fr-FR")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <p>{sousTraitant.email}</p>
-                      <p className="text-muted-foreground">
-                        {sousTraitant.telephone}
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            data={sousTraitants}
+            columns={sousTraitantColumns}
+            searchKeys={["name", "siret"]}
+            getSearchValue={(st) =>
+              `${st.name} ${st.siret} ${st.dirigeant.prenom} ${st.dirigeant.nom} ${st.email}`
+            }
+            searchPlaceholder="Rechercher un sous-traitant..."
+            itemsPerPage={10}
+            onRowClick={handleRowClick}
+            getRowId={(st) => st.id}
+            actions={(st) => (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleView(st)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Voir les détails
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEdit(st)}>
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Modifier
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => handleDelete(st)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          />
         </CardContent>
       </Card>
-
-      {/* Modal */}
-      <Modal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        type="form"
-        size="full"
-        title={selectedSousTraitant?.name || ""}
-        icon={<Building2 className="h-5 w-5" />}
-      >
-        {selectedSousTraitant && (
-          <Tabs defaultValue="info" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 rounded-xl">
-              <TabsTrigger value="info">Informations</TabsTrigger>
-              <TabsTrigger value="documents">Documents & Alertes</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="info">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      Informations Entreprise
-                    </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                      {isEditing ? "Annuler" : "Modifier"}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="name">Nom de l&apos;entreprise</Label>
-                        <Input
-                          id="name"
-                          value={selectedSousTraitant.name}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="siret">SIRET</Label>
-                        <Input
-                          id="siret"
-                          value={selectedSousTraitant.siret}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="address">Adresse</Label>
-                        <Input
-                          id="address"
-                          value={selectedSousTraitant.address}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="capitalSocial">
-                          Capital social (€)
-                        </Label>
-                        <Input
-                          id="capitalSocial"
-                          value={selectedSousTraitant.capitalSocial}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="numeroAutorisation">
-                          N° Autorisation CNAPS
-                        </Label>
-                        <Input
-                          id="numeroAutorisation"
-                          value={selectedSousTraitant.numeroAutorisation}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="dirigeant">Dirigeant</Label>
-                        <Input
-                          id="dirigeant"
-                          value={selectedSousTraitant.dirigeant}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={selectedSousTraitant.email}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="telephone">Téléphone</Label>
-                        <Input
-                          id="telephone"
-                          value={selectedSousTraitant.telephone}
-                          disabled={!isEditing}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {isEditing && (
-                    <div className="flex gap-2 mt-6">
-                      <Button>Sauvegarder</Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Annuler
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="documents">
-              <div className="space-y-6">
-                {/* Export Actions */}
-                <div className="flex gap-2 justify-end">
-                  {selectedDocuments.length > 0 && (
-                    <Button
-                      variant="default"
-                      onClick={handleBulkDownload}
-                      className="flex items-center gap-2"
-                    >
-                      <Archive className="h-4 w-4" />
-                      Télécharger ({selectedDocuments.length})
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExportPdf(false)}
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    Exporter PDF (Documents requis)
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleExportPdf(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    Exporter PDF (Tous documents)
-                  </Button>
-                </div>
-
-                {/* Documents expiring alerts */}
-                <Card className="border-l-4 border-l-orange-500">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-orange-700">
-                      <AlertTriangle className="h-5 w-5" />
-                      Documents à Renouveler Prochainement
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {getSousTraitantDocuments(selectedSousTraitant.id)
-                      .filter(
-                        (doc) =>
-                          doc.status === "expiring" || doc.status === "expired",
-                      )
-                      .map((doc) => (
-                        <div
-                          key={doc.id}
-                          className={`flex items-center justify-between py-2 px-3 border rounded-md ${
-                            doc.status === "expired"
-                              ? "bg-destructive/10 border-destructive/20"
-                              : "bg-warning/10 border-warning/20"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-2 h-2 rounded-full ${
-                                doc.status === "expired"
-                                  ? "bg-destructive"
-                                  : "bg-warning"
-                              }`}
-                            ></div>
-                            <div>
-                              <p className="font-medium text-sm">{doc.name}</p>
-                              <p className="text-xs">
-                                {doc.status === "expired"
-                                  ? "Expiré le"
-                                  : "Expire le"}{" "}
-                                {doc.expiryDate &&
-                                  new Date(doc.expiryDate).toLocaleDateString(
-                                    "fr-FR",
-                                  )}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                          >
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            Renouveler
-                          </Button>
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
-
-                {/* Quick Links */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-sm">
-                      <ExternalLink className="h-4 w-4" />
-                      Liens Rapides
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-2">
-                      {quickLinks.map((link) => (
-                        <Button
-                          key={link.name}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => window.open(link.url, "_blank")}
-                        >
-                          {link.name}
-                          <ExternalLink className="h-3 w-3 ml-1" />
-                        </Button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Required Documents */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <FileCheck className="h-5 w-5" />
-                        Documents Administratifs Requis
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="select-all"
-                          checked={
-                            selectedDocuments.length ===
-                            getSousTraitantDocuments(selectedSousTraitant.id)
-                              .length
-                          }
-                          onCheckedChange={toggleSelectAll}
-                        />
-                        <Label htmlFor="select-all" className="text-sm">
-                          Tout sélectionner
-                        </Label>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {requiredDocuments.map((docType) => {
-                        const existingDoc = getSousTraitantDocuments(
-                          selectedSousTraitant.id,
-                        ).find((d) => d.type === docType.type);
-
-                        const isExpiring =
-                          existingDoc?.expiryDate &&
-                          new Date(existingDoc.expiryDate) <=
-                            new Date(Date() + 30 * 24 * 60 * 60 * 1000);
-                        const isExpired =
-                          existingDoc?.expiryDate &&
-                          new Date(existingDoc.expiryDate) < new Date();
-
-                        return (
-                          <div
-                            key={docType.type}
-                            className={`flex items-center justify-between py-3 px-3 border rounded-md ${
-                              isExpired
-                                ? "border-destructive/20 bg-destructive/10"
-                                : isExpiring
-                                  ? "border-warning/20 bg-warning/10"
-                                  : "hover:bg-accent"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Checkbox
-                                checked={selectedDocuments.includes(
-                                  existingDoc?.id || "",
-                                )}
-                                onCheckedChange={() =>
-                                  toggleDocumentSelection(existingDoc?.id || "")
-                                }
-                                disabled={!existingDoc}
-                              />
-                              {isExpired || isExpiring ? (
-                                <div
-                                  className={`w-2 h-2 rounded-full ${
-                                    isExpired ? "bg-destructive" : "bg-warning"
-                                  }`}
-                                ></div>
-                              ) : (
-                                <FileText className="h-4 w-4 text-muted-foreground" />
-                              )}
-                              <div>
-                                <p className="font-medium text-sm">
-                                  {docType.name}
-                                </p>
-                                {existingDoc && (
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <Badge
-                                      variant={
-                                        isExpired
-                                          ? "destructive"
-                                          : isExpiring
-                                            ? "secondary"
-                                            : "default"
-                                      }
-                                      className="text-xs h-5"
-                                    >
-                                      {isExpired
-                                        ? "Expiré"
-                                        : isExpiring
-                                          ? "Expire bientôt"
-                                          : "Valide"}
-                                    </Badge>
-                                    {existingDoc.expiryDate && (
-                                      <span className="text-xs text-muted-foreground">
-                                        {new Date(
-                                          existingDoc.expiryDate,
-                                        ).toLocaleDateString("fr-FR")}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              {existingDoc && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0"
-                                >
-                                  <Download className="h-3 w-3" />
-                                </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  handleDocumentUpload(docType.type)
-                                }
-                              >
-                                <Upload className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Optional Documents */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Documents Juridiques (Optionnels)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {optionalDocuments.map((docType) => {
-                        const existingDoc = getSousTraitantDocuments(
-                          selectedSousTraitant.id,
-                        ).find((d) => d.type === docType.type);
-                        return (
-                          <div
-                            key={docType.type}
-                            className="flex items-center justify-between py-3 px-3 border rounded-md hover:bg-accent"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium text-sm">
-                                  {docType.name}
-                                </p>
-                                {existingDoc && (
-                                  <span className="text-xs text-muted-foreground">
-                                    Uploadé le{" "}
-                                    {new Date(
-                                      existingDoc.uploadDate,
-                                    ).toLocaleDateString("fr-FR")}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              {existingDoc && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 p-0"
-                                  >
-                                    <Download className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-xs"
-                                  >
-                                    Export PDF
-                                  </Button>
-                                </>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  handleDocumentUpload(docType.type)
-                                }
-                              >
-                                <Upload className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        )}
-      </Modal>
 
       {/* New Sous-traitant Modal */}
       <Modal
@@ -852,7 +441,8 @@ export default function SousTraitantsPage() {
             disabled:
               !newSousTraitant.name ||
               !newSousTraitant.siret ||
-              !newSousTraitant.dirigeant,
+              !newSousTraitant.dirigeant.nom ||
+              !newSousTraitant.dirigeant.prenom,
           },
           secondary: {
             label: "Annuler",
@@ -862,6 +452,9 @@ export default function SousTraitantsPage() {
         }}
       >
         <div className="space-y-6">
+          <h3 className="text-lg font-medium">
+            Informations de l&apos;entreprise
+          </h3>
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -893,8 +486,10 @@ export default function SousTraitantsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="new-address">Adresse</Label>
-                <Input
+                <Label htmlFor="new-address">
+                  Adresse de l&apos;entreprise
+                </Label>
+                <Textarea
                   id="new-address"
                   value={newSousTraitant.address}
                   onChange={(e) =>
@@ -906,6 +501,8 @@ export default function SousTraitantsPage() {
                   placeholder="Ex: 456 Avenue de la Garde, 69001 Lyon"
                 />
               </div>
+            </div>
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="new-capitalSocial">Capital social (€)</Label>
                 <Input
@@ -919,22 +516,6 @@ export default function SousTraitantsPage() {
                     }))
                   }
                   placeholder="Ex: 25000"
-                />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="new-dirigeant">Dirigeant *</Label>
-                <Input
-                  id="new-dirigeant"
-                  value={newSousTraitant.dirigeant}
-                  onChange={(e) =>
-                    setNewSousTraitant((prev) => ({
-                      ...prev,
-                      dirigeant: e.target.value,
-                    }))
-                  }
-                  placeholder="Ex: Marie Martin"
                 />
               </div>
               <div>
@@ -954,7 +535,7 @@ export default function SousTraitantsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="new-email">Email</Label>
+                <Label htmlFor="new-email">Email de l&apos;entreprise</Label>
                 <Input
                   id="new-email"
                   type="email"
@@ -969,7 +550,9 @@ export default function SousTraitantsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="new-telephone">Téléphone</Label>
+                <Label htmlFor="new-telephone">
+                  Téléphone de l&apos;entreprise
+                </Label>
                 <Input
                   id="new-telephone"
                   value={newSousTraitant.telephone}
@@ -984,36 +567,255 @@ export default function SousTraitantsPage() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="new-dateDebut">Date de début de contrat</Label>
-              <Input
-                id="new-dateDebut"
-                type="date"
-                value={newSousTraitant.dateDebut}
-                onChange={(e) =>
-                  setNewSousTraitant((prev) => ({
-                    ...prev,
-                    dateDebut: e.target.value,
-                  }))
-                }
-              />
+
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Informations du dirigeant
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="new-dirigeant-nom">Nom *</Label>
+                  <Input
+                    id="new-dirigeant-nom"
+                    value={newSousTraitant.dirigeant.nom}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: { ...prev.dirigeant, nom: e.target.value },
+                      }))
+                    }
+                    placeholder="Ex: Martin"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-dirigeant-prenom">Prénom *</Label>
+                  <Input
+                    id="new-dirigeant-prenom"
+                    value={newSousTraitant.dirigeant.prenom}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          prenom: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: Marie"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="new-dirigeant-fonction">Fonction</Label>
+                  <Input
+                    id="new-dirigeant-fonction"
+                    value={newSousTraitant.dirigeant.fonction}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          fonction: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: Gérante"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-dirigeant-date-nomination">
+                    Date de nomination
+                  </Label>
+                  <Input
+                    id="new-dirigeant-date-nomination"
+                    type="date"
+                    value={newSousTraitant.dirigeant.dateNomination}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          dateNomination: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="new-dirigeant-date-naissance">
+                    Date de naissance
+                  </Label>
+                  <Input
+                    id="new-dirigeant-date-naissance"
+                    type="date"
+                    value={newSousTraitant.dirigeant.dateNaissance}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          dateNaissance: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-dirigeant-lieu-naissance">
+                    Lieu de naissance
+                  </Label>
+                  <Input
+                    id="new-dirigeant-lieu-naissance"
+                    value={newSousTraitant.dirigeant.lieuNaissance}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          lieuNaissance: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: Lyon, France"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="new-dirigeant-nationalite">Nationalité</Label>
+                  <Input
+                    id="new-dirigeant-nationalite"
+                    value={newSousTraitant.dirigeant.nationalite}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          nationalite: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: Française"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-dirigeant-secu">
+                    Numéro de sécurité sociale
+                  </Label>
+                  <Input
+                    id="new-dirigeant-secu"
+                    value={newSousTraitant.dirigeant.numeroSecuriteSociale}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          numeroSecuriteSociale: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: 2 85 03 69 123 456 78"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="new-dirigeant-adresse">
+                  Adresse personnelle
+                </Label>
+                <Textarea
+                  id="new-dirigeant-adresse"
+                  value={newSousTraitant.dirigeant.adresse}
+                  onChange={(e) =>
+                    setNewSousTraitant((prev) => ({
+                      ...prev,
+                      dirigeant: { ...prev.dirigeant, adresse: e.target.value },
+                    }))
+                  }
+                  placeholder="Ex: 12 Rue de la Paix, 69002 Lyon"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="new-dirigeant-email">Email personnel</Label>
+                  <Input
+                    id="new-dirigeant-email"
+                    type="email"
+                    value={newSousTraitant.dirigeant.email}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: { ...prev.dirigeant, email: e.target.value },
+                      }))
+                    }
+                    placeholder="Ex: marie.martin@email.fr"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="new-dirigeant-telephone">
+                    Téléphone personnel
+                  </Label>
+                  <Input
+                    id="new-dirigeant-telephone"
+                    value={newSousTraitant.dirigeant.telephone}
+                    onChange={(e) =>
+                      setNewSousTraitant((prev) => ({
+                        ...prev,
+                        dirigeant: {
+                          ...prev.dirigeant,
+                          telephone: e.target.value,
+                        },
+                      }))
+                    }
+                    placeholder="Ex: 06 11 22 33 44"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="new-prochainRenouvellement">
-                Prochain renouvellement
-              </Label>
-              <Input
-                id="new-prochainRenouvellement"
-                type="date"
-                value={newSousTraitant.prochainRenouvellement}
-                onChange={(e) =>
-                  setNewSousTraitant((prev) => ({
-                    ...prev,
-                    prochainRenouvellement: e.target.value,
-                  }))
-                }
-              />
+          </div>
+
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium mb-4">Dates de contrat</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="new-dateDebut">Date de début de contrat</Label>
+                <Input
+                  id="new-dateDebut"
+                  type="date"
+                  value={newSousTraitant.dateDebut}
+                  onChange={(e) =>
+                    setNewSousTraitant((prev) => ({
+                      ...prev,
+                      dateDebut: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-prochainRenouvellement">
+                  Prochain renouvellement
+                </Label>
+                <Input
+                  id="new-prochainRenouvellement"
+                  type="date"
+                  value={newSousTraitant.prochainRenouvellement}
+                  onChange={(e) =>
+                    setNewSousTraitant((prev) => ({
+                      ...prev,
+                      prochainRenouvellement: e.target.value,
+                    }))
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,1022 @@
+"use client";
+
+import { useState, use } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
+import { Textarea } from "@/components/ui/textarea";
+import { DataTable, ColumnDef } from "@/components/ui/DataTable";
+import { Modal } from "@/components/ui/modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Building2,
+  FileText,
+  Download,
+  AlertTriangle,
+  FileCheck,
+  Edit3,
+  Save,
+  X,
+  Upload,
+  ArrowLeft,
+  Trash2,
+  Calendar,
+  Mail,
+  Phone,
+  CreditCard,
+  Euro,
+} from "lucide-react";
+
+interface DirigeantInfo {
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  nationalite: string;
+  adresse: string;
+  email: string;
+  telephone: string;
+  fonction: string;
+  dateNomination: string;
+  numeroSecuriteSociale: string;
+}
+
+interface SousTraitant {
+  id: string;
+  name: string;
+  siret: string;
+  address: string;
+  dirigeant: DirigeantInfo;
+  email: string;
+  telephone: string;
+  capitalSocial: string;
+  numeroAutorisation: string;
+  dateDebut: string;
+  statut: "actif" | "inactif" | "suspendu";
+  prochainRenouvellement: string;
+}
+
+interface Document {
+  id: string;
+  sousTraitantId: string;
+  name: string;
+  type: string;
+  uploadDate: string;
+  expiryDate?: string;
+  status: "valid" | "expiring" | "expired";
+  required: boolean;
+}
+
+const requiredDocuments = [
+  { type: "cni_dirigeant", name: "CNI du dirigeant", category: "dirigeant" },
+  {
+    type: "carte_pro_dirigeant",
+    name: "Carte pro CNAPS du dirigeant",
+    category: "dirigeant",
+  },
+  {
+    type: "carte_pro_entreprise",
+    name: "Carte pro CNAPS de l'entreprise",
+    category: "entreprise",
+  },
+  { type: "kbis", name: "Kbis", category: "entreprise" },
+  {
+    type: "urssaf",
+    name: "Attestation de vigilance URSSAF",
+    category: "attestations",
+  },
+  {
+    type: "fiscale",
+    name: "Attestation de régularité Fiscale",
+    category: "attestations",
+  },
+  {
+    type: "assurance_rc",
+    name: "Attestation d'assurance RC PRO",
+    category: "attestations",
+  },
+  { type: "rib", name: "RIB", category: "bancaire" },
+];
+
+const optionalDocuments = [
+  { type: "statuts", name: "Statuts", category: "juridique" },
+  { type: "pv_ag", name: "PV Assemblée Générale", category: "juridique" },
+];
+
+// Mock data - in production this would come from an API
+const mockSousTraitants: SousTraitant[] = [
+  {
+    id: "1",
+    name: "Gardiennage Plus",
+    siret: "12345678901234",
+    address: "456 Avenue de la Garde, 69001 Lyon",
+    dirigeant: {
+      nom: "Martin",
+      prenom: "Marie",
+      dateNaissance: "1985-03-20",
+      lieuNaissance: "Lyon, France",
+      nationalite: "Française",
+      adresse: "12 Rue de la Paix, 69002 Lyon",
+      email: "marie.martin@gardiennage-plus.fr",
+      telephone: "06 11 22 33 44",
+      fonction: "Gérante",
+      dateNomination: "2020-06-01",
+      numeroSecuriteSociale: "2 85 03 69 123 456 78",
+    },
+    email: "contact@gardiennage-plus.fr",
+    telephone: "04 78 12 34 56",
+    capitalSocial: "25000",
+    numeroAutorisation: "AUT-654321-CNAPS",
+    dateDebut: "2023-01-15",
+    statut: "actif",
+    prochainRenouvellement: "2025-06-15",
+  },
+  {
+    id: "2",
+    name: "SecuriTech Solutions",
+    siret: "98765432109876",
+    address: "789 Rue de la Sécurité, 13001 Marseille",
+    dirigeant: {
+      nom: "Dubois",
+      prenom: "Pierre",
+      dateNaissance: "1978-11-15",
+      lieuNaissance: "Marseille, France",
+      nationalite: "Française",
+      adresse: "98 Avenue du Prado, 13008 Marseille",
+      email: "pierre.dubois@securitech.fr",
+      telephone: "06 55 66 77 88",
+      fonction: "Président",
+      dateNomination: "2019-03-15",
+      numeroSecuriteSociale: "1 78 11 13 234 567 89",
+    },
+    email: "info@securitech.fr",
+    telephone: "04 91 23 45 67",
+    capitalSocial: "75000",
+    numeroAutorisation: "AUT-987654-CNAPS",
+    dateDebut: "2022-08-20",
+    statut: "actif",
+    prochainRenouvellement: "2025-03-20",
+  },
+  {
+    id: "3",
+    name: "Protection Services",
+    siret: "11223344556677",
+    address: "321 Boulevard Sécurité, 33000 Bordeaux",
+    dirigeant: {
+      nom: "Bernard",
+      prenom: "Sophie",
+      dateNaissance: "1982-07-10",
+      lieuNaissance: "Bordeaux, France",
+      nationalite: "Française",
+      adresse: "45 Cours de l'Intendance, 33000 Bordeaux",
+      email: "sophie.bernard@protection-services.fr",
+      telephone: "06 99 88 77 66",
+      fonction: "Directrice Générale",
+      dateNomination: "2021-01-10",
+      numeroSecuriteSociale: "2 82 07 33 345 678 90",
+    },
+    email: "contact@protection-services.fr",
+    telephone: "05 56 78 90 12",
+    capitalSocial: "50000",
+    numeroAutorisation: "AUT-112233-CNAPS",
+    dateDebut: "2023-03-10",
+    statut: "suspendu",
+    prochainRenouvellement: "2025-01-10",
+  },
+];
+
+const mockDocuments: Document[] = [
+  {
+    id: "1",
+    sousTraitantId: "1",
+    name: "CNI Marie Martin",
+    type: "cni_dirigeant",
+    uploadDate: "2024-10-15",
+    expiryDate: "2029-10-15",
+    status: "valid",
+    required: true,
+  },
+  {
+    id: "2",
+    sousTraitantId: "1",
+    name: "Carte Pro Marie Martin",
+    type: "carte_pro_dirigeant",
+    uploadDate: "2024-09-20",
+    expiryDate: "2025-02-20",
+    status: "expiring",
+    required: true,
+  },
+  {
+    id: "3",
+    sousTraitantId: "1",
+    name: "Attestation URSSAF",
+    type: "urssaf",
+    uploadDate: "2024-11-01",
+    expiryDate: "2025-02-01",
+    status: "valid",
+    required: true,
+  },
+];
+
+export default function SousTraitantDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [sousTraitant, setSousTraitant] = useState<SousTraitant | null>(
+    mockSousTraitants.find((st) => st.id === id) || null,
+  );
+  const [documents] = useState<Document[]>(
+    mockDocuments.filter((doc) => doc.sousTraitantId === id),
+  );
+  const [isEditing, setIsEditing] = useState(
+    searchParams.get("edit") === "true",
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+
+  if (!sousTraitant) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              Sous-traitant non trouvé
+            </p>
+            <div className="flex justify-center mt-4">
+              <Button onClick={() => router.back()}>Retour</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "actif":
+        return "bg-success text-success-foreground";
+      case "inactif":
+        return "bg-neutral text-neutral-foreground";
+      case "suspendu":
+        return "bg-destructive text-destructive-foreground";
+      default:
+        return "bg-neutral text-neutral-foreground";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "actif":
+        return "Actif";
+      case "inactif":
+        return "Inactif";
+      case "suspendu":
+        return "Suspendu";
+      default:
+        return "Inconnu";
+    }
+  };
+
+  const handleSave = () => {
+    // In production, save to API
+    console.log("Saving:", sousTraitant);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    // Reset changes
+    const original = mockSousTraitants.find((st) => st.id === id);
+    if (original) {
+      setSousTraitant(original);
+    }
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    // In production, delete via API
+    console.log("Deleting:", id);
+    router.push("/dashboard/hr/entreprise/sous-traitants");
+  };
+
+  const handleDocumentUpload = (type: string) => {
+    console.log("Upload document:", type);
+  };
+
+  const handleBulkDownload = () => {
+    console.log("Downloading documents:", selectedDocuments);
+  };
+
+  const documentColumns: ColumnDef<Document>[] = [
+    {
+      key: "name",
+      label: "Document",
+      sortable: true,
+      render: (doc) => (
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{doc.name}</span>
+        </div>
+      ),
+    },
+    {
+      key: "type",
+      label: "Type",
+      sortable: true,
+      render: (doc) => {
+        const docType = [...requiredDocuments, ...optionalDocuments].find(
+          (d) => d.type === doc.type,
+        );
+        return docType?.name || doc.type;
+      },
+    },
+    {
+      key: "uploadDate",
+      label: "Date d'upload",
+      sortable: true,
+      render: (doc) => new Date(doc.uploadDate).toLocaleDateString("fr-FR"),
+    },
+    {
+      key: "expiryDate",
+      label: "Date d'expiration",
+      sortable: true,
+      render: (doc) =>
+        doc.expiryDate
+          ? new Date(doc.expiryDate).toLocaleDateString("fr-FR")
+          : "N/A",
+    },
+    {
+      key: "status",
+      label: "Statut",
+      sortable: true,
+      render: (doc) => {
+        const isExpired =
+          doc.expiryDate && new Date(doc.expiryDate) < new Date();
+        const isExpiring =
+          doc.expiryDate &&
+          new Date(doc.expiryDate) <=
+            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        return (
+          <Badge
+            variant={
+              isExpired ? "destructive" : isExpiring ? "secondary" : "default"
+            }
+          >
+            {isExpired ? "Expiré" : isExpiring ? "Expire bientôt" : "Valide"}
+          </Badge>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{sousTraitant.name}</h1>
+            <p className="text-muted-foreground flex items-center gap-2 mt-1">
+              <Badge className={getStatusColor(sousTraitant.statut)}>
+                {getStatusText(sousTraitant.statut)}
+              </Badge>
+              <span className="text-sm">SIRET: {sousTraitant.siret}</span>
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <Button variant="outline" onClick={handleCancel}>
+                <X className="h-4 w-4 mr-2" />
+                Annuler
+              </Button>
+              <Button onClick={handleSave}>
+                <Save className="h-4 w-4 mr-2" />
+                Sauvegarder
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteModalOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer
+              </Button>
+              <Button onClick={() => setIsEditing(true)}>
+                <Edit3 className="h-4 w-4 mr-2" />
+                Modifier
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Tabs defaultValue="info" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 rounded-xl">
+          <TabsTrigger value="info">Informations</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="info" className="space-y-6">
+          {/* Quick Stats */}
+          <InfoCardContainer>
+            <InfoCard
+              icon={Calendar}
+              title="Date de début"
+              value={new Date(sousTraitant.dateDebut).toLocaleDateString(
+                "fr-FR",
+              )}
+              color="blue"
+            />
+            <InfoCard
+              icon={Calendar}
+              title="Renouvellement"
+              value={new Date(
+                sousTraitant.prochainRenouvellement,
+              ).toLocaleDateString("fr-FR")}
+              color="purple"
+            />
+            <InfoCard
+              icon={Euro}
+              title="Capital"
+              value={`${Number(sousTraitant.capitalSocial).toLocaleString()} €`}
+              color="green"
+            />
+            <InfoCard
+              icon={FileCheck}
+              title="Documents"
+              value={`${documents.filter((d) => d.status === "valid").length}/${documents.length}`}
+              subtext="valides"
+              color="orange"
+            />
+          </InfoCardContainer>
+
+          {/* Company Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Informations de l&apos;entreprise
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nom de l&apos;entreprise</Label>
+                  <Input
+                    id="name"
+                    value={sousTraitant.name}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({ ...sousTraitant, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="siret">SIRET</Label>
+                  <Input
+                    id="siret"
+                    value={sousTraitant.siret}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        siret: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Textarea
+                  id="address"
+                  value={sousTraitant.address}
+                  disabled={!isEditing}
+                  onChange={(e) =>
+                    setSousTraitant({
+                      ...sousTraitant,
+                      address: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="capital" className="flex items-center gap-2">
+                    <Euro className="h-4 w-4" />
+                    Capital Social (€)
+                  </Label>
+                  <Input
+                    id="capital"
+                    value={sousTraitant.capitalSocial}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        capitalSocial: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="autorisation"
+                    className="flex items-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    N° Autorisation CNAPS
+                  </Label>
+                  <Input
+                    id="autorisation"
+                    value={sousTraitant.numeroAutorisation}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        numeroAutorisation: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email de l&apos;entreprise
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={sousTraitant.email}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="telephone"
+                    className="flex items-center gap-2"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Téléphone de l&apos;entreprise
+                  </Label>
+                  <Input
+                    id="telephone"
+                    value={sousTraitant.telephone}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        telephone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="statut">Statut</Label>
+                  <Select
+                    value={sousTraitant.statut}
+                    onValueChange={(value) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        statut: value as SousTraitant["statut"],
+                      })
+                    }
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger id="statut">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="actif">Actif</SelectItem>
+                      <SelectItem value="inactif">Inactif</SelectItem>
+                      <SelectItem value="suspendu">Suspendu</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateDebut">Date de début</Label>
+                  <Input
+                    id="dateDebut"
+                    type="date"
+                    value={sousTraitant.dateDebut}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dateDebut: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="renouvellement">
+                    Prochain renouvellement
+                  </Label>
+                  <Input
+                    id="renouvellement"
+                    type="date"
+                    value={sousTraitant.prochainRenouvellement}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        prochainRenouvellement: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Dirigeant Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Informations du dirigeant
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-nom">Nom</Label>
+                  <Input
+                    id="dirigeant-nom"
+                    value={sousTraitant.dirigeant.nom}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          nom: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-prenom">Prénom</Label>
+                  <Input
+                    id="dirigeant-prenom"
+                    value={sousTraitant.dirigeant.prenom}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          prenom: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-fonction">Fonction</Label>
+                  <Input
+                    id="dirigeant-fonction"
+                    value={sousTraitant.dirigeant.fonction}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          fonction: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-date-nomination">
+                    Date de nomination
+                  </Label>
+                  <Input
+                    id="dirigeant-date-nomination"
+                    type="date"
+                    value={sousTraitant.dirigeant.dateNomination}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          dateNomination: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-date-naissance">
+                    Date de naissance
+                  </Label>
+                  <Input
+                    id="dirigeant-date-naissance"
+                    type="date"
+                    value={sousTraitant.dirigeant.dateNaissance}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          dateNaissance: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-lieu-naissance">
+                    Lieu de naissance
+                  </Label>
+                  <Input
+                    id="dirigeant-lieu-naissance"
+                    value={sousTraitant.dirigeant.lieuNaissance}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          lieuNaissance: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-nationalite">Nationalité</Label>
+                  <Input
+                    id="dirigeant-nationalite"
+                    value={sousTraitant.dirigeant.nationalite}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          nationalite: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-secu">
+                    Numéro de sécurité sociale
+                  </Label>
+                  <Input
+                    id="dirigeant-secu"
+                    value={sousTraitant.dirigeant.numeroSecuriteSociale}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          numeroSecuriteSociale: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dirigeant-adresse">Adresse personnelle</Label>
+                <Textarea
+                  id="dirigeant-adresse"
+                  value={sousTraitant.dirigeant.adresse}
+                  disabled={!isEditing}
+                  onChange={(e) =>
+                    setSousTraitant({
+                      ...sousTraitant,
+                      dirigeant: {
+                        ...sousTraitant.dirigeant,
+                        adresse: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-email">Email personnel</Label>
+                  <Input
+                    id="dirigeant-email"
+                    type="email"
+                    value={sousTraitant.dirigeant.email}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          email: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dirigeant-telephone">
+                    Téléphone personnel
+                  </Label>
+                  <Input
+                    id="dirigeant-telephone"
+                    value={sousTraitant.dirigeant.telephone}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setSousTraitant({
+                        ...sousTraitant,
+                        dirigeant: {
+                          ...sousTraitant.dirigeant,
+                          telephone: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-6">
+          {/* Document Actions */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Documents
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkDownload}
+                    disabled={selectedDocuments.length === 0}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Télécharger sélection
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                data={documents}
+                columns={documentColumns}
+                searchKeys={["name", "type"]}
+                searchPlaceholder="Rechercher un document..."
+                itemsPerPage={10}
+                selectable
+                onSelectionChange={(selected) =>
+                  setSelectedDocuments(selected.map((d) => d.id))
+                }
+                getRowId={(doc) => doc.id}
+                actions={(doc) => (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Download className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleDocumentUpload(doc.type)}
+                    >
+                      <Upload className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Missing Documents Alert */}
+          {requiredDocuments.length >
+            documents.filter((d) => d.required).length && (
+            <Card className="border-destructive/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-5 w-5" />
+                  Documents manquants
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {requiredDocuments
+                    .filter(
+                      (docType) =>
+                        !documents.find((d) => d.type === docType.type),
+                    )
+                    .map((docType) => (
+                      <div
+                        key={docType.type}
+                        className="flex items-center justify-between py-2 px-3 border rounded-md"
+                      >
+                        <span className="text-sm font-medium">
+                          {docType.name}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDocumentUpload(docType.type)}
+                        >
+                          <Upload className="h-3 w-3 mr-2" />
+                          Uploader
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="warning"
+        title="Supprimer le sous-traitant"
+        description={`Êtes-vous sûr de vouloir supprimer ${sousTraitant.name} ? Cette action est irréversible.`}
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDelete,
+            variant: "destructive",
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p>Les éléments suivants seront également supprimés :</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>{documents.length} documents associés</li>
+            <li>Historique des modifications</li>
+            <li>Toutes les données liées au sous-traitant</li>
+          </ul>
+        </div>
+      </Modal>
+    </div>
+  );
+}

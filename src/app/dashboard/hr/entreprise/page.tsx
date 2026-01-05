@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   Building2,
   FileText,
@@ -21,6 +22,8 @@ import {
   FileCheck,
   Edit3,
   Archive,
+  CheckCircle2,
+  Calendar,
 } from "lucide-react";
 
 interface Document {
@@ -33,13 +36,27 @@ interface Document {
   required: boolean;
 }
 
+interface DirigeantInfo {
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  nationalite: string;
+  adresse: string;
+  email: string;
+  telephone: string;
+  fonction: string;
+  dateNomination: string;
+  numeroSecuriteSociale: string;
+}
+
 interface CompanyInfo {
   name: string;
   siret: string;
   address: string;
   capitalSocial: string;
   numeroAutorisation: string;
-  dirigeant: string;
+  dirigeant: DirigeantInfo;
   email: string;
   telephone: string;
 }
@@ -87,7 +104,19 @@ export default function InformationEntreprisePage() {
     address: "123 Rue de la Sécurité, 75001 Paris",
     capitalSocial: "50000",
     numeroAutorisation: "AUT-123456-CNAPS",
-    dirigeant: "Jean Dupont",
+    dirigeant: {
+      nom: "Dupont",
+      prenom: "Jean",
+      dateNaissance: "1980-05-15",
+      lieuNaissance: "Paris, France",
+      nationalite: "Française",
+      adresse: "45 Avenue des Champs, 75008 Paris",
+      email: "jean.dupont@safyr-security.fr",
+      telephone: "06 12 34 56 78",
+      fonction: "Gérant",
+      dateNomination: "2020-01-01",
+      numeroSecuriteSociale: "1 80 05 75 123 456 78",
+    },
     email: "contact@safyr-security.fr",
     telephone: "01 23 45 67 89",
   });
@@ -182,6 +211,11 @@ export default function InformationEntreprisePage() {
     { name: "Infogreffe", url: "https://infogreffe.fr", icon: ExternalLink },
   ];
 
+  const validDocuments = documents.filter((d) => d.status === "valid").length;
+  const expiringDocuments = documents.filter(
+    (d) => d.status === "expiring",
+  ).length;
+
   return (
     <div className="container mx-auto p-3 space-y-6">
       <div className="flex items-center justify-between">
@@ -194,6 +228,38 @@ export default function InformationEntreprisePage() {
         </div>
         <div className="flex gap-2"></div>
       </div>
+
+      {/* Statistics Overview */}
+      <InfoCardContainer>
+        <InfoCard
+          icon={Building2}
+          title="Entreprise"
+          value={companyInfo.name}
+          subtext={`SIRET: ${companyInfo.siret}`}
+          color="blue"
+        />
+        <InfoCard
+          icon={CheckCircle2}
+          title="Documents valides"
+          value={validDocuments}
+          subtext={`sur ${documents.length} documents`}
+          color="green"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="Expire bientôt"
+          value={expiringDocuments}
+          subtext={expiringDocuments > 0 ? "nécessite renouvellement" : "aucun"}
+          color="orange"
+        />
+        <InfoCard
+          icon={Calendar}
+          title="Capital social"
+          value={`${Number(companyInfo.capitalSocial).toLocaleString()} €`}
+          subtext="capital déclaré"
+          color="purple"
+        />
+      </InfoCardContainer>
 
       <Tabs defaultValue="info" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 rounded-xl">
@@ -300,21 +366,7 @@ export default function InformationEntreprisePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dirigeant">Dirigeant</Label>
-                  <Input
-                    id="dirigeant"
-                    value={companyInfo.dirigeant}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({
-                        ...companyInfo,
-                        dirigeant: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email de l&apos;entreprise</Label>
                   <Input
                     id="email"
                     value={companyInfo.email}
@@ -324,21 +376,250 @@ export default function InformationEntreprisePage() {
                     }
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telephone">
+                    Téléphone de l&apos;entreprise
+                  </Label>
+                  <Input
+                    id="telephone"
+                    value={companyInfo.telephone}
+                    disabled={!isEditing}
+                    onChange={(e) =>
+                      setCompanyInfo({
+                        ...companyInfo,
+                        telephone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="telephone">Téléphone</Label>
-                <Input
-                  id="telephone"
-                  value={companyInfo.telephone}
-                  disabled={!isEditing}
-                  onChange={(e) =>
-                    setCompanyInfo({
-                      ...companyInfo,
-                      telephone: e.target.value,
-                    })
-                  }
-                />
+              {/* Dirigeant Section */}
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Informations du dirigeant
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-nom">Nom</Label>
+                      <Input
+                        id="dirigeant-nom"
+                        value={companyInfo.dirigeant.nom}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              nom: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-prenom">Prénom</Label>
+                      <Input
+                        id="dirigeant-prenom"
+                        value={companyInfo.dirigeant.prenom}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              prenom: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-fonction">Fonction</Label>
+                      <Input
+                        id="dirigeant-fonction"
+                        value={companyInfo.dirigeant.fonction}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              fonction: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-date-nomination">
+                        Date de nomination
+                      </Label>
+                      <Input
+                        id="dirigeant-date-nomination"
+                        type="date"
+                        value={companyInfo.dirigeant.dateNomination}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              dateNomination: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-date-naissance">
+                        Date de naissance
+                      </Label>
+                      <Input
+                        id="dirigeant-date-naissance"
+                        type="date"
+                        value={companyInfo.dirigeant.dateNaissance}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              dateNaissance: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-lieu-naissance">
+                        Lieu de naissance
+                      </Label>
+                      <Input
+                        id="dirigeant-lieu-naissance"
+                        value={companyInfo.dirigeant.lieuNaissance}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              lieuNaissance: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-nationalite">Nationalité</Label>
+                      <Input
+                        id="dirigeant-nationalite"
+                        value={companyInfo.dirigeant.nationalite}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              nationalite: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-secu">
+                        Numéro de sécurité sociale
+                      </Label>
+                      <Input
+                        id="dirigeant-secu"
+                        value={companyInfo.dirigeant.numeroSecuriteSociale}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              numeroSecuriteSociale: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="dirigeant-adresse">
+                      Adresse personnelle
+                    </Label>
+                    <Textarea
+                      id="dirigeant-adresse"
+                      value={companyInfo.dirigeant.adresse}
+                      disabled={!isEditing}
+                      onChange={(e) =>
+                        setCompanyInfo({
+                          ...companyInfo,
+                          dirigeant: {
+                            ...companyInfo.dirigeant,
+                            adresse: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-email">Email personnel</Label>
+                      <Input
+                        id="dirigeant-email"
+                        type="email"
+                        value={companyInfo.dirigeant.email}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              email: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dirigeant-telephone">
+                        Téléphone personnel
+                      </Label>
+                      <Input
+                        id="dirigeant-telephone"
+                        value={companyInfo.dirigeant.telephone}
+                        disabled={!isEditing}
+                        onChange={(e) =>
+                          setCompanyInfo({
+                            ...companyInfo,
+                            dirigeant: {
+                              ...companyInfo.dirigeant,
+                              telephone: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {isEditing && (

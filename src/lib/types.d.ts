@@ -68,6 +68,20 @@ export interface SubcontractorContract {
   status: "active" | "expired" | "terminated";
 }
 
+export interface DirigeantInfo {
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  lieuNaissance: string;
+  nationalite: string;
+  adresse: string;
+  email: string;
+  telephone: string;
+  fonction: string;
+  dateNomination: string;
+  numeroSecuriteSociale: string;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -80,6 +94,7 @@ export interface Client {
   email?: string;
   siret?: string;
   sector?: string;
+  dirigeant?: DirigeantInfo;
   contracts: ClientContract[];
   gifts: ClientGift[];
 }
