@@ -49,7 +49,6 @@ const navItems: NavItem[] = [
     icon: Users,
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
-      { label: "DUERP", href: "/dashboard/hr/employees/duerp" },
       {
         label: "Archives Mails",
         href: "/dashboard/hr/employees/archives-mails",
@@ -203,22 +202,12 @@ const navItems: NavItem[] = [
   {
     label: "Médecine",
     icon: Stethoscope,
-    children: [
-      {
-        label: "Médecine du travail",
-        href: "/dashboard/hr/occupational-medicine",
-      },
-    ],
+    href: "/dashboard/hr/occupational-medicine",
   },
   {
     label: "Offboarding",
     icon: UserX,
-    children: [
-      {
-        label: "Fin de contrat",
-        href: "/dashboard/hr/offboarding",
-      },
-    ],
+    href: "/dashboard/hr/offboarding",
   },
   {
     label: "Registres",
@@ -228,6 +217,7 @@ const navItems: NavItem[] = [
         label: "Registre du personnel",
         href: "/dashboard/hr/legal-registers/personnel",
       },
+      { label: "DUERP", href: "/dashboard/hr/legal-registers/duerp" },
       {
         label: "Accidents du travail",
         href: "/dashboard/hr/legal-registers/work-accidents",
@@ -279,12 +269,7 @@ const navItems: NavItem[] = [
   {
     label: "Pilotage",
     icon: BarChart3,
-    children: [
-      {
-        label: "Bilan social",
-        href: "/dashboard/hr/social-report",
-      },
-    ],
+    href: "/dashboard/hr/social-report",
   },
   {
     label: "Communication",
