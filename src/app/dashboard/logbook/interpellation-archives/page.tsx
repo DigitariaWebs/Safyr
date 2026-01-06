@@ -14,8 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, FileText, MapPin, Shield, Download } from "lucide-react";
+import {
+  Search,
+  FileText,
+  MapPin,
+  Shield,
+  Download,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Modal } from "@/components/ui/modal";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 
 interface InterpellationRecord {
   id: string;
@@ -79,6 +89,7 @@ const mockInterpellationRecords: InterpellationRecord[] = [
 ];
 
 const reasons = [
+  "Vol",
   "Comportement suspect",
   "Tentative d'intrusion",
   "Vérification d'identité",
@@ -88,7 +99,13 @@ const reasons = [
 
 export default function InterpellationArchivesPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [viewingRecord, setViewingRecord] =
+    useState<InterpellationRecord | null>(null);
+  const [editingRecord, setEditingRecord] =
+    useState<InterpellationRecord | null>(null);
+  const [deletingRecord, setDeletingRecord] =
     useState<InterpellationRecord | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     site: "all",
@@ -174,7 +191,60 @@ export default function InterpellationArchivesPage() {
         </Badge>
       ),
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (record) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewingRecord(record);
+              setIsViewModalOpen(true);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingRecord(record);
+              setIsEditModalOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeletingRecord(record);
+              setIsDeleteModalOpen(true);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
   ];
+
+  const handleEdit = () => {
+    alert("Fiche d'interpellation modifiée avec succès!");
+    setIsEditModalOpen(false);
+    setEditingRecord(null);
+  };
+
+  const handleDelete = () => {
+    alert("Fiche d'interpellation supprimée avec succès!");
+    setIsDeleteModalOpen(false);
+    setDeletingRecord(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -309,55 +379,32 @@ export default function InterpellationArchivesPage() {
       </Card>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total fiches</CardTitle>
-            <FileText className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredRecords.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Archivées</CardTitle>
-            <Shield className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {filteredRecords.filter((r) => r.status === "archived").length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actives</CardTitle>
-            <FileText className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredRecords.filter((r) => r.status === "active").length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Sites concernés
-            </CardTitle>
-            <MapPin className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set(filteredRecords.map((r) => r.siteId)).size}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileText}
+          title="Total fiches"
+          value={filteredRecords.length}
+          color="blue"
+        />
+        <InfoCard
+          icon={Shield}
+          title="Archivées"
+          value={filteredRecords.filter((r) => r.status === "archived").length}
+          color="green"
+        />
+        <InfoCard
+          icon={FileText}
+          title="Actives"
+          value={filteredRecords.filter((r) => r.status === "active").length}
+          color="orange"
+        />
+        <InfoCard
+          icon={MapPin}
+          title="Sites concernés"
+          value={new Set(filteredRecords.map((r) => r.siteId)).size}
+          color="purple"
+        />
+      </InfoCardContainer>
 
       {/* Table */}
       <Card className="glass-card border-border/40">
@@ -372,10 +419,6 @@ export default function InterpellationArchivesPage() {
             columns={columns}
             searchKey="description"
             searchPlaceholder="Rechercher une fiche..."
-            onRowClick={(record) => {
-              setViewingRecord(record);
-              setIsViewModalOpen(true);
-            }}
           />
         </CardContent>
       </Card>
@@ -464,6 +507,90 @@ export default function InterpellationArchivesPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        type="form"
+        title="Modifier la fiche d'interpellation"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Enregistrer",
+            onClick: handleEdit,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsEditModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        {editingRecord && (
+          <div className="space-y-4">
+            <div>
+              <Label>ID</Label>
+              <Input value={editingRecord.id} disabled />
+            </div>
+            <div>
+              <Label>Motif</Label>
+              <Select defaultValue={editingRecord.reason}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {reasons.map((reason) => (
+                    <SelectItem key={reason} value={reason}>
+                      {reason}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Input defaultValue={editingRecord.description} />
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="warning"
+        title="Supprimer la fiche d'interpellation"
+        description="Êtes-vous sûr de vouloir supprimer cette fiche d'interpellation ? Cette action est irréversible."
+        size="sm"
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDelete,
+            variant: "destructive",
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        {deletingRecord && (
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong>ID:</strong> {deletingRecord.id}
+            </p>
+            <p className="text-sm">
+              <strong>Site:</strong> {deletingRecord.siteName}
+            </p>
+            <p className="text-sm">
+              <strong>Motif:</strong> {deletingRecord.reason}
+            </p>
           </div>
         )}
       </Modal>

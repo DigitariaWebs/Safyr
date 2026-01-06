@@ -18,12 +18,15 @@ import {
 import {
   Plus,
   DollarSign,
-  MapPin,
   FileText,
   CheckCircle,
   Clock,
+  Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import Image from "next/image";
 
 interface UnknownLoss {
@@ -82,8 +85,10 @@ const categories = ["Vol", "Dégradation", "Perte", "Casse", "Autre"];
 export default function UnknownLossesPage() {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [viewingLoss, setViewingLoss] = useState<UnknownLoss | null>(null);
-  const [selectedSite, setSelectedSite] = useState("all");
+  const [deletingLoss, setDeletingLoss] = useState<UnknownLoss | null>(null);
   const [formData, setFormData] = useState({
     siteId: "",
     category: "",
@@ -91,11 +96,6 @@ export default function UnknownLossesPage() {
     estimatedAmount: "",
   });
   const [photo, setPhoto] = useState<File | null>(null);
-
-  const filteredLosses =
-    selectedSite === "all"
-      ? mockUnknownLosses
-      : mockUnknownLosses.filter((loss) => loss.siteId === selectedSite);
 
   const columns: ColumnDef<UnknownLoss>[] = [
     {
@@ -154,6 +154,52 @@ export default function UnknownLossesPage() {
         );
       },
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (loss) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewingLoss(loss);
+              setIsViewModalOpen(true);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setFormData({
+                siteId: loss.siteId,
+                category: loss.category,
+                description: loss.description,
+                estimatedAmount: loss.estimatedAmount.toString(),
+              });
+              setIsEditModalOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeletingLoss(loss);
+              setIsDeleteModalOpen(true);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   const handleCreate = () => {
@@ -170,6 +216,17 @@ export default function UnknownLossesPage() {
   const handleSave = () => {
     alert("Démarque inconnue créée avec succès!");
     setIsNewModalOpen(false);
+  };
+
+  const handleEdit = () => {
+    alert("Démarque inconnue modifiée avec succès!");
+    setIsEditModalOpen(false);
+  };
+
+  const handleDelete = () => {
+    alert("Démarque inconnue supprimée avec succès!");
+    setIsDeleteModalOpen(false);
+    setDeletingLoss(null);
   };
 
   return (
@@ -189,88 +246,35 @@ export default function UnknownLossesPage() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card className="glass-card border-border/40">
-        <CardHeader>
-          <CardTitle className="text-lg font-light flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="site">Site</Label>
-              <Select value={selectedSite} onValueChange={setSelectedSite}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tous les sites" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les sites</SelectItem>
-                  <SelectItem value="SITE-001">
-                    Centre Commercial Atlantis
-                  </SelectItem>
-                  <SelectItem value="SITE-002">
-                    Tour de Bureaux Skyline
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total DI</CardTitle>
-            <FileText className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredLosses.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Montant total</CardTitle>
-            <DollarSign className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredLosses
-                .reduce((sum, loss) => sum + loss.estimatedAmount, 0)
-                .toFixed(2)}{" "}
-              €
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
-            <Clock className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredLosses.filter((l) => l.status === "pending").length}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-border/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Résolues</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {filteredLosses.filter((l) => l.status === "resolved").length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <InfoCardContainer>
+        <InfoCard
+          icon={FileText}
+          title="Total DI"
+          value={mockUnknownLosses.length}
+          color="blue"
+        />
+        <InfoCard
+          icon={DollarSign}
+          title="Montant total"
+          value={`${mockUnknownLosses.reduce((sum, loss) => sum + loss.estimatedAmount, 0).toFixed(2)} €`}
+          color="green"
+        />
+        <InfoCard
+          icon={Clock}
+          title="En attente"
+          value={mockUnknownLosses.filter((l) => l.status === "pending").length}
+          color="orange"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Résolues"
+          value={
+            mockUnknownLosses.filter((l) => l.status === "resolved").length
+          }
+          color="green"
+        />
+      </InfoCardContainer>
 
       {/* Table */}
       <Card className="glass-card border-border/40">
@@ -281,14 +285,10 @@ export default function UnknownLossesPage() {
         </CardHeader>
         <CardContent>
           <DataTable
-            data={filteredLosses}
+            data={mockUnknownLosses}
             columns={columns}
             searchKey="description"
             searchPlaceholder="Rechercher une DI..."
-            onRowClick={(loss) => {
-              setViewingLoss(loss);
-              setIsViewModalOpen(true);
-            }}
           />
         </CardContent>
       </Card>
@@ -466,7 +466,7 @@ export default function UnknownLossesPage() {
 
             <div>
               <Label>Montant estimé</Label>
-              <p className="text-sm font-medium text-lg">
+              <p className="font-medium text-lg">
                 {viewingLoss.estimatedAmount.toFixed(2)} €
               </p>
             </div>
@@ -498,6 +498,134 @@ export default function UnknownLossesPage() {
                 <p className="text-sm">{viewingLoss.createdBy}</p>
               </div>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        type="form"
+        title="Modifier la démarque inconnue"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Enregistrer",
+            onClick: handleEdit,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsEditModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="edit-site">Site</Label>
+            <Select
+              value={formData.siteId}
+              onValueChange={(value) =>
+                setFormData({ ...formData, siteId: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un site" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SITE-001">
+                  Centre Commercial Atlantis
+                </SelectItem>
+                <SelectItem value="SITE-002">
+                  Tour de Bureaux Skyline
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-category">Catégorisation</Label>
+            <Select
+              value={formData.category}
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner une catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-description">Description</Label>
+            <Textarea
+              id="edit-description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Description détaillée de la démarque inconnue..."
+              rows={4}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-amount">Montant estimé (€)</Label>
+            <Input
+              id="edit-amount"
+              type="number"
+              step="0.01"
+              value={formData.estimatedAmount}
+              onChange={(e) =>
+                setFormData({ ...formData, estimatedAmount: e.target.value })
+              }
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="warning"
+        title="Supprimer la démarque inconnue"
+        description="Êtes-vous sûr de vouloir supprimer cette démarque inconnue ? Cette action est irréversible."
+        size="sm"
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDelete,
+            variant: "destructive",
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        {deletingLoss && (
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong>ID:</strong> {deletingLoss.id}
+            </p>
+            <p className="text-sm">
+              <strong>Site:</strong> {deletingLoss.siteName}
+            </p>
+            <p className="text-sm">
+              <strong>Catégorie:</strong> {deletingLoss.category}
+            </p>
           </div>
         )}
       </Modal>

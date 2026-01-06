@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Users, Calendar, CheckCircle, XCircle, MapPin } from "lucide-react";
-import { mockLogbookEvents } from "@/data/logbook-events";
+import { Users, Calendar, CheckCircle, XCircle } from "lucide-react";
 
 interface PlanningConnection {
   id: string;
@@ -234,10 +233,6 @@ export default function PlanningRHPage() {
     },
   ];
 
-  const roundsFromPlanning = mockLogbookEvents.filter(
-    (e) => e.type === "action" && e.title.toLowerCase().includes("ronde"),
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -323,40 +318,6 @@ export default function PlanningRHPage() {
                 searchKey="agentName"
                 searchPlaceholder="Rechercher un agent..."
               />
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-border/40">
-            <CardHeader>
-              <CardTitle className="text-lg font-light flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Rondes journalisées (Planning → Main Courante)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {roundsFromPlanning.length > 0 ? (
-                  roundsFromPlanning.map((round) => (
-                    <div
-                      key={round.id}
-                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{round.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {round.agentName} • {round.site} •{" "}
-                          {new Date(round.timestamp).toLocaleString("fr-FR")}
-                        </p>
-                      </div>
-                      <Badge variant="outline">Journalisé</Badge>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucune ronde journalisée
-                  </p>
-                )}
-              </div>
             </CardContent>
           </Card>
 

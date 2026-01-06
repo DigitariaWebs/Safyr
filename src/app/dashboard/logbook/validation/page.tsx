@@ -51,7 +51,9 @@ export default function ValidationPage() {
   });
 
   const pendingEvents = events.filter(
-    (e) => e.status === "pending" || e.status === "in_progress",
+    (e) =>
+      (e.status === "pending" || e.status === "in_progress") &&
+      e.severity === "critical",
   );
 
   const getSeverityColor = (severity: string) => {

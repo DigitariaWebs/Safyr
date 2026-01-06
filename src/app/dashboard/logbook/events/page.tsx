@@ -31,6 +31,9 @@ import {
   Camera,
   Video,
   Mic,
+  Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/modal";
@@ -45,7 +48,11 @@ export default function EventsListPage() {
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [viewingEvent, setViewingEvent] = useState<LogbookEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<LogbookEvent | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<LogbookEvent | null>(null);
   const [platform, setPlatform] = useState<"mobile" | "pc" | "tablet">("pc");
   const [formData, setFormData] = useState({
     site: "",
@@ -137,6 +144,18 @@ export default function EventsListPage() {
     // Here you would normally add the event to the list or refresh
   };
 
+  const handleEdit = () => {
+    alert("Événement modifié avec succès!");
+    setIsEditModalOpen(false);
+    setEditingEvent(null);
+  };
+
+  const handleDelete = () => {
+    alert("Événement supprimé avec succès!");
+    setIsDeleteModalOpen(false);
+    setDeletingEvent(null);
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
@@ -223,6 +242,57 @@ export default function EventsListPage() {
       key: "agentName",
       label: "Agent",
       render: (event) => <span className="text-sm">{event.agentName}</span>,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (event) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewingEvent(event);
+              setIsViewModalOpen(true);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingEvent(event);
+              setFormData({
+                site: event.siteId,
+                zone: event.zone || "",
+                type: event.type,
+                severity: event.severity,
+                title: event.title,
+                description: event.description,
+                agent: event.agentId,
+                status: event.status,
+              });
+              setIsEditModalOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeletingEvent(event);
+              setIsDeleteModalOpen(true);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
     },
   ];
 
@@ -311,14 +381,7 @@ export default function EventsListPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        columns={columns}
-        data={filteredEvents}
-        onRowClick={(row) => {
-          setViewingEvent(row);
-          setIsViewModalOpen(true);
-        }}
-      />
+      <DataTable columns={columns} data={filteredEvents} />
 
       {/* New Event Modal */}
       <Modal
@@ -759,6 +822,161 @@ export default function EventsListPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Event Modal */}
+      <Modal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        type="form"
+        title="Modifier l'événement"
+        size="lg"
+        actions={{
+          primary: {
+            label: "Enregistrer",
+            onClick: handleEdit,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsEditModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        {editingEvent && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Site</Label>
+                <Select
+                  value={formData.site}
+                  onValueChange={(value) => handleInputChange("site", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un site" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockSites.map((site) => (
+                      <SelectItem key={site.id} value={site.id}>
+                        {site.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Zone</Label>
+                <Input
+                  value={formData.zone}
+                  onChange={(e) => handleInputChange("zone", e.target.value)}
+                  placeholder="Zone..."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Type</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => handleInputChange("type", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="incident">Incident</SelectItem>
+                    <SelectItem value="observation">Observation</SelectItem>
+                    <SelectItem value="action">Action</SelectItem>
+                    <SelectItem value="alert">Alerte</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Gravité</Label>
+                <Select
+                  value={formData.severity}
+                  onValueChange={(value) =>
+                    handleInputChange("severity", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="critical">Critique</SelectItem>
+                    <SelectItem value="high">Élevée</SelectItem>
+                    <SelectItem value="medium">Moyenne</SelectItem>
+                    <SelectItem value="low">Faible</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Titre</Label>
+              <Input
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                placeholder="Titre de l'événement"
+              />
+            </div>
+
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                placeholder="Description détaillée..."
+                rows={4}
+              />
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        type="warning"
+        title="Supprimer l'événement"
+        description="Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible."
+        size="sm"
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDelete,
+            variant: "destructive",
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteModalOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        {deletingEvent && (
+          <div className="space-y-2">
+            <p className="text-sm">
+              <strong>ID:</strong> {deletingEvent.id}
+            </p>
+            <p className="text-sm">
+              <strong>Titre:</strong> {deletingEvent.title}
+            </p>
+            <p className="text-sm">
+              <strong>Site:</strong> {deletingEvent.site}
+            </p>
+            <p className="text-sm">
+              <strong>Date:</strong>{" "}
+              {new Date(deletingEvent.timestamp).toLocaleString("fr-FR")}
+            </p>
           </div>
         )}
       </Modal>

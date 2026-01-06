@@ -6,8 +6,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  TrendingUp,
-  TrendingDown,
   MapPin,
   Camera,
   Video,
@@ -24,75 +22,7 @@ import {
 } from "@/data/logbook-events";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
-
-function StatsCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  iconColor,
-  trend,
-  isLoading,
-}: {
-  title: string;
-  value: string | number;
-  subtitle: string;
-  icon: React.ElementType;
-  iconColor: string;
-  trend?: { value: string; direction: "up" | "down" };
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Card className="glass-card border-border/40 h-full">
-        <CardHeader className="pb-2">
-          <Skeleton className="h-4 w-32" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-48 mb-4" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
-          <Icon className={`h-4 w-4 ${iconColor}`} />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div>
-            <span className="text-4xl font-light tracking-tight">{value}</span>
-            <span className="ml-2 text-sm text-muted-foreground">
-              {subtitle}
-            </span>
-          </div>
-          {trend && (
-            <div className="flex items-center gap-2 text-sm">
-              {trend.direction === "up" ? (
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-400" />
-              )}
-              <span
-                className={
-                  trend.direction === "up" ? "text-emerald-400" : "text-red-400"
-                }
-              >
-                {trend.value}
-              </span>
-              <span className="text-muted-foreground">vs hier</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 
 function RecentEventsWidget({
   isLoading,
@@ -288,42 +218,48 @@ export default function LogbookDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total événements"
-          value={totalEvents}
-          subtitle="aujourd'hui"
-          icon={BookOpen}
-          iconColor="text-primary"
-          trend={{ value: "+2", direction: "up" }}
-          isLoading={isLoading}
-        />
-        <StatsCard
-          title="Événements critiques"
-          value={criticalEvents}
-          subtitle="actifs"
-          icon={AlertTriangle}
-          iconColor="text-red-500"
-          isLoading={isLoading}
-        />
-        <StatsCard
-          title="En attente validation"
-          value={pendingValidation}
-          subtitle="événements"
-          icon={Clock}
-          iconColor="text-orange-500"
-          isLoading={isLoading}
-        />
-        <StatsCard
-          title="Résolus aujourd'hui"
-          value={resolvedToday}
-          subtitle="événements"
-          icon={CheckCircle}
-          iconColor="text-emerald-500"
-          trend={{ value: "+15%", direction: "up" }}
-          isLoading={isLoading}
-        />
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="glass-card border-border/40 h-full">
+              <CardContent className="p-6">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <InfoCardContainer>
+          <InfoCard
+            icon={BookOpen}
+            title="Total événements"
+            value={totalEvents}
+            subtext="aujourd'hui"
+            color="blue"
+          />
+          <InfoCard
+            icon={AlertTriangle}
+            title="Événements critiques"
+            value={criticalEvents}
+            subtext="actifs"
+            color="red"
+          />
+          <InfoCard
+            icon={Clock}
+            title="En attente validation"
+            value={pendingValidation}
+            subtext="événements"
+            color="orange"
+          />
+          <InfoCard
+            icon={CheckCircle}
+            title="Résolus aujourd'hui"
+            value={resolvedToday}
+            subtext="événements"
+            color="green"
+          />
+        </InfoCardContainer>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

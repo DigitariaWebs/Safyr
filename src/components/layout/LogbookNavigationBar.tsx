@@ -21,42 +21,22 @@ const navItems: NavItem[] = [
   {
     label: "Événements",
     icon: BookOpen,
-    children: [
-      {
-        label: "Tous les événements",
-        href: "/dashboard/logbook/events",
-      },
-    ],
+    href: "/dashboard/logbook/events",
   },
   {
     label: "Validation",
     icon: CheckCircle,
-    children: [
-      {
-        label: "En attente validation",
-        href: "/dashboard/logbook/validation",
-      },
-    ],
+    href: "/dashboard/logbook/validation",
   },
   {
     label: "Alertes",
     icon: AlertTriangle,
-    children: [
-      {
-        label: "Alertes actives",
-        href: "/dashboard/logbook/alerts",
-      },
-    ],
+    href: "/dashboard/logbook/alerts",
   },
   {
     label: "Planning & RH",
     icon: Calendar,
-    children: [
-      {
-        label: "Connexion Planning & RH",
-        href: "/dashboard/logbook/planning-rh",
-      },
-    ],
+    href: "/dashboard/logbook/planning-rh",
   },
   {
     label: "Portails",
@@ -75,32 +55,17 @@ const navItems: NavItem[] = [
   {
     label: "Rapports",
     icon: BarChart3,
-    children: [
-      {
-        label: "Statistiques & KPIs",
-        href: "/dashboard/logbook/statistics",
-      },
-    ],
+    href: "/dashboard/logbook/statistics",
   },
   {
     label: "Sécurité",
     icon: Shield,
-    children: [
-      {
-        label: "Sécurité & Technique",
-        href: "/dashboard/logbook/security",
-      },
-    ],
+    href: "/dashboard/logbook/security",
   },
   {
     label: "Exports",
     icon: Download,
-    children: [
-      {
-        label: "Export & Archivage",
-        href: "/dashboard/logbook/exports",
-      },
-    ],
+    href: "/dashboard/logbook/exports",
   },
   {
     label: "Gestion",
