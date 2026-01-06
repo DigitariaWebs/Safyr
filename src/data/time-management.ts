@@ -159,6 +159,8 @@ export const mockWorkedHours: WorkedHours[] = [
     sundayNightHours: 0,
     holidayHours: 0,
     holidayNightHours: 0,
+    createdAt: new Date("2024-12-10"),
+    updatedAt: new Date("2024-12-14"),
   },
   {
     id: "2",
@@ -174,6 +176,8 @@ export const mockWorkedHours: WorkedHours[] = [
     sundayNightHours: 0,
     holidayHours: 0,
     holidayNightHours: 0,
+    createdAt: new Date("2024-12-10"),
+    updatedAt: new Date("2024-12-14"),
   },
   {
     id: "3",
@@ -189,6 +193,8 @@ export const mockWorkedHours: WorkedHours[] = [
     sundayNightHours: 0,
     holidayHours: 0,
     holidayNightHours: 0,
+    createdAt: new Date("2024-12-11"),
+    updatedAt: new Date("2024-12-15"),
   },
 ];
 

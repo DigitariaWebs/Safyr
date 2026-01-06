@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
 import {
   Select,
   SelectContent,
@@ -19,7 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import {
   Plus,
   Eye,
@@ -32,6 +32,7 @@ import {
 import { Contract } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
+import Link from "next/link";
 
 // Mock data - replace with API call
 const mockContracts: Contract[] = [
@@ -528,15 +529,12 @@ export default function ContractsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="workingHours">Heures/semaine *</Label>
-              <Input
-                id="workingHours"
-                type="number"
-                value={formData.workingHours}
-                onChange={(e) =>
-                  handleInputChange("workingHours", e.target.value)
+              <HoursInput
+                value={parseFloat(formData.workingHours) || 0}
+                onChange={(value) =>
+                  handleInputChange("workingHours", value.toString())
                 }
-                placeholder="35"
-                required
+                step={0.5}
               />
             </div>
 

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -690,18 +691,15 @@ export default function CSEHoursPage() {
                 <Clock className="h-4 w-4" />
                 Durée (heures)
               </Label>
-              <Input
-                id="duration"
-                type="number"
-                min="0"
-                step="0.5"
+              <HoursInput
                 value={sessionFormData.duration}
-                onChange={(e) =>
+                onChange={(value) =>
                   setSessionFormData({
                     ...sessionFormData,
-                    duration: parseFloat(e.target.value) || 0,
+                    duration: value,
                   })
                 }
+                step={0.5}
               />
             </div>
           </div>

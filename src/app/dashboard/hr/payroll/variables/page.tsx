@@ -32,7 +32,11 @@ import {
   Calendar,
   Users,
   Eye,
+  Edit,
+  Trash2,
+  X,
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import type {
   PayrollVariable,
   PayrollVariableType,
@@ -51,9 +55,9 @@ const mockVariables: PayrollVariable[] = [
     amount: 160,
     currency: "EUR",
     description: "Heures travaillées",
-    validated: true,
-    validatedBy: "Admin",
-    validatedAt: new Date("2024-12-15"),
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-12-15"),
     createdAt: new Date("2024-12-10"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -66,7 +70,7 @@ const mockVariables: PayrollVariable[] = [
     amount: 24,
     currency: "EUR",
     description: "Heures de nuit",
-    validated: false,
+    status: "pending",
     createdAt: new Date("2024-12-18"),
     updatedAt: new Date("2024-12-18"),
   },
@@ -79,9 +83,9 @@ const mockVariables: PayrollVariable[] = [
     amount: 500,
     currency: "EUR",
     description: "Prime de fin d'année",
-    validated: true,
-    validatedBy: "Admin",
-    validatedAt: new Date("2024-12-16"),
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-12-16"),
     createdAt: new Date("2024-12-12"),
     updatedAt: new Date("2024-12-16"),
   },
@@ -94,9 +98,9 @@ const mockVariables: PayrollVariable[] = [
     amount: 45.5,
     currency: "EUR",
     description: "Frais de restauration",
-    validated: true,
-    validatedBy: "Admin",
-    validatedAt: new Date("2024-12-15"),
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-12-15"),
     createdAt: new Date("2024-12-10"),
     updatedAt: new Date("2024-12-15"),
   },
@@ -109,11 +113,80 @@ const mockVariables: PayrollVariable[] = [
     amount: 8,
     currency: "EUR",
     description: "Heures dimanche",
-    validated: true,
-    validatedBy: "Admin",
-    validatedAt: new Date("2024-12-15"),
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-12-15"),
     createdAt: new Date("2024-12-10"),
     updatedAt: new Date("2024-12-15"),
+  },
+  {
+    id: "6",
+    employeeId: "EMP004",
+    employeeName: "Sophie Leroy",
+    period: "2024-11-01",
+    type: "prime",
+    amount: 300,
+    currency: "EUR",
+    description: "Prime de performance",
+    status: "pending",
+    createdAt: new Date("2024-11-20"),
+    updatedAt: new Date("2024-11-20"),
+  },
+  {
+    id: "7",
+    employeeId: "EMP005",
+    employeeName: "Lucas Moreau",
+    period: "2024-11-01",
+    type: "indemnite_habillage",
+    amount: 150,
+    currency: "EUR",
+    description: "Indemnité habillage",
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-11-25"),
+    createdAt: new Date("2024-11-15"),
+    updatedAt: new Date("2024-11-25"),
+  },
+  {
+    id: "8",
+    employeeId: "EMP003",
+    employeeName: "Pierre Durand",
+    period: "2024-11-01",
+    type: "nbre_paniers",
+    amount: 20,
+    currency: "EUR",
+    description: "Nombre de paniers",
+    status: "pending",
+    createdAt: new Date("2024-11-22"),
+    updatedAt: new Date("2024-11-22"),
+  },
+  {
+    id: "9",
+    employeeId: "EMP001",
+    employeeName: "Jean Dupont",
+    period: "2024-11-01",
+    type: "autres_indemnites",
+    amount: 200,
+    currency: "EUR",
+    description: "Autres indemnités",
+    status: "validated",
+    processedBy: "Admin",
+    processedAt: new Date("2024-11-28"),
+    createdAt: new Date("2024-11-18"),
+    updatedAt: new Date("2024-11-28"),
+  },
+  {
+    id: "10",
+    employeeId: "EMP002",
+    employeeName: "Marie Martin",
+    period: "2024-10-01",
+    type: "prime",
+    amount: 400,
+    currency: "EUR",
+    description: "Prime mensuelle",
+    status: "pending",
+    createdAt: new Date("2024-10-25"),
+    updatedAt: new Date("2024-10-25"),
   },
 ];
 
@@ -136,33 +209,25 @@ const variableTypeLabels: Record<PayrollVariableType, string> = {
   autres_indemnites: "Autres Indemnités",
 };
 
-interface GroupedVariable {
-  employeeId: string;
-  employeeName: string;
-  period: string;
-  types: Record<string, number>;
-  validated: boolean;
-  id: string;
-}
-
 export default function PayrollVariablesPage() {
   const [variables, setVariables] = useState<PayrollVariable[]>(mockVariables);
   const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedVariable, setSelectedVariable] =
     useState<PayrollVariable | null>(null);
-  const [selectedVariables, setSelectedVariables] = useState<PayrollVariable[]>(
-    [],
-  );
+
+  const [groupBy, setGroupBy] = useState<string | undefined>(undefined);
+  const [validationNotes, setValidationNotes] = useState("");
   const [employeeSearchOpen, setEmployeeSearchOpen] = useState(false);
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
   const employeeSearchRef = useRef<HTMLDivElement>(null);
   const [variableForm, setVariableForm] = useState({
     employeeId: "",
     employeeName: "",
-    period: "",
+    year: "",
+    month: "",
     type: "h_jour" as PayrollVariableType,
     amount: "",
     description: "",
@@ -205,23 +270,36 @@ export default function PayrollVariablesPage() {
     };
   }, [employeeSearchOpen]);
 
-  const handleValidate = (variable: PayrollVariable) => {
+  const handleValidate = (variable: PayrollVariable, notes: string) => {
     setVariables(
       variables.map((v) =>
         v.id === variable.id
           ? {
               ...v,
-              validated: true,
-              validatedBy: "Admin",
-              validatedAt: new Date(),
+              status: "validated",
+              processedBy: "Admin",
+              processedAt: new Date(),
+              notes,
             }
           : v,
       ),
     );
   };
 
-  const handleReject = (variable: PayrollVariable) => {
-    setVariables(variables.filter((v) => v.id !== variable.id));
+  const handleRefuse = (variable: PayrollVariable, notes: string) => {
+    setVariables(
+      variables.map((v) =>
+        v.id === variable.id
+          ? {
+              ...v,
+              status: "refused",
+              processedBy: "Admin",
+              processedAt: new Date(),
+              notes,
+            }
+          : v,
+      ),
+    );
   };
 
   const handleSelectEmployee = (employee: Employee) => {
@@ -234,20 +312,14 @@ export default function PayrollVariablesPage() {
     setEmployeeSearchQuery("");
   };
 
-  const handleViewGroup = (group: GroupedVariable) => {
-    const groupVariables = variables.filter(
-      (v) => v.employeeId === group.employeeId && v.period === group.period,
-    );
-    setSelectedVariables(groupVariables);
-    setIsDetailsModalOpen(true);
-  };
-
   const handleEditVariable = (variable: PayrollVariable) => {
+    const [year, month] = variable.period.split("-");
     setSelectedVariable(variable);
     setVariableForm({
       employeeId: variable.employeeId,
       employeeName: variable.employeeName,
-      period: variable.period,
+      year,
+      month,
       type: variable.type,
       amount: variable.amount.toString(),
       description: variable.description || "",
@@ -273,6 +345,7 @@ export default function PayrollVariablesPage() {
   };
 
   const handleCreateOrUpdateVariable = () => {
+    const period = `${variableForm.year}-${variableForm.month.padStart(2, "0")}-01`;
     if (isEditMode && selectedVariable) {
       // Update existing variable
       setVariables(
@@ -282,7 +355,7 @@ export default function PayrollVariablesPage() {
                 ...v,
                 employeeId: variableForm.employeeId,
                 employeeName: variableForm.employeeName,
-                period: variableForm.period,
+                period,
                 type: variableForm.type,
                 amount: parseFloat(variableForm.amount),
                 description: variableForm.description,
@@ -311,20 +384,20 @@ export default function PayrollVariablesPage() {
         "tenue",
         "nbre_deplacement",
         "autres_indemnites",
-      ] as const;
+      ].filter((t) => !t.startsWith("h_"));
       types.forEach((type) => {
-        const amountStr = variableForm[type];
+        const amountStr = (variableForm as Record<string, string>)[type];
         if (amountStr && parseFloat(amountStr) > 0) {
           const variable: PayrollVariable = {
             id: `VAR${Date.now()}-${type}`,
             employeeId: variableForm.employeeId,
             employeeName: variableForm.employeeName,
-            period: variableForm.period,
-            type,
+            period,
+            type: type as PayrollVariableType,
             amount: parseFloat(amountStr),
             currency: "EUR",
             description: variableForm.description,
-            validated: false,
+            status: "pending",
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -338,10 +411,12 @@ export default function PayrollVariablesPage() {
     setIsEditMode(false);
     setEmployeeSearchOpen(false);
     setEmployeeSearchQuery("");
+    const now = new Date();
     setVariableForm({
       employeeId: "",
       employeeName: "",
-      period: "",
+      year: now.getFullYear().toString(),
+      month: (now.getMonth() + 1).toString().padStart(2, "0"),
       type: "h_jour" as PayrollVariableType,
       amount: "",
       description: "",
@@ -371,12 +446,14 @@ export default function PayrollVariablesPage() {
   );
 
   const handleOpenCreateModal = () => {
+    const now = new Date();
     setIsEditMode(false);
     setSelectedVariable(null);
     setVariableForm({
       employeeId: "",
       employeeName: "",
-      period: "",
+      year: now.getFullYear().toString(),
+      month: (now.getMonth() + 1).toString().padStart(2, "0"),
       type: "h_jour" as PayrollVariableType,
       amount: "",
       description: "",
@@ -400,43 +477,16 @@ export default function PayrollVariablesPage() {
     setIsVariableModalOpen(true);
   };
 
-  const employeePeriodData = variables.reduce(
-    (acc, variable) => {
-      const key = `${variable.employeeId}-${variable.period}`;
-      if (!acc[key]) {
-        acc[key] = {
-          employeeId: variable.employeeId,
-          employeeName: variable.employeeName,
-          period: variable.period,
-          types: {} as Record<string, number>,
-          validated: true,
-          id: key,
-        };
-      }
-      if (!acc[key].types[variable.type]) {
-        acc[key].types[variable.type] = 0;
-      }
-      acc[key].types[variable.type] += variable.amount;
-      if (!variable.validated) {
-        acc[key].validated = false;
-      }
-      return acc;
-    },
-    {} as Record<string, GroupedVariable>,
-  );
+  const filteredVariables = variables.filter((v) => !v.type.startsWith("h_"));
 
-  const groupedData = Object.values(employeePeriodData);
-
-  const pendingDeclarations = groupedData.filter((g) => !g.validated).length;
-
-  const groupedColumns: ColumnDef<GroupedVariable>[] = [
+  const individualColumns: ColumnDef<PayrollVariable>[] = [
     {
       key: "employee",
       label: "Employé",
       icon: Users,
       sortable: true,
-      sortValue: (item: GroupedVariable) => item.employeeName,
-      render: (item: GroupedVariable) => (
+      sortValue: (item) => item.employeeName,
+      render: (item) => (
         <div>
           <div className="font-medium">
             <Link
@@ -455,7 +505,7 @@ export default function PayrollVariablesPage() {
       label: "Période",
       icon: Calendar,
       sortable: true,
-      render: (item: GroupedVariable) => {
+      render: (item) => {
         const date = new Date(item.period);
         return (
           <span className="text-sm">
@@ -467,31 +517,44 @@ export default function PayrollVariablesPage() {
         );
       },
     },
-    ...Object.entries(variableTypeLabels).map(([type, label]) => ({
-      key: type,
-      label,
+    {
+      key: "type",
+      label: "Type",
       sortable: true,
-      sortValue: (item: GroupedVariable) => item.types[type] || 0,
-      render: (item: GroupedVariable) => {
-        const value = item.types[type] || 0;
-        const isHoursOrCount =
-          type.startsWith("h_") || type.startsWith("nbre_");
-        return (
-          <span className="font-medium">
-            {isHoursOrCount
-              ? value.toLocaleString("fr-FR")
-              : `${value.toLocaleString("fr-FR")} €`}
-          </span>
-        );
-      },
-    })),
+      render: (item) => <span>{variableTypeLabels[item.type]}</span>,
+    },
+    {
+      key: "amount",
+      label: "Montant",
+      sortable: true,
+      sortValue: (item) => item.amount,
+      render: (item) => (
+        <span className="font-medium">
+          {item.type.startsWith("nbre_")
+            ? item.amount.toLocaleString("fr-FR")
+            : `${item.amount.toLocaleString("fr-FR")} €`}
+        </span>
+      ),
+    },
     {
       key: "validated",
       label: "Statut",
       sortable: true,
-      render: (item: GroupedVariable) => (
-        <Badge variant={item.validated ? "default" : "secondary"}>
-          {item.validated ? "Validé" : "En attente"}
+      render: (item) => (
+        <Badge
+          variant={
+            item.status === "validated"
+              ? "default"
+              : item.status === "refused"
+                ? "destructive"
+                : "secondary"
+          }
+        >
+          {item.status === "validated"
+            ? "Validé"
+            : item.status === "refused"
+              ? "Refusé"
+              : "En attente"}
         </Badge>
       ),
     },
@@ -514,13 +577,12 @@ export default function PayrollVariablesPage() {
           Nouvelle variable
         </Button>
       </div>
-
       {/* Stats Cards */}
       <InfoCardContainer>
         <InfoCard
           icon={Euro}
           title="Total déclarations"
-          value={groupedData.length}
+          value={filteredVariables.length}
           subtext="Déclarations"
           color="gray"
         />
@@ -528,7 +590,7 @@ export default function PayrollVariablesPage() {
         <InfoCard
           icon={Clock}
           title="En attente de validation"
-          value={pendingDeclarations}
+          value={filteredVariables.filter((v) => v.status === "pending").length}
           subtext="À valider"
           color="orange"
         />
@@ -547,10 +609,11 @@ export default function PayrollVariablesPage() {
           icon={CheckCircle}
           title="Taux de validation"
           value={`${
-            groupedData.length > 0
+            filteredVariables.length > 0
               ? Math.round(
-                  ((groupedData.length - pendingDeclarations) /
-                    groupedData.length) *
+                  (filteredVariables.filter((v) => v.status === "validated")
+                    .length /
+                    filteredVariables.length) *
                     100,
                 )
               : 0
@@ -559,27 +622,41 @@ export default function PayrollVariablesPage() {
           color="green"
         />
       </InfoCardContainer>
-
       {/* Variables DataTable */}
       <DataTable
-        data={groupedData}
-        columns={groupedColumns}
+        data={filteredVariables}
+        columns={individualColumns}
         searchKeys={["employeeName"]}
         getSearchValue={(item) => item.employeeName}
         searchPlaceholder="Rechercher par employé..."
         getRowId={(item) => item.id}
         filters={[
           {
-            key: "validated",
+            key: "status",
             label: "Statut",
             options: [
               { value: "all", label: "Tous" },
               { value: "validated", label: "Validé" },
               { value: "pending", label: "En attente" },
+              { value: "refused", label: "Refusé" },
             ],
           },
         ]}
-        actions={(item: GroupedVariable) => (
+        groupBy={groupBy}
+        groupByOptions={[
+          { value: "employeeName", label: "Employé" },
+          { value: "period", label: "Période" },
+        ]}
+        groupByLabel={(value: unknown) =>
+          groupBy === "period"
+            ? new Date(value as string).toLocaleDateString("fr-FR", {
+                year: "numeric",
+                month: "long",
+              })
+            : (value as string)
+        }
+        onGroupByChange={setGroupBy}
+        actions={(item: PayrollVariable) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -588,17 +665,37 @@ export default function PayrollVariablesPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => handleViewGroup(item)}
+                onClick={() => {
+                  setSelectedVariable(item);
+                  setIsViewModalOpen(true);
+                }}
                 className="flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Voir détails
+                Voir
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleEditVariable(item)}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Modifier
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (confirm("Supprimer cette variable ?")) {
+                    setVariables(variables.filter((v) => v.id !== item.id));
+                  }
+                }}
+                className="flex items-center gap-2 text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Supprimer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
       />
-
       {/* View Variable Modal */}
       <Modal
         open={isViewModalOpen}
@@ -644,15 +741,12 @@ export default function PayrollVariablesPage() {
               </div>
               <div>
                 <Label className="text-sm font-medium">
-                  {selectedVariable.type.startsWith("h_")
-                    ? "Nombre d'heures"
-                    : selectedVariable.type.startsWith("nbre_")
-                      ? "Nombre"
-                      : "Montant"}
+                  {selectedVariable.type.startsWith("nbre_")
+                    ? "Nombre"
+                    : "Montant"}
                 </Label>
                 <p className="text-sm font-medium">
-                  {selectedVariable.type.startsWith("h_") ||
-                  selectedVariable.type.startsWith("nbre_")
+                  {selectedVariable.type.startsWith("nbre_")
                     ? selectedVariable.amount.toLocaleString("fr-FR")
                     : `${selectedVariable.amount.toLocaleString("fr-FR")} €`}
                 </p>
@@ -674,137 +768,96 @@ export default function PayrollVariablesPage() {
                 <div className="mt-1">
                   <Badge
                     variant={
-                      selectedVariable.validated ? "default" : "secondary"
+                      selectedVariable.status === "validated"
+                        ? "default"
+                        : selectedVariable.status === "refused"
+                          ? "destructive"
+                          : "secondary"
                     }
                   >
-                    {selectedVariable.validated ? "Validé" : "En attente"}
+                    {selectedVariable.status === "validated"
+                      ? "Validé"
+                      : selectedVariable.status === "refused"
+                        ? "Refusé"
+                        : "En attente"}
                   </Badge>
                 </div>
               </div>
               <div>
-                <Label className="text-sm font-medium">Validé par</Label>
+                <Label className="text-sm font-medium">
+                  {selectedVariable.status === "validated"
+                    ? "Validé par"
+                    : selectedVariable.status === "refused"
+                      ? "Refusé par"
+                      : "Traité par"}
+                </Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {selectedVariable.validatedBy || "-"}
+                  {selectedVariable.processedBy || "-"}
                 </p>
               </div>
             </div>
+
+            {selectedVariable.notes && (
+              <div>
+                <Label className="text-sm font-medium">Notes</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedVariable.notes}
+                </p>
+              </div>
+            )}
+
+            {selectedVariable.status === "pending" && (
+              <div className="pt-4 border-t">
+                <Label className="text-sm font-medium">Notes</Label>
+                <div className="mt-2 space-y-4">
+                  <Textarea
+                    placeholder="Ajouter des notes..."
+                    value={validationNotes}
+                    onChange={(e) => setValidationNotes(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        handleValidate(selectedVariable, validationNotes);
+                        setIsViewModalOpen(false);
+                        setValidationNotes("");
+                      }}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Valider
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="flex-1"
+                      onClick={() => {
+                        handleRefuse(selectedVariable, validationNotes);
+                        setIsViewModalOpen(false);
+                        setValidationNotes("");
+                      }}
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Refuser
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
               <div>
                 Créée le{" "}
                 {selectedVariable.createdAt.toLocaleDateString("fr-FR")}
-              </div>
-              <div>
-                Modifiée le{" "}
-                {selectedVariable.updatedAt.toLocaleDateString("fr-FR")}
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Details Modal */}
-      <Modal
-        open={isDetailsModalOpen}
-        onOpenChange={setIsDetailsModalOpen}
-        type="details"
-        title="Détails des variables de paie"
-        size="lg"
-      >
-        {selectedVariables.length > 0 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Employé</Label>
-                <p className="text-sm text-muted-foreground">
-                  <Link
-                    href={`/dashboard/hr/employees/${selectedVariables[0].employeeId}`}
-                    className="text-primary hover:underline"
-                  >
-                    {selectedVariables[0].employeeName}
-                  </Link>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {selectedVariables[0].employeeId}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Période</Label>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(selectedVariables[0].period).toLocaleDateString(
-                    "fr-FR",
-                    {
-                      year: "numeric",
-                      month: "long",
-                    },
+                {selectedVariable.status !== "pending" &&
+                  selectedVariable.processedBy && (
+                    <span> par {selectedVariable.processedBy}</span>
                   )}
-                </p>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium">Variables</h4>
-              {selectedVariables.map((variable) => (
-                <div key={variable.id} className="p-4 border rounded-lg">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Type</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {variableTypeLabels[variable.type]}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">
-                        {variable.type.startsWith("h_")
-                          ? "Nombre d'heures"
-                          : variable.type.startsWith("nbre_")
-                            ? "Nombre"
-                            : "Montant"}
-                      </Label>
-                      <p className="text-sm font-medium">
-                        {variable.type.startsWith("h_") ||
-                        variable.type.startsWith("nbre_")
-                          ? variable.amount.toLocaleString("fr-FR")
-                          : `${variable.amount.toLocaleString("fr-FR")} €`}
-                      </p>
-                    </div>
-                  </div>
-                  {variable.description && (
-                    <div className="mt-2">
-                      <Label className="text-sm font-medium">Description</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {variable.description}
-                      </p>
-                    </div>
-                  )}
-                  <div className="mt-2 flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleEditVariable(variable)}
-                    >
-                      Modifier
-                    </Button>
-                    {!variable.validated && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleValidate(variable)}
-                        >
-                          Valider
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleReject(variable)}
-                        >
-                          Rejeter
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
+              <div>
+                {selectedVariable.processedAt
+                  ? `Traitée le ${selectedVariable.processedAt.toLocaleDateString("fr-FR")}`
+                  : `Modifiée le ${selectedVariable.updatedAt.toLocaleDateString("fr-FR")}`}
+              </div>
             </div>
           </div>
         )}
@@ -902,19 +955,57 @@ export default function PayrollVariablesPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="period">Période</Label>
-            <Input
-              id="period"
-              type="date"
-              value={variableForm.period}
-              onChange={(e) =>
-                setVariableForm((prev) => ({
-                  ...prev,
-                  period: e.target.value,
-                }))
-              }
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="year">Année</Label>
+              <Select
+                value={variableForm.year}
+                onValueChange={(value) =>
+                  setVariableForm((prev) => ({ ...prev, year: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner l'année" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 10 }, (_, i) => {
+                    const year = (new Date().getFullYear() - 5 + i).toString();
+                    return (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="month">Mois</Label>
+              <Select
+                value={variableForm.month}
+                onValueChange={(value) =>
+                  setVariableForm((prev) => ({ ...prev, month: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner le mois" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = (i + 1).toString().padStart(2, "0");
+                    const monthName = new Date(2000, i, 1).toLocaleDateString(
+                      "fr-FR",
+                      { month: "long" },
+                    );
+                    return (
+                      <SelectItem key={month} value={month}>
+                        {monthName}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {isEditMode ? (
@@ -923,21 +1014,24 @@ export default function PayrollVariablesPage() {
                 <Label htmlFor="type">Type de variable</Label>
                 <Select
                   value={variableForm.type}
-                  onValueChange={(value: PayrollVariableType) =>
-                    setVariableForm((prev) => ({ ...prev, type: value }))
+                  onValueChange={(value) =>
+                    setVariableForm((prev) => ({
+                      ...prev,
+                      type: value as PayrollVariableType,
+                    }))
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(variableTypeLabels).map(
-                      ([value, label]) => (
+                    {Object.entries(variableTypeLabels)
+                      .filter(([type]) => !type.startsWith("h_"))
+                      .map(([value, label]) => (
                         <SelectItem key={value} value={value}>
                           {label}
                         </SelectItem>
-                      ),
-                    )}
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -967,36 +1061,34 @@ export default function PayrollVariablesPage() {
             </>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {Object.entries(variableTypeLabels).map(([type, label]) => {
-                const isHours = type.startsWith("h_");
-                const isCount = type.startsWith("nbre_");
-                const unit = isHours ? " (heures)" : isCount ? "" : " (€)";
-                return (
-                  <div key={type} className="space-y-2">
-                    <Label htmlFor={type}>
-                      {label}
-                      {unit}
-                    </Label>
-                    <Input
-                      id={type}
-                      type="number"
-                      step="0.01"
-                      value={
-                        variableForm[
-                          type as keyof typeof variableForm
-                        ] as string
-                      }
-                      onChange={(e) =>
-                        setVariableForm((prev) => ({
-                          ...prev,
-                          [type]: e.target.value,
-                        }))
-                      }
-                      placeholder="0.00"
-                    />
-                  </div>
-                );
-              })}
+              {Object.entries(variableTypeLabels)
+                .filter(([type]) => !type.startsWith("h_"))
+                .map(([type, label]) => {
+                  const isHours = type.startsWith("h_");
+                  const isCount = type.startsWith("nbre_");
+                  const unit = isHours ? " (heures)" : isCount ? "" : " (€)";
+                  return (
+                    <div key={type} className="space-y-2">
+                      <Label htmlFor={type}>
+                        {label}
+                        {unit}
+                      </Label>
+                      <Input
+                        id={type}
+                        type="number"
+                        step="0.01"
+                        value={(variableForm as Record<string, string>)[type]}
+                        onChange={(e) =>
+                          setVariableForm((prev) => ({
+                            ...prev,
+                            [type]: e.target.value,
+                          }))
+                        }
+                        placeholder="0.00"
+                      />
+                    </div>
+                  );
+                })}
             </div>
           )}
 

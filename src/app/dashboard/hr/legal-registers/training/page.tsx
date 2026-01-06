@@ -6,6 +6,8 @@ import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
 import {
   Select,
   SelectContent,
@@ -19,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -629,14 +630,12 @@ export default function TrainingRegisterPage() {
 
             <div>
               <Label htmlFor="duration">Durée (heures) *</Label>
-              <Input
-                id="duration"
-                type="number"
-                value={formData.duration}
-                onChange={(e) =>
-                  setFormData({ ...formData, duration: e.target.value })
+              <HoursInput
+                value={parseFloat(formData.duration) || 0}
+                onChange={(value) =>
+                  setFormData({ ...formData, duration: value.toString() })
                 }
-                placeholder="Ex: 67"
+                step={0.5}
               />
             </div>
           </div>

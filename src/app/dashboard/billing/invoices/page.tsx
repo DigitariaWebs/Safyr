@@ -6,6 +6,7 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
 import {
   Select,
   SelectContent,
@@ -379,19 +380,15 @@ export default function BillingInvoicesPage() {
               <Label htmlFor="planningHours">
                 Heures planifiées (Planning)
               </Label>
-              <Input
-                id="planningHours"
-                type="number"
-                value={formData.planningHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.planningHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    planningHours: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
+                    planningHours: value,
                   })
                 }
-                placeholder="720"
+                step={0.5}
               />
             </div>
 
@@ -399,37 +396,29 @@ export default function BillingInvoicesPage() {
               <Label htmlFor="realizedHours">
                 Heures réalisées (Géoloc/Main courante)
               </Label>
-              <Input
-                id="realizedHours"
-                type="number"
-                value={formData.realizedHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.realizedHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    realizedHours: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
+                    realizedHours: value,
                   })
                 }
-                placeholder="715"
+                step={0.5}
               />
             </div>
 
             <div>
               <Label htmlFor="validatedHours">Heures validées (Paie)</Label>
-              <Input
-                id="validatedHours"
-                type="number"
-                value={formData.validatedHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.validatedHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    validatedHours: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
+                    validatedHours: value,
                   })
                 }
-                placeholder="715"
+                step={0.5}
               />
             </div>
 
@@ -441,31 +430,29 @@ export default function BillingInvoicesPage() {
 
             <div>
               <Label htmlFor="normalHours">Heures normales</Label>
-              <Input
-                id="normalHours"
-                type="number"
-                value={formData.normalHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.normalHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    normalHours: parseInt(e.target.value) || 0,
+                    normalHours: value,
                   })
                 }
+                step={0.5}
               />
             </div>
 
             <div>
               <Label htmlFor="overtimeHours">Heures supplémentaires</Label>
-              <Input
-                id="overtimeHours"
-                type="number"
-                value={formData.overtimeHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.overtimeHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    overtimeHours: parseInt(e.target.value) || 0,
+                    overtimeHours: value,
                   })
                 }
+                step={0.5}
               />
             </div>
 

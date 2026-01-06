@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Modal } from "@/components/ui/modal";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
@@ -29,62 +37,17 @@ import {
 import { mockWorkedHours } from "@/data/time-management";
 import { mockEmployees } from "@/data/employees";
 
-const CategoryTable = ({
-  hours,
-}: {
-  category: "supplementary";
-  hours: (typeof mockWorkedHours)[0];
-}) => {
-  const variants = [
-    {
-      label: "25%",
-      value: hours.supplementaryHours25,
-    },
-    {
-      label: "50%",
-      value: hours.supplementaryHours50,
-    },
-    {
-      label: "10%",
-      value: hours.complementaryHours10,
-    },
-  ];
-
-  const bgColor = "bg-green-50 dark:bg-green-950/10";
-
-  const getTextColor = (label: string) => {
-    if (label === "25%") return "text-green-600";
-    if (label === "50%") return "text-teal-600";
-    if (label === "10%") return "text-cyan-600";
-    return "";
-  };
-
-  return (
-    <div className="text-xs flex gap-1">
-      {variants.map((variant) => (
-        <div
-          key={variant.label}
-          className={`flex flex-col items-center p-1 rounded ${bgColor} min-w-0 flex-1`}
-        >
-          <span className="text-xs text-gray-600">{variant.label}</span>
-          <span className={`font-semibold ${getTextColor(variant.label)}`}>
-            {variant.value}h
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export default function WorkedHoursPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedHours, setSelectedHours] = useState<
     (typeof mockWorkedHours)[0] | null
   >(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [groupBy, setGroupBy] = useState<string | undefined>(undefined);
   const [formData, setFormData] = useState({
     employeeId: "",
-    date: new Date().toISOString().split("T")[0],
+    year: new Date().getFullYear().toString(),
+    month: (new Date().getMonth() + 1).toString().padStart(2, "0"),
     regularHours: 0,
     supplementaryHours25: 0,
     supplementaryHours50: 0,
@@ -103,11 +66,13 @@ export default function WorkedHoursPage() {
   };
 
   const handleEdit = (hours: (typeof mockWorkedHours)[0]) => {
+    const dateObj = new Date(hours.date);
     setSelectedHours(hours);
     setIsEditMode(true);
     setFormData({
       employeeId: hours.employeeId,
-      date: hours.date.toISOString().split("T")[0],
+      year: dateObj.getFullYear().toString(),
+      month: (dateObj.getMonth() + 1).toString().padStart(2, "0"),
       regularHours: hours.regularHours,
       supplementaryHours25: hours.supplementaryHours25,
       supplementaryHours50: hours.supplementaryHours50,
@@ -368,6 +333,20 @@ export default function WorkedHoursPage() {
             searchKeys={["employeeName"]}
             searchPlaceholder="Rechercher par nom d'employé..."
             itemsPerPage={10}
+            groupBy={groupBy}
+            onGroupByChange={setGroupBy}
+            groupByOptions={[
+              { value: "employeeName", label: "Employé" },
+              { value: "date", label: "Période" },
+            ]}
+            groupByLabel={(value: unknown) =>
+              groupBy === "date"
+                ? new Date(value as string).toLocaleDateString("fr-FR", {
+                    year: "numeric",
+                    month: "long",
+                  })
+                : (value as string)
+            }
           />
         </CardContent>
       </Card>
@@ -382,7 +361,8 @@ export default function WorkedHoursPage() {
             setIsEditMode(false);
             setFormData({
               employeeId: "",
-              date: new Date().toISOString().split("T")[0],
+              year: new Date().getFullYear().toString(),
+              month: (new Date().getMonth() + 1).toString().padStart(2, "0"),
               regularHours: 0,
               supplementaryHours25: 0,
               supplementaryHours50: 0,
@@ -403,7 +383,13 @@ export default function WorkedHoursPage() {
         }
         description={
           selectedHours
-            ? `Déclaration du ${new Date(selectedHours.date).toLocaleDateString("fr-FR")}`
+            ? `Déclaration de ${new Date(selectedHours.date).toLocaleDateString(
+                "fr-FR",
+                {
+                  month: "long",
+                  year: "numeric",
+                },
+              )}`
             : ""
         }
         actions={
@@ -412,7 +398,14 @@ export default function WorkedHoursPage() {
                 primary: {
                   label: "Sauvegarder",
                   onClick: () => {
-                    console.log("Saving edited hours:", formData);
+                    const date = new Date(
+                      parseInt(formData.year),
+                      parseInt(formData.month) - 1,
+                      1,
+                    )
+                      .toISOString()
+                      .split("T")[0];
+                    console.log("Saving edited hours:", { ...formData, date });
                     setIsDetailsModalOpen(false);
                     setIsEditMode(false);
                   },
@@ -433,152 +426,173 @@ export default function WorkedHoursPage() {
       >
         {isEditMode ? (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="year">Année</Label>
+                <Select
+                  value={formData.year}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, year: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner l'année" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }, (_, i) => {
+                      const year = (
+                        new Date().getFullYear() -
+                        5 +
+                        i
+                      ).toString();
+                      return (
+                        <SelectItem key={year} value={year}>
+                          {year}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="month">Mois</Label>
+                <Select
+                  value={formData.month}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, month: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner le mois" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const month = (i + 1).toString().padStart(2, "0");
+                      const monthName = new Date(2000, i, 1).toLocaleDateString(
+                        "fr-FR",
+                        { month: "long" },
+                      );
+                      return (
+                        <SelectItem key={month} value={month}>
+                          {monthName}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="regularHours">Heures normales</Label>
-                <Input
-                  id="regularHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.regularHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      regularHours: parseFloat(e.target.value) || 0,
+                      regularHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="supplementaryHours25">Heures supp. 25%</Label>
-                <Input
-                  id="supplementaryHours25"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.supplementaryHours25}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      supplementaryHours25: parseFloat(e.target.value) || 0,
+                      supplementaryHours25: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="supplementaryHours50">Heures supp. 50%</Label>
-                <Input
-                  id="supplementaryHours50"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.supplementaryHours50}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      supplementaryHours50: parseFloat(e.target.value) || 0,
+                      supplementaryHours50: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="complementaryHours10">Heures comp. 10%</Label>
-                <Input
-                  id="complementaryHours10"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.complementaryHours10}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      complementaryHours10: parseFloat(e.target.value) || 0,
+                      complementaryHours10: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="nightHours">Heures de nuit</Label>
-                <Input
-                  id="nightHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.nightHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      nightHours: parseFloat(e.target.value) || 0,
+                      nightHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="sundayHours">Heures dimanche</Label>
-                <Input
-                  id="sundayHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.sundayHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      sundayHours: parseFloat(e.target.value) || 0,
+                      sundayHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="holidayHours">Heures jours fériés</Label>
-                <Input
-                  id="holidayHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.holidayHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      holidayHours: parseFloat(e.target.value) || 0,
+                      holidayHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="sundayNightHours">Heures dimanche nuit</Label>
-                <Input
-                  id="sundayNightHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.sundayNightHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      sundayNightHours: parseFloat(e.target.value) || 0,
+                      sundayNightHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
 
@@ -586,18 +600,15 @@ export default function WorkedHoursPage() {
                 <Label htmlFor="holidayNightHours">
                   Heures jours fériés nuit
                 </Label>
-                <Input
-                  id="holidayNightHours"
-                  type="number"
-                  min="0"
-                  step="0.5"
+                <HoursInput
                   value={formData.holidayNightHours}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setFormData({
                       ...formData,
-                      holidayNightHours: parseFloat(e.target.value) || 0,
+                      holidayNightHours: value,
                     })
                   }
+                  step={0.5}
                 />
               </div>
             </div>
@@ -605,109 +616,161 @@ export default function WorkedHoursPage() {
         ) : (
           selectedHours && (
             <div className="space-y-6">
-              {/* Hours Details */}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Date
-                  </label>
-                  <p className="mt-1 font-medium">
+                  <Label className="text-sm font-medium">Employé</Label>
+                  <p className="text-sm text-muted-foreground">
+                    <Link
+                      href={`/dashboard/hr/employees/${selectedHours.employeeId}`}
+                      className="text-primary hover:underline"
+                    >
+                      {selectedHours.employeeName}
+                    </Link>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {
+                      mockEmployees.find(
+                        (e) => e.id === selectedHours.employeeId,
+                      )?.employeeNumber
+                    }
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Période</Label>
+                  <p className="text-sm text-muted-foreground">
                     {new Date(selectedHours.date).toLocaleDateString("fr-FR", {
-                      weekday: "long",
                       year: "numeric",
                       month: "long",
-                      day: "numeric",
                     })}
                   </p>
                 </div>
               </div>
 
               {/* Hours Breakdown */}
-              <div className="space-y-4">
-                <h4 className="font-medium">D&eacute;tail des heures</h4>
+              <div className="space-y-4 pt-4 border-t">
+                <h4 className="font-medium">Détail des heures</h4>
 
-                {/* Regular & Supplementary Hours */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-muted-foreground">
-                    Heures normales et supplémentaires
-                  </h5>
-                  <div className="text-xs space-y-1">
-                    <div className="flex justify-between items-center rounded bg-muted/30 p-2">
-                      <span className="text-gray-600">Normales:</span>
-                      <span className="font-semibold">
-                        {selectedHours.regularHours}h
-                      </span>
-                    </div>
-                    <CategoryTable
-                      category="supplementary"
-                      hours={selectedHours}
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures normales
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.regularHours}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures supp. 25%
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.supplementaryHours25}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures supp. 50%
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.supplementaryHours50}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures comp. 10%
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.complementaryHours10}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures de nuit
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.nightHours}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures dimanche
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.sundayHours}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures dimanche nuit
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.sundayNightHours}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures jours fériés
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.holidayHours}h
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Heures jours fériés nuit
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedHours.holidayNightHours}h
+                    </p>
                   </div>
                 </div>
 
-                {/* Night Hours */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-muted-foreground">
-                    Heures de nuit
-                  </h5>
-                  <div className="text-xs space-y-1">
-                    <div className="flex justify-between items-center p-2 rounded bg-purple-50 dark:bg-purple-950/20">
-                      <span className="text-gray-600">Base:</span>
-                      <span className="font-semibold text-purple-600">
-                        {selectedHours.nightHours}h
-                      </span>
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Total heures
+                      </Label>
+                      <p className="text-sm font-medium">
+                        {selectedHours.regularHours +
+                          selectedHours.supplementaryHours25 +
+                          selectedHours.supplementaryHours50 +
+                          selectedHours.complementaryHours10 +
+                          selectedHours.nightHours +
+                          selectedHours.sundayHours +
+                          selectedHours.sundayNightHours +
+                          selectedHours.holidayHours +
+                          selectedHours.holidayNightHours}
+                        h
+                      </p>
                     </div>
-                  </div>
-                </div>
-
-                {/* Sunday Hours */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-muted-foreground">
-                    Dimanche
-                  </h5>
-                  <div className="text-xs space-y-1">
-                    <div className="flex justify-between items-center p-2 rounded bg-orange-50 dark:bg-orange-950/20">
-                      <span className="text-gray-600">Base:</span>
-                      <span className="font-semibold text-orange-600">
-                        {selectedHours.sundayHours}h
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Holiday Hours */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium text-muted-foreground">
-                    Jours fériés
-                  </h5>
-                  <div className="text-xs space-y-1">
-                    <div className="flex justify-between items-center p-2 rounded bg-red-50 dark:bg-red-950/20">
-                      <span className="text-gray-600">Base:</span>
-                      <span className="font-semibold text-red-600">
-                        {selectedHours.holidayHours}h
-                      </span>
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Heures majorées
+                      </Label>
+                      <p className="text-sm font-medium">
+                        {selectedHours.supplementaryHours25 +
+                          selectedHours.supplementaryHours50 +
+                          selectedHours.complementaryHours10 +
+                          selectedHours.nightHours +
+                          selectedHours.sundayHours +
+                          selectedHours.sundayNightHours +
+                          selectedHours.holidayHours +
+                          selectedHours.holidayNightHours}
+                        h
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Employee Info */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <div className="flex-1">
-                  <p className="font-semibold">{selectedHours.employeeName}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {
-                      mockEmployees.find(
-                        (e) => e.id === selectedHours.employeeId,
-                      )?.employeeNumber
-                    }{" "}
-                    -{" "}
-                    {
-                      mockEmployees.find(
-                        (e) => e.id === selectedHours.employeeId,
-                      )?.department
-                    }
-                  </p>
+              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                <div>
+                  Créée le {selectedHours.createdAt.toLocaleDateString("fr-FR")}
+                </div>
+                <div>
+                  Modifiée le{" "}
+                  {selectedHours.updatedAt.toLocaleDateString("fr-FR")}
                 </div>
               </div>
             </div>

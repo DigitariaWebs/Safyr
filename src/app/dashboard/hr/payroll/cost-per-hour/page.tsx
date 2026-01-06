@@ -9,6 +9,7 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { HoursInput } from "@/components/ui/hours-input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -545,13 +546,10 @@ export default function PersonnelCostPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-worked-hours">Heures travaillées</Label>
-                <Input
-                  id="edit-worked-hours"
-                  type="number"
+                <HoursInput
                   value={editWorkedHours}
-                  onChange={(e) =>
-                    setEditWorkedHours(parseFloat(e.target.value) || 0)
-                  }
+                  onChange={(value) => setEditWorkedHours(value)}
+                  step={0.5}
                 />
               </div>
             </div>

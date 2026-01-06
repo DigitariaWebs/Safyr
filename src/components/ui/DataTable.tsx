@@ -358,26 +358,6 @@ export function DataTable<T extends object>({
                 </SelectContent>
               </Select>
             ))}
-            {groupByOptions && groupByOptions.length > 0 && (
-              <Select
-                value={groupBy || "none"}
-                onValueChange={(value) =>
-                  onGroupByChange?.(value === "none" ? undefined : value)
-                }
-              >
-                <SelectTrigger className="w-45">
-                  <SelectValue placeholder="Grouper par" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucun groupement</SelectItem>
-                  {groupByOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
           </>
         )}
         {filters.length > 0 && (
@@ -429,6 +409,27 @@ export function DataTable<T extends object>({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+        {groupByOptions && groupByOptions.length > 0 && (
+          <Select
+            value={groupBy || "none"}
+            onValueChange={(value) =>
+              onGroupByChange?.(value === "none" ? undefined : value)
+            }
+          >
+            <SelectTrigger className="w-45">
+              Grouper par
+              <SelectValue placeholder="Grouper par" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Aucun groupement</SelectItem>
+              {groupByOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 

@@ -6,6 +6,7 @@ import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HoursInput } from "@/components/ui/hours-input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
   Select,
@@ -379,19 +380,15 @@ export default function BillingClientsPage() {
               <Label htmlFor="monthlyHours">
                 Volumes horaires mensuels (h)
               </Label>
-              <Input
-                id="monthlyHours"
-                type="number"
-                value={formData.monthlyHours || ""}
-                onChange={(e) =>
+              <HoursInput
+                value={formData.monthlyHours || 0}
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    monthlyHours: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
+                    monthlyHours: value,
                   })
                 }
-                placeholder="720"
+                step={1}
               />
             </div>
 
@@ -618,25 +615,24 @@ export default function BillingClientsPage() {
                         });
                       }}
                     />
-                    <Input
-                      type="number"
-                      placeholder="Heures mensuelles"
+                    <HoursInput
                       value={
-                        formData.planningVolumes?.[index]?.monthlyHours || ""
+                        formData.planningVolumes?.[index]?.monthlyHours || 0
                       }
-                      onChange={(e) => {
+                      onChange={(value) => {
                         const volumes = formData.planningVolumes || [];
                         const newVolumes = [...volumes];
                         newVolumes[index] = {
                           ...newVolumes[index],
                           site: newVolumes[index]?.site || `Site ${index + 1}`,
-                          monthlyHours: parseInt(e.target.value) || 0,
+                          monthlyHours: value,
                         };
                         setFormData({
                           ...formData,
                           planningVolumes: newVolumes,
                         });
                       }}
+                      step={1}
                     />
                   </div>
                 ))}

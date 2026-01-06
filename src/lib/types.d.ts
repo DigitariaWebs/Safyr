@@ -710,6 +710,8 @@ export interface WorkedHours {
   sundayNightHours: number; // Sunday night hours
   holidayHours: number;
   holidayNightHours: number; // Holiday night hours
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CSEDelegationHours {
@@ -807,9 +809,10 @@ export interface PayrollVariable {
   amount: number;
   currency: string;
   description?: string;
-  validated: boolean;
-  validatedBy?: string;
-  validatedAt?: Date;
+  status: "pending" | "validated" | "refused";
+  processedBy?: string;
+  processedAt?: Date;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
