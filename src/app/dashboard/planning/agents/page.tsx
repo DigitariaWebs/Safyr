@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -14,19 +13,93 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
-import { mockPlanningAgents, PlanningAgent } from "@/data/planning-agents";
+import { Switch } from "@/components/ui/switch";
+import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
+import { Modal } from "@/components/ui/modal";
+import {
+  Users,
+  CheckCircle,
+  Calendar,
+  AlertTriangle,
+  Shield,
+  MoreHorizontal,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import { PlanningAgent } from "@/data/planning-agents";
+import { mockEmployees } from "@/data/employees";
+import type { Employee } from "@/lib/types";
+
+// Convert Employee to PlanningAgent
+function employeeToPlanningAgent(employee: Employee): PlanningAgent {
+  // Extract contract info from active contract
+  const activeContract = employee.contracts.find((c) => c.status === "active");
+  const contractType =
+    activeContract?.type === "INTERIM"
+      ? "Intérim"
+      : activeContract?.type === "CDD"
+        ? "CDD"
+        : "CDI";
+  const contractHours = activeContract?.workingHours || 35;
+
+  // Extract qualifications from documents
+  const qualifications: string[] = [];
+  if (employee.documents.cqpAps) qualifications.push("CQP APS");
+  if (employee.documents.ssiap) {
+    const ssiapType = employee.documents.ssiap.type;
+    if (ssiapType === "SSIAP1") qualifications.push("SSIAP 1");
+    else if (ssiapType === "SSIAP2") qualifications.push("SSIAP 2");
+    else if (ssiapType === "SSIAP3") qualifications.push("SSIAP 3");
+    else qualifications.push("SSIAP");
+  }
+  if (employee.documents.sst) qualifications.push("SST");
+  if (employee.documents.proCard) qualifications.push("Carte Professionnelle");
+
+  return {
+    id: employee.id,
+    name: `${employee.firstName} ${employee.lastName}`,
+    contractType,
+    contractHours,
+    qualifications,
+    availabilityStatus: employee.status === "active" ? "Disponible" : "Absent",
+    weeklyHours: contractHours,
+    maxAmplitude: 12,
+    lastActivity: employee.updatedAt.toISOString().split("T")[0],
+    phone: employee.phone,
+    email: employee.email,
+  };
+}
 
 export default function PlanningAgentsPage() {
-  const [agents, setAgents] = useState<PlanningAgent[]>(mockPlanningAgents);
+  const [agents, setAgents] = useState<PlanningAgent[]>(() =>
+    mockEmployees.map(employeeToPlanningAgent),
+  );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<PlanningAgent | null>(
     null,
   );
+  const [agentToDelete, setAgentToDelete] = useState<PlanningAgent | null>(
+    null,
+  );
   const [formData, setFormData] = useState<
-    Omit<Partial<PlanningAgent>, "qualifications"> & { qualifications?: string }
+    Omit<Partial<PlanningAgent>, "qualifications"> & {
+      qualifications?: string;
+      hasCqpAps?: boolean;
+      hasSsiap?: boolean;
+      ssiapLevel?: "1" | "2" | "3";
+      hasSst?: boolean;
+      hasProCard?: boolean;
+    }
   >({});
 
   const columns: ColumnDef<PlanningAgent>[] = [
@@ -97,29 +170,52 @@ export default function PlanningAgentsPage() {
         </div>
       ),
     },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (agent) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleView(agent)}>
+              <Eye className="h-4 w-4 mr-2" />
+              Voir
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEditFromDropdown(agent)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Modifier
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDeleteClick(agent)}
+              className="text-red-600"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
   ];
 
-  const handleCreate = () => {
-    setFormData({
-      contractType: "CDI",
-      contractHours: 35,
-      weeklyHours: 35,
-      maxAmplitude: 12,
-      qualifications: "",
-    });
-    setIsCreateModalOpen(true);
-  };
-
   const handleSave = () => {
-    const qualifications: string[] = formData.qualifications
-      ? formData.qualifications
-          .split(",")
-          .map((q) => q.trim())
-          .filter((q) => q)
-      : [];
+    // Build qualifications array from toggles
+    const qualifications: string[] = [];
+    if (formData.hasCqpAps) qualifications.push("CQP APS");
+    if (formData.hasSsiap && formData.ssiapLevel) {
+      qualifications.push(`SSIAP ${formData.ssiapLevel}`);
+    }
+    if (formData.hasSst) qualifications.push("SST");
+    if (formData.hasProCard) qualifications.push("Carte Professionnelle");
+
     if (formData.id) {
       // Edit
-      const { qualifications: _, ...rest } = formData;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { qualifications: _qualifications, ...rest } = formData;
       setAgents(
         agents.map((a) =>
           a.id === formData.id ? { ...a, ...rest, qualifications } : a,
@@ -146,36 +242,154 @@ export default function PlanningAgentsPage() {
     setFormData({});
   };
 
-  const handleRowClick = (agent: PlanningAgent) => {
+  const handleView = (agent: PlanningAgent) => {
     setSelectedAgent(agent);
     setIsViewModalOpen(true);
   };
 
+  const handleRowClick = (agent: PlanningAgent) => {
+    handleView(agent);
+  };
+
+  const handleEditFromDropdown = (agent: PlanningAgent) => {
+    setSelectedAgent(agent);
+    const hasCqpAps = agent.qualifications.some((q) => q.includes("CQP APS"));
+    const ssiapQual = agent.qualifications.find((q) => q.includes("SSIAP"));
+    const hasSsiap = !!ssiapQual;
+    const ssiapLevel = ssiapQual
+      ? (ssiapQual.match(/\d+/)?.[0] as "1" | "2" | "3") || "1"
+      : "1";
+    const hasSst = agent.qualifications.some((q) => q.includes("SST"));
+    const hasProCard = agent.qualifications.some((q) =>
+      q.includes("Carte Professionnelle"),
+    );
+
+    setFormData({
+      ...agent,
+      qualifications: agent.qualifications.join(", "),
+      hasCqpAps,
+      hasSsiap,
+      ssiapLevel,
+      hasSst,
+      hasProCard,
+    });
+    setIsCreateModalOpen(true);
+  };
+
   const handleEdit = () => {
     if (selectedAgent) {
+      // Parse qualifications back to toggle states
+      const hasCqpAps = selectedAgent.qualifications.some((q) =>
+        q.includes("CQP APS"),
+      );
+      const ssiapQual = selectedAgent.qualifications.find((q) =>
+        q.includes("SSIAP"),
+      );
+      const hasSsiap = !!ssiapQual;
+      const ssiapLevel = ssiapQual
+        ? (ssiapQual.match(/\d+/)?.[0] as "1" | "2" | "3") || "1"
+        : "1";
+      const hasSst = selectedAgent.qualifications.some((q) =>
+        q.includes("SST"),
+      );
+      const hasProCard = selectedAgent.qualifications.some((q) =>
+        q.includes("Carte Professionnelle"),
+      );
+
       setFormData({
         ...selectedAgent,
         qualifications: selectedAgent.qualifications.join(", "),
+        hasCqpAps,
+        hasSsiap,
+        ssiapLevel,
+        hasSst,
+        hasProCard,
       });
       setIsViewModalOpen(false);
       setIsCreateModalOpen(true);
     }
   };
 
+  const handleDeleteClick = (agent: PlanningAgent) => {
+    setAgentToDelete(agent);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (agentToDelete) {
+      setAgents(agents.filter((a) => a.id !== agentToDelete.id));
+      setAgentToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  // Calculate statistics
+  const totalAgents = agents.length;
+  const availableAgents = agents.filter(
+    (a) => a.availabilityStatus === "Disponible",
+  ).length;
+  const onMission = agents.filter(
+    (a) => a.availabilityStatus === "En mission",
+  ).length;
+  const onLeave = agents.filter((a) => a.availabilityStatus === "Congé").length;
+  const cdiAgents = agents.filter((a) => a.contractType === "CDI").length;
+  const qualifiedAgents = agents.filter(
+    (a) => a.qualifications.length > 0,
+  ).length;
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Gestion des Agents</h1>
-          <p className="text-muted-foreground">
-            Consultation et gestion des fiches agents
-          </p>
-        </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvel Agent
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold">Gestion des Agents</h1>
+        <p className="text-muted-foreground">
+          Consultation et gestion des fiches agents
+        </p>
       </div>
+
+      <InfoCardContainer className="lg:grid-cols-3">
+        <InfoCard
+          icon={Users}
+          title="Total Agents"
+          value={totalAgents}
+          subtext="Agents dans le système"
+          color="slate"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Agents Disponibles"
+          value={availableAgents}
+          subtext="Prêts pour affectation"
+          color="green"
+        />
+        <InfoCard
+          icon={Calendar}
+          title="En Mission"
+          value={onMission}
+          subtext="Actuellement affectés"
+          color="blue"
+        />
+        <InfoCard
+          icon={AlertTriangle}
+          title="En Congé"
+          value={onLeave}
+          subtext="Indisponibles"
+          color="orange"
+        />
+        <InfoCard
+          icon={Shield}
+          title="Contrats CDI"
+          value={cdiAgents}
+          subtext={`${((cdiAgents / totalAgents) * 100).toFixed(0)}% du total`}
+          color="purple"
+        />
+        <InfoCard
+          icon={CheckCircle}
+          title="Qualifiés"
+          value={qualifiedAgents}
+          subtext="Avec certifications"
+          color="teal"
+        />
+      </InfoCardContainer>
 
       <DataTable
         data={agents}
@@ -244,14 +458,17 @@ export default function PlanningAgentsPage() {
               <Label htmlFor="contractHours">Heures contractuelles</Label>
               <Input
                 id="contractHours"
-                type="number"
+                type="text"
                 value={formData.contractHours || ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value.replace(",", ".");
+                  const parsed = parseFloat(value);
                   setFormData({
                     ...formData,
-                    contractHours: parseInt(e.target.value),
-                  })
-                }
+                    contractHours: isNaN(parsed) ? undefined : parsed,
+                  });
+                }}
+                placeholder="151,67"
               />
             </div>
 
@@ -259,14 +476,17 @@ export default function PlanningAgentsPage() {
               <Label htmlFor="weeklyHours">Heures hebdomadaires</Label>
               <Input
                 id="weeklyHours"
-                type="number"
+                type="text"
                 value={formData.weeklyHours || ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value.replace(",", ".");
+                  const parsed = parseFloat(value);
                   setFormData({
                     ...formData,
-                    weeklyHours: parseInt(e.target.value),
-                  })
-                }
+                    weeklyHours: isNaN(parsed) ? undefined : parsed,
+                  });
+                }}
+                placeholder="35"
               />
             </div>
 
@@ -274,14 +494,17 @@ export default function PlanningAgentsPage() {
               <Label htmlFor="maxAmplitude">Amplitude maximale (h)</Label>
               <Input
                 id="maxAmplitude"
-                type="number"
+                type="text"
                 value={formData.maxAmplitude || ""}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value.replace(",", ".");
+                  const parsed = parseFloat(value);
                   setFormData({
                     ...formData,
-                    maxAmplitude: parseInt(e.target.value),
-                  })
-                }
+                    maxAmplitude: isNaN(parsed) ? undefined : parsed,
+                  });
+                }}
+                placeholder="12"
               />
             </div>
 
@@ -312,16 +535,84 @@ export default function PlanningAgentsPage() {
             )}
 
             <div className="col-span-2">
-              <Label htmlFor="qualifications">Qualifications</Label>
-              <textarea
-                id="qualifications"
-                value={formData.qualifications || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, qualifications: e.target.value })
-                }
-                placeholder="CQP APS, SSIAP 1, Carte Professionnelle"
-                className="w-full min-h-20 p-3 border rounded-lg"
-              />
+              <Label>Qualifications</Label>
+              <div className="space-y-4 mt-3 p-4 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="cqpAps" className="cursor-pointer">
+                    CQP APS
+                  </Label>
+                  <Switch
+                    id="cqpAps"
+                    checked={formData.hasCqpAps || false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, hasCqpAps: checked })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ssiap" className="cursor-pointer">
+                      SSIAP
+                    </Label>
+                    <Switch
+                      id="ssiap"
+                      checked={formData.hasSsiap || false}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, hasSsiap: checked })
+                      }
+                    />
+                  </div>
+                  {formData.hasSsiap && (
+                    <div className="ml-4">
+                      <Select
+                        value={formData.ssiapLevel || "1"}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            ssiapLevel: value as "1" | "2" | "3",
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Niveau SSIAP" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">SSIAP 1</SelectItem>
+                          <SelectItem value="2">SSIAP 2</SelectItem>
+                          <SelectItem value="3">SSIAP 3</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="sst" className="cursor-pointer">
+                    SST (Sauveteur Secouriste du Travail)
+                  </Label>
+                  <Switch
+                    id="sst"
+                    checked={formData.hasSst || false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, hasSst: checked })
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="proCard" className="cursor-pointer">
+                    Carte Professionnelle
+                  </Label>
+                  <Switch
+                    id="proCard"
+                    checked={formData.hasProCard || false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, hasProCard: checked })
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -446,6 +737,33 @@ export default function PlanningAgentsPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        type="warning"
+        title="Confirmer la suppression"
+        description={`Êtes-vous sûr de vouloir supprimer l'agent ${agentToDelete?.name} ? Cette action est irréversible.`}
+        actions={{
+          primary: {
+            label: "Supprimer",
+            onClick: handleDeleteConfirm,
+            variant: "destructive",
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsDeleteDialogOpen(false),
+            variant: "outline",
+          },
+        }}
+        closable={false}
+      >
+        <div className="text-sm text-muted-foreground">
+          Cette action supprimera définitivement toutes les données associées à
+          cet agent.
+        </div>
       </Modal>
     </div>
   );
