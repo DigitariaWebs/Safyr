@@ -229,36 +229,44 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="contactName">Nom interlocuteur</Label>
+              <Label htmlFor="tva">Numéro de TVA</Label>
               <Input
-                id="contactName"
-                value={formData.contactName || ""}
+                id="tva"
+                value={formData.tva || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, contactName: e.target.value })
+                  setFormData({ ...formData, tva: e.target.value })
                 }
-                placeholder="Nom interlocuteur"
+                placeholder="FR12345678901"
               />
             </div>
 
+            <div className="col-span-2 border-t pt-4">
+              <Label className="text-base font-semibold mb-2 block">
+                Informations Entreprise
+              </Label>
+            </div>
+
             <div>
-              <Label htmlFor="phone">Téléphone</Label>
+              <Label htmlFor="companyPhone">Téléphone entreprise</Label>
               <PhoneInput
-                id="phone"
-                value={formData.phone || ""}
-                onChange={(value) => setFormData({ ...formData, phone: value })}
+                id="companyPhone"
+                value={formData.companyPhone || ""}
+                onChange={(value) =>
+                  setFormData({ ...formData, companyPhone: value })
+                }
               />
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="companyEmail">Email entreprise</Label>
               <Input
-                id="email"
+                id="companyEmail"
                 type="email"
-                value={formData.email || ""}
+                value={formData.companyEmail || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+                  setFormData({ ...formData, companyEmail: e.target.value })
                 }
-                placeholder="contact@example.com"
+                placeholder="contact@entreprise.com"
               />
             </div>
 
@@ -272,6 +280,54 @@ export default function BillingClientsPage() {
                 }
                 placeholder="1 Rue du Commerce, 75000 Paris"
               />
+            </div>
+
+            <div className="col-span-2 border-t pt-4">
+              <Label className="text-base font-semibold mb-2 block">
+                Informations Interlocuteur
+              </Label>
+            </div>
+
+            <div>
+              <Label htmlFor="contactName">Nom interlocuteur</Label>
+              <Input
+                id="contactName"
+                value={formData.contactName || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactName: e.target.value })
+                }
+                placeholder="Nom interlocuteur"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contactPhone">Téléphone interlocuteur</Label>
+              <PhoneInput
+                id="contactPhone"
+                value={formData.contactPhone || ""}
+                onChange={(value) =>
+                  setFormData({ ...formData, contactPhone: value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contactEmail">Email interlocuteur</Label>
+              <Input
+                id="contactEmail"
+                type="email"
+                value={formData.contactEmail || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactEmail: e.target.value })
+                }
+                placeholder="interlocuteur@exemple.com"
+              />
+            </div>
+
+            <div className="col-span-2 border-t pt-4">
+              <Label className="text-base font-semibold mb-2 block">
+                Informations Contrat
+              </Label>
             </div>
 
             <div>
@@ -298,50 +354,32 @@ export default function BillingClientsPage() {
 
             <div>
               <Label>Type de prestation</Label>
-              <div className="space-y-2">
-                {SERVICE_TYPES.map((type) => (
-                  <div key={type} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`serviceType-${type}`}
-                      checked={
-                        Array.isArray(formData.serviceTypes)
-                          ? (formData.serviceTypes as ServiceType[]).includes(
-                              type as ServiceType,
-                            )
-                          : false
-                      }
-                      onChange={(e) => {
-                        const current: ServiceType[] = Array.isArray(
-                          formData.serviceTypes,
-                        )
-                          ? (formData.serviceTypes as ServiceType[])
-                          : [];
-                        if (e.target.checked) {
-                          setFormData({
-                            ...formData,
-                            serviceTypes: [...current, type as ServiceType],
-                          });
-                        } else {
-                          setFormData({
-                            ...formData,
-                            serviceTypes: current.filter(
-                              (t) => t !== (type as ServiceType),
-                            ),
-                          });
-                        }
-                      }}
-                      className="rounded border-gray-300"
-                    />
-                    <Label
-                      htmlFor={`serviceType-${type}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
+              <Select
+                value={
+                  Array.isArray(formData.serviceTypes) &&
+                  formData.serviceTypes.length > 0
+                    ? formData.serviceTypes[0]
+                    : formData.serviceType || ""
+                }
+                onValueChange={(value) => {
+                  setFormData({
+                    ...formData,
+                    serviceType: value as ServiceType,
+                    serviceTypes: [value as ServiceType],
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
                       {type}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -507,18 +545,27 @@ export default function BillingClientsPage() {
             </div>
 
             <div>
-              <Label htmlFor="paymentTerm">Délai paiement (jours)</Label>
-              <Input
-                id="paymentTerm"
-                type="number"
-                value={formData.paymentTerm || ""}
-                onChange={(e) =>
+              <Label htmlFor="paymentTerm">Délai paiement</Label>
+              <Select
+                value={String(formData.paymentTerm || 30)}
+                onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    paymentTerm: parseInt(e.target.value),
+                    paymentTerm: parseInt(value),
                   })
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">À réception</SelectItem>
+                  <SelectItem value="15">15 jours</SelectItem>
+                  <SelectItem value="30">30 jours</SelectItem>
+                  <SelectItem value="45">45 jours</SelectItem>
+                  <SelectItem value="60">60 jours</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -677,16 +724,37 @@ export default function BillingClientsPage() {
               </div>
 
               <div>
-                <Label>Téléphone</Label>
+                <Label>Numéro de TVA</Label>
                 <p className="text-sm font-medium">
-                  {selectedClient.phone || "-"}
+                  {selectedClient.tva || "-"}
                 </p>
               </div>
 
               <div>
-                <Label>Email</Label>
+                <Label>Téléphone entreprise</Label>
                 <p className="text-sm font-medium">
-                  {selectedClient.email || "-"}
+                  {selectedClient.companyPhone || "-"}
+                </p>
+              </div>
+
+              <div>
+                <Label>Email entreprise</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.companyEmail || "-"}
+                </p>
+              </div>
+
+              <div>
+                <Label>Téléphone interlocuteur</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.contactPhone || "-"}
+                </p>
+              </div>
+
+              <div>
+                <Label>Email interlocuteur</Label>
+                <p className="text-sm font-medium">
+                  {selectedClient.contactEmail || "-"}
                 </p>
               </div>
 
@@ -803,7 +871,9 @@ export default function BillingClientsPage() {
               <div>
                 <Label>Délai de paiement</Label>
                 <p className="text-sm font-medium">
-                  {selectedClient.paymentTerm} jours
+                  {selectedClient.paymentTerm === 0
+                    ? "À réception"
+                    : `${selectedClient.paymentTerm} jours`}
                 </p>
               </div>
 

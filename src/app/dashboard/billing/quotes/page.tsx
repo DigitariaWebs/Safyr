@@ -24,6 +24,7 @@ import {
 } from "@/data/billing-quotes";
 import { mockBillingClients } from "@/data/billing-clients";
 import { mockBillingServices, computePriceTTC } from "@/data/billing-services";
+import Link from "next/link";
 
 function formatCurrency(value: number) {
   return `${(Math.round(value * 100) / 100).toLocaleString("fr-FR")} €`;
@@ -236,9 +237,11 @@ export default function BillingQuotesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau devis
+          <Button asChild>
+            <Link href="/dashboard/billing/quotes/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau devis
+            </Link>
           </Button>
         </div>
       </div>

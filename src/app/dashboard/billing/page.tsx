@@ -15,10 +15,27 @@ import {
   Send,
   AlertCircle,
   Receipt,
+  FileX,
+  ShoppingCart,
 } from "lucide-react";
 import { mockBillingClients } from "@/data/billing-clients";
 import { mockBillingInvoices } from "@/data/billing-invoices";
 import Link from "next/link";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  LineChart,
+  Line,
+} from "recharts";
 
 export default function BillingDashboard() {
   const activeClients = mockBillingClients.filter(
@@ -71,6 +88,43 @@ export default function BillingDashboard() {
 
   // Calculate average margin (simplified)
   const averageMargin = 15.5; // This would be calculated from payroll costs vs billing
+
+  // Data for charts
+  const monthlyRevenueData = [
+    { month: "Jan", revenue: 45000 },
+    { month: "Fév", revenue: 52000 },
+    { month: "Mar", revenue: 48000 },
+    { month: "Avr", revenue: 61000 },
+    { month: "Mai", revenue: 55000 },
+    { month: "Juin", revenue: 67000 },
+  ];
+
+  const invoiceStatusData = [
+    {
+      name: "Payées",
+      value: mockBillingInvoices.filter((inv) => inv.status === "Payée").length,
+      color: "#22c55e",
+    },
+    {
+      name: "Envoyées",
+      value: mockBillingInvoices.filter((inv) => inv.status === "Envoyée")
+        .length,
+      color: "#3b82f6",
+    },
+    {
+      name: "Validées",
+      value: mockBillingInvoices.filter((inv) => inv.status === "Validée")
+        .length,
+      color: "#8b5cf6",
+    },
+    { name: "En attente", value: pendingInvoices, color: "#f97316" },
+  ];
+
+  const clientsData = [
+    { name: "Sécurité", value: 12, color: "#3b82f6" },
+    { name: "Accueil", value: 8, color: "#10b981" },
+    { name: "Mixte", value: 15, color: "#f59e0b" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -154,6 +208,114 @@ export default function BillingDashboard() {
           color="green"
         />
       </InfoCardContainer>
+
+      {/* Charts Section */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Chiffre d&apos;affaires mensuel</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyRevenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value) =>
+                    `${(value || 0).toLocaleString("fr-FR")} €`
+                  }
+                />
+                <Bar dataKey="revenue" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Répartition des factures</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={invoiceStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) =>
+                    `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                  }
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {invoiceStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Évolution du CA</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyRevenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value) =>
+                    `${(value || 0).toLocaleString("fr-FR")} €`
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#8b5cf6"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Clients par type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={clientsData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {clientsData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent Invoices */}
       <Card>
@@ -258,6 +420,26 @@ export default function BillingDashboard() {
                 <Link href="/dashboard/billing/quotes">
                   <FilePlus className="h-4 w-4 mr-2" />
                   Nouveau devis
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/billing/credits">
+                  <FileX className="h-4 w-4 mr-2" />
+                  Nouvel avoir
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/billing/purchase-orders">
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Bon de commande
                 </Link>
               </Button>
               <Button

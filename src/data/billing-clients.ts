@@ -2,6 +2,7 @@ export interface BillingClient {
   id: string;
   name: string;
   siret: string;
+  tva?: string; // Numéro de TVA
   contractType: "Mensuel" | "Forfaitaire" | "Heure réelle";
   // Backwards-compatible single service type (kept for compatibility)
   serviceType?:
@@ -35,9 +36,15 @@ export interface BillingClient {
   billingDay: number; // jour du mois
   paymentTerm: number; // jours
   lastInvoice: string;
-  // Contact
-  contactName?: string;
+  // Company info
+  companyPhone?: string;
+  companyEmail?: string;
   address?: string;
+  // Contact info
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  // Legacy fields (kept for backward compatibility)
   phone?: string;
   email?: string;
   // Connexions
@@ -53,6 +60,7 @@ export const mockBillingClients: BillingClient[] = [
     id: "1",
     name: "Centre Commercial Rosny 2",
     siret: "12345678901234",
+    tva: "FR12345678901",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
     serviceTypes: ["Gardiennage"],
@@ -69,10 +77,12 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 30,
     lastInvoice: "2024-01-01",
-    contactName: "Mme. Responsable",
+    companyPhone: "01 23 45 67 89",
+    companyEmail: "contact@rosny2.example.com",
     address: "1 Rue du Commerce, 93100 Rosny-sous-Bois",
-    phone: "01 23 45 67 89",
-    email: "contact@rosny2.example.com",
+    contactName: "Mme. Responsable",
+    contactPhone: "06 12 34 56 78",
+    contactEmail: "responsable@rosny2.example.com",
     agentTypes: ["Agent de sécurité", "Chef de poste"],
     planningVolumes: [
       { site: "Rosny 2 - Entrée principale", monthlyHours: 720 },
@@ -82,6 +92,7 @@ export const mockBillingClients: BillingClient[] = [
     id: "2",
     name: "Siège Social La Défense",
     siret: "98765432109876",
+    tva: "FR98765432109",
     contractType: "Forfaitaire",
     serviceType: "Rondes",
     serviceTypes: ["Rondes"],
@@ -97,10 +108,12 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 5,
     paymentTerm: 45,
     lastInvoice: "2024-01-05",
-    contactName: "M. Directeur",
+    companyPhone: "01 98 76 54 32",
+    companyEmail: "contact@ladefense.example.com",
     address: "10 Place de la Défense, 92000 La Défense",
-    phone: "01 98 76 54 32",
-    email: "contact@ladefense.example.com",
+    contactName: "M. Directeur",
+    contactPhone: "06 98 76 54 32",
+    contactEmail: "directeur@ladefense.example.com",
     agentTypes: ["Rondier", "Agent de sécurité"],
     planningVolumes: [
       { site: "Tour A", monthlyHours: 240 },
@@ -111,6 +124,7 @@ export const mockBillingClients: BillingClient[] = [
     id: "3",
     name: "Entrepôt Logistique Gennevilliers",
     siret: "11223344556677",
+    tva: "FR11223344556",
     contractType: "Heure réelle",
     serviceType: "Événementiel",
     serviceTypes: ["Événementiel"],
@@ -124,16 +138,19 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 10,
     paymentTerm: 30,
     lastInvoice: "2024-01-10",
-    contactName: "M. Logistique",
+    companyPhone: "01 34 56 78 90",
+    companyEmail: "contact@gennevilliers-warehouse.example.com",
     address: "5 Rue des Entrepôts, 92230 Gennevilliers",
-    phone: "01 34 56 78 90",
-    email: "contact@gennevilliers-warehouse.example.com",
+    contactName: "M. Logistique",
+    contactPhone: "06 34 56 78 90",
+    contactEmail: "logistique@gennevilliers-warehouse.example.com",
     agentTypes: ["Agent événementiel"],
   },
   {
     id: "4",
     name: "Hôpital Saint-Antoine",
     siret: "22334455667788",
+    tva: "FR22334455667",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
     serviceTypes: ["Gardiennage", "SSIAP"],
@@ -150,10 +167,12 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 30,
     lastInvoice: "2024-01-01",
-    contactName: "Direction des services",
+    companyPhone: "01 23 45 11 22",
+    companyEmail: "security@stantoine.example.com",
     address: "2 Rue de l'Hôpital, 75012 Paris",
-    phone: "01 23 45 11 22",
-    email: "security@stantoine.example.com",
+    contactName: "Direction des services",
+    contactPhone: "06 23 45 11 22",
+    contactEmail: "direction@stantoine.example.com",
     agentTypes: ["Agent de sécurité", "Chef de poste", "Superviseur"],
     planningVolumes: [
       { site: "Entrée principale", monthlyHours: 320 },
@@ -165,6 +184,7 @@ export const mockBillingClients: BillingClient[] = [
     id: "5",
     name: "Aéroport Charles de Gaulle",
     siret: "33445566778899",
+    tva: "FR33445566778",
     contractType: "Mensuel",
     serviceType: "Gardiennage",
     serviceTypes: ["Gardiennage", "Accueil"],
@@ -181,10 +201,12 @@ export const mockBillingClients: BillingClient[] = [
     billingDay: 1,
     paymentTerm: 45,
     lastInvoice: "2024-01-01",
-    contactName: "Direction Sécurité aéroportuaire",
+    companyPhone: "01 60 79 60 00",
+    companyEmail: "security@cdg.example.com",
     address: "95700 Roissy-en-France",
-    phone: "01 60 79 60 00",
-    email: "security@cdg.example.com",
+    contactName: "Direction Sécurité aéroportuaire",
+    contactPhone: "06 60 79 60 00",
+    contactEmail: "direction.securite@cdg.example.com",
     agentTypes: [
       "Agent de sécurité aéroportuaire",
       "Chef de poste",

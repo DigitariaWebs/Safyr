@@ -258,7 +258,6 @@ export default function BillingServicesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Service">Service</SelectItem>
-                  <SelectItem value="Produit">Produit</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -313,10 +312,11 @@ export default function BillingServicesPage() {
 
             {formData.priceBase === "Prix HT" ? (
               <div>
-                <Label>Prix HT</Label>
+                <Label>Prix HT (€)</Label>
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.priceHT ?? ""}
                   onChange={(e) =>
                     setFormData({
@@ -324,14 +324,16 @@ export default function BillingServicesPage() {
                       priceHT: e.target.value ? parseFloat(e.target.value) : 0,
                     })
                   }
+                  placeholder="0.00"
                 />
               </div>
             ) : (
               <div>
-                <Label>Prix TTC</Label>
+                <Label>Prix TTC (€)</Label>
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.priceTTC ?? ""}
                   onChange={(e) =>
                     setFormData({
@@ -339,6 +341,7 @@ export default function BillingServicesPage() {
                       priceTTC: e.target.value ? parseFloat(e.target.value) : 0,
                     })
                   }
+                  placeholder="0.00"
                 />
               </div>
             )}
@@ -357,7 +360,6 @@ export default function BillingServicesPage() {
                 <SelectContent>
                   <SelectItem value="20">20 %</SelectItem>
                   <SelectItem value="10">10 %</SelectItem>
-                  <SelectItem value="5.5">5.5 %</SelectItem>
                   <SelectItem value="0">0 %</SelectItem>
                 </SelectContent>
               </Select>

@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Eye, Send, CheckCircle } from "lucide-react";
 import { mockBillingInvoices, BillingInvoice } from "@/data/billing-invoices";
 import { mockBillingClients } from "@/data/billing-clients";
+import Link from "next/link";
 
 export default function BillingInvoicesPage() {
   const [invoices, setInvoices] =
@@ -233,9 +234,11 @@ export default function BillingInvoicesPage() {
             Géolocalisation, Paie et RH
           </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvelle Facture
+        <Button asChild>
+          <Link href="/dashboard/billing/invoices/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle Facture
+          </Link>
         </Button>
       </div>
 
