@@ -911,19 +911,38 @@ export interface PersonnelCost {
 
 export interface PayrollAnomaly {
   id: string;
+  executionId?: string;
+  controlId?: string;
   employeeId: string;
   employeeName: string;
   type: PayrollAnomalyType;
+  title?: string;
   description: string;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: "low" | "medium" | "high" | "critical" | "info" | "warning";
   period: string;
+  date?: Date;
   expectedValue?: number;
   actualValue?: number;
   currency?: string;
-  status: "open" | "investigating" | "resolved" | "dismissed";
+  status:
+    | "open"
+    | "investigating"
+    | "resolved"
+    | "dismissed"
+    | "pending"
+    | "reviewed"
+    | "corrected"
+    | "ignored"
+    | "false_positive";
   resolvedBy?: string;
   resolvedAt?: Date;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  assignedTo?: string;
   notes?: string;
+  details?: PayrollAnomalyDetail;
+  autoCorrectAvailable?: boolean;
+  correction?: PayrollAnomalyCorrection;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -935,6 +954,15 @@ export type PayrollAnomalyType =
   | "missing_allowance"
   | "contribution_error"
   | "tax_calculation_error"
+  | "hours_vs_planning"
+  | "duplicate_entry"
+  | "missing_entry"
+  | "excessive_hours"
+  | "insufficient_rest"
+  | "bonus_inconsistency"
+  | "ijss_mismatch"
+  | "ijss_missing"
+  | "overtime_limit"
   | "other";
 
 export interface PayrollExportConfig {
@@ -1081,6 +1109,45 @@ export interface EmployeePayrollVariables {
   lastModifiedBy?: string;
   lastModifiedAt?: Date;
   notes?: string;
+}
+
+export interface PayrollControl {
+  id: string;
+  name: string;
+  category: "hours" | "legal" | "bonuses" | "ijss" | "duplicates" | "general";
+  description: string;
+  enabled: boolean;
+  severity: "info" | "warning" | "critical";
+}
+
+export interface ControlExecution {
+  id: string;
+  periodId: string;
+  period: string;
+  startedAt: Date;
+  completedAt?: Date;
+  status: "running" | "completed" | "failed";
+  controlsRun: string[]; // control IDs
+  totalAnomalies: number;
+  criticalCount: number;
+  warningCount: number;
+  infoCount: number;
+  employeesAffected: number;
+  autoCorrectableCount: number;
+}
+
+export interface PayrollAnomalyDetail {
+  expected?: unknown;
+  actual?: unknown;
+  related?: unknown;
+  planningData?: unknown;
+  variableData?: unknown;
+}
+
+export interface PayrollAnomalyCorrection {
+  action: string;
+  description: string;
+  payload: unknown;
 }
 
 export interface PayrollPeriod {

@@ -684,7 +684,177 @@ Summary card (gray background):
 
 ---
 
+### 4. Payroll Automatic Controls & Analysis
+
+**Route:** `/dashboard/payroll/controls`
+
+**Purpose:** Execute automated controls on payroll data to detect anomalies, validate compliance with legal requirements, and ensure data quality before payroll calculation.
+
+#### Header Section
+
+- **Page Title & Description:** "Contrôles Automatiques" with description
+- **Primary Action Button:** "Configurer & Lancer" button opens execution modal
+- **Last Execution Card:** Displays timestamp and period of last control run
+
+#### Control Execution Modal
+
+Modal dialog for configuring and launching controls with enhanced UI:
+
+**Period Selection Section:**
+- Highlighted background section with "Période d'analyse" label
+- PeriodSelector dropdown without icon for clean look
+
+**Quick Actions:**
+- "Tout sélectionner" button to check all controls
+- "Tout désélectionner" button to uncheck all controls
+- Selection counter badge showing "X/12 sélectionné(s)"
+
+**Control Cards (Scrollable List, max 450px):**
+Each control card displays:
+- **Visual Selection State:** Blue border and background when selected, gray when not
+- **Checkbox:** For bulk selection
+- **Control Name:** Bold, clickable label
+- **Description:** Small gray text explaining the control
+- **Category Badge:** Color-coded badge (Hours=blue, Legal=purple, Bonuses=green, IJSS=orange, Duplicates=red)
+- **Last Run Status Panel:** Colored box showing:
+  - Status icon (✓ success, ⚠ warning, ✕ error)
+  - Result text: "Aucune anomalie", "X avertissement(s)", or "X critique(s)"
+  - Date/time of last execution
+  - Color-coded background (green/orange/red)
+- **Individual Run Button:** "Lancer ce contrôle" button (full width)
+  - Shows spinner when that specific control is running
+  - Primary variant when control is selected, outline when not
+
+**Footer Actions:**
+- **Cancel Button:** "Annuler" with X icon (left side)
+- **Bulk Execute Button:** "Lancer X contrôle(s)" with Play icon (right side, large)
+  - Disabled when no controls selected
+  - Shows spinner during bulk execution
+  - Count updates dynamically
+
+#### Results Summary
+
+InfoCard grid displaying key metrics:
+- **Total Anomalies:** Count of all detected issues
+- **Critical Issues:** Blockers requiring immediate attention (red)
+- **Warnings:** Issues to review (orange)
+- **Informational:** FYI notices (blue)
+- **Employees Affected:** Number of employees with anomalies
+- **Auto-Correctable:** Count of anomalies with automatic fix available
+
+#### Anomalies List
+
+Tabbed interface to filter by category:
+- **All:** Complete list of anomalies
+- **Hours:** Hours vs planning discrepancies
+- **Legal:** Compliance violations (max hours, rest periods, overtime)
+- **Bonuses:** Bonus/allowance inconsistencies
+- **IJSS:** Sick leave payment issues
+- **Duplicates:** Duplicate entries and missing data
+
+**Filters:**
+- Severity filter dropdown (all, critical, warning, info)
+- Status filter dropdown (all, pending, reviewed, corrected, ignored)
+- Export button for anomaly report
+
+**DataTable Columns:**
+- **Severity:** Icon + badge (critical/warning/info)
+- **Type:** Anomaly title + control category
+- **Employee:** Employee name
+- **Description:** Issue description + date
+- **Status:** Status badge (pending, reviewed, corrected, ignored)
+- **Actions:** Dropdown menu (view details, mark as reviewed, ignore)
+
+#### Anomaly Detail Modal
+
+Opened when clicking "View Details" on an anomaly:
+
+- **Header:** Anomaly title, employee name, date, severity badge
+- **Description:** Full text explanation of the issue
+- **Technical Details:** Expandable section showing:
+  - Expected values
+  - Actual values
+  - Related data (planning, shifts, contracts)
+  - JSON view of detailed information
+- **Auto-Correction Panel:** (if available)
+  - Green banner with correction description
+  - "Apply Correction" button to auto-fix
+- **Status Information:** Current status, reviewer, review date
+- **Notes:** Additional comments or observations
+- **Action Buttons:**
+  - Ignore button
+  - Mark as Reviewed button
+  - Close button
+
+#### Control Types Implemented
+
+**1. Hours vs Planning Coherence:**
+- Hours declared without planning
+- Planning without hours declared
+- Significant discrepancies between planned and actual
+
+**2. Duplicates & Omissions:**
+- Duplicate entries for same employee/date
+- Missing entries for active employees
+- Gaps in time periods
+
+**3. Legal Compliance:**
+- Daily working time > 10h (or 12h without waiver)
+- Weekly working time > 48h
+- Rest period < 11h daily
+- Rest period < 35h weekly
+- Overtime limit violations
+
+**4. Bonus Inconsistencies:**
+- Night bonuses without night hours
+- Holiday bonuses on non-holidays
+- On-call allowances without on-call planning
+- Transport allowances without displacement
+
+**5. IJSS Validation:**
+- IJSS amounts not matching calculations
+- IJSS for periods without sick leave
+- Missing IJSS for declared sick leave
+
+#### Features
+
+- **Enhanced Modal UI:** Modern, card-based control configuration interface
+- **Last Run Status:** Each control shows its last execution result with color-coded status
+- **Visual Selection Feedback:** Selected controls highlighted with blue border and background
+- **Category Color Coding:** Controls organized by color-coded category badges
+- **Quick Selection Actions:** One-click select all/deselect all controls
+- **Real-time Execution:** Run controls on-demand for any period
+- **Individual & Bulk Execution:** Run single controls independently or multiple controls together
+- **Selective Controls:** Enable/disable individual control types via checkboxes
+- **Smart Results:** Anomalies filtered based on controls executed (individual or bulk)
+- **Severity Levels:** Critical, warning, and informational classifications
+- **Auto-Correction:** One-click fixes for correctable anomalies
+- **Status Tracking:** Track review status of each anomaly
+- **Filtering:** Multi-level filtering by category, severity, and status
+- **Detailed Analysis:** Drill-down into each anomaly with full context
+- **Export Capability:** Generate anomaly reports for documentation
+- **Execution History:** Track past control runs and results
+
+#### Implementation Notes
+
+- Uses mock data with 14 sample anomalies across all control types
+- Mock last run status for each control with date, status, and anomaly count
+- Simulated execution time (3 seconds)
+- Execution modal closes automatically when controls start running
+- Running control ID tracked for individual execution feedback
+- Status updates persist in component state
+- Auto-correction applies corrections to local state
+- Categories align with PAYROLL_CONTROLS definitions
+- Color-coded categories: hours (blue), legal (purple), bonuses (green), IJSS (orange), duplicates (red)
+- Status colors: success (green), warning (orange), error (red)
+- French language throughout
+- Responsive layout with mobile support
+- Modal dialog uses scrollable list for controls (450px max height)
+- Selected controls have border-primary and bg-primary/5 styling
+- Individual control execution shows pulse animation on that control card
+
+---
+
 ### Coming Soon
-- Automatic Controls (D.5)
 - Social Report (D.6)
 - Payroll KPI Dashboard (D.7)

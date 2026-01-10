@@ -532,14 +532,14 @@
 - [x] Bulletins (PDF, coffre-fort RH)
 - [x] Déclarations DSN automatiques
 
-## 5. Contrôles Automatiques & Analyses
+## 5. Contrôles Automatiques & Analyses ✅
 
-- [ ] Contrôle cohérence heures vs planning
-- [ ] Contrôle duplicats ou oublis
-- [ ] Contrôle seuil amplitude max
-- [ ] Contrôle incohérences primes/plannings
-- [ ] Contrôle anomalies IJSS (trop/peu perçu)
-- [ ] Génération automatique d'un rapport d'anomalies avec correction rapide
+- [x] Contrôle cohérence heures vs planning
+- [x] Contrôle duplicats ou oublis
+- [x] Contrôle seuil amplitude max
+- [x] Contrôle incohérences primes/plannings
+- [x] Contrôle anomalies IJSS (trop/peu perçu)
+- [x] Génération automatique d'un rapport d'anomalies avec correction rapide
 
 ## 6. Bilan Social Automatique
 

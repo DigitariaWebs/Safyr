@@ -47,7 +47,6 @@ const navItems: NavItem[] = [
     label: "Contrôles",
     href: "/dashboard/payroll/controls",
     icon: FileCheck,
-    disabled: true,
   },
   {
     label: "Bilan Social",
