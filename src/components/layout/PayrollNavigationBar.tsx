@@ -10,6 +10,7 @@ import {
   FileCheck,
   TrendingUp,
   DollarSign,
+  FileSpreadsheet,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -31,6 +32,11 @@ const navItems: NavItem[] = [
         href: "/dashboard/payroll/configuration/employee",
       },
     ],
+  },
+  {
+    label: "Saisie Variables",
+    href: "/dashboard/payroll/variables",
+    icon: FileSpreadsheet,
   },
   {
     label: "Calcul Paie",

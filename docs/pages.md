@@ -179,6 +179,252 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 - Conditional layout rendering based on pathname (hide navigation for specific pages)
 - Tab-based navigation with state management (activeTab)
 
+### 2. Payroll Variables - Input & Import
+**Route**: `/dashboard/payroll/variables`
+
+**Description**: Comprehensive variable input and import management for payroll processing. Allows synchronization of data from internal modules (Planning, HR) and import from external sources. Includes automated coherence checks and validation workflow.
+
+**Features**:
+
+#### Period Selection
+- Dropdown selector for payroll periods (month/year)
+- Visual period selector with calendar icon
+- Shows period status: Draft, Importing, Review, Validated, Calculated, Closed
+- Tracks total employees, imported count, validated count, errors, and warnings
+
+#### Statistics Dashboard
+- **Employees**: Total employee count for the period
+- **Importés**: Number of employees with complete import (Planning + HR)
+- **Validés**: Number of validated employee records
+- **Erreurs**: Count of employees with blocking errors
+- **Avertissements**: Count of employees with warnings
+
+#### Data Synchronization Actions
+Three main import sources:
+1. **Synchroniser Planning**: One-click sync of latest planning data
+   - Normal hours, night hours, holiday hours
+   - Overtime (25%, 50%)
+   - Sunday hours, Sunday night hours
+   - Holiday night hours, on-call hours
+   - Meal allowances, travel allowances
+   - Dressing allowances, uniform allowances
+
+2. **Synchroniser RH**: One-click sync of latest HR data
+   - Paid leave (congés payés)
+   - Sick leave (maladie)
+   - Work accidents (arrêts AT)
+   - Exceptional leave
+   - Maternity/paternity leave
+   - Union hours (heures de délégation syndicales)
+   - Salary deductions (retenues)
+
+3. **Importer fichier externe**: Manual upload of CSV/Excel files
+   - File format validation
+   - Dialog with file upload interface
+   - Supports .csv, .xlsx, .xls formats
+
+#### Coherence Checks Panel
+Automated validation displayed when issues are detected:
+- **Errors** (blocking):
+  - Hours exceeding legal maximum
+  - Missing contract information
+  - Invalid data entries
+  - Each error shows employee name, description, and "Corriger" action
+
+- **Warnings** (non-blocking):
+  - Missing absence data
+  - Unusual hour patterns
+  - Data completeness issues
+  - Each warning shows employee name, description, and "Voir" action
+
+#### Data Tables (3 Tabs)
+
+**Tab 1: Vue d'ensemble (Overview)**
+Columns:
+- Employee (name + ID)
+- Position
+- Contract type (CDI, CDD, Intérim, Apprentissage)
+- Planning import status (badge with icon)
+- HR import status (badge with icon)
+- Validation status (Erreurs, Avertissements, Validé, À valider)
+- Actions dropdown: View details, Edit, Validate
+
+**Tab 2: Heures Planning (Planning Hours)**
+Detailed hour breakdown:
+- Employee name
+- Normal hours (H. Normales)
+- Night hours (H. Nuit)
+- Holiday hours (H. Fériées)
+- Overtime 25% (H. Sup 25%)
+- Overtime 50% (H. Sup 50%)
+- Sunday hours (H. Dimanche)
+- Meal allowances (Paniers)
+- Edit action per row
+
+**Tab 3: Absences RH (HR Absences)**
+Absence data:
+- Employee name
+- Paid leave (Congés payés)
+- Sick leave (Maladie)
+- Work accidents (AT)
+- Exceptional leave (Congés except.)
+- Union hours (H. Syndicales)
+- Salary deductions (Retenues)
+- Edit action per row
+
+#### View/Edit Modal
+Comprehensive modal for viewing and editing employee variables:
+
+**Employee Information**:
+- Employee name (read-only)
+- Position (read-only)
+
+**Planning Hours Section**:
+All hours use HoursInput component with increment/decrement buttons:
+- Normal hours (0.5 step increments)
+- Night hours
+- Holiday hours
+- Overtime 25%
+- Overtime 50%
+- Sunday hours
+- Meal allowances (integer input)
+- Travel allowances (integer input)
+- Dressing allowances (integer input)
+
+**HR Absences Section**:
+Integer inputs for:
+- Paid leave (days)
+- Sick leave (days)
+- Work accident (days)
+- Exceptional leave (days)
+- Union hours
+- Salary deductions (euros)
+
+**Coherence Checks Section**:
+Displays all validation results for the employee:
+- Error messages in red background
+- Warning messages in orange background
+- Details and expected vs. actual values
+
+**Modal Actions**:
+- **View mode**: "Fermer" button only
+- **Edit mode**: "Fermer" and "Enregistrer" buttons
+- Saves changes with last modified timestamp
+
+#### External Import Dialog
+Simple file upload interface:
+- Period display (read-only)
+- File input (.csv, .xlsx, .xls)
+- Format instructions
+- Import confirmation
+- Cancel and Import actions
+
+**Import Status Badges**:
+- **En attente** (Pending): Gray/outline
+- **Import en cours** (Importing): Secondary with refresh icon
+- **Importé** (Imported): Default with checkmark
+- **Erreur** (Error): Destructive with X icon
+- **Validé** (Validated): Green with check icon
+
+**Row Actions**:
+- **Voir détails**: Opens view-only modal
+- **Modifier**: Opens edit modal with all fields
+- **Valider**: Marks record as validated (only if no errors)
+
+**Components Used**:
+- InfoCard and InfoCardContainer for statistics
+- PeriodSelector for period selection
+- HoursInput for all hour inputs (with increment/decrement)
+- DataTable for all three tabs
+- Tabs for organizing different views
+- Dialog for view/edit and external import
+- Badge for status indicators
+- Card for grouping sections
+- DropdownMenu for row actions
+
+**Mock Data**:
+- `/src/data/payroll-variables.ts`:
+  - 10 employee payroll variable records
+  - 3 payroll periods (current + 2 previous)
+  - Coherence check examples (errors and warnings)
+  - Helper functions: getVariablesByPeriod, getVariableById, getCurrentPeriod, getPeriodsForSelector
+
+**Types** (`/src/lib/types.d.ts`):
+- ImportSource: "planning" | "hr" | "external" | "manual"
+- ImportStatus: "pending" | "importing" | "imported" | "error" | "validated"
+- PlanningHoursImport: All hour types and allowances from planning
+- HRAbsencesImport: All absence types from HR
+- CoherenceCheck: Validation results with severity levels
+- EmployeePayrollVariables: Main entity combining all data
+- PayrollPeriod: Period management with status tracking
+
+**Integrations**:
+- Planning Module: Automatic sync of worked hours and allowances
+- HR Module: Automatic sync of absences and deductions
+- External Systems: CSV/Excel import capability
+- Payroll Calculation: Provides input for payroll processing
+
+**Workflow**:
+1. Select payroll period
+2. Sync data from Planning module
+3. Sync data from HR module
+4. Review coherence checks (errors and warnings)
+5. Correct any errors via edit modal
+6. Validate employee records individually or in bulk
+7. Optionally import additional data from external files
+8. Once all validated, data is ready for payroll calculation
+
+**Implementation Notes**:
+- Implements specification item D.3 "Saisie & Import des Variables"
+- All 15 checklist items completed and marked in todo.md
+- Uses InfoCard component for consistent statistics display
+- PeriodSelector component for reusable period selection
+- HoursInput component provides better UX for hour entry
+- Warning colors improved for better contrast (orange instead of yellow)
+- Sync actions are one-click operations (not complex imports)
+- External import is the only manual file-based import
+- Real-time coherence checks displayed prominently
+- Modal forms support both view and edit modes
+- All hour inputs support decimal values (0.5 increments)
+- Table search functionality on employee name
+- Responsive grid layouts for cards and forms
+
+---
+
+## Reusable Components
+
+### PeriodSelector
+**Location**: `/src/components/ui/period-selector.tsx`
+
+**Description**: Reusable component for selecting payroll/accounting periods across the application.
+
+**Props**:
+- `periods`: Array of Period objects (id, month, year, label)
+- `selectedPeriod`: Currently selected period
+- `onPeriodChange`: Callback when period changes
+- `label`: Optional label text (default: "Période")
+- `showIcon`: Optional calendar icon display (default: true)
+- `className`: Optional additional CSS classes
+
+**Helper Function**:
+- `generatePeriods(startYear, startMonth, count)`: Generates array of periods going backwards from start date
+
+**Usage**:
+```tsx
+<PeriodSelector
+  periods={periods}
+  selectedPeriod={selectedPeriod}
+  onPeriodChange={setSelectedPeriod}
+  label="Période de paie"
+/>
+```
+
+**Implementation Notes**:
+- Can be used in Payroll, HR, Accounting, or any module needing period selection
+- Consistent UI across the application
+- French month names
+- Period format: "Janvier 2024", "Février 2024", etc.
+
 ### Coming Soon
 - Payroll Calculation
 - Automatic Controls

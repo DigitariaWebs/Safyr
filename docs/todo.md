@@ -502,23 +502,23 @@
 - [x] Habilitations et qualifications (CQP, carte pro)
 - [x] Import automatique des absences (maladie / AT / CP)
 
-## 3. Saisie & Import des Variables
+## 3. Saisie & Import des Variables ✅
 
-- [ ] Import automatique depuis Planning : heures normales
-- [ ] Import automatique depuis Planning : heures nuit
-- [ ] Import automatique depuis Planning : heures fériées
-- [ ] Import automatique depuis Planning : heures majorées
-- [ ] Import automatique depuis Planning : astreintes
-- [ ] Import automatique depuis Planning : paniers, indemnités
-- [ ] Import depuis RH : absences
-- [ ] Import depuis RH : maladies
-- [ ] Import depuis RH : arrêts AT
-- [ ] Import depuis RH : congés payés
-- [ ] Import depuis RH : congés exceptionnels
-- [ ] Import depuis RH : heures de délégation syndicales
-- [ ] Import depuis RH : sanctions RH impactant salaire (retenue)
-- [ ] Import fichiers externes (CSV, API)
-- [ ] Automatisation des contrôles de cohérence
+- [x] Import automatique depuis Planning : heures normales
+- [x] Import automatique depuis Planning : heures nuit
+- [x] Import automatique depuis Planning : heures fériées
+- [x] Import automatique depuis Planning : heures majorées
+- [x] Import automatique depuis Planning : astreintes
+- [x] Import automatique depuis Planning : paniers, indemnités
+- [x] Import depuis RH : absences
+- [x] Import depuis RH : maladies
+- [x] Import depuis RH : arrêts AT
+- [x] Import depuis RH : congés payés
+- [x] Import depuis RH : congés exceptionnels
+- [x] Import depuis RH : heures de délégation syndicales
+- [x] Import depuis RH : sanctions RH impactant salaire (retenue)
+- [x] Import fichiers externes (CSV, API)
+- [x] Automatisation des contrôles de cohérence
 
 ## 4. Calcul de Paie
 

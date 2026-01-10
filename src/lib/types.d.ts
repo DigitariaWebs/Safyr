@@ -992,6 +992,122 @@ export interface PayrollStats {
   nextPayrollDate?: Date;
 }
 
+// Payroll Variable Import Types
+export type ImportSource = "planning" | "hr" | "external" | "manual";
+
+export type ImportStatus =
+  | "pending"
+  | "importing"
+  | "imported"
+  | "error"
+  | "validated";
+
+export interface PlanningHoursImport {
+  normalHours: number;
+  nightHours: number;
+  holidayHours: number;
+  overtimeHours25: number;
+  overtimeHours50: number;
+  sundayHours: number;
+  sundayNightHours: number;
+  holidayNightHours: number;
+  onCallHours: number;
+  mealAllowances: number;
+  travelAllowances: number;
+  dressingAllowances: number;
+  uniformAllowances: number;
+}
+
+export interface HRAbsencesImport {
+  sickLeave: number;
+  workAccident: number;
+  paidLeave: number;
+  unpaidLeave: number;
+  exceptionalLeave: number;
+  maternityLeave: number;
+  paternityLeave: number;
+  unionHours: number;
+  salaryDeductions: number;
+}
+
+export interface CoherenceCheck {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  checkType: "error" | "warning" | "info";
+  category: "hours" | "absences" | "allowances" | "contract" | "legal";
+  message: string;
+  details?: string;
+  expectedValue?: number;
+  actualValue?: number;
+  resolved: boolean;
+  resolvedBy?: string;
+  resolvedAt?: Date;
+}
+
+export interface EmployeePayrollVariables {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  period: string; // e.g., "2024-12"
+  position: string;
+  contractType: "CDI" | "CDD" | "Intérim" | "Apprentissage";
+
+  // Import status per source
+  planningImportStatus: ImportStatus;
+  planningImportDate?: Date;
+  hrImportStatus: ImportStatus;
+  hrImportDate?: Date;
+  externalImportStatus: ImportStatus;
+  externalImportDate?: Date;
+
+  // Planning data
+  planningData: PlanningHoursImport;
+
+  // HR data
+  hrData: HRAbsencesImport;
+
+  // Validation
+  validated: boolean;
+  validatedBy?: string;
+  validatedAt?: Date;
+
+  // Coherence checks
+  hasErrors: boolean;
+  hasWarnings: boolean;
+  coherenceChecks: CoherenceCheck[];
+
+  // Metadata
+  lastModifiedBy?: string;
+  lastModifiedAt?: Date;
+  notes?: string;
+}
+
+export interface PayrollPeriod {
+  id: string;
+  month: number;
+  year: number;
+  label: string; // e.g., "Décembre 2024"
+  status:
+    | "draft"
+    | "importing"
+    | "review"
+    | "validated"
+    | "calculated"
+    | "closed";
+  startDate: Date;
+  endDate: Date;
+  totalEmployees: number;
+  importedEmployees: number;
+  validatedEmployees: number;
+  totalErrors: number;
+  totalWarnings: number;
+  createdBy: string;
+  createdAt: Date;
+  closedBy?: string;
+  closedAt?: Date;
+}
+
 // Discipline & Legal Types
 export interface Warning {
   id: string;
