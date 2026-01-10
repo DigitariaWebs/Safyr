@@ -68,7 +68,7 @@ export function PeriodSelector({
 export function generatePeriods(
   startYear: number,
   startMonth: number,
-  count: number
+  count: number,
 ): Period[] {
   const periods: Period[] = [];
   let year = startYear;

@@ -663,7 +663,7 @@ export const mockPayrollSocialReport202412: PayrollSocialReport = {
 
 export function getPayrollSocialReport(
   year: number,
-  month?: number
+  month?: number,
 ): PayrollSocialReport {
   if (month === 12 && year === 2024) {
     return mockPayrollSocialReport202412;

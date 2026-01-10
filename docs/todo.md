@@ -600,24 +600,24 @@
 
 ## 8. Connexions avec Autres Modules
 
-- [ ] Synchronisation avec module RH : contrats, absences, qualifications
+- [x] Synchronisation avec module RH : contrats, absences, qualifications
 - [ ] Mise à jour automatique des dossiers salariés
 - [ ] Archivage des bulletins dans la GED
-- [ ] Récupération automatique des heures depuis Planning
-- [ ] Contrôle anomalies heures vs présence
-- [ ] Mise à jour automatique des indicateurs Dashboard
-- [ ] Données exploitables en format pivot / analytique
-- [ ] Export comptable paramétrable
+- [x] Récupération automatique des heures depuis Planning
+- [x] Contrôle anomalies heures vs présence
+- [x] Mise à jour automatique des indicateurs Dashboard
+- [x] Données exploitables en format pivot / analytique
+- [x] Export comptable paramétrable
 - [ ] Analytique par site / client / service
 
 ## 9. Livrables & Fonctionnalités Finales
 
-- [ ] Module paie complet
-- [ ] Bilan social automatisé
-- [ ] Dashboard connecté
-- [ ] Modèles d'exports (Excel, PDF)
-- [ ] Workflow de validation
-- [ ] Gestion complète des bulletins
+- [x] Module paie complet
+- [x] Bilan social automatisé
+- [x] Dashboard connecté
+- [x] Modèles d'exports (Excel, PDF)
+- [x] Workflow de validation
+- [x] Gestion complète des bulletins
 
 ## 10. Intégration et Gestion des Avantages et Dispositifs Liés au Personnel
 

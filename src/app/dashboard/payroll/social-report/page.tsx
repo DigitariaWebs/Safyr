@@ -51,7 +51,6 @@ const COLORS = {
 };
 
 export default function PayrollSocialReportPage() {
-  const [selectedYear, setSelectedYear] = useState(2024);
   const [selectedMonth, setSelectedMonth] = useState<number | undefined>(
     undefined,
   );
@@ -60,7 +59,6 @@ export default function PayrollSocialReportPage() {
   );
 
   const handlePeriodChange = (year: number, month?: number) => {
-    setSelectedYear(year);
     setSelectedMonth(month);
     setReport(getPayrollSocialReport(year, month));
   };

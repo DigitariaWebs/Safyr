@@ -129,6 +129,15 @@ const anomalyTypeLabels: Record<PayrollAnomalyType, string> = {
   missing_allowance: "Indemnité manquante",
   contribution_error: "Erreur cotisations",
   tax_calculation_error: "Erreur impôts",
+  hours_vs_planning: "Heures vs Planning",
+  duplicate_entry: "Saisie en doublon",
+  missing_entry: "Saisie manquante",
+  excessive_hours: "Heures excessives",
+  insufficient_rest: "Repos insuffisant",
+  bonus_inconsistency: "Incohérence prime",
+  ijss_mismatch: "IJSS incorrect",
+  ijss_missing: "IJSS manquant",
+  overtime_limit: "Limite heures sup.",
   other: "Autre",
 };
 
@@ -137,6 +146,8 @@ const severityColors = {
   medium: "bg-yellow-100 text-yellow-800",
   high: "bg-orange-100 text-orange-800",
   critical: "bg-red-100 text-red-800",
+  info: "bg-gray-100 text-gray-800",
+  warning: "bg-yellow-100 text-yellow-800",
 };
 
 const statusLabels = {
@@ -144,6 +155,11 @@ const statusLabels = {
   investigating: "En cours",
   resolved: "Résolu",
   dismissed: "Rejeté",
+  pending: "En attente",
+  reviewed: "Examiné",
+  corrected: "Corrigé",
+  ignored: "Ignoré",
+  false_positive: "Faux positif",
 };
 
 export default function PayrollControlPage() {
@@ -156,7 +172,7 @@ export default function PayrollControlPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editDescription, setEditDescription] = useState("");
   const [editSeverity, setEditSeverity] = useState<
-    "low" | "medium" | "high" | "critical"
+    "low" | "medium" | "high" | "critical" | "info" | "warning"
   >("low");
   const [editType, setEditType] = useState<PayrollAnomalyType>("missing_hours");
 

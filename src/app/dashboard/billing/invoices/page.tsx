@@ -105,21 +105,6 @@ export default function BillingInvoicesPage() {
     },
   ];
 
-  const handleCreate = () => {
-    setFormData({
-      status: "Brouillon",
-      vatRate: 20,
-      normalHours: 0,
-      overtimeHours: 0,
-      replacements: 0,
-      subtotal: 0,
-      vatAmount: 0,
-      total: 0,
-      previewed: false,
-    });
-    setIsCreateModalOpen(true);
-  };
-
   const handleGenerate = () => {
     // Simulation de génération automatique
     const client = mockBillingClients.find((c) => c.id === formData.clientId);

@@ -5,11 +5,13 @@ This file documents all implemented pages in the Safyr application with their fe
 ## Payroll Module
 
 ### 1. Payroll Configuration (Legal, Conventional, Company & Employee)
+
 **Route**: `/dashboard/payroll/configuration`
 
 **Description**: Comprehensive payroll configuration page covering legal parameters, collective agreements, company structures, and employee settings. Uses a full-width tab-based layout where tabs replace the module navigation bar.
 
-**Layout Pattern**: 
+**Layout Pattern**:
+
 - No side navigation bar (hidden for this page)
 - Tabs displayed at the top of the page with icons
 - Each tab contains its own header, actions, and data table
@@ -18,6 +20,7 @@ This file documents all implemented pages in the Safyr application with their fe
 **Features**:
 
 #### Tab 1: Legal & Conventional (Légal & Conventionnel)
+
 - List of collective agreements (IDCC, name, sector)
 - Minimum hourly rate management
 - Bonus configuration (night, Sunday, public holidays)
@@ -29,18 +32,21 @@ This file documents all implemented pages in the Safyr application with their fe
 - Status: Active, Under Review, Inactive
 
 #### Tab 2: Company Structures (Structures)
+
 - Management of companies, establishments, and departments
 - Hierarchical structures (parent/child)
 - SIRET numbers and addresses
 - Active/inactive status
 
 #### Tab 3: Cost Centers (Centres de Coûts)
+
 - Analytical and operational centers
 - Links to company structures
 - Budget management
 - Custom codes and labels
 
 #### Tab 4: Internal Rules (Règles Internes)
+
 - Configuration of bonuses and allowances
 - Calculation types: Fixed, % Salary, % Hours
 - Frequencies: Monthly, Quarterly, Annual, One-time
@@ -48,12 +54,14 @@ This file documents all implemented pages in the Safyr application with their fe
 - Amount and percentage management
 
 #### Tab 5: Monthly Closings (Clôtures)
+
 - List of payroll periods
 - Closing tracking (Open, Closed, Validated)
 - Payroll amounts and employee count
 - Closing date and responsible person
 
 #### Tab 6: Accounting Transfers (Transferts Compta)
+
 - Configuration of exports to accounting
 - Types: Payroll, Charges, Provisions
 - Account prefixes
@@ -61,7 +69,9 @@ This file documents all implemented pages in the Safyr application with their fe
 - Automatic or manual transfer
 
 #### Tab 7: Employee Contracts (Contrats)
+
 **Sub-tab: Active Contracts**
+
 - List of current contracts
 - Types: Permanent (CDI), Fixed-term (CDD), Temporary, Apprenticeship
 - Hourly rates and gross monthly salaries
@@ -69,18 +79,21 @@ This file documents all implemented pages in the Safyr application with their fe
 - Staff categories
 
 **Sub-tab: History (Historique)**
+
 - Contract modification history
 - Types: Amendment, Modification, Renewal, Termination
 - Previous and new values
 - Dates and validators
 
 **Sub-tab: DPAE / DUE**
+
 - Prior Employment Declarations (DPAE)
 - Unique Employment Declarations (DUE)
 - Status: Pending, Sent, Validated, Rejected
 - Declaration references
 
 #### Tab 8: Assignments (Affectations)
+
 - Employee assignments to sites and clients
 - Positions held
 - Start and end dates
@@ -88,6 +101,7 @@ This file documents all implemented pages in the Safyr application with their fe
 - Status: Active, Ended, Suspended
 
 #### Tab 9: Qualifications (Habilitations)
+
 - Management of qualifications and certifications
 - Types: CQP, Professional Card, SST, SSIAP, Other
 - Qualification numbers
@@ -95,6 +109,7 @@ This file documents all implemented pages in the Safyr application with their fe
 - Expiry alerts (Valid, Expiring Soon, Expired)
 
 #### Tab 10: Absence Import (Import Absences)
+
 - Configuration of automatic absence import
 - Types: Sick Leave, Work Accident/Occupational Disease, Paid Leave, Unpaid Leave
 - Sources: HR Module, Planning, External
@@ -104,6 +119,7 @@ This file documents all implemented pages in the Safyr application with their fe
 
 **CRUD Operations**:
 All tabs support full CRUD (Create, Read, Update, Delete) operations:
+
 - **Create**: "+" button on each tab opens a modal with form fields specific to that entity
 - **View**: Eye icon in actions dropdown shows read-only details modal
 - **Edit**: Pencil icon opens edit modal pre-filled with existing data
@@ -111,6 +127,7 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 - Actions accessed via three-dot menu (MoreVertical) in each row
 
 **Forms Implemented**:
+
 1. **Company Structure**: Code, name, type (société/établissement/service), SIRET, address, status
 2. **Cost Center**: Code, name, type (Analytique/Opérationnel), budget, status
 3. **Internal Rule**: Code, name, type (Prime/Indemnité), amount/percentage, calculation basis, frequency
@@ -122,6 +139,7 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 9. **Absence Import Config**: Absence type, source module, auto-import toggle, import frequency
 
 **Components used**:
+
 - Tabs for main tab organization (10 tabs)
 - Nested tabs for contract subcategories
 - DataTable for all tables with row actions
@@ -132,17 +150,20 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 - Switch for boolean toggles
 
 **Integrations**:
+
 - HR Module (absence import, employee data)
 - Planning Module (paid leave, assignments)
 - Accounting Module (accounting transfers)
 - Geolocation Module (sites and positions)
 
 **Mock Data**:
+
 - `/src/data/payroll-conventions.ts`: Legal collective agreements
 - `/src/data/payroll-company-config.ts`: Structures, cost centers, internal rules, closings, transfers
 - `/src/data/payroll-employee-config.ts`: Contracts, history, declarations, assignments, qualifications, absence configs
 
 **Implementation Notes**:
+
 - Consolidates both "Paramétrage Légal & Conventionnel" (Item D.1) and "Paramétrage Entreprise & Salarié" (Item D.2) into a single comprehensive configuration page
 - Uses full-width tab-based layout - tabs replace the navigation bar
 - Navigation bar is conditionally hidden when pathname is `/dashboard/payroll/configuration`
@@ -164,11 +185,13 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 ## Implementation Notes
 
 ### Naming Conventions
+
 - Routes in kebab-case
 - Components in PascalCase
 - Data files in kebab-case with module prefix
 
 ### Patterns Used
+
 - Client components with "use client"
 - Local state with useState
 - Nested tabs for subcategories
@@ -180,6 +203,7 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 - Tab-based navigation with state management (activeTab)
 
 ### 2. Payroll Variables - Input & Import
+
 **Route**: `/dashboard/payroll/variables`
 
 **Description**: Comprehensive variable input and import management for payroll processing. Allows synchronization of data from internal modules (Planning, HR) and import from external sources. Includes automated coherence checks and validation workflow.
@@ -187,12 +211,14 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 **Features**:
 
 #### Period Selection
+
 - Dropdown selector for payroll periods (month/year)
 - Visual period selector with calendar icon
 - Shows period status: Draft, Importing, Review, Validated, Calculated, Closed
 - Tracks total employees, imported count, validated count, errors, and warnings
 
 #### Statistics Dashboard
+
 - **Employees**: Total employee count for the period
 - **Importés**: Number of employees with complete import (Planning + HR)
 - **Validés**: Number of validated employee records
@@ -200,7 +226,9 @@ All tabs support full CRUD (Create, Read, Update, Delete) operations:
 - **Avertissements**: Count of employees with warnings
 
 #### Data Synchronization Actions
+
 Three main import sources:
+
 1. **Synchroniser Planning**: One-click sync of latest planning data
    - Normal hours, night hours, holiday hours
    - Overtime (25%, 50%)
@@ -224,7 +252,9 @@ Three main import sources:
    - Supports .csv, .xlsx, .xls formats
 
 #### Coherence Checks Panel
+
 Automated validation displayed when issues are detected:
+
 - **Errors** (blocking):
   - Hours exceeding legal maximum
   - Missing contract information
@@ -241,6 +271,7 @@ Automated validation displayed when issues are detected:
 
 **Tab 1: Vue d'ensemble (Overview)**
 Columns:
+
 - Employee (name + ID)
 - Position
 - Contract type (CDI, CDD, Intérim, Apprentissage)
@@ -251,6 +282,7 @@ Columns:
 
 **Tab 2: Heures Planning (Planning Hours)**
 Detailed hour breakdown:
+
 - Employee name
 - Normal hours (H. Normales)
 - Night hours (H. Nuit)
@@ -263,6 +295,7 @@ Detailed hour breakdown:
 
 **Tab 3: Absences RH (HR Absences)**
 Absence data:
+
 - Employee name
 - Paid leave (Congés payés)
 - Sick leave (Maladie)
@@ -273,14 +306,17 @@ Absence data:
 - Edit action per row
 
 #### View/Edit Modal
+
 Comprehensive modal for viewing and editing employee variables:
 
 **Employee Information**:
+
 - Employee name (read-only)
 - Position (read-only)
 
 **Planning Hours Section**:
 All hours use HoursInput component with increment/decrement buttons:
+
 - Normal hours (0.5 step increments)
 - Night hours
 - Holiday hours
@@ -293,6 +329,7 @@ All hours use HoursInput component with increment/decrement buttons:
 
 **HR Absences Section**:
 Integer inputs for:
+
 - Paid leave (days)
 - Sick leave (days)
 - Work accident (days)
@@ -302,17 +339,21 @@ Integer inputs for:
 
 **Coherence Checks Section**:
 Displays all validation results for the employee:
+
 - Error messages in red background
 - Warning messages in orange background
 - Details and expected vs. actual values
 
 **Modal Actions**:
+
 - **View mode**: "Fermer" button only
 - **Edit mode**: "Fermer" and "Enregistrer" buttons
 - Saves changes with last modified timestamp
 
 #### External Import Dialog
+
 Simple file upload interface:
+
 - Period display (read-only)
 - File input (.csv, .xlsx, .xls)
 - Format instructions
@@ -320,6 +361,7 @@ Simple file upload interface:
 - Cancel and Import actions
 
 **Import Status Badges**:
+
 - **En attente** (Pending): Gray/outline
 - **Import en cours** (Importing): Secondary with refresh icon
 - **Importé** (Imported): Default with checkmark
@@ -327,11 +369,13 @@ Simple file upload interface:
 - **Validé** (Validated): Green with check icon
 
 **Row Actions**:
+
 - **Voir détails**: Opens view-only modal
 - **Modifier**: Opens edit modal with all fields
 - **Valider**: Marks record as validated (only if no errors)
 
 **Components Used**:
+
 - InfoCard and InfoCardContainer for statistics
 - PeriodSelector for period selection
 - HoursInput for all hour inputs (with increment/decrement)
@@ -343,6 +387,7 @@ Simple file upload interface:
 - DropdownMenu for row actions
 
 **Mock Data**:
+
 - `/src/data/payroll-variables.ts`:
   - 10 employee payroll variable records
   - 3 payroll periods (current + 2 previous)
@@ -350,6 +395,7 @@ Simple file upload interface:
   - Helper functions: getVariablesByPeriod, getVariableById, getCurrentPeriod, getPeriodsForSelector
 
 **Types** (`/src/lib/types.d.ts`):
+
 - ImportSource: "planning" | "hr" | "external" | "manual"
 - ImportStatus: "pending" | "importing" | "imported" | "error" | "validated"
 - PlanningHoursImport: All hour types and allowances from planning
@@ -359,12 +405,14 @@ Simple file upload interface:
 - PayrollPeriod: Period management with status tracking
 
 **Integrations**:
+
 - Planning Module: Automatic sync of worked hours and allowances
 - HR Module: Automatic sync of absences and deductions
 - External Systems: CSV/Excel import capability
 - Payroll Calculation: Provides input for payroll processing
 
 **Workflow**:
+
 1. Select payroll period
 2. Sync data from Planning module
 3. Sync data from HR module
@@ -375,6 +423,7 @@ Simple file upload interface:
 8. Once all validated, data is ready for payroll calculation
 
 **Implementation Notes**:
+
 - Implements specification item D.3 "Saisie & Import des Variables"
 - All 15 checklist items completed and marked in todo.md
 - Uses InfoCard component for consistent statistics display
@@ -394,11 +443,13 @@ Simple file upload interface:
 ## Reusable Components
 
 ### PeriodSelector
+
 **Location**: `/src/components/ui/period-selector.tsx`
 
 **Description**: Reusable component for selecting payroll/accounting periods across the application.
 
 **Props**:
+
 - `periods`: Array of Period objects (id, month, year, label)
 - `selectedPeriod`: Currently selected period
 - `onPeriodChange`: Callback when period changes
@@ -407,9 +458,11 @@ Simple file upload interface:
 - `className`: Optional additional CSS classes
 
 **Helper Function**:
+
 - `generatePeriods(startYear, startMonth, count)`: Generates array of periods going backwards from start date
 
 **Usage**:
+
 ```tsx
 <PeriodSelector
   periods={periods}
@@ -420,12 +473,14 @@ Simple file upload interface:
 ```
 
 **Implementation Notes**:
+
 - Can be used in Payroll, HR, Accounting, or any module needing period selection
 - Consistent UI across the application
 - French month names
 - Period format: "Janvier 2024", "Février 2024", etc.
 
 ### 3. Payroll Calculation
+
 **Route**: `/dashboard/payroll/calculation`
 
 **Description**: Complete payroll calculation engine that processes all employee variables, applies legal and contractual rules, calculates social contributions, and generates pay slips. Handles gross to net calculations with full breakdown of all salary elements and contributions.
@@ -433,12 +488,15 @@ Simple file upload interface:
 **Features**:
 
 #### Period Selection
+
 - Reuses PeriodSelector component for consistent period selection
 - Shows selected period prominently
 - Period determines which calculation run to display
 
 #### Calculation Status Overview
+
 Five key metrics displayed using InfoCard components:
+
 1. **Total Employés**: Total number of employees in the period
 2. **Calculés**: Employees with completed calculations (blue/success)
 3. **En Attente**: Pending calculations (yellow/warning)
@@ -446,7 +504,9 @@ Five key metrics displayed using InfoCard components:
 5. **Validés**: Validated and locked calculations (green/info)
 
 #### Financial Summary
+
 Four main financial cards:
+
 1. **Masse Salariale Brute**: Total gross payroll for all employees
 2. **Total Net à Payer**: Total net salary to be paid (green)
 3. **Charges Patronales**: Total employer contributions (orange)
@@ -455,7 +515,9 @@ Four main financial cards:
 All amounts displayed in euros with French formatting (e.g., "14 136,50 €")
 
 #### Action Buttons
+
 Contextual actions based on calculation status:
+
 - **Calculer (X)**: Run calculation for pending employees (shows count)
 - **Recalculer tout**: Recalculate all employees from scratch
 - **Valider & Verrouiller**: Lock calculations to prevent modifications
@@ -463,7 +525,9 @@ Contextual actions based on calculation status:
 - **Générer DSN**: Generate monthly DSN declaration file
 
 #### Employee Calculations Table
+
 Comprehensive DataTable with columns:
+
 - **Matricule**: Employee registration number (sortable)
 - **Nom**: Employee name and position (sortable)
 - **Statut**: Calculation status badge (Validé, Calculé, En attente, Erreur)
@@ -474,17 +538,20 @@ Comprehensive DataTable with columns:
 - **Actions**: View details (eye icon), Download pay slip (if calculated)
 
 **Status Badges**:
+
 - **Validé** (Validated): Green with CheckCircle icon
 - **Calculé** (Calculated): Blue with Calculator icon
 - **En attente** (Pending): Gray with Clock icon
 - **Erreur** (Error): Red with AlertCircle icon
 
 #### Employee Calculation Detail Modal
+
 Full-width modal with 4 tabs showing complete calculation breakdown:
 
 **Tab 1: Vue d'ensemble (Overview)**
 
 Three main cards:
+
 1. **Informations Employé**:
    - Matricule (employee number)
    - Poste (position)
@@ -501,7 +568,7 @@ Three main cards:
 
 3. **Coût Employeur**:
    - Salaire Brut
-   - + Charges patronales (orange)
+   - - Charges patronales (orange)
    - = Coût Total (bold, primary, large text)
 
 4. **Maintien de Salaire (IJSS)** (if applicable):
@@ -517,6 +584,7 @@ Three main cards:
 **Tab 2: Éléments de Paie (Salary Elements)**
 
 Two sections:
+
 1. **Gains (Earnings)**:
    - Each earning displayed as a row
    - Label and code
@@ -538,6 +606,7 @@ Two sections:
 **Tab 3: Cotisations Salarié (Employee Contributions)**
 
 Detailed breakdown of all employee social contributions:
+
 - Each contribution displayed as a row
 - Label and code (e.g., "S21.G05.00.002")
 - Tranche indication (A, B, or C for social security ceiling)
@@ -552,6 +621,7 @@ Detailed breakdown of all employee social contributions:
   - CRDS (social debt repayment)
 
 Summary card (gray background):
+
 - Salaire Brut
 - - Total Cotisations Salarié (red)
 - = Net à Payer (bold, green, large)
@@ -559,6 +629,7 @@ Summary card (gray background):
 **Tab 4: Cotisations Patronales (Employer Contributions)**
 
 Detailed breakdown of all employer social contributions:
+
 - Each contribution displayed as a row
 - Label and code
 - Tranche indication (A, B, or C)
@@ -572,11 +643,13 @@ Detailed breakdown of all employer social contributions:
   - Accidents du travail (work accidents)
 
 Summary card (gray background):
+
 - Salaire Brut
-- + Total Charges Patronales (orange)
+- - Total Charges Patronales (orange)
 - = Coût Total Employeur (bold, primary, large)
 
 **Calculation Logic Implemented**:
+
 1. **Gross Salary Calculation**:
    - Base salary (monthly)
    - Hours (normal, night, holiday, overtime with majoration)
@@ -603,6 +676,7 @@ Summary card (gray background):
    - Year-to-date cumulative tracking
 
 **Components Used**:
+
 - PeriodSelector for period selection
 - InfoCard for statistics
 - Card for financial summary and sections
@@ -613,6 +687,7 @@ Summary card (gray background):
 - Button for actions
 
 **Mock Data**:
+
 - `/src/data/payroll-calculation.ts`:
   - 6 employee calculations (4 calculated, 1 validated, 1 pending, 1 error)
   - Complete PayrollCalculationRun for December 2024
@@ -624,6 +699,7 @@ Summary card (gray background):
   - Factory functions for creating salary elements and contributions
 
 **Types** (`/src/lib/types.d.ts`):
+
 - PayrollCalculationStatus: pending | calculating | calculated | validated | error | exported
 - SalaryElement: Earnings and deductions with type, category, quantity, rate, amount
 - SocialContributionDetail: Employee and employer contributions with base, rate, amount, tranche
@@ -633,6 +709,7 @@ Summary card (gray background):
 - DSNDeclaration: DSN declaration data
 
 **Calculation Features**:
+
 1. **Gross Salary**: All earning elements summed
 2. **IJSS Management**: Automatic calculation with salary maintenance
 3. **Bonuses**: All types (performance, seniority, responsibility, precarity)
@@ -644,6 +721,7 @@ Summary card (gray background):
 9. **DSN**: Automatic declaration generation
 
 **Workflow**:
+
 1. Select payroll period
 2. Review calculation status overview
 3. Click "Calculer" to run pending calculations
@@ -656,6 +734,7 @@ Summary card (gray background):
 10. Generate DSN declaration for submission
 
 **Integration Points**:
+
 - Input from Payroll Variables (D.3): Uses imported hours and absences
 - Legal/Conventional parameters (D.1): Applies rates and rules
 - Employee configuration (D.2): Uses contract and assignment data
@@ -665,6 +744,7 @@ Summary card (gray background):
 - DSN: Automated social declarations
 
 **Implementation Notes**:
+
 - Implements specification item D.4 "Calcul de Paie"
 - All 9 checklist items completed and marked in todo.md
 - Uses realistic 2024 French social contribution rates
@@ -701,16 +781,19 @@ Summary card (gray background):
 Modal dialog for configuring and launching controls with enhanced UI:
 
 **Period Selection Section:**
+
 - Highlighted background section with "Période d'analyse" label
 - PeriodSelector dropdown without icon for clean look
 
 **Quick Actions:**
+
 - "Tout sélectionner" button to check all controls
 - "Tout désélectionner" button to uncheck all controls
 - Selection counter badge showing "X/12 sélectionné(s)"
 
 **Control Cards (Scrollable List, max 450px):**
 Each control card displays:
+
 - **Visual Selection State:** Blue border and background when selected, gray when not
 - **Checkbox:** For bulk selection
 - **Control Name:** Bold, clickable label
@@ -726,6 +809,7 @@ Each control card displays:
   - Primary variant when control is selected, outline when not
 
 **Footer Actions:**
+
 - **Cancel Button:** "Annuler" with X icon (left side)
 - **Bulk Execute Button:** "Lancer X contrôle(s)" with Play icon (right side, large)
   - Disabled when no controls selected
@@ -735,6 +819,7 @@ Each control card displays:
 #### Results Summary
 
 InfoCard grid displaying key metrics:
+
 - **Total Anomalies:** Count of all detected issues
 - **Critical Issues:** Blockers requiring immediate attention (red)
 - **Warnings:** Issues to review (orange)
@@ -745,6 +830,7 @@ InfoCard grid displaying key metrics:
 #### Anomalies List
 
 Tabbed interface to filter by category:
+
 - **All:** Complete list of anomalies
 - **Hours:** Hours vs planning discrepancies
 - **Legal:** Compliance violations (max hours, rest periods, overtime)
@@ -753,11 +839,13 @@ Tabbed interface to filter by category:
 - **Duplicates:** Duplicate entries and missing data
 
 **Filters:**
+
 - Severity filter dropdown (all, critical, warning, info)
 - Status filter dropdown (all, pending, reviewed, corrected, ignored)
 - Export button for anomaly report
 
 **DataTable Columns:**
+
 - **Severity:** Icon + badge (critical/warning/info)
 - **Type:** Anomaly title + control category
 - **Employee:** Employee name
@@ -789,16 +877,19 @@ Opened when clicking "View Details" on an anomaly:
 #### Control Types Implemented
 
 **1. Hours vs Planning Coherence:**
+
 - Hours declared without planning
 - Planning without hours declared
 - Significant discrepancies between planned and actual
 
 **2. Duplicates & Omissions:**
+
 - Duplicate entries for same employee/date
 - Missing entries for active employees
 - Gaps in time periods
 
 **3. Legal Compliance:**
+
 - Daily working time > 10h (or 12h without waiver)
 - Weekly working time > 48h
 - Rest period < 11h daily
@@ -806,12 +897,14 @@ Opened when clicking "View Details" on an anomaly:
 - Overtime limit violations
 
 **4. Bonus Inconsistencies:**
+
 - Night bonuses without night hours
 - Holiday bonuses on non-holidays
 - On-call allowances without on-call planning
 - Transport allowances without displacement
 
 **5. IJSS Validation:**
+
 - IJSS amounts not matching calculations
 - IJSS for periods without sick leave
 - Missing IJSS for declared sick leave
@@ -880,12 +973,14 @@ Opened when clicking "View Details" on an anomaly:
 ##### Tab 1: Vue d'ensemble (Overview)
 
 **Key Metrics (InfoCards):**
+
 - Total Headcount (with Y/Y evolution)
 - Gross Payroll Mass (with Y/Y evolution)
 - Employer Cost (with Y/Y evolution)
 - Average Hourly Cost (with Y/Y evolution)
 
 **Charts:**
+
 - Gender Distribution (Pie Chart): Male/Female split with percentages
 - Contract Types Distribution (Pie Chart): CDI/CDD/Apprentices/Interim
 - Turnover Summary Card: Global rate, entries, exits, net balance
@@ -894,6 +989,7 @@ Opened when clicking "View Details" on an anomaly:
 ##### Tab 2: Masses & Coûts (Payroll Masses & Costs)
 
 **Key Metrics (InfoCards):**
+
 - Gross Payroll Mass
 - Net Payroll Mass
 - Taxable Net
@@ -902,27 +998,32 @@ Opened when clicking "View Details" on an anomaly:
 - Total Employer Cost
 
 **Analysis Cards:**
+
 - Average Salaries: Gross average, net average, employer cost average
 - Hourly Cost: Average hourly cost with bar chart by category (Agent, Chef de poste, Superviseur, Administratif, Cadre)
 
 **Chart:**
+
 - Hourly Cost by Site (Bar Chart): Shows cost per site
 
 ##### Tab 3: Démographie (Demographics)
 
 **Key Metrics (InfoCards):**
+
 - Total Headcount
 - CDI Count
 - CDD Count
 - Apprentices Count
 
 **Charts:**
+
 - Age Distribution (Bar Chart): By age ranges (18-25, 26-35, 36-45, 46-55, 56+)
 - Seniority Distribution (Bar Chart): By ranges (0-1 an, 1-3 ans, 3-5 ans, 5-10 ans, 10+ ans)
 - Status Distribution (Progress Bars): Agents, Administratifs, Cadres with visual percentage bars
 - CDD Details Card: Total CDD, renewed CDD, average duration, duration distribution breakdown
 
 **Professional Gender Equality Section:**
+
 - Average male gross salary
 - Average female gross salary
 - Pay gap (amount and percentage) with alert styling
@@ -931,12 +1032,14 @@ Opened when clicking "View Details" on an anomaly:
 ##### Tab 4: Turnover
 
 **Key Metrics (InfoCards):**
+
 - Turnover Rate (with alert variant if > 25%)
 - Entries (green styling)
 - Exits (red styling)
 - Net Balance (green/red based on positive/negative)
 
 **Charts:**
+
 - Turnover by Site (Bar Chart): Rate percentage per site
 - Turnover by Contract Type: Breakdown with entries/exits details
 - Exit Reasons (Horizontal Bar Chart): Fin de CDD, Démission, Licenciement, etc.
@@ -945,16 +1048,19 @@ Opened when clicking "View Details" on an anomaly:
 ##### Tab 5: Absences & AT (Absences & Work Accidents)
 
 **Key Metrics (InfoCards):**
+
 - Global Absence Rate (destructive variant if > 5%)
 - Total Absence Days
 - Total Cost
 - Average Duration
 
 **Charts:**
+
 - Absences by Type (Bar Chart): Days by absence type (Maladie, AT, Congés payés, etc.)
 - Absence Cost Breakdown: List with days, rate, and cost per type, plus direct/indirect costs
 
 **Work Accidents Section:**
+
 - Total accidents (orange)
 - With stoppage (red)
 - Without stoppage (green)
@@ -964,6 +1070,7 @@ Opened when clicking "View Details" on an anomaly:
 ##### Tab 6: Comparatif N/N-1 (Year-over-Year Comparison)
 
 **Evolution Metrics (if comparison data available):**
+
 - Gross Payroll Mass evolution (amount and percentage)
 - Employer Contributions evolution
 - Employee Contributions evolution
@@ -972,14 +1079,17 @@ Opened when clicking "View Details" on an anomaly:
 - Headcount evolution
 
 Each metric shows:
+
 - Absolute evolution amount
 - Badge with trending icon (up/down) and percentage
 - Color-coded: default for positive, destructive for negative
 
 **Chart:**
+
 - Payroll Mass Evolution (Line Chart): Shows progression of gross mass and employer cost across two years
 
 **Empty State:**
+
 - Displayed when no comparison data available
 - Alert triangle icon with explanatory message
 
@@ -998,6 +1108,7 @@ Each metric shows:
 #### Data Structure
 
 **Types defined in `src/lib/types.d.ts`:**
+
 - `PayrollSocialReport`: Main report type
 - `PayrollMasses`: Gross, net, taxable, contributions
 - `PayrollCostAnalysis`: Hourly costs by category, site, team
@@ -1010,6 +1121,7 @@ Each metric shows:
 - `YearOverYearComparison`: All evolution metrics
 
 **Mock Data:** `src/data/payroll-social-report.ts`
+
 - Annual report for 2024
 - Monthly report for December 2024
 - Helper function `getPayrollSocialReport(year, month?)`
@@ -1029,5 +1141,6 @@ Each metric shows:
 ---
 
 ### Coming Soon
+
 - Dashboard KPI (D.7)
 - Payroll KPI Dashboard (D.7)

@@ -97,24 +97,6 @@ export default function BillingQuotesPage() {
     },
   ];
 
-  const handleCreate = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const validUntil = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
-    setFormData({
-      status: "Brouillon",
-      date: today,
-      validUntil,
-      message: "",
-      lines: [createEmptyLine()],
-      subtotal: 0,
-      vatAmount: 0,
-      total: 0,
-    });
-    setIsCreateModalOpen(true);
-  };
-
   const updateLine = (index: number, patch: Partial<QuoteLine>) => {
     const lines = [...(formData.lines || [])];
     const existing = lines[index];

@@ -1,8 +1,4 @@
-import {
-  PayrollControl,
-  ControlExecution,
-  PayrollAnomaly,
-} from "@/lib/types";
+import { PayrollControl, ControlExecution, PayrollAnomaly } from "@/lib/types";
 
 // Available control definitions
 export const PAYROLL_CONTROLS: PayrollControl[] = [
@@ -34,7 +30,8 @@ export const PAYROLL_CONTROLS: PayrollControl[] = [
     id: "ctrl_daily_max",
     name: "Amplitude Journalière Maximum",
     category: "legal",
-    description: "Contrôler que la durée quotidienne ne dépasse pas 10h (ou 12h avec dérogation)",
+    description:
+      "Contrôler que la durée quotidienne ne dépasse pas 10h (ou 12h avec dérogation)",
     enabled: true,
     severity: "critical",
   },
@@ -50,7 +47,8 @@ export const PAYROLL_CONTROLS: PayrollControl[] = [
     id: "ctrl_rest_period",
     name: "Temps de Repos Minimum",
     category: "legal",
-    description: "Vérifier le respect des 11h de repos quotidien et 35h hebdomadaire",
+    description:
+      "Vérifier le respect des 11h de repos quotidien et 35h hebdomadaire",
     enabled: true,
     severity: "critical",
   },
@@ -74,7 +72,8 @@ export const PAYROLL_CONTROLS: PayrollControl[] = [
     id: "ctrl_oncall_bonus",
     name: "Indemnités d'Astreinte",
     category: "bonuses",
-    description: "Vérifier la cohérence entre astreintes planifiées et indemnités",
+    description:
+      "Vérifier la cohérence entre astreintes planifiées et indemnités",
     enabled: true,
     severity: "warning",
   },
@@ -82,7 +81,8 @@ export const PAYROLL_CONTROLS: PayrollControl[] = [
     id: "ctrl_ijss_amount",
     name: "Montants IJSS",
     category: "ijss",
-    description: "Contrôler la cohérence des montants d'indemnités journalières",
+    description:
+      "Contrôler la cohérence des montants d'indemnités journalières",
     enabled: true,
     severity: "warning",
   },
@@ -98,7 +98,8 @@ export const PAYROLL_CONTROLS: PayrollControl[] = [
     id: "ctrl_overtime_limit",
     name: "Limites Heures Supplémentaires",
     category: "legal",
-    description: "Contrôler le respect des contingents d'heures supplémentaires",
+    description:
+      "Contrôler le respect des contingents d'heures supplémentaires",
     enabled: true,
     severity: "critical",
   },
@@ -209,7 +210,8 @@ export const MOCK_ANOMALIES: PayrollAnomaly[] = [
     employeeName: "Martin Claire",
     type: "insufficient_rest",
     title: "Repos quotidien insuffisant",
-    description: "Seulement 9h de repos entre deux vacations (minimum légal: 11h)",
+    description:
+      "Seulement 9h de repos entre deux vacations (minimum légal: 11h)",
     severity: "critical",
     period: "2024-12",
     date: new Date("2024-12-16"),
@@ -236,7 +238,8 @@ export const MOCK_ANOMALIES: PayrollAnomaly[] = [
     employeeName: "Bernard Lucas",
     type: "insufficient_rest",
     title: "Repos quotidien insuffisant",
-    description: "Seulement 10h de repos entre deux vacations (minimum légal: 11h)",
+    description:
+      "Seulement 10h de repos entre deux vacations (minimum légal: 11h)",
     severity: "critical",
     period: "2024-12",
     date: new Date("2024-12-17"),
@@ -292,7 +295,8 @@ export const MOCK_ANOMALIES: PayrollAnomaly[] = [
     employeeName: "Fournier Paul",
     type: "bonus_inconsistency",
     title: "Prime férié sur jour non férié",
-    description: "Prime jour férié déclarée (50€) le 17/12 qui n'est pas un jour férié",
+    description:
+      "Prime jour férié déclarée (50€) le 17/12 qui n'est pas un jour férié",
     severity: "warning",
     period: "2024-12",
     date: new Date("2024-12-17"),
@@ -466,7 +470,8 @@ export const MOCK_ANOMALIES: PayrollAnomaly[] = [
     employeeName: "Leroy Sarah",
     type: "missing_entry",
     title: "Aucune saisie pour la période",
-    description: "Employée active mais aucune variable saisie pour décembre 2024",
+    description:
+      "Employée active mais aucune variable saisie pour décembre 2024",
     severity: "warning",
     period: "2024-12",
     status: "pending",
@@ -532,13 +537,13 @@ export const MOCK_EXECUTIONS: ControlExecution[] = [
 
 // Helper functions
 export function getControlsByCategory(
-  category: PayrollControl["category"]
+  category: PayrollControl["category"],
 ): PayrollControl[] {
   return PAYROLL_CONTROLS.filter((control) => control.category === category);
 }
 
 export function getAnomaliesBySeverity(
-  severity: PayrollAnomaly["severity"]
+  severity: PayrollAnomaly["severity"],
 ): PayrollAnomaly[] {
   return MOCK_ANOMALIES.filter((anomaly) => anomaly.severity === severity);
 }
@@ -548,7 +553,7 @@ export function getAnomaliesByEmployee(employeeId: string): PayrollAnomaly[] {
 }
 
 export function getAnomaliesByStatus(
-  status: PayrollAnomaly["status"]
+  status: PayrollAnomaly["status"],
 ): PayrollAnomaly[] {
   return MOCK_ANOMALIES.filter((anomaly) => anomaly.status === status);
 }
@@ -561,7 +566,7 @@ export function getCategoryCounts() {
   const counts: Record<string, number> = {};
   PAYROLL_CONTROLS.forEach((control) => {
     const anomalies = MOCK_ANOMALIES.filter(
-      (a) => a.controlId === control.id
+      (a) => a.controlId === control.id,
     ).length;
     if (!counts[control.category]) {
       counts[control.category] = 0;
