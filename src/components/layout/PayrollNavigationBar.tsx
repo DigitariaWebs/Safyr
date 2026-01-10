@@ -53,12 +53,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/payroll/social-report",
     icon: TrendingUp,
   },
-  {
-    label: "KPI",
-    href: "/dashboard/payroll/kpi",
-    icon: DollarSign,
-    disabled: true,
-  },
 ];
 
 interface PayrollNavigationBarProps {

@@ -583,20 +583,20 @@
 
 ## 7. Dashboard KPI Connecté
 
-- [ ] Répartition H/F
-- [ ] Âge moyen
-- [ ] Ancienneté moyenne
-- [ ] Répartition CDI/CDD
-- [ ] Effectif disponible vs non disponible
-- [ ] Masse salariale (global + analytique)
-- [ ] Coût global employeur
-- [ ] Charges patronales / charges salariales
-- [ ] Coût de revient / heure / site
-- [ ] Comparaison N / N-1
-- [ ] Turnover
-- [ ] Taux absence
-- [ ] Durée moyenne des arrêts
-- [ ] IJSS perçues / maintiens versés
+- [x] Répartition H/F
+- [x] Âge moyen
+- [x] Ancienneté moyenne
+- [x] Répartition CDI/CDD
+- [x] Effectif disponible vs non disponible
+- [x] Masse salariale (global + analytique)
+- [x] Coût global employeur
+- [x] Charges patronales / charges salariales
+- [x] Coût de revient / heure / site
+- [x] Comparaison N / N-1
+- [x] Turnover
+- [x] Taux absence
+- [x] Durée moyenne des arrêts
+- [x] IJSS perçues / maintiens versés
 
 ## 8. Connexions avec Autres Modules
 
