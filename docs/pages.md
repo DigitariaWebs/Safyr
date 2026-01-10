@@ -855,6 +855,179 @@ Opened when clicking "View Details" on an anomaly:
 
 ---
 
+### 5. Payroll Social Report (Bilan Social Automatique)
+
+**Path:** `/dashboard/payroll/social-report`
+
+**Description:** Comprehensive automated social report providing detailed analysis of payroll masses, costs, demographics, turnover, absences, and year-over-year comparisons for the payroll module.
+
+#### Header Section
+
+- **Title & Description:** "Bilan Social Automatique" with subtitle explaining comprehensive social and payroll analysis
+- **Export Button:** Export report to PDF/Excel (functionality to be implemented)
+- **Generation Info:** Shows report generation date and user
+
+#### Period Selection
+
+- **Toggle Buttons:**
+  - Annual view (e.g., "Année 2024")
+  - Monthly view (e.g., "Décembre 2024")
+- Period selector in card with calendar icon
+- Auto-loads corresponding report data when period changes
+
+#### Tabbed Interface (6 Tabs)
+
+##### Tab 1: Vue d'ensemble (Overview)
+
+**Key Metrics (InfoCards):**
+- Total Headcount (with Y/Y evolution)
+- Gross Payroll Mass (with Y/Y evolution)
+- Employer Cost (with Y/Y evolution)
+- Average Hourly Cost (with Y/Y evolution)
+
+**Charts:**
+- Gender Distribution (Pie Chart): Male/Female split with percentages
+- Contract Types Distribution (Pie Chart): CDI/CDD/Apprentices/Interim
+- Turnover Summary Card: Global rate, entries, exits, net balance
+- Absences Summary Card: Global rate, total days, work accidents, total cost
+
+##### Tab 2: Masses & Coûts (Payroll Masses & Costs)
+
+**Key Metrics (InfoCards):**
+- Gross Payroll Mass
+- Net Payroll Mass
+- Taxable Net
+- Employer Contributions
+- Employee Contributions
+- Total Employer Cost
+
+**Analysis Cards:**
+- Average Salaries: Gross average, net average, employer cost average
+- Hourly Cost: Average hourly cost with bar chart by category (Agent, Chef de poste, Superviseur, Administratif, Cadre)
+
+**Chart:**
+- Hourly Cost by Site (Bar Chart): Shows cost per site
+
+##### Tab 3: Démographie (Demographics)
+
+**Key Metrics (InfoCards):**
+- Total Headcount
+- CDI Count
+- CDD Count
+- Apprentices Count
+
+**Charts:**
+- Age Distribution (Bar Chart): By age ranges (18-25, 26-35, 36-45, 46-55, 56+)
+- Seniority Distribution (Bar Chart): By ranges (0-1 an, 1-3 ans, 3-5 ans, 5-10 ans, 10+ ans)
+- Status Distribution (Progress Bars): Agents, Administratifs, Cadres with visual percentage bars
+- CDD Details Card: Total CDD, renewed CDD, average duration, duration distribution breakdown
+
+**Professional Gender Equality Section:**
+- Average male gross salary
+- Average female gross salary
+- Pay gap (amount and percentage) with alert styling
+- Bar Chart: Salary comparison by category (Male vs Female)
+
+##### Tab 4: Turnover
+
+**Key Metrics (InfoCards):**
+- Turnover Rate (with alert variant if > 25%)
+- Entries (green styling)
+- Exits (red styling)
+- Net Balance (green/red based on positive/negative)
+
+**Charts:**
+- Turnover by Site (Bar Chart): Rate percentage per site
+- Turnover by Contract Type: Breakdown with entries/exits details
+- Exit Reasons (Horizontal Bar Chart): Fin de CDD, Démission, Licenciement, etc.
+- Movement Details: Per-site entries and exits breakdown
+
+##### Tab 5: Absences & AT (Absences & Work Accidents)
+
+**Key Metrics (InfoCards):**
+- Global Absence Rate (destructive variant if > 5%)
+- Total Absence Days
+- Total Cost
+- Average Duration
+
+**Charts:**
+- Absences by Type (Bar Chart): Days by absence type (Maladie, AT, Congés payés, etc.)
+- Absence Cost Breakdown: List with days, rate, and cost per type, plus direct/indirect costs
+
+**Work Accidents Section:**
+- Total accidents (orange)
+- With stoppage (red)
+- Without stoppage (green)
+- Average stoppage days (blue)
+- Frequency rate, gravity rate, total cost with badges
+
+##### Tab 6: Comparatif N/N-1 (Year-over-Year Comparison)
+
+**Evolution Metrics (if comparison data available):**
+- Gross Payroll Mass evolution (amount and percentage)
+- Employer Contributions evolution
+- Employee Contributions evolution
+- Total Employer Cost evolution
+- Hourly Cost evolution
+- Headcount evolution
+
+Each metric shows:
+- Absolute evolution amount
+- Badge with trending icon (up/down) and percentage
+- Color-coded: default for positive, destructive for negative
+
+**Chart:**
+- Payroll Mass Evolution (Line Chart): Shows progression of gross mass and employer cost across two years
+
+**Empty State:**
+- Displayed when no comparison data available
+- Alert triangle icon with explanatory message
+
+#### Features
+
+- **Responsive Design:** Mobile-friendly grid layouts that adapt to screen size
+- **Rich Data Visualization:** Uses Recharts library (PieChart, BarChart, LineChart) with custom colors
+- **French Currency Formatting:** Proper EUR formatting with locale
+- **Percentage Formatting:** Consistent percentage display (one decimal)
+- **Color Coding:** Semantic colors for different data types and statuses
+- **Interactive Charts:** Tooltips, legends, and proper axis labels
+- **Period Switching:** Toggle between annual and monthly views
+- **Status Indicators:** Badges and color-coded metrics for quick insights
+- **Professional Layout:** Clean card-based design with proper spacing
+
+#### Data Structure
+
+**Types defined in `src/lib/types.d.ts`:**
+- `PayrollSocialReport`: Main report type
+- `PayrollMasses`: Gross, net, taxable, contributions
+- `PayrollCostAnalysis`: Hourly costs by category, site, team
+- `DemographicBreakdown`: Gender, age, seniority, contract types, status
+- `TurnoverMetrics`: Entries, exits, rates by site/contract, exit reasons
+- `ContractMetrics`: CDD details and duration distribution
+- `AbsenceMetrics`: Days, rates, costs by type
+- `WorkAccidentMetrics`: Counts, rates, costs
+- `GenderEqualityMetrics`: Pay gap analysis by category
+- `YearOverYearComparison`: All evolution metrics
+
+**Mock Data:** `src/data/payroll-social-report.ts`
+- Annual report for 2024
+- Monthly report for December 2024
+- Helper function `getPayrollSocialReport(year, month?)`
+
+#### Implementation Notes
+
+- Uses existing project patterns (InfoCard, Card, Tabs, Badge components)
+- Follows French UI convention
+- Recharts v3.6.0 for all charts
+- Mock data covers all 37 checklist items from D.6 specification
+- Color palette defined with semantic naming (primary, secondary, success, warning, danger, male, female, contract types)
+- Responsive grid layouts: 2 columns on medium, 3-4 on large screens
+- Chart heights: 200-300px for inline charts, 300px for full-width charts
+- Export functionality placeholder (alerts user to implement)
+- Navigation item enabled in PayrollNavigationBar
+
+---
+
 ### Coming Soon
-- Social Report (D.6)
+- Dashboard KPI (D.7)
 - Payroll KPI Dashboard (D.7)

@@ -52,7 +52,6 @@ const navItems: NavItem[] = [
     label: "Bilan Social",
     href: "/dashboard/payroll/social-report",
     icon: TrendingUp,
-    disabled: true,
   },
   {
     label: "KPI",

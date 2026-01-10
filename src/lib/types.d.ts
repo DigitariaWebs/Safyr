@@ -1962,3 +1962,184 @@ export interface Appointment {
   createdAt: string;
   updatedAt?: string;
 }
+
+// ============================================================================
+// PAYROLL SOCIAL REPORT TYPES
+// ============================================================================
+
+export interface PayrollSocialReportPeriod {
+  year: number;
+  month?: number; // Optional for annual reports
+  label: string;
+}
+
+export interface PayrollMasses {
+  grossTotal: number;
+  netTotal: number;
+  netTaxable: number;
+  employerContributions: number;
+  employeeContributions: number;
+  totalEmployerCost: number;
+}
+
+export interface PayrollCostAnalysis {
+  averageGrossSalary: number;
+  averageNetSalary: number;
+  averageEmployerCost: number;
+  averageHourlyCost: number;
+  hourlyCostByCategory: {
+    category: string;
+    cost: number;
+    hoursWorked: number;
+  }[];
+  hourlyCostBySite: {
+    siteId: string;
+    siteName: string;
+    cost: number;
+    hoursWorked: number;
+  }[];
+  hourlyCostByTeam: {
+    teamId: string;
+    teamName: string;
+    cost: number;
+    hoursWorked: number;
+  }[];
+}
+
+export interface DemographicBreakdown {
+  total: number;
+  byGender: {
+    male: number;
+    female: number;
+  };
+  byAge: {
+    range: string;
+    count: number;
+  }[];
+  bySeniority: {
+    range: string;
+    count: number;
+  }[];
+  byContractType: {
+    cdi: number;
+    cdd: number;
+    apprentices: number;
+    interim: number;
+  };
+  byStatus: {
+    agent: number;
+    administrative: number;
+    manager: number;
+  };
+}
+
+export interface TurnoverMetrics {
+  entries: number;
+  exits: number;
+  globalRate: number;
+  bySite: {
+    siteId: string;
+    siteName: string;
+    entries: number;
+    exits: number;
+    rate: number;
+  }[];
+  byContractType: {
+    contractType: string;
+    entries: number;
+    exits: number;
+    rate: number;
+  }[];
+  exitReasons: {
+    reason: string;
+    count: number;
+    percentage: number;
+  }[];
+}
+
+export interface ContractMetrics {
+  cdiCount: number;
+  cddCount: number;
+  cddRenewed: number;
+  averageCddDuration: number; // in months
+  durationDistribution: {
+    range: string;
+    count: number;
+  }[];
+}
+
+export interface AbsenceMetrics {
+  totalDays: number;
+  globalRate: number;
+  byType: {
+    type: string;
+    label: string;
+    days: number;
+    rate: number;
+    cost: number;
+  }[];
+  averageDuration: number;
+  directCost: number;
+  indirectCost: number;
+  totalCost: number;
+}
+
+export interface WorkAccidentMetrics {
+  total: number;
+  withStoppage: number;
+  withoutStoppage: number;
+  averageStoppageDays: number;
+  frequencyRate: number;
+  gravityRate: number;
+  cost: number;
+}
+
+export interface GenderEqualityMetrics {
+  averageMaleGross: number;
+  averageFemaleGross: number;
+  gap: number;
+  gapPercentage: number;
+  bySalaryCategory: {
+    category: string;
+    maleAverage: number;
+    femaleAverage: number;
+    gap: number;
+    gapPercentage: number;
+  }[];
+}
+
+export interface YearOverYearComparison {
+  currentYear: number;
+  previousYear: number;
+  grossMassEvolution: number;
+  grossMassEvolutionPercentage: number;
+  employerContributionsEvolution: number;
+  employerContributionsEvolutionPercentage: number;
+  employeeContributionsEvolution: number;
+  employeeContributionsEvolutionPercentage: number;
+  totalCostEvolution: number;
+  totalCostEvolutionPercentage: number;
+  hourlyCostEvolution: number;
+  hourlyCostEvolutionPercentage: number;
+  headcountEvolution: number;
+  headcountEvolutionPercentage: number;
+}
+
+export interface PayrollSocialReport {
+  period: PayrollSocialReportPeriod;
+  generatedAt: Date;
+  generatedBy: string;
+
+  // Main metrics
+  masses: PayrollMasses;
+  costAnalysis: PayrollCostAnalysis;
+  demographics: DemographicBreakdown;
+  turnover: TurnoverMetrics;
+  contracts: ContractMetrics;
+  absences: AbsenceMetrics;
+  workAccidents: WorkAccidentMetrics;
+  genderEquality: GenderEqualityMetrics;
+
+  // Comparative analysis
+  comparison?: YearOverYearComparison;
+}

@@ -541,45 +541,45 @@
 - [x] Contrôle anomalies IJSS (trop/peu perçu)
 - [x] Génération automatique d'un rapport d'anomalies avec correction rapide
 
-## 6. Bilan Social Automatique
+## 6. Bilan Social Automatique ✅
 
-- [ ] Masse salariale brute
-- [ ] Masse salariale nette
-- [ ] Net imposable cumulé
-- [ ] Charges patronales
-- [ ] Charges salariales
-- [ ] Salaire moyen par catégorie
-- [ ] Coût employeur annuel et mensuel
-- [ ] Coût de revient par heure travaillée (par salarié / équipe / site)
-- [ ] Répartition H/F
-- [ ] Typologie de contrat (CDI/CDD/Apprentis)
-- [ ] Ancienneté
-- [ ] Âge
-- [ ] Turnover (entrées / sorties)
-- [ ] Absences (maladie, AT, CP…)
-- [ ] Accidents de travail
-- [ ] Durées moyennes de contrats
-- [ ] Répartition démographique
-- [ ] Répartition par sexe
-- [ ] Répartition par tranche d'âge
-- [ ] Répartition par statut (agent / administratif / cadre)
-- [ ] Répartition CDI / CDD
-- [ ] Volumes CDD renouvelés
-- [ ] Durée moyenne des CDD
-- [ ] Motifs départs
-- [ ] Turnover global
-- [ ] Turnover par site
-- [ ] Turnover par type de contrat
-- [ ] Comparaison masse salariale N vs N-1
-- [ ] Évolution charges patronales
-- [ ] Évolution charges salariales
-- [ ] Coût global employeur
-- [ ] Coût de revient de l'heure travaillée
-- [ ] Salaire moyen par sexe (indicateur égalité pro)
-- [ ] Taux absence global
-- [ ] Taux absence par motif
-- [ ] Durée moyenne des absences
-- [ ] Coût des absences (direct / indirect)
+- [x] Masse salariale brute
+- [x] Masse salariale nette
+- [x] Net imposable cumulé
+- [x] Charges patronales
+- [x] Charges salariales
+- [x] Salaire moyen par catégorie
+- [x] Coût employeur annuel et mensuel
+- [x] Coût de revient par heure travaillée (par salarié / équipe / site)
+- [x] Répartition H/F
+- [x] Typologie de contrat (CDI/CDD/Apprentis)
+- [x] Ancienneté
+- [x] Âge
+- [x] Turnover (entrées / sorties)
+- [x] Absences (maladie, AT, CP…)
+- [x] Accidents de travail
+- [x] Durées moyennes de contrats
+- [x] Répartition démographique
+- [x] Répartition par sexe
+- [x] Répartition par tranche d'âge
+- [x] Répartition par statut (agent / administratif / cadre)
+- [x] Répartition CDI / CDD
+- [x] Volumes CDD renouvelés
+- [x] Durée moyenne des CDD
+- [x] Motifs départs
+- [x] Turnover global
+- [x] Turnover par site
+- [x] Turnover par type de contrat
+- [x] Comparaison masse salariale N vs N-1
+- [x] Évolution charges patronales
+- [x] Évolution charges salariales
+- [x] Coût global employeur
+- [x] Coût de revient de l'heure travaillée
+- [x] Salaire moyen par sexe (indicateur égalité pro)
+- [x] Taux absence global
+- [x] Taux absence par motif
+- [x] Durée moyenne des absences
+- [x] Coût des absences (direct / indirect)
 
 ## 7. Dashboard KPI Connecté
 
