@@ -488,19 +488,19 @@
 - [x] Taux AT/MP
 - [x] Taux retraite, prévoyance et mutuelle
 
-## 2. Paramétrage Entreprise & Salarié
+## 2. Paramétrage Entreprise & Salarié ✅
 
-- [ ] Profils sociétés, établissements, structures
-- [ ] Centres de coûts et sections analytiques
-- [ ] Règles internes (primes, indemnités)
-- [ ] Gestion des clôtures mensuelles
-- [ ] Transfert comptable configurable
-- [ ] Contrat, taux horaire, rémunération mensuelle brute
-- [ ] Historique du contrat (avenants, changements)
-- [ ] DPAE et DUE
-- [ ] Affectations (site / client)
-- [ ] Habilitations et qualifications (CQP, carte pro)
-- [ ] Import automatique des absences (maladie / AT / CP)
+- [x] Profils sociétés, établissements, structures
+- [x] Centres de coûts et sections analytiques
+- [x] Règles internes (primes, indemnités)
+- [x] Gestion des clôtures mensuelles
+- [x] Transfert comptable configurable
+- [x] Contrat, taux horaire, rémunération mensuelle brute
+- [x] Historique du contrat (avenants, changements)
+- [x] DPAE et DUE
+- [x] Affectations (site / client)
+- [x] Habilitations et qualifications (CQP, carte pro)
+- [x] Import automatique des absences (maladie / AT / CP)
 
 ## 3. Saisie & Import des Variables
 

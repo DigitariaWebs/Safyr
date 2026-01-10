@@ -15,8 +15,22 @@ import {
 const navItems: NavItem[] = [
   {
     label: "Paramétrage",
-    href: "/dashboard/payroll/configuration",
+    href: "/dashboard/payroll/configuration/legal",
     icon: Settings,
+    children: [
+      {
+        label: "Légal",
+        href: "/dashboard/payroll/configuration/legal",
+      },
+      {
+        label: "Entreprise",
+        href: "/dashboard/payroll/configuration/company",
+      },
+      {
+        label: "Salariés",
+        href: "/dashboard/payroll/configuration/employee",
+      },
+    ],
   },
   {
     label: "Calcul Paie",
