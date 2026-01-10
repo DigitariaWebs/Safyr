@@ -14,13 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import {} from "@/components/ui/dropdown-menu";
+import { Modal } from "@/components/ui/modal";
 import {
   Select,
   SelectContent,
@@ -789,79 +784,76 @@ export default function DiversDocumentsPage() {
       )}
 
       {/* Dialog pour ajouter un organisme */}
-      <Dialog open={isAddingOrganisme} onOpenChange={setIsAddingOrganisme}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Ajouter un nouvel organisme</DialogTitle>
-            <DialogDescription>
-              Créez un nouveau dossier pour organiser vos documents
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nom">Nom de l&apos;organisme</Label>
-              <Input
-                id="nom"
-                value={newOrganisme.nom}
-                onChange={(e) =>
-                  setNewOrganisme({ ...newOrganisme, nom: e.target.value })
-                }
-                placeholder="Ex: Nouvelle Mutuelle"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Type d&apos;organisme</Label>
-              <Select
-                value={newOrganisme.type}
-                onValueChange={(value) =>
-                  setNewOrganisme({ ...newOrganisme, type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez un type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {typesOrganismes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type.replace("_", " ").charAt(0).toUpperCase() +
-                        type.replace("_", " ").slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={newOrganisme.description}
-                onChange={(e) =>
-                  setNewOrganisme({
-                    ...newOrganisme,
-                    description: e.target.value,
-                  })
-                }
-                placeholder="Description de l'organisme..."
-              />
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleAddOrganisme} className="flex-1">
-                Ajouter
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsAddingOrganisme(false)}
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-            </div>
+      <Modal
+        open={isAddingOrganisme}
+        onOpenChange={setIsAddingOrganisme}
+        type="form"
+        title="Ajouter un nouvel organisme"
+        description="Créez un nouvel organisme pour organiser vos documents"
+        size="md"
+        actions={{
+          primary: {
+            label: "Ajouter",
+            onClick: handleAddOrganisme,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsAddingOrganisme(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="nom">Nom de l&apos;organisme</Label>
+            <Input
+              id="nom"
+              value={newOrganisme.nom}
+              onChange={(e) =>
+                setNewOrganisme({ ...newOrganisme, nom: e.target.value })
+              }
+              placeholder="Ex: Nouvelle Mutuelle"
+            />
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Type d&apos;organisme</Label>
+            <Select
+              value={newOrganisme.type}
+              onValueChange={(value) =>
+                setNewOrganisme({ ...newOrganisme, type: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez un type" />
+              </SelectTrigger>
+              <SelectContent>
+                {typesOrganismes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.replace("_", " ").charAt(0).toUpperCase() +
+                      type.replace("_", " ").slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={newOrganisme.description}
+              onChange={(e) =>
+                setNewOrganisme({
+                  ...newOrganisme,
+                  description: e.target.value,
+                })
+              }
+              placeholder="Description de l'organisme..."
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -3,14 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -198,226 +191,231 @@ export default function LegalConfigurationPage() {
       />
 
       {/* Modal */}
-      <Dialog open={modalMode !== null} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {modalMode === "view"
-                ? "Détails de la Convention"
-                : modalMode === "edit"
-                  ? "Modifier la Convention"
-                  : "Nouvelle Convention"}
-            </DialogTitle>
-            <DialogDescription>
-              {modalMode === "view"
-                ? "Informations détaillées de la convention collective"
-                : "Renseignez les informations de la convention collective"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            {/* Code */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="code" className="text-right">
-                Code *
-              </Label>
-              <Input
-                id="code"
-                value={formData.code || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
+      <Modal
+        open={modalMode !== null}
+        onOpenChange={handleCloseModal}
+        type={modalMode === "view" ? "details" : "form"}
+        title={
+          modalMode === "view"
+            ? "Détails de la Convention"
+            : modalMode === "edit"
+              ? "Modifier la Convention"
+              : "Nouvelle Convention"
+        }
+        description={
+          modalMode === "view"
+            ? "Informations détaillées de la convention collective"
+            : "Renseignez les informations de la convention collective"
+        }
+        size="lg"
+        actions={{
+          primary:
+            modalMode !== "view"
+              ? {
+                  label: "Enregistrer",
+                  onClick: handleSave,
                 }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Name */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nom *
-              </Label>
-              <Input
-                id="name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* IDCC */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="idcc" className="text-right">
-                IDCC *
-              </Label>
-              <Input
-                id="idcc"
-                value={formData.idcc || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, idcc: e.target.value })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Hourly Rate */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="hourlyRate" className="text-right">
-                Taux Horaire Base *
-              </Label>
-              <Input
-                id="hourlyRate"
-                type="number"
-                step="0.01"
-                value={formData.hourlyRate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    hourlyRate: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Overtime 50% */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="overtime50" className="text-right">
-                Majoration 50% (%)
-              </Label>
-              <Input
-                id="overtime50"
-                type="number"
-                value={formData.overtime50 || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    overtime50: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Overtime 100% */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="overtime100" className="text-right">
-                Majoration 100% (%)
-              </Label>
-              <Input
-                id="overtime100"
-                type="number"
-                value={formData.overtime100 || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    overtime100: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Night Bonus */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="nightBonus" className="text-right">
-                Prime de Nuit (%)
-              </Label>
-              <Input
-                id="nightBonus"
-                type="number"
-                value={formData.nightBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightBonus: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Sunday Bonus */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="sundayBonus" className="text-right">
-                Prime Dimanche (%)
-              </Label>
-              <Input
-                id="sundayBonus"
-                type="number"
-                value={formData.sundayBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayBonus: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Holiday Bonus */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="holidayBonus" className="text-right">
-                Prime Jour Férié (%)
-              </Label>
-              <Input
-                id="holidayBonus"
-                type="number"
-                value={formData.holidayBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayBonus: parseFloat(e.target.value),
-                  })
-                }
-                disabled={modalMode === "view"}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* Status */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Statut
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "Actif" | "Inactif") =>
-                  setFormData({ ...formData, status: value })
-                }
-                disabled={modalMode === "view"}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="Inactif">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              : undefined,
+          secondary: {
+            label: modalMode === "view" ? "Fermer" : "Annuler",
+            onClick: handleCloseModal,
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="grid gap-4 py-4">
+          {/* Code */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="code" className="text-right">
+              Code *
+            </Label>
+            <Input
+              id="code"
+              value={formData.code || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, code: e.target.value })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseModal}>
-              {modalMode === "view" ? "Fermer" : "Annuler"}
-            </Button>
-            {modalMode !== "view" && (
-              <Button onClick={handleSave}>Enregistrer</Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {/* Name */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Nom *
+            </Label>
+            <Input
+              id="name"
+              value={formData.name || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* IDCC */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="idcc" className="text-right">
+              IDCC *
+            </Label>
+            <Input
+              id="idcc"
+              value={formData.idcc || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, idcc: e.target.value })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Hourly Rate */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="hourlyRate" className="text-right">
+              Taux Horaire Base *
+            </Label>
+            <Input
+              id="hourlyRate"
+              type="number"
+              step="0.01"
+              value={formData.hourlyRate || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  hourlyRate: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Overtime 50% */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="overtime50" className="text-right">
+              Majoration 50% (%)
+            </Label>
+            <Input
+              id="overtime50"
+              type="number"
+              value={formData.overtime50 || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  overtime50: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Overtime 100% */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="overtime100" className="text-right">
+              Majoration 100% (%)
+            </Label>
+            <Input
+              id="overtime100"
+              type="number"
+              value={formData.overtime100 || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  overtime100: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Night Bonus */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="nightBonus" className="text-right">
+              Prime de Nuit (%)
+            </Label>
+            <Input
+              id="nightBonus"
+              type="number"
+              value={formData.nightBonus || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  nightBonus: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Sunday Bonus */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="sundayBonus" className="text-right">
+              Prime Dimanche (%)
+            </Label>
+            <Input
+              id="sundayBonus"
+              type="number"
+              value={formData.sundayBonus || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  sundayBonus: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Holiday Bonus */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="holidayBonus" className="text-right">
+              Prime Jour Férié (%)
+            </Label>
+            <Input
+              id="holidayBonus"
+              type="number"
+              value={formData.holidayBonus || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  holidayBonus: parseFloat(e.target.value),
+                })
+              }
+              disabled={modalMode === "view"}
+              className="col-span-3"
+            />
+          </div>
+
+          {/* Status */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="status" className="text-right">
+              Statut
+            </Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "Actif" | "Inactif") =>
+                setFormData({ ...formData, status: value })
+              }
+              disabled={modalMode === "view"}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Actif">Actif</SelectItem>
+                <SelectItem value="Inactif">Inactif</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -42,7 +42,6 @@ const navItems: NavItem[] = [
     label: "Calcul Paie",
     href: "/dashboard/payroll/calculation",
     icon: Calculator,
-    disabled: true,
   },
   {
     label: "Contrôles",

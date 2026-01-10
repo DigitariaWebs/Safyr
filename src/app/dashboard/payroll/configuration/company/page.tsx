@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -1223,29 +1216,34 @@ export default function CompanyConfigurationPage() {
       </Tabs>
 
       {/* Modal */}
-      <Dialog open={modalMode !== null} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{getModalTitle()}</DialogTitle>
-            <DialogDescription>
-              {modalMode === "view"
-                ? "Informations détaillées"
-                : "Renseignez les informations"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">{renderFormFields()}</div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseModal}>
-              {modalMode === "view" ? "Fermer" : "Annuler"}
-            </Button>
-            {modalMode !== "view" && (
-              <Button onClick={handleSave}>Enregistrer</Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        open={modalMode !== null}
+        onOpenChange={handleCloseModal}
+        type={modalMode === "view" ? "details" : "form"}
+        title={getModalTitle()}
+        description={
+          modalMode === "view"
+            ? "Informations détaillées"
+            : "Renseignez les informations"
+        }
+        size="lg"
+        actions={{
+          primary:
+            modalMode !== "view"
+              ? {
+                  label: "Enregistrer",
+                  onClick: handleSave,
+                }
+              : undefined,
+          secondary: {
+            label: modalMode === "view" ? "Fermer" : "Annuler",
+            onClick: handleCloseModal,
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="grid gap-4 py-4">{renderFormFields()}</div>
+      </Modal>
     </div>
   );
 }

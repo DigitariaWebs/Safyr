@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { HoursInput } from "@/components/ui/hours-input";
@@ -685,401 +678,397 @@ export default function PayrollVariablesPage() {
       </Card>
 
       {/* View/Edit Modal */}
-      <Dialog open={modalMode !== null} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {modalMode === "view" ? "Détails" : "Modifier"} - Variables de
-              paie
-            </DialogTitle>
-            <DialogDescription>
-              {selectedVariable?.employeeName} - Période {selectedPeriod.label}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedVariable && (
-            <div className="space-y-6">
-              {/* Employee Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Employé</Label>
-                  <Input value={selectedVariable.employeeName} disabled />
-                </div>
-                <div>
-                  <Label>Poste</Label>
-                  <Input value={selectedVariable.position} disabled />
-                </div>
-              </div>
-
-              {/* Planning Hours */}
+      <Modal
+        open={modalMode !== null}
+        onOpenChange={handleCloseModal}
+        type={modalMode === "view" ? "details" : "form"}
+        title={`${modalMode === "view" ? "Détails" : "Modifier"} - Variables de paie`}
+        description={`${selectedVariable?.employeeName} - Période ${selectedPeriod.label}`}
+        size="xl"
+        actions={{
+          primary:
+            modalMode === "edit"
+              ? {
+                  label: "Enregistrer",
+                  onClick: handleSave,
+                }
+              : undefined,
+          secondary: {
+            label: "Fermer",
+            onClick: handleCloseModal,
+            variant: "outline",
+          },
+        }}
+      >
+        {selectedVariable && (
+          <div className="space-y-6">
+            {/* Employee Info */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4" />
-                  Heures Planning
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Heures normales</Label>
-                    <HoursInput
-                      value={formData.planningData?.normalHours ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            normalHours: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>Heures nuit</Label>
-                    <HoursInput
-                      value={formData.planningData?.nightHours ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            nightHours: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>Heures fériées</Label>
-                    <HoursInput
-                      value={formData.planningData?.holidayHours ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            holidayHours: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>H. Sup 25%</Label>
-                    <HoursInput
-                      value={formData.planningData?.overtimeHours25 ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            overtimeHours25: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>H. Sup 50%</Label>
-                    <HoursInput
-                      value={formData.planningData?.overtimeHours50 ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            overtimeHours50: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>Heures dimanche</Label>
-                    <HoursInput
-                      value={formData.planningData?.sundayHours ?? 0}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            sundayHours: value,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      step={0.5}
-                      max={999}
-                    />
-                  </div>
-                  <div>
-                    <Label>Paniers repas</Label>
-                    <Input
-                      type="number"
-                      value={formData.planningData?.mealAllowances ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            mealAllowances: parseInt(e.target.value) || 0,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      className="h-8"
-                    />
-                  </div>
-                  <div>
-                    <Label>Indemnités déplacement</Label>
-                    <Input
-                      type="number"
-                      value={formData.planningData?.travelAllowances ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            travelAllowances: parseInt(e.target.value) || 0,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      className="h-8"
-                    />
-                  </div>
-                  <div>
-                    <Label>Indemnités habillage</Label>
-                    <Input
-                      type="number"
-                      value={formData.planningData?.dressingAllowances ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          planningData: {
-                            ...selectedVariable.planningData,
-                            dressingAllowances: parseInt(e.target.value) || 0,
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                      className="h-8"
-                    />
-                  </div>
-                </div>
+                <Label>Employé</Label>
+                <Input value={selectedVariable.employeeName} disabled />
               </div>
-
-              {/* HR Absences */}
               <div>
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Absences RH
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>Congés payés (jours)</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.paidLeave ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            paidLeave: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <Label>Maladie (jours)</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.sickLeave ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            sickLeave: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <Label>Accident travail (jours)</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.workAccident ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            workAccident: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <Label>Congés exceptionnels (jours)</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.exceptionalLeave ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            exceptionalLeave: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <Label>Heures syndicales</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.unionHours ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            unionHours: parseInt(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <Label>Retenues salaire (€)</Label>
-                    <Input
-                      type="number"
-                      value={formData.hrData?.salaryDeductions ?? 0}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          hrData: {
-                            ...selectedVariable.hrData,
-                            salaryDeductions: parseFloat(e.target.value),
-                          },
-                        })
-                      }
-                      disabled={modalMode === "view"}
-                    />
-                  </div>
-                </div>
+                <Label>Poste</Label>
+                <Input value={selectedVariable.position} disabled />
               </div>
-
-              {/* Coherence Checks */}
-              {selectedVariable.coherenceChecks.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    Contrôles de cohérence
-                  </h4>
-                  <div className="space-y-2">
-                    {selectedVariable.coherenceChecks.map((check) => (
-                      <div
-                        key={check.id}
-                        className={`p-3 rounded-lg ${
-                          check.checkType === "error"
-                            ? "bg-destructive/10"
-                            : "bg-yellow-50"
-                        }`}
-                      >
-                        <div className="font-medium">{check.message}</div>
-                        {check.details && (
-                          <div className="text-sm text-muted-foreground">
-                            {check.details}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseModal}>
-              Fermer
-            </Button>
-            {modalMode === "edit" && (
-              <Button onClick={handleSave}>Enregistrer</Button>
+            {/* Planning Hours */}
+            <div>
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                Heures Planning
+              </h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Heures normales</Label>
+                  <HoursInput
+                    value={formData.planningData?.normalHours ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          normalHours: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>Heures nuit</Label>
+                  <HoursInput
+                    value={formData.planningData?.nightHours ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          nightHours: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>Heures fériées</Label>
+                  <HoursInput
+                    value={formData.planningData?.holidayHours ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          holidayHours: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>H. Sup 25%</Label>
+                  <HoursInput
+                    value={formData.planningData?.overtimeHours25 ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          overtimeHours25: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>H. Sup 50%</Label>
+                  <HoursInput
+                    value={formData.planningData?.overtimeHours50 ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          overtimeHours50: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>Heures dimanche</Label>
+                  <HoursInput
+                    value={formData.planningData?.sundayHours ?? 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          sundayHours: value,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    step={0.5}
+                    max={999}
+                  />
+                </div>
+                <div>
+                  <Label>Paniers repas</Label>
+                  <Input
+                    type="number"
+                    value={formData.planningData?.mealAllowances ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          mealAllowances: parseInt(e.target.value) || 0,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <Label>Indemnités déplacement</Label>
+                  <Input
+                    type="number"
+                    value={formData.planningData?.travelAllowances ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          travelAllowances: parseInt(e.target.value) || 0,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <Label>Indemnités habillage</Label>
+                  <Input
+                    type="number"
+                    value={formData.planningData?.dressingAllowances ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        planningData: {
+                          ...selectedVariable.planningData,
+                          dressingAllowances: parseInt(e.target.value) || 0,
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                    className="h-8"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* HR Absences */}
+            <div>
+              <h4 className="font-semibold mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Absences RH
+              </h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Congés payés (jours)</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.paidLeave ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          paidLeave: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+                <div>
+                  <Label>Maladie (jours)</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.sickLeave ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          sickLeave: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+                <div>
+                  <Label>Accident travail (jours)</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.workAccident ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          workAccident: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+                <div>
+                  <Label>Congés exceptionnels (jours)</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.exceptionalLeave ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          exceptionalLeave: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+                <div>
+                  <Label>Heures syndicales</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.unionHours ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          unionHours: parseInt(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+                <div>
+                  <Label>Retenues salaire (€)</Label>
+                  <Input
+                    type="number"
+                    value={formData.hrData?.salaryDeductions ?? 0}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hrData: {
+                          ...selectedVariable.hrData,
+                          salaryDeductions: parseFloat(e.target.value),
+                        },
+                      })
+                    }
+                    disabled={modalMode === "view"}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Coherence Checks */}
+            {selectedVariable.coherenceChecks.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Contrôles de cohérence
+                </h4>
+                <div className="space-y-2">
+                  {selectedVariable.coherenceChecks.map((check) => (
+                    <div
+                      key={check.id}
+                      className={`p-3 rounded-lg ${
+                        check.checkType === "error"
+                          ? "bg-destructive/10"
+                          : "bg-yellow-50"
+                      }`}
+                    >
+                      <div className="font-medium">{check.message}</div>
+                      {check.details && (
+                        <div className="text-sm text-muted-foreground">
+                          {check.details}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        )}
+      </Modal>
 
       {/* External Import Dialog */}
-      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Import fichier externe</DialogTitle>
-            <DialogDescription>
-              Importer les données depuis un fichier externe (CSV, Excel)
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label>Période</Label>
-              <Input value={selectedPeriod.label} disabled />
-            </div>
-
-            <div>
-              <Label>Fichier</Label>
-              <Input type="file" accept=".csv,.xlsx,.xls" />
-            </div>
-
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm">
-                Assurez-vous que le fichier respecte le format attendu
-                (colonnes: ID employé, heures normales, heures nuit, etc.)
-              </p>
-            </div>
+      <Modal
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        type="form"
+        title="Import fichier externe"
+        description="Importer les données depuis un fichier externe (CSV, Excel)"
+        size="md"
+        actions={{
+          primary: {
+            label: "Importer",
+            onClick: executeImport,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setImportDialogOpen(false),
+            variant: "outline",
+          },
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <Label>Période</Label>
+            <Input value={selectedPeriod.label} disabled />
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setImportDialogOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button onClick={executeImport}>
-              <Upload className="mr-2 h-4 w-4" />
-              Importer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div>
+            <Label>Fichier</Label>
+            <Input type="file" accept=".csv,.xlsx,.xls" />
+          </div>
+
+          <div className="p-4 bg-muted rounded-lg">
+            <p className="text-sm">
+              Assurez-vous que le fichier respecte le format attendu (colonnes:
+              ID employé, heures normales, heures nuit, etc.)
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

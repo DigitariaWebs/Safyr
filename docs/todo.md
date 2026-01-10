@@ -520,17 +520,17 @@
 - [x] Import fichiers externes (CSV, API)
 - [x] Automatisation des contrôles de cohérence
 
-## 4. Calcul de Paie
+## 4. Calcul de Paie ✅
 
-- [ ] Calcul des salaires bruts
-- [ ] Gestion du maintien de salaire avec IJSS (auto-calcul)
-- [ ] Gestion des primes
-- [ ] Calcul des absences
-- [ ] Heures supplémentaires et majorations
-- [ ] Régularisation des plafonds de sécu (tranche A/B)
-- [ ] Net imposable mensuel & cumulé
-- [ ] Bulletins (PDF, coffre-fort RH)
-- [ ] Déclarations DSN automatiques
+- [x] Calcul des salaires bruts
+- [x] Gestion du maintien de salaire avec IJSS (auto-calcul)
+- [x] Gestion des primes
+- [x] Calcul des absences
+- [x] Heures supplémentaires et majorations
+- [x] Régularisation des plafonds de sécu (tranche A/B)
+- [x] Net imposable mensuel & cumulé
+- [x] Bulletins (PDF, coffre-fort RH)
+- [x] Déclarations DSN automatiques
 
 ## 5. Contrôles Automatiques & Analyses
 

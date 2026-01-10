@@ -1108,6 +1108,159 @@ export interface PayrollPeriod {
   closedAt?: Date;
 }
 
+// Payroll Calculation Types
+export type PayrollCalculationStatus =
+  | "pending"
+  | "calculating"
+  | "calculated"
+  | "validated"
+  | "error"
+  | "exported";
+
+export interface SalaryElement {
+  id: string;
+  code: string;
+  label: string;
+  type: "earning" | "deduction";
+  category:
+    | "base"
+    | "hours"
+    | "overtime"
+    | "bonus"
+    | "allowance"
+    | "absence"
+    | "advance"
+    | "other";
+  quantity?: number;
+  rate?: number;
+  amount: number;
+  taxable: boolean;
+  subjectToContributions: boolean;
+}
+
+export interface SocialContributionDetail {
+  id: string;
+  code: string;
+  label: string;
+  type: "employee" | "employer";
+  category:
+    | "health"
+    | "retirement"
+    | "unemployment"
+    | "family"
+    | "accident"
+    | "csg"
+    | "crds"
+    | "other";
+  baseAmount: number;
+  rate: number;
+  amount: number;
+  ceiling?: number;
+  tranche?: "A" | "B" | "C";
+}
+
+export interface EmployeePayrollCalculation {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeNumber: string;
+  period: string; // e.g., "2024-12"
+  status: PayrollCalculationStatus;
+  position: string;
+  contractType: "CDI" | "CDD" | "Intérim" | "Apprentissage";
+
+  // Calculation elements
+  salaryElements: SalaryElement[];
+  grossSalary: number;
+
+  // Deductions
+  employeeContributions: SocialContributionDetail[];
+  totalEmployeeContributions: number;
+
+  // Net amounts
+  netSalary: number;
+  netTaxable: number;
+  netTaxableYTD: number;
+  netToPay: number;
+
+  // Employer side
+  employerContributions: SocialContributionDetail[];
+  totalEmployerContributions: number;
+  totalCost: number;
+
+  // IJSS (sick leave benefits)
+  ijssAmount?: number;
+  ijssDeduction?: number;
+  salaryMaintenance?: number;
+
+  // Calculation metadata
+  calculatedAt?: Date;
+  calculatedBy?: string;
+  validatedAt?: Date;
+  validatedBy?: string;
+  errors: string[];
+  warnings: string[];
+  notes?: string;
+}
+
+export interface PayrollCalculationRun {
+  id: string;
+  period: string;
+  periodLabel: string;
+  status: PayrollCalculationStatus;
+  totalEmployees: number;
+  calculatedEmployees: number;
+  pendingEmployees: number;
+  errorEmployees: number;
+  validatedEmployees: number;
+
+  // Financial totals
+  totalGrossSalary: number;
+  totalNetSalary: number;
+  totalEmployeeContributions: number;
+  totalEmployerContributions: number;
+  totalCost: number;
+
+  // Metadata
+  startedAt?: Date;
+  startedBy?: string;
+  completedAt?: Date;
+  validatedAt?: Date;
+  validatedBy?: string;
+  exportedAt?: Date;
+
+  calculations: EmployeePayrollCalculation[];
+}
+
+export interface PaySlip {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  period: string;
+  calculationId: string;
+  pdfUrl?: string;
+  generatedAt?: Date;
+  sentAt?: Date;
+  sentTo?: string;
+  viewedAt?: Date;
+  status: "draft" | "generated" | "sent" | "viewed" | "archived";
+}
+
+export interface DSNDeclaration {
+  id: string;
+  period: string;
+  type: "monthly" | "event";
+  status: "draft" | "generated" | "validated" | "sent" | "acknowledged";
+  totalEmployees: number;
+  totalGrossSalary: number;
+  totalContributions: number;
+  fileUrl?: string;
+  generatedAt?: Date;
+  sentAt?: Date;
+  acknowledgmentDate?: Date;
+  errors: string[];
+}
+
 // Discipline & Legal Types
 export interface Warning {
   id: string;

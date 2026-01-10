@@ -4,13 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PenTool, X, Check } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 
 interface DigitalSignatureProps {
   onSign: (signature: string) => void;
@@ -121,59 +115,51 @@ export function DigitalSignature({ onSign, signature }: DigitalSignatureProps) {
         </Button>
       )}
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Signature électronique</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <canvas
-                  ref={canvasRef}
-                  width={600}
-                  height={200}
-                  className="border-2 border-dashed rounded-lg cursor-crosshair w-full"
-                  onMouseDown={startDrawing}
-                  onMouseMove={draw}
-                  onMouseUp={stopDrawing}
-                  onMouseLeave={stopDrawing}
-                />
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Signez avec votre souris ou votre doigt
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          <DialogFooter className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={clearCanvas}
-              disabled={isEmpty}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Effacer
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="button"
-              onClick={saveSignature}
-              disabled={isEmpty}
-              className="gap-2"
-            >
-              <Check className="h-4 w-4" />
-              Valider la signature
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        type="form"
+        title="Signature électronique"
+        size="lg"
+        actions={{
+          tertiary: {
+            label: "Effacer",
+            onClick: clearCanvas,
+            disabled: isEmpty,
+            variant: "outline",
+            icon: <X className="h-4 w-4" />,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsOpen(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Valider la signature",
+            onClick: saveSignature,
+            disabled: isEmpty,
+            icon: <Check className="h-4 w-4" />,
+          },
+        }}
+      >
+        <Card>
+          <CardContent className="pt-6">
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={200}
+              className="border-2 border-dashed rounded-lg cursor-crosshair w-full"
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+            />
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Signez avec votre souris ou votre doigt
+            </p>
+          </CardContent>
+        </Card>
+      </Modal>
     </>
   );
 }

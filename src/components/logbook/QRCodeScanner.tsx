@@ -4,12 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QrCode } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 
 interface QRCodeScannerProps {
   onScan: (data: { zone: string; siteId: string }) => void;
@@ -44,52 +39,48 @@ export function QRCodeScanner({ onScan }: QRCodeScannerProps) {
         Scanner QR Code de la zone
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Scanner le QR Code de la zone</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Card className="border-2 border-dashed">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center justify-center py-12">
-                  {scanning ? (
-                    <>
-                      <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                      <p className="text-sm text-muted-foreground">
-                        Scan en cours...
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
-                      <p className="text-sm text-muted-foreground text-center">
-                        Placez le QR code dans le cadre
-                      </p>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleSimulateScan}
-                disabled={scanning}
-                className="flex-1"
-              >
-                Simuler scan (démo)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                disabled={scanning}
-              >
-                Annuler
-              </Button>
+      <Modal
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        type="form"
+        title="Scanner le QR Code de la zone"
+        size="md"
+        actions={{
+          primary: {
+            label: "Simuler scan (démo)",
+            onClick: handleSimulateScan,
+            disabled: scanning,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => setIsOpen(false),
+            disabled: scanning,
+            variant: "outline",
+          },
+        }}
+      >
+        <Card className="border-2 border-dashed">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12">
+              {scanning ? (
+                <>
+                  <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-sm text-muted-foreground">
+                    Scan en cours...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <QrCode className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Placez le QR code dans le cadre
+                  </p>
+                </>
+              )}
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      </Modal>
     </>
   );
 }

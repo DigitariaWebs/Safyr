@@ -35,13 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/modal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
@@ -1397,57 +1391,66 @@ export default function HRDashboardPage() {
               Quitter Édition
             </Button>
           )}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Personnaliser
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Personnaliser le tableau de bord</DialogTitle>
-              </DialogHeader>
-              <Button
-                variant={isEditMode ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setIsEditMode(!isEditMode);
-                  setIsDialogOpen(false);
-                }}
-                className="mb-4"
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Settings className="h-4 w-4" />
+            Personnaliser
+          </Button>
+
+          <Modal
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            type="form"
+            title="Personnaliser le tableau de bord"
+            size="md"
+            actions={{
+              primary: {
+                label: "Fermer",
+                onClick: () => setIsDialogOpen(false),
+                variant: "outline",
+              },
+            }}
+          >
+            <Button
+              variant={isEditMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setIsEditMode(!isEditMode);
+                setIsDialogOpen(false);
+              }}
+              className="mb-4"
+            >
+              <GripVertical className="h-4 w-4 mr-2" />
+              {isEditMode ? "Quitter Édition" : "Mode Édition"}
+            </Button>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={widgetConfigs.map((config) => config.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <GripVertical className="h-4 w-4 mr-2" />
-                {isEditMode ? "Quitter Édition" : "Mode Édition"}
-              </Button>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={widgetConfigs.map((config) => config.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-4">
-                    {widgetConfigs.map(
-                      (config: WidgetConfig, index: number) => (
-                        <SortableItem
-                          key={config.id}
-                          config={config}
-                          index={index}
-                          toggleVisibility={toggleVisibility}
-                          moveUp={moveUp}
-                          moveDown={moveDown}
-                          total={widgetConfigs.length}
-                        />
-                      ),
-                    )}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            </DialogContent>
-          </Dialog>
+                <div className="space-y-4">
+                  {widgetConfigs.map((config: WidgetConfig, index: number) => (
+                    <SortableItem
+                      key={config.id}
+                      config={config}
+                      index={index}
+                      toggleVisibility={toggleVisibility}
+                      moveUp={moveUp}
+                      moveDown={moveDown}
+                      total={widgetConfigs.length}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </Modal>
         </div>
       </div>
 

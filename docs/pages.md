@@ -425,8 +425,266 @@ Simple file upload interface:
 - French month names
 - Period format: "Janvier 2024", "Février 2024", etc.
 
+### 3. Payroll Calculation
+**Route**: `/dashboard/payroll/calculation`
+
+**Description**: Complete payroll calculation engine that processes all employee variables, applies legal and contractual rules, calculates social contributions, and generates pay slips. Handles gross to net calculations with full breakdown of all salary elements and contributions.
+
+**Features**:
+
+#### Period Selection
+- Reuses PeriodSelector component for consistent period selection
+- Shows selected period prominently
+- Period determines which calculation run to display
+
+#### Calculation Status Overview
+Five key metrics displayed using InfoCard components:
+1. **Total Employés**: Total number of employees in the period
+2. **Calculés**: Employees with completed calculations (blue/success)
+3. **En Attente**: Pending calculations (yellow/warning)
+4. **Erreurs**: Employees with calculation errors (red/danger)
+5. **Validés**: Validated and locked calculations (green/info)
+
+#### Financial Summary
+Four main financial cards:
+1. **Masse Salariale Brute**: Total gross payroll for all employees
+2. **Total Net à Payer**: Total net salary to be paid (green)
+3. **Charges Patronales**: Total employer contributions (orange)
+4. **Coût Total**: Complete cost including gross salary + employer charges (primary)
+
+All amounts displayed in euros with French formatting (e.g., "14 136,50 €")
+
+#### Action Buttons
+Contextual actions based on calculation status:
+- **Calculer (X)**: Run calculation for pending employees (shows count)
+- **Recalculer tout**: Recalculate all employees from scratch
+- **Valider & Verrouiller**: Lock calculations to prevent modifications
+- **Bulletins de Paie**: Export all pay slips as PDFs
+- **Générer DSN**: Generate monthly DSN declaration file
+
+#### Employee Calculations Table
+Comprehensive DataTable with columns:
+- **Matricule**: Employee registration number (sortable)
+- **Nom**: Employee name and position (sortable)
+- **Statut**: Calculation status badge (Validé, Calculé, En attente, Erreur)
+- **Brut**: Gross salary (sortable)
+- **Net**: Net salary (sortable)
+- **Charges patronales**: Employer contributions (sortable)
+- **Coût total**: Total cost per employee (sortable, primary color)
+- **Actions**: View details (eye icon), Download pay slip (if calculated)
+
+**Status Badges**:
+- **Validé** (Validated): Green with CheckCircle icon
+- **Calculé** (Calculated): Blue with Calculator icon
+- **En attente** (Pending): Gray with Clock icon
+- **Erreur** (Error): Red with AlertCircle icon
+
+#### Employee Calculation Detail Modal
+Full-width modal with 4 tabs showing complete calculation breakdown:
+
+**Tab 1: Vue d'ensemble (Overview)**
+
+Three main cards:
+1. **Informations Employé**:
+   - Matricule (employee number)
+   - Poste (position)
+   - Contrat (contract type)
+   - Période
+   - Statut (badge)
+
+2. **Résumé Financier**:
+   - Salaire Brut
+   - - Cotisations salarié (red, deduction)
+   - = Net à Payer (bold, green)
+   - Net Imposable (current month)
+   - Net Imposable Cumulé (year-to-date)
+
+3. **Coût Employeur**:
+   - Salaire Brut
+   - + Charges patronales (orange)
+   - = Coût Total (bold, primary, large text)
+
+4. **Maintien de Salaire (IJSS)** (if applicable):
+   - Blue card displayed when sick leave with salary maintenance
+   - Montant IJSS (social security benefit amount)
+   - Maintien de salaire (employer top-up)
+
+5. **Alertes & Erreurs** (if any):
+   - Red cards for blocking errors with AlertCircle icon
+   - Orange cards for warnings with AlertCircle icon
+   - Full error/warning message text
+
+**Tab 2: Éléments de Paie (Salary Elements)**
+
+Two sections:
+1. **Gains (Earnings)**:
+   - Each earning displayed as a row
+   - Label and code
+   - Quantity × Rate calculation (if applicable)
+   - Amount in green (+ prefix)
+   - Categories: Base salary, hours, overtime, bonuses, allowances
+
+2. **Déductions (Deductions)**:
+   - Each deduction displayed as a row
+   - Label and code
+   - Quantity × Rate calculation (if applicable)
+   - Amount in red (negative)
+   - Categories: Absences, advances, other deductions
+
+3. **Salaire Brut (Summary)**:
+   - Gray background card
+   - Bold total in large text
+
+**Tab 3: Cotisations Salarié (Employee Contributions)**
+
+Detailed breakdown of all employee social contributions:
+- Each contribution displayed as a row
+- Label and code (e.g., "S21.G05.00.002")
+- Tranche indication (A, B, or C for social security ceiling)
+- Base amount × Rate% calculation
+- Contribution amount in red
+- Categories:
+  - Assurance maladie (health insurance)
+  - Retraite Tranche 1 & 2 (retirement)
+  - Assurance chômage (unemployment)
+  - CSG déductible (deductible social contribution)
+  - CSG non déductible (non-deductible social contribution)
+  - CRDS (social debt repayment)
+
+Summary card (gray background):
+- Salaire Brut
+- - Total Cotisations Salarié (red)
+- = Net à Payer (bold, green, large)
+
+**Tab 4: Cotisations Patronales (Employer Contributions)**
+
+Detailed breakdown of all employer social contributions:
+- Each contribution displayed as a row
+- Label and code
+- Tranche indication (A, B, or C)
+- Base amount × Rate% calculation
+- Contribution amount in orange
+- Categories:
+  - Assurance maladie (health insurance - 13%)
+  - Retraite Tranche 1 & 2 (retirement)
+  - Assurance chômage (unemployment - 4.05%)
+  - Allocations familiales (family allowances - 3.45% or 5.25%)
+  - Accidents du travail (work accidents)
+
+Summary card (gray background):
+- Salaire Brut
+- + Total Charges Patronales (orange)
+- = Coût Total Employeur (bold, primary, large)
+
+**Calculation Logic Implemented**:
+1. **Gross Salary Calculation**:
+   - Base salary (monthly)
+   - Hours (normal, night, holiday, overtime with majoration)
+   - Bonuses and premiums
+   - Allowances (meal, travel, uniform)
+   - Absence deductions
+
+2. **Social Contributions**:
+   - Social security ceiling (Plafond SS): 3,864 € (2024)
+   - Tranche A: up to 1× ceiling
+   - Tranche B: between 1× and 4× ceiling
+   - Employee contributions: retirement, CSG, CRDS (no health or unemployment)
+   - Employer contributions: health (13%), retirement, unemployment (4.05%), family, work accidents
+
+3. **IJSS (Sick Leave Benefits)**:
+   - Social security benefit amount
+   - Employer salary maintenance
+   - Net calculation including IJSS
+
+4. **Net Calculations**:
+   - Net salary: Gross - Employee contributions
+   - Net taxable: Net + non-deductible CSG/CRDS
+   - Net to pay: Net salary (+ allowances if not included)
+   - Year-to-date cumulative tracking
+
+**Components Used**:
+- PeriodSelector for period selection
+- InfoCard for statistics
+- Card for financial summary and sections
+- DataTable for employee list
+- Dialog for detail modal
+- Tabs for organizing detail sections
+- Badge for status indicators
+- Button for actions
+
+**Mock Data**:
+- `/src/data/payroll-calculation.ts`:
+  - 6 employee calculations (4 calculated, 1 validated, 1 pending, 1 error)
+  - Complete PayrollCalculationRun for December 2024
+  - Realistic French salary calculations with proper rates
+  - Social contributions following French law
+  - Pay slip records
+  - DSN declaration
+  - Helper functions: getCalculationRun, getEmployeeCalculation, getPaySlips, getDSNDeclaration, calculateTotals
+  - Factory functions for creating salary elements and contributions
+
+**Types** (`/src/lib/types.d.ts`):
+- PayrollCalculationStatus: pending | calculating | calculated | validated | error | exported
+- SalaryElement: Earnings and deductions with type, category, quantity, rate, amount
+- SocialContributionDetail: Employee and employer contributions with base, rate, amount, tranche
+- EmployeePayrollCalculation: Complete calculation for one employee
+- PayrollCalculationRun: Complete calculation run for a period
+- PaySlip: Pay slip document tracking
+- DSNDeclaration: DSN declaration data
+
+**Calculation Features**:
+1. **Gross Salary**: All earning elements summed
+2. **IJSS Management**: Automatic calculation with salary maintenance
+3. **Bonuses**: All types (performance, seniority, responsibility, precarity)
+4. **Absences**: Deducted from gross salary
+5. **Overtime**: 25% and 50% majoration applied
+6. **Social Security Ceilings**: Tranche A/B regularization
+7. **Net Taxable**: Monthly and year-to-date cumulative
+8. **Pay Slips**: PDF generation ready (status tracking)
+9. **DSN**: Automatic declaration generation
+
+**Workflow**:
+1. Select payroll period
+2. Review calculation status overview
+3. Click "Calculer" to run pending calculations
+4. Review each employee calculation
+5. Click employee row to view full detail breakdown
+6. Verify all salary elements, contributions, and amounts
+7. Correct any errors by recalculating
+8. Validate and lock calculations
+9. Export pay slips as PDFs
+10. Generate DSN declaration for submission
+
+**Integration Points**:
+- Input from Payroll Variables (D.3): Uses imported hours and absences
+- Legal/Conventional parameters (D.1): Applies rates and rules
+- Employee configuration (D.2): Uses contract and assignment data
+- Output to Controls (D.5): Provides data for automated checks
+- Output to Social Report (D.6): Feeds into reporting
+- Pay slip distribution: Employee portal, email, HR vault
+- DSN: Automated social declarations
+
+**Implementation Notes**:
+- Implements specification item D.4 "Calcul de Paie"
+- All 9 checklist items completed and marked in todo.md
+- Uses realistic 2024 French social contribution rates
+- Plafond SS: 3,864 € monthly
+- CSG calculated on 98.25% of gross (assiette)
+- Family allowances: 3.45% or 5.25% based on salary level
+- Complete breakdown from gross to net with all intermediary steps
+- Employee and employer sides fully detailed
+- Year-to-date tracking for net taxable
+- Error and warning display for calculation issues
+- Status-based action buttons (contextual UI)
+- Modal tabs provide organized view of complex data
+- French number formatting throughout
+- Color coding: green for net/earnings, red for deductions, orange for employer charges
+- Responsive grid layouts
+- Search and sort on employee table
+
+---
+
 ### Coming Soon
-- Payroll Calculation
-- Automatic Controls
-- Social Report
-- Payroll KPI Dashboard
+- Automatic Controls (D.5)
+- Social Report (D.6)
+- Payroll KPI Dashboard (D.7)
