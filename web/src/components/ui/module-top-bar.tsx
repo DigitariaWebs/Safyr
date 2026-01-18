@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X } from "lucide-react";
+import { Menu, X, CalendarDays, Link2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAgenda } from "@/contexts/AgendaContext";
+import { useLiensUtiles } from "@/contexts/LiensUtilesContext";
 
 export interface ModuleTopBarProps {
   moduleTitle: string;
@@ -27,6 +30,9 @@ export function ModuleTopBar({
   isCollapsed = false,
   onCollapseToggle,
 }: ModuleTopBarProps) {
+  const { openAgenda } = useAgenda();
+  const { openLiensUtiles } = useLiensUtiles();
+
   return (
     <header className="sticky top-0 z-10 border-b bg-card">
       <div className="flex h-14 items-center justify-between px-6">
@@ -60,6 +66,22 @@ export function ModuleTopBar({
               Conteurs
             </button>
           )}
+          <Button
+            onClick={() => openAgenda()}
+            size="sm"
+            className="h-8 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+            title="Agenda"
+          >
+            <CalendarDays className="h-4 w-4 text-primary" />
+          </Button>
+          <Button
+            onClick={() => openLiensUtiles()}
+            size="sm"
+            className="h-8 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
+            title="Liens Utiles"
+          >
+            <Link2 className="h-4 w-4 text-primary" />
+          </Button>
           <button
             onClick={onProfileClick}
             className="flex items-center gap-2 hover:ring-2 hover:ring-primary/30 rounded-full p-0.5 transition-all"
