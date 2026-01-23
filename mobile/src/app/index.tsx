@@ -9,14 +9,26 @@ export default function Index() {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const session = await getSession();
+
+    // Add a small delay to ensure the layout is mounted
+    const timer = setTimeout(async () => {
       if (!mounted) return;
-      router.replace(session ? "/(app)/(tabs)" : "/(auth)/login");
-      setLoading(false);
-    })();
+
+      try {
+        const session = await getSession();
+        if (!mounted) return;
+
+        router.replace(session ? "/(app)/(tabs)" : "/(auth)/login");
+      } catch (error) {
+        console.error("Navigation error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 100);
+
     return () => {
       mounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

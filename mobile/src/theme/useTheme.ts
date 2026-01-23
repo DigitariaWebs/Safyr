@@ -1,14 +1,12 @@
-import { useColorScheme } from "react-native";
-import { colors, type ColorSchemeName, type ThemeColors } from "./colors";
+import { useThemeContext } from "./ThemeContext";
+import { type ColorSchemeName, type ThemeColors } from "./colors";
 
 /**
- * Single place to pick theme colors.
- * - Defaults to system color scheme
- * - You can later wire a user setting override.
+ * Hook to access theme colors and scheme.
+ * Uses ThemeContext which supports manual theme switching.
  */
 export function useTheme(): { scheme: ColorSchemeName; colors: ThemeColors } {
-  const system = useColorScheme();
-  const scheme: ColorSchemeName = system === "dark" ? "dark" : "light";
-  return { scheme, colors: colors[scheme] };
+  const { scheme, colors } = useThemeContext();
+  return { scheme, colors };
 }
 

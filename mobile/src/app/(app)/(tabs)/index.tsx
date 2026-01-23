@@ -1,15 +1,41 @@
 import { Switch, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 
 export default function HomeDashboardScreen() {
   const { colors } = useTheme();
+  const { unreadCount } = useNotifications();
   const [inService, setInService] = useState(true);
   return (
     <Screen>
-      <Header title="Accueil agent" subtitle="Poste & statut" />
+      <Header
+        title="Accueil agent"
+        subtitle="Poste & statut"
+        right={
+          <Button variant="ghost" size="sm" onPress={() => router.push("/(app)/notifications")}>
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="notifications-outline" size={18} color={colors.foreground} />
+              {unreadCount > 0 ? (
+                <View
+                  className="px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  <Text
+                    className="text-xs font-semibold"
+                    style={{ color: colors.primaryForeground }}
+                  >
+                    {unreadCount}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </Button>
+        }
+      />
 
       <View className="px-4 gap-4">
         <Card>

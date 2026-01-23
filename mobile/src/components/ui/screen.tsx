@@ -11,16 +11,18 @@ export type ScreenProps = ViewProps & {
 };
 
 export function Screen({ className, contentClassName, children, ...props }: ScreenProps) {
-  const { scheme } = useTheme();
+  const { scheme, colors } = useTheme();
+
   return (
-    <SafeAreaView
-      className={cn("flex-1 bg-background", scheme === "dark" ? "dark" : "", className)}
-      edges={["top"]}
+    <View
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <View className={cn("flex-1", contentClassName)} {...props}>
+      <View
+        className={cn("flex-1", scheme === "dark" ? "dark" : "", contentClassName)}
+        {...props}
+      >
         {children}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
-
