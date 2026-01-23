@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef, FilterDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
@@ -52,6 +53,16 @@ import { EmployeePayrollVariables, ImportStatus } from "@/lib/types";
 type ModalMode = "view" | "edit" | null;
 
 export default function PayrollVariablesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PayrollVariablesContent />
+    </Suspense>
+  );
+}
+
+function PayrollVariablesContent() {
+  const searchParams = useSearchParams();
+
   // Convert PayrollPeriod to Period format
   const periods: PeriodType[] = mockPayrollPeriods.map((p) => ({
     id: p.id,
@@ -60,15 +71,70 @@ export default function PayrollVariablesPage() {
     label: p.label,
   }));
 
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>(periods[0]);
+  // Compute initial state from URL params
+  const getInitialStateFromParams = () => {
+    const employeeId = searchParams.get("employeeId");
+    const month = searchParams.get("month");
+    const year = searchParams.get("year");
+
+    if (employeeId && month && year) {
+      const targetPeriod = periods.find(
+        (p) => p.month === parseInt(month) && p.year === parseInt(year),
+      );
+      const periodString = `${year}-${month.padStart(2, "0")}`;
+      const variableRecord = mockEmployeePayrollVariables.find(
+        (v) => v.employeeId === employeeId && v.period === periodString,
+      );
+
+      if (variableRecord) {
+        return {
+          period: targetPeriod || periods[0],
+          modalMode: "view" as ModalMode,
+          selectedVariable: variableRecord,
+          formData: variableRecord,
+        };
+      } else {
+        const employee = mockEmployeePayrollVariables.find(
+          (v) => v.employeeId === employeeId,
+        );
+        const newVariable: Partial<EmployeePayrollVariables> = {
+          employeeId: employeeId,
+          employeeName: employee?.employeeName || "Employé inconnu",
+          period: periodString,
+          validated: false,
+          hasErrors: false,
+          hasWarnings: false,
+        };
+        return {
+          period: targetPeriod || periods[0],
+          modalMode: "edit" as ModalMode,
+          selectedVariable: null,
+          formData: newVariable,
+        };
+      }
+    }
+
+    return {
+      period: periods[0],
+      modalMode: null,
+      selectedVariable: null,
+      formData: {},
+    };
+  };
+
+  const initialState = getInitialStateFromParams();
+
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>(
+    initialState.period,
+  );
   const [variables, setVariables] = useState<EmployeePayrollVariables[]>(
     mockEmployeePayrollVariables,
   );
-  const [modalMode, setModalMode] = useState<ModalMode>(null);
+  const [modalMode, setModalMode] = useState<ModalMode>(initialState.modalMode);
   const [selectedVariable, setSelectedVariable] =
-    useState<EmployeePayrollVariables | null>(null);
+    useState<EmployeePayrollVariables | null>(initialState.selectedVariable);
   const [formData, setFormData] = useState<Partial<EmployeePayrollVariables>>(
-    {},
+    initialState.formData,
   );
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 

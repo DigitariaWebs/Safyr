@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
@@ -38,26 +39,96 @@ import { mockWorkedHours } from "@/data/time-management";
 import { mockEmployees } from "@/data/employees";
 
 export default function WorkedHoursPage() {
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WorkedHoursContent />
+    </Suspense>
+  );
+}
+
+function WorkedHoursContent() {
+  const searchParams = useSearchParams();
+
+  // Compute initial state from URL params
+  const getInitialStateFromParams = () => {
+    const employeeId = searchParams.get("employeeId");
+    const month = searchParams.get("month");
+    const year = searchParams.get("year");
+
+    const defaultFormData = {
+      employeeId: "",
+      year: new Date().getFullYear().toString(),
+      month: (new Date().getMonth() + 1).toString().padStart(2, "0"),
+      regularHours: 0,
+      supplementaryHours25: 0,
+      supplementaryHours50: 0,
+      complementaryHours10: 0,
+      nightHours: 0,
+      sundayHours: 0,
+      sundayNightHours: 0,
+      holidayHours: 0,
+      holidayNightHours: 0,
+    };
+
+    if (employeeId && month && year) {
+      const hoursRecord = mockWorkedHours.find((h) => {
+        const dateObj = new Date(h.date);
+        return (
+          h.employeeId === employeeId &&
+          dateObj.getMonth() + 1 === parseInt(month) &&
+          dateObj.getFullYear() === parseInt(year)
+        );
+      });
+
+      if (hoursRecord) {
+        return {
+          isDetailsModalOpen: true,
+          selectedHours: hoursRecord,
+          isEditMode: false,
+          formData: defaultFormData,
+        };
+      } else {
+        return {
+          isDetailsModalOpen: true,
+          selectedHours: null,
+          isEditMode: true,
+          formData: {
+            employeeId: employeeId,
+            year: year,
+            month: month.padStart(2, "0"),
+            regularHours: 0,
+            supplementaryHours25: 0,
+            supplementaryHours50: 0,
+            complementaryHours10: 0,
+            nightHours: 0,
+            sundayHours: 0,
+            sundayNightHours: 0,
+            holidayHours: 0,
+            holidayNightHours: 0,
+          },
+        };
+      }
+    }
+
+    return {
+      isDetailsModalOpen: false,
+      selectedHours: null,
+      isEditMode: false,
+      formData: defaultFormData,
+    };
+  };
+
+  const initialState = getInitialStateFromParams();
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(
+    initialState.isDetailsModalOpen,
+  );
   const [selectedHours, setSelectedHours] = useState<
     (typeof mockWorkedHours)[0] | null
-  >(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  >(initialState.selectedHours);
+  const [isEditMode, setIsEditMode] = useState(initialState.isEditMode);
   const [groupBy, setGroupBy] = useState<string | undefined>(undefined);
-  const [formData, setFormData] = useState({
-    employeeId: "",
-    year: new Date().getFullYear().toString(),
-    month: (new Date().getMonth() + 1).toString().padStart(2, "0"),
-    regularHours: 0,
-    supplementaryHours25: 0,
-    supplementaryHours50: 0,
-    complementaryHours10: 0,
-    nightHours: 0,
-    sundayHours: 0,
-    sundayNightHours: 0,
-    holidayHours: 0,
-    holidayNightHours: 0,
-  });
+  const [formData, setFormData] = useState(initialState.formData);
 
   const handleViewDetails = (hours: (typeof mockWorkedHours)[0]) => {
     setSelectedHours(hours);

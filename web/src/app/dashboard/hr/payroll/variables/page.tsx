@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
@@ -209,21 +210,13 @@ const variableTypeLabels: Record<PayrollVariableType, string> = {
   autres_indemnites: "Autres Indemnités",
 };
 
-export default function PayrollVariablesPage() {
-  const [variables, setVariables] = useState<PayrollVariable[]>(mockVariables);
-  const [isVariableModalOpen, setIsVariableModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+// Helper to compute initial state from URL params
+function getInitialStateFromParams(searchParams: URLSearchParams) {
+  const employeeId = searchParams.get("employeeId");
+  const month = searchParams.get("month");
+  const year = searchParams.get("year");
 
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedVariable, setSelectedVariable] =
-    useState<PayrollVariable | null>(null);
-
-  const [groupBy, setGroupBy] = useState<string | undefined>(undefined);
-  const [validationNotes, setValidationNotes] = useState("");
-  const [employeeSearchOpen, setEmployeeSearchOpen] = useState(false);
-  const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
-  const employeeSearchRef = useRef<HTMLDivElement>(null);
-  const [variableForm, setVariableForm] = useState({
+  const defaultForm = {
     employeeId: "",
     employeeName: "",
     year: "",
@@ -247,7 +240,79 @@ export default function PayrollVariablesPage() {
     tenue: "",
     nbre_deplacement: "",
     autres_indemnites: "",
-  });
+  };
+
+  if (!employeeId || !month || !year) {
+    return {
+      selectedVariable: null,
+      isViewModalOpen: false,
+      isVariableModalOpen: false,
+      isEditMode: false,
+      variableForm: defaultForm,
+    };
+  }
+
+  const periodString = `${year}-${month.padStart(2, "0")}-01`;
+  const variableRecord = mockVariables.find(
+    (v) => v.employeeId === employeeId && v.period === periodString,
+  );
+
+  if (variableRecord) {
+    return {
+      selectedVariable: variableRecord,
+      isViewModalOpen: true,
+      isVariableModalOpen: false,
+      isEditMode: false,
+      variableForm: defaultForm,
+    };
+  }
+
+  const employee = mockEmployees.find((e) => e.id === employeeId);
+  return {
+    selectedVariable: null,
+    isViewModalOpen: false,
+    isVariableModalOpen: true,
+    isEditMode: true,
+    variableForm: {
+      ...defaultForm,
+      employeeId: employeeId,
+      employeeName:
+        employee?.firstName && employee?.lastName
+          ? `${employee.firstName} ${employee.lastName}`
+          : "Employé inconnu",
+      year: year,
+      month: month.padStart(2, "0"),
+    },
+  };
+}
+
+export default function PayrollVariablesPage() {
+  const searchParams = useSearchParams();
+
+  // Compute initial state from URL params
+  const initialState = useMemo(
+    () => getInitialStateFromParams(searchParams),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [], // Only compute once on mount
+  );
+
+  const [variables, setVariables] = useState<PayrollVariable[]>(mockVariables);
+  const [isVariableModalOpen, setIsVariableModalOpen] = useState(
+    initialState.isVariableModalOpen,
+  );
+  const [isViewModalOpen, setIsViewModalOpen] = useState(
+    initialState.isViewModalOpen,
+  );
+  const [isEditMode, setIsEditMode] = useState(initialState.isEditMode);
+  const [selectedVariable, setSelectedVariable] =
+    useState<PayrollVariable | null>(initialState.selectedVariable);
+
+  const [groupBy, setGroupBy] = useState<string | undefined>(undefined);
+  const [validationNotes, setValidationNotes] = useState("");
+  const [employeeSearchOpen, setEmployeeSearchOpen] = useState(false);
+  const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
+  const employeeSearchRef = useRef<HTMLDivElement>(null);
+  const [variableForm, setVariableForm] = useState(initialState.variableForm);
 
   // Handle click outside to close employee search
   useEffect(() => {
