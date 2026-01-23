@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataTable, ColumnDef, FilterDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
 import {
@@ -38,14 +37,12 @@ import {
   X,
   Clock,
   FileText,
-  Filter,
   Download,
 } from "lucide-react";
 import {
   PAYROLL_CONTROLS,
   MOCK_ANOMALIES,
   MOCK_EXECUTIONS,
-  getCategoryCounts,
 } from "@/data/payroll-controls";
 import { PayrollAnomaly, ControlExecution } from "@/lib/types";
 
@@ -144,9 +141,6 @@ export default function PayrollControlsPage() {
   );
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [executionModalOpen, setExecutionModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-  const [filterSeverity, setFilterSeverity] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const handleRunControls = (controlIds?: string[]) => {
     const controlsToRun = controlIds || selectedControls;
@@ -389,16 +383,50 @@ export default function PayrollControlsPage() {
     return labels[category] || category;
   };
 
-  const filteredAnomalies = anomalies.filter((anomaly) => {
-    if (filterSeverity !== "all" && anomaly.severity !== filterSeverity)
-      return false;
-    if (filterStatus !== "all" && anomaly.status !== filterStatus) return false;
-    if (activeTab !== "all") {
-      const control = PAYROLL_CONTROLS.find((c) => c.id === anomaly.controlId);
-      if (control && control.category !== activeTab) return false;
-    }
-    return true;
+  // Enrich anomalies with category for filtering
+  const enrichedAnomalies = anomalies.map((anomaly) => {
+    const control = PAYROLL_CONTROLS.find((c) => c.id === anomaly.controlId);
+    return {
+      ...anomaly,
+      category: control?.category || "general",
+    };
   });
+
+  const anomalyFilters: FilterDef[] = [
+    {
+      key: "severity",
+      label: "Sévérité",
+      options: [
+        { value: "all", label: "Toutes les sévérités" },
+        { value: "critical", label: "Critiques" },
+        { value: "warning", label: "Avertissements" },
+        { value: "info", label: "Informations" },
+      ],
+    },
+    {
+      key: "status",
+      label: "Statut",
+      options: [
+        { value: "all", label: "Tous les statuts" },
+        { value: "pending", label: "En attente" },
+        { value: "reviewed", label: "Révisées" },
+        { value: "corrected", label: "Corrigées" },
+        { value: "ignored", label: "Ignorées" },
+      ],
+    },
+    {
+      key: "category",
+      label: "Catégorie",
+      options: [
+        { value: "all", label: "Toutes les catégories" },
+        { value: "hours", label: "Heures" },
+        { value: "legal", label: "Légal" },
+        { value: "bonuses", label: "Primes" },
+        { value: "ijss", label: "IJSS" },
+        { value: "duplicates", label: "Doublons" },
+      ],
+    },
+  ];
 
   const anomalyColumns: ColumnDef<PayrollAnomaly>[] = [
     {
@@ -507,8 +535,6 @@ export default function PayrollControlsPage() {
     },
   ];
 
-  const categoryCounts = getCategoryCounts();
-
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -602,105 +628,20 @@ export default function PayrollControlsPage() {
                   contrôle
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Sévérité
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFilterSeverity("all")}>
-                      Toutes
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterSeverity("critical")}
-                    >
-                      Critiques
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterSeverity("warning")}
-                    >
-                      Avertissements
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterSeverity("info")}>
-                      Informations
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Statut
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                      Tous
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("pending")}
-                    >
-                      En attente
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("reviewed")}
-                    >
-                      Révisées
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("corrected")}
-                    >
-                      Corrigées
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("ignored")}
-                    >
-                      Ignorées
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter
-                </Button>
-              </div>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Exporter
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">
-                  Toutes ({anomalies.length})
-                </TabsTrigger>
-                <TabsTrigger value="hours">
-                  Heures ({categoryCounts.hours || 0})
-                </TabsTrigger>
-                <TabsTrigger value="legal">
-                  Légal ({categoryCounts.legal || 0})
-                </TabsTrigger>
-                <TabsTrigger value="bonuses">
-                  Primes ({categoryCounts.bonuses || 0})
-                </TabsTrigger>
-                <TabsTrigger value="ijss">
-                  IJSS ({categoryCounts.ijss || 0})
-                </TabsTrigger>
-                <TabsTrigger value="duplicates">
-                  Doublons ({categoryCounts.duplicates || 0})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-4">
-                <DataTable
-                  data={filteredAnomalies}
-                  columns={anomalyColumns}
-                  searchPlaceholder="Rechercher par employé..."
-                  searchKey="employeeName"
-                />
-              </TabsContent>
-            </Tabs>
+            <DataTable
+              data={enrichedAnomalies}
+              columns={anomalyColumns}
+              filters={anomalyFilters}
+              searchPlaceholder="Rechercher par employé..."
+              searchKey="employeeName"
+            />
           </CardContent>
         </Card>
       )}
@@ -763,7 +704,7 @@ export default function PayrollControlsPage() {
                 {selectedControls.length > 1 ? "s" : ""}
               </Badge>
             </div>
-            <div className="space-y-2 max-h-[450px] overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-112 overflow-y-auto pr-2">
               {PAYROLL_CONTROLS.map((control) => {
                 const lastRun = getControlLastRunStatus(control.id);
                 const isSelected = selectedControls.includes(control.id);

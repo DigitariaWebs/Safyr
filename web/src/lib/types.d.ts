@@ -2143,3 +2143,262 @@ export interface PayrollSocialReport {
   // Comparative analysis
   comparison?: YearOverYearComparison;
 }
+
+// ========================================
+// Payroll Workflow Types
+// ========================================
+
+// Organism Rule - cotisations sociales (taxes applied via organisms like URSSAF, AGIRC-ARRCO)
+export interface OrganismRule {
+  id: string;
+  code: string;
+  name: string; // e.g., "Assurance maladie", "Retraite complémentaire"
+  organism: string; // e.g., "URSSAF", "AGIRC-ARRCO"
+  category:
+    | "health"
+    | "retirement"
+    | "unemployment"
+    | "family"
+    | "accident"
+    | "csg"
+    | "crds"
+    | "other";
+  appliesTo: "employee" | "employer" | "both";
+  rateEmployee?: number; // percentage for employee
+  rateEmployer?: number; // percentage for employer
+  ceiling?: number; // plafond
+  tranche?: "A" | "B" | "C" | "all";
+  isActive: boolean;
+  effectiveDate: string;
+  endDate?: string;
+  description?: string;
+}
+
+// Applied organism rule in calculation
+export interface OrganismRuleApplication {
+  ruleId: string;
+  ruleName: string;
+  ruleCode: string;
+  organism: string;
+  category: OrganismRule["category"];
+  baseAmount: number;
+  rate: number;
+  amount: number;
+  ceiling?: number;
+  tranche?: "A" | "B" | "C";
+}
+
+// State Help - réductions/aides employeur
+export interface StateHelp {
+  id: string;
+  code: string;
+  name: string; // e.g., "Réduction Fillon", "Aide à l'embauche"
+  type: "reduction" | "credit" | "exoneration";
+  calculationMethod: "percentage" | "fixed" | "formula";
+  rate?: number;
+  amount?: number;
+  formula?: string;
+  conditions: string[];
+  maxAmount?: number;
+  isActive: boolean;
+  effectiveDate: string;
+  endDate?: string;
+  description?: string;
+}
+
+// Applied state help in calculation
+export interface StateHelpApplication {
+  helpId: string;
+  helpName: string;
+  helpCode: string;
+  type: StateHelp["type"];
+  baseAmount: number;
+  calculatedAmount: number;
+  appliedAmount: number; // after max cap
+}
+
+// Indemnité types configuration
+export interface IndemniteType {
+  id: string;
+  code: string;
+  name: string; // e.g., "Prime de panier", "Indemnité transport"
+  category:
+    | "transport"
+    | "repas"
+    | "logement"
+    | "habillement"
+    | "outillage"
+    | "anciennete"
+    | "risque"
+    | "other";
+  taxable: boolean;
+  subjectToContributions: boolean;
+  defaultAmount?: number;
+  calculationMethod: "fixed" | "per_day" | "per_hour" | "percentage" | "custom";
+  isActive: boolean;
+  description?: string;
+}
+
+// Applied indemnité in calculation
+export interface IndemniteApplication {
+  typeId: string;
+  typeName: string;
+  typeCode: string;
+  category: IndemniteType["category"];
+  quantity?: number;
+  rate?: number;
+  amount: number;
+  taxable: boolean;
+  subjectToContributions: boolean;
+}
+
+// Leave Balance - Congés tracking
+export interface LeaveBalance {
+  employeeId: string;
+  period: string;
+  congesPayes: {
+    previousBalance: number; // solde N-1
+    acquired: number; // acquis période en cours
+    taken: number; // pris
+    remaining: number; // solde restant
+    monthlyAccrual: number; // 2.5 jours/mois
+  };
+  rtt?: {
+    acquired: number;
+    taken: number;
+    remaining: number;
+  };
+  congesAnciennete?: {
+    acquired: number;
+    taken: number;
+    remaining: number;
+  };
+}
+
+// Worked hours breakdown for brute calculation
+export interface WorkedHoursBreakdown {
+  normalHours: number;
+  nightHours: number;
+  sundayHours: number;
+  holidayHours: number;
+  overtime25: number; // heures sup majorées 25%
+  overtime50: number; // heures sup majorées 50%
+  overtime100: number; // heures sup majorées 100%
+  totalHours: number;
+}
+
+// Time off deduction detail
+export interface TimeOffDeduction {
+  type: TimeOffType;
+  days: number;
+  hours: number;
+  dailyRate: number;
+  amount: number; // negative for deduction
+  ijssAmount?: number; // if applicable
+  salaryMaintenance?: boolean;
+}
+
+// Employee tax (Prélèvement à la Source)
+export interface EmployeeTax {
+  type: "pas" | "other";
+  name: string;
+  baseAmount: number;
+  rate: number;
+  amount: number;
+}
+
+// Complete payroll calculation workflow
+export interface PayrollCalculationWorkflow {
+  employeeId: string;
+  employeeName: string;
+  employeeNumber: string;
+  period: string;
+  status: PayrollCalculationStatus;
+  position: string;
+  contractType: "CDI" | "CDD" | "Intérim" | "Apprentissage";
+
+  // Step 1: Brute calculation (excludes indemnités)
+  workedHours: WorkedHoursBreakdown;
+  baseSalary: number; // salaire de base mensuel
+  hoursAmount: number; // montant heures travaillées
+  overtimeAmount: number; // montant heures supplémentaires
+  nightBonus: number; // majoration nuit
+  sundayBonus: number; // majoration dimanche
+  holidayBonus: number; // majoration jours fériés
+  timeOffDeductions: TimeOffDeduction[];
+  totalTimeOffDeduction: number;
+  bruteSalary: number; // Total brut (sans indemnités)
+
+  // Step 2: Employee deductions from organism rules
+  employeeDeductions: OrganismRuleApplication[];
+  totalEmployeeDeductions: number;
+
+  // Step 3: Employer charges from organism rules
+  employerCharges: OrganismRuleApplication[];
+  totalEmployerCharges: number;
+
+  // Step 4: State help for employer
+  stateHelps: StateHelpApplication[];
+  totalStateHelp: number;
+  employerNetCharges: number; // totalEmployerCharges - totalStateHelp
+
+  // Step 5: Indemnités (added after deductions)
+  indemnites: IndemniteApplication[];
+  totalIndemnitesNonTaxable: number;
+  totalIndemnitesTaxable: number;
+  totalIndemnites: number;
+
+  // Step 6: Employee taxes (PAS)
+  netBeforeTax: number;
+  employeeTaxes: EmployeeTax[];
+  totalEmployeeTaxes: number;
+
+  // Step 7: Final amounts
+  netToPay: number;
+  totalEmployerCost: number; // bruteSalary + indemnités taxables + employerNetCharges
+
+  // Leave balance
+  leaveBalance: LeaveBalance;
+
+  // Calculation metadata
+  calculatedAt?: Date;
+  calculatedBy?: string;
+  validatedAt?: Date;
+  validatedBy?: string;
+  errors: string[];
+  warnings: string[];
+  notes?: string;
+}
+
+// Payroll calculation run with workflow
+export interface PayrollCalculationRunWorkflow {
+  id: string;
+  period: string;
+  periodLabel: string;
+  status: PayrollCalculationStatus;
+  totalEmployees: number;
+  calculatedEmployees: number;
+  pendingEmployees: number;
+  errorEmployees: number;
+  validatedEmployees: number;
+
+  // Financial totals
+  totalBruteSalary: number;
+  totalIndemnites: number;
+  totalEmployeeDeductions: number;
+  totalEmployerCharges: number;
+  totalStateHelp: number;
+  totalEmployeeTaxes: number;
+  totalNetToPay: number;
+  totalEmployerCost: number;
+
+  // Metadata
+  startedAt?: Date;
+  startedBy?: string;
+  completedAt?: Date;
+  validatedAt?: Date;
+  validatedBy?: string;
+  exportedAt?: Date;
+
+  calculations: PayrollCalculationWorkflow[];
+}

@@ -16,11 +16,23 @@ import {
 const navItems: NavItem[] = [
   {
     label: "Paramétrage",
-    href: "/dashboard/payroll/configuration/legal",
+    href: "/dashboard/payroll/configuration/organisms",
     icon: Settings,
     children: [
       {
-        label: "Légal",
+        label: "Règles Organismes",
+        href: "/dashboard/payroll/configuration/organisms",
+      },
+      {
+        label: "Aides État",
+        href: "/dashboard/payroll/configuration/state-help",
+      },
+      {
+        label: "Indemnités",
+        href: "/dashboard/payroll/configuration/indemnites",
+      },
+      {
+        label: "Conventions",
         href: "/dashboard/payroll/configuration/legal",
       },
       {
