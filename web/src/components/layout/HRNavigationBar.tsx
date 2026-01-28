@@ -25,11 +25,11 @@ import {
 
 const navItems: NavItem[] = [
   {
-    label: "Entreprise",
+    label: "Organisme Social",
     icon: Building2,
     children: [
       {
-        label: "Information Entreprise",
+        label: "Information Organisme Social",
         href: "/dashboard/hr/entreprise",
       },
       {
@@ -50,6 +50,7 @@ const navItems: NavItem[] = [
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
       { label: "AKTO", href: "/dashboard/hr/employees/akto-opco" },
+      { label: "Archives BS", href: "/dashboard/hr/employees/archives" },
       {
         label: "Contrats & avenants",
         href: "/dashboard/hr/contracts",

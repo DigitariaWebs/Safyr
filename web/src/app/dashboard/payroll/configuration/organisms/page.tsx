@@ -37,7 +37,7 @@ import {
 import {
   mockOrganismRules,
   organisms,
-  PLAFOND_SS_MENSUEL_2024,
+  PLAFOND_SS_MENSUEL,
 } from "@/data/payroll-organisms";
 import { OrganismRule } from "@/lib/types.d";
 
@@ -313,25 +313,34 @@ export default function OrganismsConfigurationPage() {
       {/* Info Card */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            Plafond Sécurité Sociale 2024
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Plafond Sécurité Sociale 2026
+            </CardTitle>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+              Mis à jour automatiquement
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-8">
             <div>
               <p className="text-sm text-muted-foreground">Mensuel</p>
               <p className="text-2xl font-bold">
-                {PLAFOND_SS_MENSUEL_2024.toLocaleString("fr-FR")} €
+                {PLAFOND_SS_MENSUEL.toLocaleString("fr-FR")} €
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Annuel</p>
               <p className="text-2xl font-bold">
-                {(PLAFOND_SS_MENSUEL_2024 * 12).toLocaleString("fr-FR")} €
+                {(PLAFOND_SS_MENSUEL * 12).toLocaleString("fr-FR")} €
               </p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-4">
+            Plafond utilisé pour le calcul des tranches A, B et C des
+            cotisations sociales
+          </p>
         </CardContent>
       </Card>
 

@@ -1,8 +1,14 @@
 import { OrganismRule } from "@/lib/types.d";
 
-// French social security ceiling 2024
-export const PLAFOND_SS_MENSUEL_2024 = 3864;
-export const PLAFOND_SS_ANNUEL_2024 = 46368;
+// French social security ceiling 2025-2026
+export const PLAFOND_SS_MENSUEL_2025 = 3864;
+export const PLAFOND_SS_ANNUEL_2025 = 46368;
+export const PLAFOND_SS_MENSUEL_2026 = 3924; // Updated for 2026
+export const PLAFOND_SS_ANNUEL_2026 = 47088; // Updated for 2026
+
+// Use current ceiling (2026)
+export const PLAFOND_SS_MENSUEL = PLAFOND_SS_MENSUEL_2026;
+export const PLAFOND_SS_ANNUEL = PLAFOND_SS_ANNUEL_2026;
 
 // Organism rules - cotisations sociales
 export const mockOrganismRules: OrganismRule[] = [
@@ -14,9 +20,9 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "URSSAF",
     category: "health",
     appliesTo: "employer",
-    rateEmployer: 13.0,
+    rateEmployer: 7.9,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Cotisation maladie employeur sur totalité du salaire",
   },
   {
@@ -26,9 +32,9 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "URSSAF",
     category: "health",
     appliesTo: "employee",
-    rateEmployee: 1.3,
+    rateEmployee: 0.79,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description:
       "Cotisation supplémentaire salarié pour Alsace-Moselle uniquement",
   },
@@ -43,7 +49,7 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employer",
     rateEmployer: 5.25,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Taux normal, 3.45% si salaire <= 3.5 SMIC",
   },
   {
@@ -55,7 +61,7 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employer",
     rateEmployer: 3.45,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Taux réduit pour salaires <= 3.5 SMIC",
   },
 
@@ -67,10 +73,11 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "URSSAF",
     category: "accident",
     appliesTo: "employer",
-    rateEmployer: 1.8,
+    rateEmployer: 2.57,
     isActive: true,
-    effectiveDate: "2024-01-01",
-    description: "Taux variable selon secteur d'activité (1.8% pour sécurité)",
+    effectiveDate: "2025-01-01",
+    description:
+      "Taux variable selon secteur d'activité - secteur sécurité/prévention",
   },
 
   // Retirement - Tranche A
@@ -83,10 +90,10 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "both",
     rateEmployee: 6.9,
     rateEmployer: 8.55,
-    ceiling: PLAFOND_SS_MENSUEL_2024,
+    ceiling: PLAFOND_SS_MENSUEL,
     tranche: "A",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Retraite de base sur tranche A (jusqu'au plafond SS)",
   },
   {
@@ -100,7 +107,7 @@ export const mockOrganismRules: OrganismRule[] = [
     rateEmployer: 1.9,
     tranche: "all",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Retraite de base sur totalité du salaire",
   },
 
@@ -112,12 +119,12 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "AGIRC-ARRCO",
     category: "retirement",
     appliesTo: "both",
-    rateEmployee: 3.15,
-    rateEmployer: 4.72,
-    ceiling: PLAFOND_SS_MENSUEL_2024,
+    rateEmployee: 4.01,
+    rateEmployer: 6.01,
+    ceiling: PLAFOND_SS_MENSUEL,
     tranche: "A",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Retraite complémentaire sur tranche 1 (jusqu'au plafond SS)",
   },
   {
@@ -127,12 +134,12 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "AGIRC-ARRCO",
     category: "retirement",
     appliesTo: "both",
-    rateEmployee: 8.64,
-    rateEmployer: 12.95,
-    ceiling: PLAFOND_SS_MENSUEL_2024 * 8,
+    rateEmployee: 10.95,
+    rateEmployer: 16.44,
+    ceiling: PLAFOND_SS_MENSUEL * 8,
     tranche: "B",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description:
       "Retraite complémentaire sur tranche 2 (entre 1 et 8 plafonds SS)",
   },
@@ -147,10 +154,10 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "both",
     rateEmployee: 0.86,
     rateEmployer: 1.29,
-    ceiling: PLAFOND_SS_MENSUEL_2024,
+    ceiling: PLAFOND_SS_MENSUEL,
     tranche: "A",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "CEG tranche 1",
   },
   {
@@ -162,10 +169,10 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "both",
     rateEmployee: 1.08,
     rateEmployer: 1.62,
-    ceiling: PLAFOND_SS_MENSUEL_2024 * 8,
+    ceiling: PLAFOND_SS_MENSUEL * 8,
     tranche: "B",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "CEG tranche 2",
   },
 
@@ -178,9 +185,9 @@ export const mockOrganismRules: OrganismRule[] = [
     category: "unemployment",
     appliesTo: "employer",
     rateEmployer: 4.05,
-    ceiling: PLAFOND_SS_MENSUEL_2024 * 4,
+    ceiling: PLAFOND_SS_MENSUEL * 4,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Cotisation chômage employeur uniquement depuis 2019",
   },
   {
@@ -191,35 +198,36 @@ export const mockOrganismRules: OrganismRule[] = [
     category: "unemployment",
     appliesTo: "employer",
     rateEmployer: 0.15,
-    ceiling: PLAFOND_SS_MENSUEL_2024 * 4,
+    ceiling: PLAFOND_SS_MENSUEL * 4,
     isActive: true,
-    effectiveDate: "2024-01-01",
-    description: "Association pour la gestion du régime de garantie des créances des salariés",
+    effectiveDate: "2025-01-01",
+    description:
+      "Association pour la gestion du régime de garantie des créances des salariés",
   },
 
   // CSG/CRDS
   {
     id: "org-014",
     code: "CSG_DEDUCTIBLE",
-    name: "CSG déductible",
+    name: "CSG déductible de l'impôt sur le revenu",
     organism: "URSSAF",
     category: "csg",
     appliesTo: "employee",
     rateEmployee: 6.8,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "CSG déductible sur 98.25% du salaire brut",
   },
   {
     id: "org-015",
     code: "CSG_NON_DEDUCTIBLE",
-    name: "CSG non déductible",
+    name: "CSG non déductible de l'impôt sur le revenu",
     organism: "URSSAF",
     category: "csg",
     appliesTo: "employee",
     rateEmployee: 2.4,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "CSG non déductible sur 98.25% du salaire brut",
   },
   {
@@ -231,7 +239,7 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employee",
     rateEmployee: 0.5,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "CRDS sur 98.25% du salaire brut",
   },
 
@@ -244,11 +252,12 @@ export const mockOrganismRules: OrganismRule[] = [
     category: "other",
     appliesTo: "employer",
     rateEmployer: 0.1,
-    ceiling: PLAFOND_SS_MENSUEL_2024,
+    ceiling: PLAFOND_SS_MENSUEL,
     tranche: "A",
     isActive: true,
-    effectiveDate: "2024-01-01",
-    description: "Fonds National d'Aide au Logement (entreprises < 50 salariés)",
+    effectiveDate: "2025-01-01",
+    description:
+      "Fonds National d'Aide au Logement (entreprises < 50 salariés)",
   },
   {
     id: "org-018",
@@ -257,9 +266,9 @@ export const mockOrganismRules: OrganismRule[] = [
     organism: "URSSAF",
     category: "other",
     appliesTo: "employer",
-    rateEmployer: 0.5,
+    rateEmployer: 0.52,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description:
       "Fonds National d'Aide au Logement (entreprises >= 50 salariés)",
   },
@@ -272,8 +281,20 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employer",
     rateEmployer: 1.0,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Formation professionnelle (entreprises >= 11 salariés)",
+  },
+  {
+    id: "org-019b",
+    code: "FORMATION_DEV",
+    name: "Développement formation professionnelle",
+    organism: "URSSAF",
+    category: "other",
+    appliesTo: "employer",
+    rateEmployer: 0.65,
+    isActive: true,
+    effectiveDate: "2025-01-01",
+    description: "Contribution supplémentaire pour développement professionnel",
   },
   {
     id: "org-020",
@@ -284,7 +305,7 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employer",
     rateEmployer: 0.68,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Taxe d'apprentissage (partie principale)",
   },
   {
@@ -296,7 +317,7 @@ export const mockOrganismRules: OrganismRule[] = [
     appliesTo: "employer",
     rateEmployer: 2.95,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Versement mobilité (taux variable selon zone géographique)",
   },
   {
@@ -307,10 +328,10 @@ export const mockOrganismRules: OrganismRule[] = [
     category: "other",
     appliesTo: "employer",
     rateEmployer: 1.5,
-    ceiling: PLAFOND_SS_MENSUEL_2024,
+    ceiling: PLAFOND_SS_MENSUEL,
     tranche: "A",
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Prévoyance obligatoire cadres (minimum 1.5% TA)",
   },
   {
@@ -323,17 +344,34 @@ export const mockOrganismRules: OrganismRule[] = [
     rateEmployee: 0.5,
     rateEmployer: 0.5,
     isActive: true,
-    effectiveDate: "2024-01-01",
+    effectiveDate: "2025-01-01",
     description: "Part employeur minimum 50%",
   },
 ];
 
 // Organisms list
 export const organisms = [
-  { id: "urssaf", name: "URSSAF", description: "Union de Recouvrement des cotisations de Sécurité Sociale et d'Allocations Familiales" },
-  { id: "agirc-arrco", name: "AGIRC-ARRCO", description: "Retraite complémentaire des salariés" },
-  { id: "prevoyance", name: "Organisme prévoyance", description: "Prévoyance complémentaire" },
-  { id: "mutuelle", name: "Organisme mutuelle", description: "Complémentaire santé" },
+  {
+    id: "urssaf",
+    name: "URSSAF",
+    description:
+      "Union de Recouvrement des cotisations de Sécurité Sociale et d'Allocations Familiales",
+  },
+  {
+    id: "agirc-arrco",
+    name: "AGIRC-ARRCO",
+    description: "Retraite complémentaire des salariés",
+  },
+  {
+    id: "prevoyance",
+    name: "Organisme prévoyance",
+    description: "Prévoyance complémentaire",
+  },
+  {
+    id: "mutuelle",
+    name: "Organisme mutuelle",
+    description: "Complémentaire santé",
+  },
 ];
 
 // Helper functions
@@ -343,15 +381,15 @@ export function getOrganismRules(): OrganismRule[] {
 
 export function getOrganismRulesByOrganism(organism: string): OrganismRule[] {
   return mockOrganismRules.filter(
-    (rule) => rule.organism === organism && rule.isActive
+    (rule) => rule.organism === organism && rule.isActive,
   );
 }
 
 export function getOrganismRulesByCategory(
-  category: OrganismRule["category"]
+  category: OrganismRule["category"],
 ): OrganismRule[] {
   return mockOrganismRules.filter(
-    (rule) => rule.category === category && rule.isActive
+    (rule) => rule.category === category && rule.isActive,
   );
 }
 
@@ -359,7 +397,7 @@ export function getEmployeeRules(): OrganismRule[] {
   return mockOrganismRules.filter(
     (rule) =>
       (rule.appliesTo === "employee" || rule.appliesTo === "both") &&
-      rule.isActive
+      rule.isActive,
   );
 }
 
@@ -367,17 +405,39 @@ export function getEmployerRules(): OrganismRule[] {
   return mockOrganismRules.filter(
     (rule) =>
       (rule.appliesTo === "employer" || rule.appliesTo === "both") &&
-      rule.isActive
+      rule.isActive,
   );
 }
 
 export function calculateOrganismDeductions(
   grossSalary: number,
   rules: OrganismRule[],
-  type: "employee" | "employer"
-): { ruleId: string; ruleName: string; ruleCode: string; organism: string; category: OrganismRule["category"]; baseAmount: number; rate: number; amount: number; ceiling?: number; tranche?: "A" | "B" | "C" }[] {
-  const plafondSS = PLAFOND_SS_MENSUEL_2024;
-  const results: { ruleId: string; ruleName: string; ruleCode: string; organism: string; category: OrganismRule["category"]; baseAmount: number; rate: number; amount: number; ceiling?: number; tranche?: "A" | "B" | "C" }[] = [];
+  type: "employee" | "employer",
+): {
+  ruleId: string;
+  ruleName: string;
+  ruleCode: string;
+  organism: string;
+  category: OrganismRule["category"];
+  baseAmount: number;
+  rate: number;
+  amount: number;
+  ceiling?: number;
+  tranche?: "A" | "B" | "C";
+}[] {
+  const plafondSS = PLAFOND_SS_MENSUEL;
+  const results: {
+    ruleId: string;
+    ruleName: string;
+    ruleCode: string;
+    organism: string;
+    category: OrganismRule["category"];
+    baseAmount: number;
+    rate: number;
+    amount: number;
+    ceiling?: number;
+    tranche?: "A" | "B" | "C";
+  }[] = [];
 
   for (const rule of rules) {
     if (
@@ -402,7 +462,10 @@ export function calculateOrganismDeductions(
       baseAmount = Math.min(grossSalary, plafondSS);
       tranche = "A";
     } else if (rule.tranche === "B") {
-      baseAmount = Math.max(0, Math.min(grossSalary, (rule.ceiling || plafondSS * 8)) - plafondSS);
+      baseAmount = Math.max(
+        0,
+        Math.min(grossSalary, rule.ceiling || plafondSS * 8) - plafondSS,
+      );
       tranche = "B";
       if (baseAmount === 0) continue; // Skip if no tranche B
     } else if (rule.ceiling) {

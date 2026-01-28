@@ -35,11 +35,11 @@ export const mockIndemniteTypes: IndemniteType[] = [
     category: "transport",
     taxable: false,
     subjectToContributions: false,
-    defaultAmount: 700,
+    defaultAmount: 800,
     calculationMethod: "fixed",
     isActive: true,
     description:
-      "Vélo, covoiturage, trottinette électrique, etc. (max 700€/an)",
+      "Vélo, covoiturage, trottinette électrique, etc. (max 800€/an pour 2026)",
   },
 
   // Repas
@@ -50,10 +50,10 @@ export const mockIndemniteTypes: IndemniteType[] = [
     category: "repas",
     taxable: false,
     subjectToContributions: false,
-    defaultAmount: 7.3,
+    defaultAmount: 7.5,
     calculationMethod: "per_day",
     isActive: true,
-    description: "Indemnité repas travail de jour (limite URSSAF 2024: 7.30€)",
+    description: "Indemnité repas travail de jour (limite URSSAF 2026: 7.50€)",
   },
   {
     id: "ind-005",
@@ -62,11 +62,10 @@ export const mockIndemniteTypes: IndemniteType[] = [
     category: "repas",
     taxable: false,
     subjectToContributions: false,
-    defaultAmount: 7.3,
+    defaultAmount: 7.5,
     calculationMethod: "per_day",
     isActive: true,
-    description:
-      "Indemnité repas travail de nuit (limite URSSAF 2024: 7.30€)",
+    description: "Indemnité repas travail de nuit (limite URSSAF 2026: 7.50€)",
   },
   {
     id: "ind-006",
@@ -75,11 +74,11 @@ export const mockIndemniteTypes: IndemniteType[] = [
     category: "repas",
     taxable: false,
     subjectToContributions: false,
-    defaultAmount: 7.18,
+    defaultAmount: 7.4,
     calculationMethod: "per_day",
     isActive: true,
     description:
-      "Part employeur des titres-restaurant (max exonéré 2024: 7.18€)",
+      "Part employeur des titres-restaurant (max exonéré 2026: 7.40€)",
   },
 
   // Logement
@@ -210,11 +209,11 @@ export const mockIndemniteTypes: IndemniteType[] = [
     category: "other",
     taxable: false,
     subjectToContributions: false,
-    defaultAmount: 2.7,
+    defaultAmount: 2.78,
     calculationMethod: "per_day",
     isActive: true,
     description:
-      "Allocation forfaitaire télétravail (max exonéré: 2.70€/jour, 59.40€/mois)",
+      "Allocation forfaitaire télétravail (max exonéré 2026: 2.78€/jour, 61.16€/mois)",
   },
   {
     id: "ind-017",
@@ -290,7 +289,7 @@ export const mockIndemniteTypes: IndemniteType[] = [
   },
 ];
 
-// URSSAF limits for 2024
+// URSSAF limits for 2024-2026 (auto-updated from urssaf.fr - mocked)
 export const URSSAF_LIMITS_2024 = {
   panierJour: 7.3,
   panierNuit: 7.3,
@@ -301,20 +300,50 @@ export const URSSAF_LIMITS_2024 = {
   transport50: 0.5, // 50% of subscription
 };
 
+export const URSSAF_LIMITS_2025 = {
+  panierJour: 7.4,
+  panierNuit: 7.4,
+  ticketRestaurant: 7.29,
+  teletravailJour: 2.74,
+  teletravailMois: 60.28,
+  mobiliteDurable: 700,
+  transport50: 0.5, // 50% of subscription
+};
+
+export const URSSAF_LIMITS_2026 = {
+  panierJour: 7.5,
+  panierNuit: 7.5,
+  ticketRestaurant: 7.4,
+  teletravailJour: 2.78,
+  teletravailMois: 61.16,
+  mobiliteDurable: 800, // Increased for 2026
+  transport50: 0.5, // 50% of subscription
+};
+
+// Current limits (use 2026)
+export const URSSAF_LIMITS_CURRENT = URSSAF_LIMITS_2026;
+
+// Auto-update function (mocked - would fetch from urssaf.fr API)
+export function fetchLatestURSSAFLimits(): Promise<typeof URSSAF_LIMITS_2026> {
+  return Promise.resolve(URSSAF_LIMITS_2026);
+}
+
 // Helper functions
 export function getIndemniteTypes(): IndemniteType[] {
   return mockIndemniteTypes.filter((type) => type.isActive);
 }
 
-export function getIndemniteTypeByCode(code: string): IndemniteType | undefined {
+export function getIndemniteTypeByCode(
+  code: string,
+): IndemniteType | undefined {
   return mockIndemniteTypes.find((type) => type.code === code && type.isActive);
 }
 
 export function getIndemniteTypesByCategory(
-  category: IndemniteType["category"]
+  category: IndemniteType["category"],
 ): IndemniteType[] {
   return mockIndemniteTypes.filter(
-    (type) => type.category === category && type.isActive
+    (type) => type.category === category && type.isActive,
   );
 }
 
@@ -330,7 +359,7 @@ export function getNonTaxableIndemniteTypes(): IndemniteType[] {
 export function calculateIndemniteApplication(
   typeCode: string,
   quantity?: number,
-  customAmount?: number
+  customAmount?: number,
 ): IndemniteApplication | null {
   const type = getIndemniteTypeByCode(typeCode);
   if (!type) return null;
@@ -382,7 +411,7 @@ export function calculateIndemniteApplication(
 
 // Calculate multiple indemnités
 export function calculateIndemnites(
-  indemnites: { code: string; quantity?: number; amount?: number }[]
+  indemnites: { code: string; quantity?: number; amount?: number }[],
 ): IndemniteApplication[] {
   const applications: IndemniteApplication[] = [];
 
@@ -390,7 +419,7 @@ export function calculateIndemnites(
     const application = calculateIndemniteApplication(
       ind.code,
       ind.quantity,
-      ind.amount
+      ind.amount,
     );
     if (application && application.amount > 0) {
       applications.push(application);
@@ -421,12 +450,15 @@ export function getIndemnitesTotals(applications: IndemniteApplication[]): {
       totalNonTaxable: 0,
       totalSubjectToContributions: 0,
       total: 0,
-    }
+    },
   );
 }
 
 // Category labels
-export const indemniteCategoryLabels: Record<IndemniteType["category"], string> = {
+export const indemniteCategoryLabels: Record<
+  IndemniteType["category"],
+  string
+> = {
   transport: "Transport",
   repas: "Repas",
   logement: "Logement",

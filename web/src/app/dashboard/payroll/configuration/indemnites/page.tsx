@@ -38,7 +38,7 @@ import {
 import {
   mockIndemniteTypes,
   indemniteCategoryLabels,
-  URSSAF_LIMITS_2024,
+  URSSAF_LIMITS_CURRENT,
 } from "@/data/payroll-indemnites";
 import { IndemniteType } from "@/lib/types.d";
 
@@ -308,43 +308,62 @@ export default function IndemnitesConfigurationPage() {
         />
       </InfoCardContainer>
 
-      {/* Info Card */}
+      {/* URSSAF Limits Card */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            Limites URSSAF 2024 (exonération)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Limites URSSAF 2026 (exonération)
+            </CardTitle>
+            <Badge variant="outline" className="bg-green-50 text-green-700">
+              Mis à jour automatiquement
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-8">
             <div>
               <p className="text-sm text-muted-foreground">Panier repas</p>
               <p className="text-xl font-bold">
-                {URSSAF_LIMITS_2024.panierJour.toLocaleString("fr-FR")} €/jour
+                {URSSAF_LIMITS_CURRENT.panierJour.toLocaleString("fr-FR")}{" "}
+                €/jour
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Titre-restaurant</p>
               <p className="text-xl font-bold">
-                {URSSAF_LIMITS_2024.ticketRestaurant.toLocaleString("fr-FR")}{" "}
+                {URSSAF_LIMITS_CURRENT.ticketRestaurant.toLocaleString("fr-FR")}{" "}
                 €/jour
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Télétravail</p>
               <p className="text-xl font-bold">
-                {URSSAF_LIMITS_2024.teletravailJour.toLocaleString("fr-FR")}{" "}
+                {URSSAF_LIMITS_CURRENT.teletravailJour.toLocaleString("fr-FR")}{" "}
                 €/jour
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Télétravail (mensuel)
+              </p>
+              <p className="text-xl font-bold">
+                {URSSAF_LIMITS_CURRENT.teletravailMois.toLocaleString("fr-FR")}{" "}
+                €/mois
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Mobilité durable</p>
               <p className="text-xl font-bold">
-                {URSSAF_LIMITS_2024.mobiliteDurable.toLocaleString("fr-FR")}{" "}
+                {URSSAF_LIMITS_CURRENT.mobiliteDurable.toLocaleString("fr-FR")}{" "}
                 €/an
               </p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-4">
+            Les limites sont automatiquement mises à jour à partir du site
+            urssaf.fr (mock)
+          </p>
         </CardContent>
       </Card>
 

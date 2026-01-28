@@ -475,6 +475,8 @@ export interface Document {
     | "cv"
     | "proof-address"
     | "pro-card"
+    | "dpae"
+    | "due"
     | "other";
   fileUrl: string;
   uploadedAt: Date;
@@ -509,15 +511,24 @@ export interface Contract {
   id: string;
   employeeId?: string;
   type: "CDI" | "CDD" | "INTERIM" | "APPRENTICESHIP" | "INTERNSHIP";
+  contractType?: "full-time" | "part-time"; // Temps complet (151.67h) ou temps partiel
   startDate: Date;
   endDate?: Date;
   position: string;
   department: string;
+
+  // Salary and classification
   salary: {
     gross: number;
     net: number;
     currency: string;
   };
+  hourlyRate?: number; // Taux horaire brut
+  category?: string; // Catégorie (ex: Agent de sécurité, Chef d'équipe)
+  level?: string; // Niveau
+  echelon?: string; // Échelon
+  coefficient?: number; // Coefficient
+
   workingHours: number; // Hours per week
   fileUrl?: string;
   signedAt?: Date;
@@ -2217,11 +2228,42 @@ export interface StateHelpApplication {
   appliedAmount: number; // after max cap
 }
 
-// Indemnité types configuration
+// Prime types configuration (included in gross salary, subject to contributions)
+export interface PrimeType {
+  id: string;
+  code: string;
+  name: string; // e.g., "Prime d'ancienneté", "Prime temps d'habillage"
+  category:
+    | "anciennete"
+    | "habillage"
+    | "risque"
+    | "astreinte"
+    | "objectif"
+    | "other";
+  subjectToContributions: boolean; // Always true for primes
+  defaultAmount?: number;
+  calculationMethod: "fixed" | "per_day" | "per_hour" | "percentage" | "custom";
+  isActive: boolean;
+  description?: string;
+}
+
+// Applied prime in calculation (included in gross)
+export interface PrimeApplication {
+  typeId: string;
+  typeName: string;
+  typeCode: string;
+  category: PrimeType["category"];
+  quantity?: number; // hours or days
+  rate?: number; // hourly or daily rate
+  amount: number;
+  subjectToContributions: boolean; // Always true
+}
+
+// Indemnité types configuration (added to net, not subject to contributions)
 export interface IndemniteType {
   id: string;
   code: string;
-  name: string; // e.g., "Prime de panier", "Indemnité transport"
+  name: string; // e.g., "Indemnité de panier", "Indemnité transport"
   category:
     | "transport"
     | "repas"
@@ -2231,25 +2273,26 @@ export interface IndemniteType {
     | "anciennete"
     | "risque"
     | "other";
-  taxable: boolean;
-  subjectToContributions: boolean;
+  taxable: boolean; // Usually false for indemnités
+  subjectToContributions: boolean; // Usually false for indemnités
   defaultAmount?: number;
   calculationMethod: "fixed" | "per_day" | "per_hour" | "percentage" | "custom";
   isActive: boolean;
   description?: string;
 }
 
-// Applied indemnité in calculation
+// Applied indemnité in calculation (added to net)
 export interface IndemniteApplication {
   typeId: string;
   typeName: string;
   typeCode: string;
   category: IndemniteType["category"];
-  quantity?: number;
-  rate?: number;
+  quantity?: number; // days or occurrences
+  rate?: number; // daily rate
   amount: number;
-  taxable: boolean;
-  subjectToContributions: boolean;
+  taxable: boolean; // Usually false
+  subjectToContributions: boolean; // Usually false
+  description?: string; // e.g., "22 jours × 5.40€"
 }
 
 // Leave Balance - Congés tracking
@@ -2327,7 +2370,12 @@ export interface PayrollCalculationWorkflow {
   holidayBonus: number; // majoration jours fériés
   timeOffDeductions: TimeOffDeduction[];
   totalTimeOffDeduction: number;
-  bruteSalary: number; // Total brut (sans indemnités)
+
+  // Primes (included in gross salary, subject to contributions)
+  primes: PrimeApplication[];
+  totalPrimes: number;
+
+  bruteSalary: number; // Total brut = baseSalary + hours + overtime + bonuses + primes - timeOff
 
   // Step 2: Employee deductions from organism rules
   employeeDeductions: OrganismRuleApplication[];
@@ -2342,7 +2390,7 @@ export interface PayrollCalculationWorkflow {
   totalStateHelp: number;
   employerNetCharges: number; // totalEmployerCharges - totalStateHelp
 
-  // Step 5: Indemnités (added after deductions)
+  // Step 5: Indemnités (added to net after deductions, not subject to contributions)
   indemnites: IndemniteApplication[];
   totalIndemnitesNonTaxable: number;
   totalIndemnitesTaxable: number;

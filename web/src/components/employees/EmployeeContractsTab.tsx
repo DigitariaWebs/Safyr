@@ -26,6 +26,7 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
     {
       id: "1",
       type: "CDI",
+      contractType: "full-time",
       startDate: new Date("2020-01-15"),
       position: "Agent de sécurité",
       department: "Sécurité",
@@ -34,7 +35,12 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
         net: 1700,
         currency: "EUR",
       },
-      workingHours: 35,
+      hourlyRate: 14.5,
+      category: "Agent de sécurité",
+      level: "Niveau II",
+      echelon: "Échelon 3",
+      coefficient: 140,
+      workingHours: 151.67,
       fileUrl: "/contracts/cdi-2020.pdf",
       signedAt: new Date("2020-01-14"),
       signedByEmployee: true,
@@ -71,6 +77,7 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
     {
       id: "2",
       type: "CDD",
+      contractType: "full-time",
       startDate: new Date("2019-07-01"),
       endDate: new Date("2019-12-31"),
       position: "Agent de sécurité stagiaire",
@@ -80,7 +87,12 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
         net: 1400,
         currency: "EUR",
       },
-      workingHours: 35,
+      hourlyRate: 11.86,
+      category: "Agent de sécurité",
+      level: "Niveau I",
+      echelon: "Échelon 1",
+      coefficient: 120,
+      workingHours: 151.67,
       fileUrl: "/contracts/cdd-2019.pdf",
       signedAt: new Date("2019-06-25"),
       signedByEmployee: true,
@@ -221,6 +233,19 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {/* Contract Type */}
+                <div className="flex items-start gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Type de contrat</p>
+                    <p className="text-sm text-muted-foreground">
+                      {contract.contractType === "full-time"
+                        ? "Temps complet (151.67h)"
+                        : "Temps partiel"}
+                    </p>
+                  </div>
+                </div>
+
                 {/* Contract Dates */}
                 <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -235,27 +260,84 @@ export function EmployeeContractsTab({}: EmployeeContractsTabProps) {
                   </div>
                 </div>
 
-                {/* Salary */}
-                <div className="flex items-start gap-3">
-                  <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium">Salaire</p>
-                    <p className="text-sm text-muted-foreground">
-                      {contract.salary.gross} {contract.salary.currency} brut
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {contract.salary.net} {contract.salary.currency} net
-                    </p>
-                  </div>
-                </div>
-
                 {/* Working Hours */}
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">Temps de travail</p>
                     <p className="text-sm text-muted-foreground">
-                      {contract.workingHours} heures/semaine
+                      {contract.workingHours} heures/mois
+                    </p>
+                  </div>
+                </div>
+
+                {/* Category */}
+                {contract.category && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Catégorie</p>
+                      <p className="text-sm text-muted-foreground">
+                        {contract.category}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Level and Echelon */}
+                {(contract.level || contract.echelon) && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Classification</p>
+                      <p className="text-sm text-muted-foreground">
+                        {contract.level}
+                        {contract.level && contract.echelon && " - "}
+                        {contract.echelon}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Coefficient */}
+                {contract.coefficient && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Coefficient</p>
+                      <p className="text-sm text-muted-foreground">
+                        {contract.coefficient}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hourly Rate */}
+                {contract.hourlyRate && (
+                  <div className="flex items-start gap-3">
+                    <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium">Taux horaire brut</p>
+                      <p className="text-sm text-muted-foreground">
+                        {contract.hourlyRate.toFixed(2)}{" "}
+                        {contract.salary.currency}/h
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Salary */}
+                <div className="flex items-start gap-3">
+                  <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Salaire mensuel</p>
+                    <p className="text-sm text-muted-foreground">
+                      {contract.salary.gross.toLocaleString("fr-FR")}{" "}
+                      {contract.salary.currency} brut
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {contract.salary.net.toLocaleString("fr-FR")}{" "}
+                      {contract.salary.currency} net
                     </p>
                   </div>
                 </div>

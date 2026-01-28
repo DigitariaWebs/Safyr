@@ -74,11 +74,26 @@ const mockPayrollData = {
   status: "paid" as const,
   calculationDate: "2024-12-15",
   validationDate: "2024-12-18",
-  grossSalary: 2500.0,
-  netSalary: 1950.45,
+  grossSalary: 2756.39,
+  netSalary: 2089.25,
   netTaxable: 2100.32,
   employerCharges: 875.5,
 
+  // Primes (included in gross salary, subject to contributions)
+  primes: [
+    { label: "Prime d'ancienneté", amount: 120.0 },
+    { label: "Prime temps d'habillage/déshabillage", amount: 30.0 },
+    { label: "Majoration heures férié", hours: 7, rate: 5.5, amount: 38.5 },
+    { label: "Majoration heures de nuit", hours: 15, rate: 2.5, amount: 37.5 },
+    {
+      label: "Majoration heures de dimanche",
+      hours: 7,
+      rate: 3.5,
+      amount: 24.5,
+    },
+  ],
+
+  // Base earnings
   earnings: [
     { label: "Salaire de base", hours: 151.67, rate: 15.5, amount: 2350.89 },
     {
@@ -87,7 +102,22 @@ const mockPayrollData = {
       rate: 19.38,
       amount: 155.04,
     },
-    { label: "Prime d'ancienneté", hours: null, rate: null, amount: 120.0 },
+  ],
+
+  // Indemnités (added to net, not subject to contributions)
+  indemnites: [
+    {
+      label: "Indemnité de panier",
+      amount: 118.8,
+      description: "22 jours × 5.40€",
+    },
+    { label: "Indemnité frais restauration", amount: 0.0 },
+    {
+      label: "Indemnité entretien des tenues",
+      amount: 11.0,
+      description: "22 jours × 0.50€",
+    },
+    { label: "Indemnité de transport", amount: 0.0 },
   ],
 
   deductions: [
@@ -205,6 +235,11 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
     amount.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) + " €";
 
   const totalEarnings = data.earnings.reduce(
+    (sum, item) => sum + item.amount,
+    0,
+  );
+  const totalPrimes = data.primes.reduce((sum, item) => sum + item.amount, 0);
+  const totalIndemnites = data.indemnites.reduce(
     (sum, item) => sum + item.amount,
     0,
   );
@@ -352,12 +387,12 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
         </TabsList>
 
         <TabsContent value="calculation" className="space-y-4">
-          {/* Earnings */}
+          {/* Base Earnings */}
           <Card className="glass-card border-border/40">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-emerald-600" />
-                Éléments de rémunération
+                Salaire de base et heures
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -386,9 +421,60 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
                   </div>
                 ))}
                 <div className="grid grid-cols-12 gap-4 text-sm font-bold border-t pt-2 mt-2">
-                  <div className="col-span-9 text-right">Total Brut:</div>
+                  <div className="col-span-9 text-right">Sous-total:</div>
                   <div className="col-span-3 text-right">
                     {formatCurrency(totalEarnings)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Primes (included in gross) */}
+          <Card className="glass-card border-blue-100 bg-blue-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Primes (incluses dans le brut, soumises à cotisations)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                  <div className="col-span-6">Libellé</div>
+                  <div className="col-span-2 text-right">Heures</div>
+                  <div className="col-span-1 text-right">Taux</div>
+                  <div className="col-span-3 text-right">Montant</div>
+                </div>
+                {data.primes.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-12 gap-4 text-sm py-2 hover:bg-muted/50"
+                  >
+                    <div className="col-span-6">{item.label}</div>
+                    <div className="col-span-2 text-right">
+                      {item.hours ? item.hours.toFixed(2) : "-"}
+                    </div>
+                    <div className="col-span-1 text-right text-xs">
+                      {item.rate ? `+${item.rate.toFixed(2)}€` : "-"}
+                    </div>
+                    <div className="col-span-3 text-right font-semibold text-blue-700">
+                      {formatCurrency(item.amount)}
+                    </div>
+                  </div>
+                ))}
+                <div className="grid grid-cols-12 gap-4 text-sm font-bold border-t pt-2 mt-2">
+                  <div className="col-span-9 text-right text-blue-700">
+                    Total Primes:
+                  </div>
+                  <div className="col-span-3 text-right text-blue-700">
+                    {formatCurrency(totalPrimes)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 gap-4 text-sm font-bold bg-blue-100/50 p-2 rounded">
+                  <div className="col-span-9 text-right">TOTAL BRUT:</div>
+                  <div className="col-span-3 text-right">
+                    {formatCurrency(totalEarnings + totalPrimes)}
                   </div>
                 </div>
               </div>
@@ -445,6 +531,47 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
+          {/* Indemnités (added to net) */}
+          <Card className="glass-card border-green-100 bg-green-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                Indemnités (ajoutées au net, non soumises à cotisations)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                  <div className="col-span-6">Libellé</div>
+                  <div className="col-span-3 text-right">Détail</div>
+                  <div className="col-span-3 text-right">Montant</div>
+                </div>
+                {data.indemnites.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-12 gap-4 text-sm py-2 hover:bg-muted/50"
+                  >
+                    <div className="col-span-6">{item.label}</div>
+                    <div className="col-span-3 text-right text-xs text-muted-foreground">
+                      {item.description || "-"}
+                    </div>
+                    <div className="col-span-3 text-right font-semibold text-green-700">
+                      {formatCurrency(item.amount)}
+                    </div>
+                  </div>
+                ))}
+                <div className="grid grid-cols-12 gap-4 text-sm font-bold border-t pt-2 mt-2">
+                  <div className="col-span-9 text-right text-green-700">
+                    Total Indemnités:
+                  </div>
+                  <div className="col-span-3 text-right text-green-700">
+                    {formatCurrency(totalIndemnites)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Net Calculation */}
           <Card className="glass-card bg-emerald-50/50 border-emerald-200/50">
             <CardContent className="pt-6">
@@ -459,6 +586,20 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
                   <span className="font-medium">- Cotisations salariales</span>
                   <span className="font-bold">
                     -{formatCurrency(totalEmployeeDeductions)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg border-t pt-2">
+                  <span className="font-medium">
+                    = Net à payer avant indemnités
+                  </span>
+                  <span className="font-bold">
+                    {formatCurrency(data.grossSalary - totalEmployeeDeductions)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg text-green-700">
+                  <span className="font-medium">+ Indemnités non soumises</span>
+                  <span className="font-bold">
+                    +{formatCurrency(totalIndemnites)}
                   </span>
                 </div>
                 <div className="border-t-2 border-emerald-300 pt-3 flex justify-between text-2xl">

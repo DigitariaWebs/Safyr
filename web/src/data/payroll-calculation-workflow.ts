@@ -229,6 +229,8 @@ export function calculatePayrollWorkflow(
     holidayBonus: hoursCalc.holidayBonus,
     timeOffDeductions,
     totalTimeOffDeduction,
+    primes: [],
+    totalPrimes: 0,
     bruteSalary,
 
     // Step 2

@@ -36,12 +36,8 @@ const navItems: NavItem[] = [
         href: "/dashboard/payroll/configuration/legal",
       },
       {
-        label: "Entreprise",
+        label: "Organisme Social",
         href: "/dashboard/payroll/configuration/company",
-      },
-      {
-        label: "Salariés",
-        href: "/dashboard/payroll/configuration/employee",
       },
     ],
   },
@@ -64,6 +60,11 @@ const navItems: NavItem[] = [
     label: "Bilan Social",
     href: "/dashboard/payroll/social-report",
     icon: TrendingUp,
+  },
+  {
+    label: "Archives BS",
+    href: "/dashboard/payroll/archives",
+    icon: FileSpreadsheet,
   },
 ];
 
