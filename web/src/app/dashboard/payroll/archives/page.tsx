@@ -128,12 +128,12 @@ const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
 export default function PayrollArchivesPage() {
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>(
     currentYear.toString(),
   );
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("");
-  const [selectedSite, setSelectedSite] = useState<string>("");
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
+  const [selectedSite, setSelectedSite] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const formatCurrency = (amount: number) => {
@@ -150,15 +150,18 @@ export default function PayrollArchivesPage() {
 
   const filterPayslips = (view: "employee" | "site" | "all") => {
     return mockPayslips.filter((payslip) => {
-      const matchesMonth = !selectedMonth || payslip.month === parseInt(selectedMonth);
-      const matchesYear = !selectedYear || payslip.year === parseInt(selectedYear);
+      const matchesMonth =
+        selectedMonth === "all" || payslip.month === parseInt(selectedMonth);
+      const matchesYear =
+        selectedYear === "all" || payslip.year === parseInt(selectedYear);
       const matchesEmployee =
         view === "employee"
-          ? selectedEmployee === "" || payslip.employeeId === selectedEmployee
+          ? selectedEmployee === "all" ||
+            payslip.employeeId === selectedEmployee
           : true;
       const matchesSite =
         view === "site"
-          ? selectedSite === "" || payslip.siteId === selectedSite
+          ? selectedSite === "all" || payslip.siteId === selectedSite
           : true;
       const matchesSearch =
         searchTerm === "" ||
@@ -166,7 +169,11 @@ export default function PayrollArchivesPage() {
         payslip.id.toLowerCase().includes(searchTerm.toLowerCase());
 
       return (
-        matchesMonth && matchesYear && matchesEmployee && matchesSite && matchesSearch
+        matchesMonth &&
+        matchesYear &&
+        matchesEmployee &&
+        matchesSite &&
+        matchesSearch
       );
     });
   };
@@ -219,12 +226,15 @@ export default function PayrollArchivesPage() {
             <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Salarié</label>
-                <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                <Select
+                  value={selectedEmployee}
+                  onValueChange={setSelectedEmployee}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Tous les salariés" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les salariés</SelectItem>
+                    <SelectItem value="all">Tous les salariés</SelectItem>
                     {mockEmployees.map((emp) => (
                       <SelectItem key={emp.id} value={emp.id}>
                         {emp.name}
@@ -240,7 +250,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Tous les mois" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les mois</SelectItem>
+                    <SelectItem value="all">Tous les mois</SelectItem>
                     {months.map((month) => (
                       <SelectItem key={month.value} value={month.value}>
                         {month.label}
@@ -256,7 +266,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les années</SelectItem>
+                    <SelectItem value="all">Toutes les années</SelectItem>
                     {years.map((year) => (
                       <SelectItem key={year} value={year.toString()}>
                         {year}
@@ -335,7 +345,9 @@ export default function PayrollArchivesPage() {
                           {formatMonthYear(payslip.month, payslip.year)}
                         </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(payslip.grossSalary)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(payslip.grossSalary)}
+                      </TableCell>
                       <TableCell>{formatCurrency(payslip.netSalary)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="bg-green-50">
@@ -374,7 +386,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Tous les sites" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les sites</SelectItem>
+                    <SelectItem value="all">Tous les sites</SelectItem>
                     {mockSites.map((site) => (
                       <SelectItem key={site.id} value={site.id}>
                         {site.name}
@@ -390,7 +402,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Tous les mois" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les mois</SelectItem>
+                    <SelectItem value="all">Tous les mois</SelectItem>
                     {months.map((month) => (
                       <SelectItem key={month.value} value={month.value}>
                         {month.label}
@@ -406,7 +418,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les années</SelectItem>
+                    <SelectItem value="all">Toutes les années</SelectItem>
                     {years.map((year) => (
                       <SelectItem key={year} value={year.toString()}>
                         {year}
@@ -490,7 +502,9 @@ export default function PayrollArchivesPage() {
                           {formatMonthYear(payslip.month, payslip.year)}
                         </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(payslip.grossSalary)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(payslip.grossSalary)}
+                      </TableCell>
                       <TableCell>{formatCurrency(payslip.netSalary)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="bg-green-50">
@@ -529,7 +543,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Tous les mois" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les mois</SelectItem>
+                    <SelectItem value="all">Tous les mois</SelectItem>
                     {months.map((month) => (
                       <SelectItem key={month.value} value={month.value}>
                         {month.label}
@@ -545,7 +559,7 @@ export default function PayrollArchivesPage() {
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Toutes les années</SelectItem>
+                    <SelectItem value="all">Toutes les années</SelectItem>
                     {years.map((year) => (
                       <SelectItem key={year} value={year.toString()}>
                         {year}
@@ -631,7 +645,9 @@ export default function PayrollArchivesPage() {
                           {formatMonthYear(payslip.month, payslip.year)}
                         </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(payslip.grossSalary)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(payslip.grossSalary)}
+                      </TableCell>
                       <TableCell>{formatCurrency(payslip.netSalary)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="bg-green-50">
