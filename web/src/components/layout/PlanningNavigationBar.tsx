@@ -50,7 +50,6 @@ interface PlanningNavigationBarProps {
 }
 
 export function PlanningNavigationBar({
-  isCollapsed,
   showNav = true,
 }: PlanningNavigationBarProps) {
   return (
@@ -58,7 +57,6 @@ export function PlanningNavigationBar({
       moduleIcon={Calendar}
       dashboardHref="/dashboard/planning"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

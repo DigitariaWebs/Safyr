@@ -74,7 +74,6 @@ interface PayrollNavigationBarProps {
 }
 
 export function PayrollNavigationBar({
-  isCollapsed,
   showNav = true,
 }: PayrollNavigationBarProps) {
   return (
@@ -82,7 +81,6 @@ export function PayrollNavigationBar({
       moduleIcon={DollarSign}
       dashboardHref="/dashboard/payroll"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

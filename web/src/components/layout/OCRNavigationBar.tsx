@@ -49,16 +49,12 @@ interface OCRNavigationBarProps {
   showNav?: boolean;
 }
 
-export function OCRNavigationBar({
-  isCollapsed,
-  showNav = true,
-}: OCRNavigationBarProps) {
+export function OCRNavigationBar({ showNav = true }: OCRNavigationBarProps) {
   return (
     <ModuleNavigationBar
       moduleIcon={FileText}
       dashboardHref="/dashboard/ocr"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

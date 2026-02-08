@@ -89,7 +89,6 @@ interface LogbookNavigationBarProps {
 }
 
 export function LogbookNavigationBar({
-  isCollapsed,
   showNav = true,
 }: LogbookNavigationBarProps) {
   return (
@@ -97,7 +96,6 @@ export function LogbookNavigationBar({
       moduleIcon={BookOpen}
       dashboardHref="/dashboard/logbook"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );
