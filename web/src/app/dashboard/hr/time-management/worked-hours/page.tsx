@@ -327,7 +327,7 @@ function WorkedHoursContent() {
   ];
 
   return (
-    <div className="flex-1 space-y-6 p-8 max-w-full overflow-x-hidden">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

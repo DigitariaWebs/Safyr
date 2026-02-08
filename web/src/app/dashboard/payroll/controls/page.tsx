@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef, FilterDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   PeriodSelector,
   Period as PeriodType,
@@ -141,6 +142,12 @@ export default function PayrollControlsPage() {
   );
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [executionModalOpen, setExecutionModalOpen] = useState(false);
+  const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
+  const [correctionForm, setCorrectionForm] = useState({
+    h_dimanche_nuit: "",
+    h_ferie_nuit: "",
+    acompte: "",
+  });
 
   const handleRunControls = (controlIds?: string[]) => {
     const controlsToRun = controlIds || selectedControls;
@@ -255,14 +262,26 @@ export default function PayrollControlsPage() {
     setDetailModalOpen(true);
   };
 
-  const handleApplyCorrection = (anomaly: PayrollAnomaly) => {
-    if (anomaly.correction) {
+  const handleOpenCorrectionModal = (anomaly: PayrollAnomaly) => {
+    setSelectedAnomaly(anomaly);
+    setCorrectionForm({
+      h_dimanche_nuit: "",
+      h_ferie_nuit: "",
+      acompte: "",
+    });
+    setDetailModalOpen(false);
+    setCorrectionModalOpen(true);
+  };
+
+  const handleApplyCorrection = () => {
+    if (selectedAnomaly) {
       setAnomalies(
         anomalies.map((a) =>
-          a.id === anomaly.id ? { ...a, status: "corrected" } : a,
+          a.id === selectedAnomaly.id ? { ...a, status: "corrected" } : a,
         ),
       );
-      setDetailModalOpen(false);
+      setCorrectionModalOpen(false);
+      setSelectedAnomaly(null);
     }
   };
 
@@ -948,12 +967,14 @@ export default function PayrollControlsPage() {
                         {selectedAnomaly.correction.description}
                       </p>
                       <Button
-                        onClick={() => handleApplyCorrection(selectedAnomaly)}
+                        onClick={() =>
+                          handleOpenCorrectionModal(selectedAnomaly)
+                        }
                         size="sm"
                         className="mt-3"
                       >
                         <Check className="mr-2 h-4 w-4" />
-                        Appliquer la Correction
+                        Corriger
                       </Button>
                     </div>
                   </div>
@@ -1013,6 +1034,102 @@ export default function PayrollControlsPage() {
               <Button variant="ghost" onClick={() => setDetailModalOpen(false)}>
                 Fermer
               </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Correction Modal */}
+      {selectedAnomaly && (
+        <Modal
+          open={correctionModalOpen}
+          onOpenChange={setCorrectionModalOpen}
+          type="form"
+          title="Corriger l'anomalie"
+          actions={{
+            secondary: {
+              label: "Annuler",
+              onClick: () => setCorrectionModalOpen(false),
+              variant: "outline",
+            },
+            primary: {
+              label: "Appliquer la correction",
+              onClick: handleApplyCorrection,
+            },
+          }}
+        >
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium">{selectedAnomaly.title}</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                {selectedAnomaly.employeeName} -{" "}
+                {selectedAnomaly.date &&
+                  new Date(selectedAnomaly.date).toLocaleDateString("fr-FR")}
+              </p>
+            </div>
+
+            {/* Description de la correction */}
+            {selectedAnomaly.correction && (
+              <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800 p-3">
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  {selectedAnomaly.correction.description}
+                </p>
+              </div>
+            )}
+
+            {/* Form fields */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="h_dimanche_nuit">Heures dimanches nuit</Label>
+                <Input
+                  id="h_dimanche_nuit"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.h_dimanche_nuit}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      h_dimanche_nuit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="h_ferie_nuit">Heures férié nuit</Label>
+                <Input
+                  id="h_ferie_nuit"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.h_ferie_nuit}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      h_ferie_nuit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="acompte">Acompte (€)</Label>
+                <Input
+                  id="acompte"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.acompte}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      acompte: e.target.value,
+                    })
+                  }
+                />
+              </div>
             </div>
           </div>
         </Modal>

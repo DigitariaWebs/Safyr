@@ -179,12 +179,15 @@ export default function HREmployeeArchivesPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Salarié</label>
-            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+            <Select
+              value={selectedEmployee}
+              onValueChange={setSelectedEmployee}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Tous les salariés" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les salariés</SelectItem>
+                <SelectItem value="null">Tous les salariés</SelectItem>
                 {mockEmployees.map((emp) => (
                   <SelectItem key={emp.id} value={emp.id}>
                     {emp.name}
@@ -200,7 +203,7 @@ export default function HREmployeeArchivesPage() {
                 <SelectValue placeholder="Tous les mois" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les mois</SelectItem>
+                <SelectItem value="null">Tous les mois</SelectItem>
                 {months.map((month) => (
                   <SelectItem key={month.value} value={month.value}>
                     {month.label}
@@ -216,7 +219,7 @@ export default function HREmployeeArchivesPage() {
                 <SelectValue placeholder="Sélectionner" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les années</SelectItem>
+                <SelectItem value="null">Toutes les années</SelectItem>
                 {years.map((year) => (
                   <SelectItem key={year} value={year.toString()}>
                     {year}
@@ -243,9 +246,7 @@ export default function HREmployeeArchivesPage() {
       <Card>
         <div className="p-6 border-b flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">
-              Bulletins de Salaire
-            </h3>
+            <h3 className="text-lg font-semibold">Bulletins de Salaire</h3>
             <p className="text-sm text-muted-foreground">
               {filterPayslips().length} bulletin(s) trouvé(s)
             </p>

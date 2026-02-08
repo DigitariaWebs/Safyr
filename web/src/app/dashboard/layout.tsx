@@ -18,20 +18,14 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Link2,
-  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";
-import { AgendaProvider, useAgenda } from "@/contexts/AgendaContext";
-import {
-  LiensUtilesProvider,
-  useLiensUtiles,
-} from "@/contexts/LiensUtilesContext";
+import { AgendaProvider } from "@/contexts/AgendaContext";
+import { LiensUtilesProvider } from "@/contexts/LiensUtilesContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { AgendaModal } from "@/components/modals/AgendaModal";
 import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 interface Module {
@@ -118,8 +112,6 @@ const modules: Module[] = [
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { sidebarMode, setSidebarMode, isHidden, setIsHidden } = useSidebar();
-  const { openAgenda } = useAgenda();
-  const { openLiensUtiles } = useLiensUtiles();
 
   const isExpandedDisplay = sidebarMode === "expanded";
 

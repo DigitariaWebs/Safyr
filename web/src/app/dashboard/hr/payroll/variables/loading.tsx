@@ -1,6 +1,6 @@
 export default function PayrollVariablesLoading() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header skeleton */}
       <div className="flex items-center justify-between">
         <div className="h-8 w-48 bg-muted animate-pulse rounded" />

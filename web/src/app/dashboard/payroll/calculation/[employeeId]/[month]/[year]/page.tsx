@@ -78,6 +78,8 @@ const mockPayrollData = {
   netSalary: 2089.25,
   netTaxable: 2100.32,
   employerCharges: 875.5,
+  acompte: 500.0,
+  impotSource: 89.45,
 
   // Primes (included in gross salary, subject to contributions)
   primes: [
@@ -266,7 +268,7 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -572,6 +574,46 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
+          {/* Retenues sur le net */}
+          <Card className="glass-card border-orange-100 bg-orange-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-orange-600" />
+                Retenues sur le net
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                  <div className="col-span-9">Libellé</div>
+                  <div className="col-span-3 text-right">Montant</div>
+                </div>
+                <div className="grid grid-cols-12 gap-4 text-sm py-2 hover:bg-muted/50">
+                  <div className="col-span-9">
+                    Impôt prélèvement à la source
+                  </div>
+                  <div className="col-span-3 text-right font-semibold text-orange-700">
+                    {formatCurrency(data.impotSource)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 gap-4 text-sm py-2 hover:bg-muted/50">
+                  <div className="col-span-9">Acompte versé</div>
+                  <div className="col-span-3 text-right font-semibold text-orange-700">
+                    {formatCurrency(data.acompte)}
+                  </div>
+                </div>
+                <div className="grid grid-cols-12 gap-4 text-sm font-bold border-t pt-2 mt-2">
+                  <div className="col-span-9 text-right text-orange-700">
+                    Total Retenues:
+                  </div>
+                  <div className="col-span-3 text-right text-orange-700">
+                    {formatCurrency(data.impotSource + data.acompte)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Net Calculation */}
           <Card className="glass-card bg-emerald-50/50 border-emerald-200/50">
             <CardContent className="pt-6">
@@ -600,6 +642,20 @@ export default function EmployeeMonthDetailPage({ params }: PageProps) {
                   <span className="font-medium">+ Indemnités non soumises</span>
                   <span className="font-bold">
                     +{formatCurrency(totalIndemnites)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg text-orange-600 border-t pt-2">
+                  <span className="font-medium">
+                    - Impôt prélèvement à la source
+                  </span>
+                  <span className="font-bold">
+                    -{formatCurrency(data.impotSource)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg text-orange-600">
+                  <span className="font-medium">- Acompte versé</span>
+                  <span className="font-bold">
+                    -{formatCurrency(data.acompte)}
                   </span>
                 </div>
                 <div className="border-t-2 border-emerald-300 pt-3 flex justify-between text-2xl">

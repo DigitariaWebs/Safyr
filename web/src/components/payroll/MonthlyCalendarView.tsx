@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,6 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  Calculator,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -373,7 +372,6 @@ const getStatusColor = (status: string) => {
 };
 
 export function MonthlyCalendarView({
-  year,
   onEmployeeClick,
 }: MonthlyCalendarViewProps) {
   // Calculate default view: last 12 months from today

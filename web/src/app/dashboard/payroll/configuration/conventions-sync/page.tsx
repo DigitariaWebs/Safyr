@@ -25,7 +25,12 @@ export default function ConventionsSyncPage() {
   const [searchIDCC, setSearchIDCC] = useState("");
   const [searchResults, setSearchResults] = useState<PayrollConvention[]>([]);
   const [syncHistory, setSyncHistory] = useState<
-    Array<{ idcc: string; status: "success" | "error"; timestamp: Date; message: string }>
+    Array<{
+      idcc: string;
+      status: "success" | "error";
+      timestamp: Date;
+      message: string;
+    }>
   >([]);
 
   const { search, searching, searchError } = useConventionSearch();
@@ -35,7 +40,10 @@ export default function ConventionsSyncPage() {
 
     const result = await search(searchIDCC.trim());
     if (result) {
-      setSearchResults([result, ...searchResults.filter((r) => r.idcc !== result.idcc)]);
+      setSearchResults([
+        result,
+        ...searchResults.filter((r) => r.idcc !== result.idcc),
+      ]);
       setSyncHistory([
         {
           idcc: searchIDCC,
@@ -64,7 +72,10 @@ export default function ConventionsSyncPage() {
     for (const idcc of commonIDCCs) {
       const result = await search(idcc);
       if (result) {
-        setSearchResults((prev) => [result, ...prev.filter((r) => r.idcc !== idcc)]);
+        setSearchResults((prev) => [
+          result,
+          ...prev.filter((r) => r.idcc !== idcc),
+        ]);
         setSyncHistory((prev) => [
           {
             idcc,
@@ -92,9 +103,12 @@ export default function ConventionsSyncPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Synchronisation Conventions Collectives</h1>
+        <h1 className="text-3xl font-bold">
+          Synchronisation Conventions Collectives
+        </h1>
         <p className="text-muted-foreground">
-          Récupération automatique des conventions depuis la base officielle Légifrance
+          Récupération automatique des conventions depuis la base officielle
+          Légifrance
         </p>
       </div>
 
@@ -102,8 +116,9 @@ export default function ConventionsSyncPage() {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          Les données sont récupérées depuis l&apos;API officielle data.gouv.fr et Légifrance.
-          Les conventions sont enrichies avec les paramètres spécifiques au secteur de la sécurité.
+          Les données sont récupérées depuis l&apos;API officielle data.gouv.fr
+          et Légifrance. Les conventions sont enrichies avec les paramètres
+          spécifiques au secteur de la sécurité.
         </AlertDescription>
       </Alert>
 
@@ -112,8 +127,14 @@ export default function ConventionsSyncPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Rechercher une Convention</h2>
-            <Button onClick={handleBulkSync} variant="outline" disabled={searching}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${searching ? "animate-spin" : ""}`} />
+            <Button
+              onClick={handleBulkSync}
+              variant="outline"
+              disabled={searching}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${searching ? "animate-spin" : ""}`}
+              />
               Synchroniser Conventions Courantes
             </Button>
           </div>
@@ -131,7 +152,10 @@ export default function ConventionsSyncPage() {
               />
             </div>
             <div className="flex items-end">
-              <Button onClick={handleSearchConvention} disabled={searching || !searchIDCC}>
+              <Button
+                onClick={handleSearchConvention}
+                disabled={searching || !searchIDCC}
+              >
                 <Search className="h-4 w-4 mr-2" />
                 Rechercher
               </Button>
@@ -155,7 +179,11 @@ export default function ConventionsSyncPage() {
               <h2 className="text-xl font-semibold">
                 Conventions Récupérées ({searchResults.length})
               </h2>
-              <Button onClick={handleExportConventions} variant="outline" size="sm">
+              <Button
+                onClick={handleExportConventions}
+                variant="outline"
+                size="sm"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Exporter JSON
               </Button>
@@ -171,7 +199,13 @@ export default function ConventionsSyncPage() {
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{convention.name}</h3>
-                        <Badge variant={convention.status === "Active" ? "default" : "secondary"}>
+                        <Badge
+                          variant={
+                            convention.status === "Active"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
                           {convention.status}
                         </Badge>
                       </div>
@@ -182,31 +216,51 @@ export default function ConventionsSyncPage() {
                           <span className="font-medium">{convention.idcc}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Brochure JO:</span>{" "}
-                          <span className="font-medium">{convention.brochureJO || "N/A"}</span>
+                          <span className="text-muted-foreground">
+                            Brochure JO:
+                          </span>{" "}
+                          <span className="font-medium">
+                            {convention.brochureJO || "N/A"}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Secteur:</span>{" "}
-                          <span className="font-medium">{convention.sector}</span>
+                          <span className="text-muted-foreground">
+                            Secteur:
+                          </span>{" "}
+                          <span className="font-medium">
+                            {convention.sector}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Taux minimum:</span>{" "}
-                          <span className="font-medium">{convention.minimumWage.toFixed(2)} €/h</span>
+                          <span className="text-muted-foreground">
+                            Taux minimum:
+                          </span>{" "}
+                          <span className="font-medium">
+                            {convention.minimumWage.toFixed(2)} €/h
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2 mt-2">
                         {convention.nightBonus > 0 && (
-                          <Badge variant="outline">Nuit: {convention.nightBonus}%</Badge>
+                          <Badge variant="outline">
+                            Nuit: {convention.nightBonus}%
+                          </Badge>
                         )}
                         {convention.sundayBonus > 0 && (
-                          <Badge variant="outline">Dimanche: {convention.sundayBonus}%</Badge>
+                          <Badge variant="outline">
+                            Dimanche: {convention.sundayBonus}%
+                          </Badge>
                         )}
                         {convention.holidayBonus > 0 && (
-                          <Badge variant="outline">Férié: {convention.holidayBonus}%</Badge>
+                          <Badge variant="outline">
+                            Férié: {convention.holidayBonus}%
+                          </Badge>
                         )}
                         {convention.panierAmount && (
-                          <Badge variant="outline">Panier: {convention.panierAmount} €</Badge>
+                          <Badge variant="outline">
+                            Panier: {convention.panierAmount} €
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -216,8 +270,11 @@ export default function ConventionsSyncPage() {
                       size="sm"
                       onClick={() =>
                         window.open(
-                          getLegifranceURL(convention.idcc, convention.brochureJO),
-                          "_blank"
+                          getLegifranceURL(
+                            convention.idcc,
+                            convention.brochureJO,
+                          ),
+                          "_blank",
                         )
                       }
                     >
@@ -234,7 +291,9 @@ export default function ConventionsSyncPage() {
       {/* Sync History */}
       {syncHistory.length > 0 && (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Historique de Synchronisation</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Historique de Synchronisation
+          </h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {syncHistory.map((entry, index) => (
               <div
@@ -249,7 +308,9 @@ export default function ConventionsSyncPage() {
                   )}
                   <div>
                     <p className="font-medium">IDCC {entry.idcc}</p>
-                    <p className="text-muted-foreground text-xs">{entry.message}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {entry.message}
+                    </p>
                   </div>
                 </div>
                 <span className="text-muted-foreground text-xs">
@@ -268,8 +329,9 @@ export default function ConventionsSyncPage() {
           <div className="space-y-1">
             <h3 className="font-semibold">Configuration API</h3>
             <p className="text-sm text-muted-foreground">
-              L&apos;intégration utilise l&apos;API publique data.gouv.fr pour récupérer les conventions.
-              Les données sont enrichies localement avec les paramètres spécifiques du secteur.
+              L&apos;intégration utilise l&apos;API publique data.gouv.fr pour
+              récupérer les conventions. Les données sont enrichies localement
+              avec les paramètres spécifiques du secteur.
             </p>
             <div className="mt-3 space-y-1 text-xs">
               <p>
@@ -304,7 +366,9 @@ export default function ConventionsSyncPage() {
 
       {/* Common IDCCs Reference */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">IDCCs Courantes - Secteur Sécurité</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          IDCCs Courantes - Secteur Sécurité
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { idcc: "1351", name: "Prévention et Sécurité" },

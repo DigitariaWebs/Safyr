@@ -51,21 +51,6 @@ const navItems: NavItem[] = [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
       { label: "AKTO", href: "/dashboard/hr/employees/akto-opco" },
       { label: "Archives BS", href: "/dashboard/hr/employees/archives" },
-      {
-        label: "Contrats & avenants",
-        href: "/dashboard/hr/contracts",
-        disabled: true,
-      },
-      {
-        label: "Documents réglementaires",
-        href: "/dashboard/hr/regulatory-documents",
-        disabled: true,
-      },
-      {
-        label: "Matériel & EPI",
-        href: "/dashboard/hr/equipment",
-        disabled: true,
-      },
     ],
   },
   {
@@ -84,6 +69,11 @@ const navItems: NavItem[] = [
       {
         label: "Compteur heures supplémentaires",
         href: "/dashboard/hr/time-management/overtime-counter",
+      },
+      {
+        label: "Suivi Congés Payés",
+        href: "/dashboard/hr/time-management/paid-leave-tracking",
+        isNew: true,
       },
     ],
   },
@@ -299,16 +289,12 @@ interface HRNavigationBarProps {
   showNav?: boolean;
 }
 
-export function HRNavigationBar({
-  isCollapsed,
-  showNav = true,
-}: HRNavigationBarProps) {
+export function HRNavigationBar({ showNav = true }: HRNavigationBarProps) {
   return (
     <ModuleNavigationBar
       moduleIcon={Users}
       dashboardHref="/dashboard/hr"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

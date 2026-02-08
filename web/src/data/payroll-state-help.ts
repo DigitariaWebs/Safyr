@@ -198,18 +198,14 @@ export function getStateHelpByCode(code: string): StateHelp | undefined {
   return mockStateHelps.find((help) => help.code === code && help.isActive);
 }
 
-export function getStateHelpsByType(
-  type: StateHelp["type"]
-): StateHelp[] {
-  return mockStateHelps.filter(
-    (help) => help.type === type && help.isActive
-  );
+export function getStateHelpsByType(type: StateHelp["type"]): StateHelp[] {
+  return mockStateHelps.filter((help) => help.type === type && help.isActive);
 }
 
 // Calculate Fillon reduction
 export function calculateFillonReduction(
   annualGrossSalary: number,
-  isLessThan50Employees: boolean = true
+  isLessThan50Employees: boolean = true,
 ): number {
   const T = isLessThan50Employees ? COEF_T_MOINS_50 : COEF_T_PLUS_50;
   const maxSalary = 1.6 * SMIC_ANNUEL_2024;
@@ -231,12 +227,12 @@ export function calculateFillonReduction(
 // Calculate monthly Fillon reduction
 export function calculateMonthlyFillonReduction(
   monthlyGrossSalary: number,
-  isLessThan50Employees: boolean = true
+  isLessThan50Employees: boolean = true,
 ): number {
   const annualEquivalent = monthlyGrossSalary * 12;
   const annualReduction = calculateFillonReduction(
     annualEquivalent,
-    isLessThan50Employees
+    isLessThan50Employees,
   );
   return annualReduction / 12;
 }
@@ -246,7 +242,7 @@ export function calculateStateHelpApplications(
   monthlyGrossSalary: number,
   overtimeHours: number = 0,
   eligibleHelps: string[] = ["FILLON", "HEURES_SUP"],
-  isLessThan50Employees: boolean = true
+  isLessThan50Employees: boolean = true,
 ): StateHelpApplication[] {
   const applications: StateHelpApplication[] = [];
 
@@ -261,7 +257,7 @@ export function calculateStateHelpApplications(
       case "FILLON":
         calculatedAmount = calculateMonthlyFillonReduction(
           monthlyGrossSalary,
-          isLessThan50Employees
+          isLessThan50Employees,
         );
         appliedAmount = help.maxAmount
           ? Math.min(calculatedAmount, help.maxAmount)
@@ -313,7 +309,7 @@ export function calculateStateHelpApplications(
 
 // Get total state help amount
 export function getTotalStateHelp(
-  applications: StateHelpApplication[]
+  applications: StateHelpApplication[],
 ): number {
   return applications.reduce((total, app) => total + app.appliedAmount, 0);
 }

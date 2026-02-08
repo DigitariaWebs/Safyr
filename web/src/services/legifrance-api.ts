@@ -42,15 +42,17 @@ interface ConventionDetails {
 /**
  * Fetch conventions from open data API
  */
-export async function fetchConventionsFromAPI(): Promise<LegifranceConvention[]> {
+export async function fetchConventionsFromAPI(): Promise<
+  LegifranceConvention[]
+> {
   try {
     const response = await fetch(
       `${LEGIFRANCE_API_BASE}${CONVENTIONS_DATASET_ID}`,
       {
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -68,11 +70,13 @@ export async function fetchConventionsFromAPI(): Promise<LegifranceConvention[]>
 /**
  * Search convention by IDCC using alternative API
  */
-export async function searchConventionByIDCC(idcc: string): Promise<ConventionDetails | null> {
+export async function searchConventionByIDCC(
+  idcc: string,
+): Promise<ConventionDetails | null> {
   try {
     const response = await fetch(`${CC_API_BASE}/idcc/${idcc}`, {
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     });
 
@@ -130,7 +134,9 @@ function determineStatus(etat?: string): "Active" | "En révision" | "Inactive" 
 /**
  * Enhanced convention search with fallback to multiple sources
  */
-export async function getConventionDetails(idcc: string): Promise<PayrollConvention | null> {
+export async function getConventionDetails(
+  idcc: string,
+): Promise<PayrollConvention | null> {
   try {
     // First, try the official API
     const details = await searchConventionByIDCC(idcc);
@@ -146,7 +152,8 @@ export async function getConventionDetails(idcc: string): Promise<PayrollConvent
       brochureJO: details.brochureJO,
       name: details.title,
       sector: details.sector || "Non spécifié",
-      lastUpdate: details.effectiveDate || new Date().toISOString().split('T')[0],
+      lastUpdate:
+        details.effectiveDate || new Date().toISOString().split("T")[0],
       minimumWage: details.minimumWage || 11.65, // SMIC as fallback
       nightBonus: 0, // These need to be fetched from convention text
       sundayBonus: 0,
@@ -171,7 +178,9 @@ export async function getConventionDetails(idcc: string): Promise<PayrollConvent
  * Enrich convention with known parameters from our database
  * This acts as a fallback when API doesn't provide all details
  */
-function enrichWithKnownParameters(convention: PayrollConvention): PayrollConvention {
+function enrichWithKnownParameters(
+  convention: PayrollConvention,
+): PayrollConvention {
   const knownParameters: Record<string, Partial<PayrollConvention>> = {
     "1351": {
       brochureJO: "3196",
@@ -251,7 +260,9 @@ function enrichWithKnownParameters(convention: PayrollConvention): PayrollConven
 /**
  * Batch fetch multiple conventions
  */
-export async function fetchMultipleConventions(idccs: string[]): Promise<Map<string, PayrollConvention>> {
+export async function fetchMultipleConventions(
+  idccs: string[],
+): Promise<Map<string, PayrollConvention>> {
   const results = new Map<string, PayrollConvention>();
 
   const promises = idccs.map(async (idcc) => {
@@ -268,7 +279,9 @@ export async function fetchMultipleConventions(idccs: string[]): Promise<Map<str
 /**
  * Search conventions by keyword
  */
-export async function searchConventionsByKeyword(keyword: string): Promise<ConventionDetails[]> {
+export async function searchConventionsByKeyword(): Promise<
+  ConventionDetails[]
+> {
   try {
     // This would need to be implemented with a proper search API
     // For now, return empty array as placeholder
@@ -302,7 +315,10 @@ export function getLegifranceURL(idcc: string, brochureJO?: string): string {
  * Cache for API responses
  */
 class ConventionCache {
-  private cache = new Map<string, { data: PayrollConvention; timestamp: number }>();
+  private cache = new Map<
+    string,
+    { data: PayrollConvention; timestamp: number }
+  >();
   private readonly TTL = 24 * 60 * 60 * 1000; // 24 hours
 
   get(idcc: string): PayrollConvention | null {
@@ -335,7 +351,9 @@ export const conventionCache = new ConventionCache();
 /**
  * Get convention with caching
  */
-export async function getConventionWithCache(idcc: string): Promise<PayrollConvention | null> {
+export async function getConventionWithCache(
+  idcc: string,
+): Promise<PayrollConvention | null> {
   // Check cache first
   const cached = conventionCache.get(idcc);
   if (cached) {
