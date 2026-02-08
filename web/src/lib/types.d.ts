@@ -2450,3 +2450,328 @@ export interface PayrollCalculationRunWorkflow {
 
   calculations: PayrollCalculationWorkflow[];
 }
+
+// ============================================================================
+// PLANNING TYPES - SITES & POSTES
+// ============================================================================
+
+export type PosteType =
+  | "rondier"
+  | "pc_securite"
+  | "controle_acces"
+  | "surveillance"
+  | "agent_cynophile"
+  | "agent_ssiap"
+  | "chef_equipe"
+  | "other";
+
+export interface Site {
+  id: string;
+  name: string;
+  clientId: string;
+  clientName: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  contact: {
+    name: string;
+    phone: string;
+    email: string;
+    position?: string;
+  };
+  // Contraintes spécifiques
+  constraints: {
+    mandatoryHours?: string[]; // Ex: ["08:00-18:00"]
+    requiredCertifications: string[]; // Ex: ["CQP APS", "SSIAP 1"]
+    accessInstructions?: string;
+    specialRequirements?: string;
+  };
+  // Facturation
+  billing: {
+    hourlyRate: number; // Taux horaire de facturation
+    overtimeRate?: number;
+    nightRate?: number;
+    weekendRate?: number;
+    holidayRate?: number;
+  };
+  // Metadata
+  status: "active" | "inactive" | "suspended";
+  contractStartDate: Date;
+  contractEndDate?: Date;
+  postes: Poste[];
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+  notes?: string;
+}
+
+export interface Poste {
+  id: string;
+  siteId: string;
+  name: string;
+  type: PosteType;
+  description?: string;
+  // Exigences
+  requirements: {
+    minimumExperience?: number; // en mois
+    requiredCertifications: string[]; // Ex: ["CQP APS", "SSIAP 1"]
+    requiredQualifications?: string[];
+    physicalRequirements?: string;
+  };
+  // Planning
+  schedule: {
+    defaultShiftDuration: number; // en heures
+    breakDuration?: number; // en minutes
+    nightShift: boolean;
+    weekendWork: boolean;
+    rotatingShift: boolean;
+  };
+  // Capacité
+  capacity: {
+    minAgents: number; // Nombre minimum d'agents requis
+    maxAgents: number; // Nombre maximum d'agents
+    currentAgents?: number; // Nombre d'agents actuellement affectés
+  };
+  // Instructions
+  instructions?: {
+    duties: string[]; // Tâches à effectuer
+    procedures?: string; // Procédures spécifiques
+    equipment?: string[]; // Équipement nécessaire
+    emergencyContact?: string;
+  };
+  // Metadata
+  status: "active" | "inactive";
+  priority: "low" | "medium" | "high" | "critical";
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+}
+
+export interface SiteFormData {
+  name: string;
+  clientId: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  contactPosition?: string;
+  mandatoryHours?: string;
+  requiredCertifications: string[];
+  accessInstructions?: string;
+  specialRequirements?: string;
+  hourlyRate: number;
+  overtimeRate?: number;
+  nightRate?: number;
+  weekendRate?: number;
+  holidayRate?: number;
+  status: "active" | "inactive" | "suspended";
+  contractStartDate: string;
+  contractEndDate?: string;
+  notes?: string;
+}
+
+export interface PosteFormData {
+  name: string;
+  type: PosteType;
+  description?: string;
+  minimumExperience?: number;
+  requiredCertifications: string[];
+  requiredQualifications?: string[];
+  physicalRequirements?: string;
+  defaultShiftDuration: number;
+  breakDuration?: number;
+  nightShift: boolean;
+  weekendWork: boolean;
+  rotatingShift: boolean;
+  minAgents: number;
+  maxAgents: number;
+  duties?: string;
+  procedures?: string;
+  equipment?: string;
+  emergencyContact?: string;
+  status: "active" | "inactive";
+  priority: "low" | "medium" | "high" | "critical";
+}
+
+export interface SiteStats {
+  total: number;
+  active: number;
+  inactive: number;
+  suspended: number;
+  totalPostes: number;
+  activePostes: number;
+  agentsDeployed: number;
+  coverageRate: number; // Pourcentage de postes couverts
+}
+// ============================================================================
+// PLANNING TYPES - ASSIGNMENTS & SCHEDULE
+// ============================================================================
+
+export type AssignmentStatus = "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled" | "no_show";
+
+export type AssignmentConflictType = "double_booking" | "missing_qualification" | "hours_exceeded" | "workload_exceeded" | "unavailable";
+
+export type AlertSeverity = "info" | "warning" | "error" | "critical";
+
+export interface Assignment {
+  id: string;
+  agentId: string;
+  agentName: string;
+  siteId: string;
+  siteName: string;
+  posteId: string;
+  posteName: string;
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+  plannedHours: number;
+  breakDuration?: number;
+  actualHours?: number;
+  status: AssignmentStatus;
+  confirmedByAgent?: boolean;
+  confirmedAt?: Date;
+  conflicts: AssignmentConflict[];
+  hasConflicts: boolean;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  modifiedBy?: string;
+}
+
+export interface AssignmentConflict {
+  type: AssignmentConflictType;
+  severity: AlertSeverity;
+  message: string;
+  details?: string;
+  relatedAssignmentId?: string;
+}
+
+export interface ScheduleAlert {
+  id: string;
+  type: AssignmentConflictType;
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+  assignmentId?: string;
+  agentId?: string;
+  siteId?: string;
+  posteId?: string;
+  timestamp: Date;
+  resolved: boolean;
+  resolvedAt?: Date;
+  resolvedBy?: string;
+}
+
+export type ScheduleView = "daily" | "weekly" | "monthly";
+export type ScheduleGroupBy = "agent" | "site" | "poste";
+
+export interface ScheduleFilters {
+  view: ScheduleView;
+  groupBy: ScheduleGroupBy;
+  startDate: Date;
+  endDate: Date;
+  agentIds?: string[];
+  siteIds?: string[];
+  posteIds?: string[];
+  status?: AssignmentStatus[];
+  showConflicts?: boolean;
+}
+
+export interface ScheduleTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  recurrence: "daily" | "weekly" | "monthly";
+  pattern: {
+    daysOfWeek?: number[];
+    weeksOfMonth?: number[];
+    monthsOfYear?: number[];
+  };
+  assignments: TemplateAssignment[];
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+export interface TemplateAssignment {
+  id: string;
+  agentId?: string;
+  siteId: string;
+  posteId: string;
+  startTime: string;
+  endTime: string;
+  breakDuration?: number;
+  notes?: string;
+}
+
+export interface AutoScheduleRequest {
+  startDate: Date;
+  endDate: Date;
+  siteIds?: string[];
+  posteIds?: string[];
+  prioritizeQualifications: boolean;
+  prioritizeCost: boolean;
+  allowOvertime: boolean;
+  maxHoursPerAgent?: number;
+  templateId?: string;
+}
+
+export interface AutoScheduleResult {
+  success: boolean;
+  assignmentsCreated: number;
+  conflicts: ScheduleAlert[];
+  unfilledShifts: UnfilledShift[];
+  message?: string;
+}
+
+export interface UnfilledShift {
+  siteId: string;
+  siteName: string;
+  posteId: string;
+  posteName: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  reason: string;
+  suggestedAgents?: SuggestedAgent[];
+}
+
+export interface SuggestedAgent {
+  agentId: string;
+  agentName: string;
+  matchScore: number;
+  qualificationMatch: boolean;
+  availabilityStatus: "available" | "partial" | "unavailable";
+  hoursThisWeek: number;
+  conflicts: string[];
+}
+
+export interface AssignmentFormData {
+  agentId: string;
+  siteId: string;
+  posteId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  breakDuration?: number;
+  notes?: string;
+}
+
+export interface ScheduleStats {
+  totalAssignments: number;
+  confirmed: number;
+  pending: number;
+  conflicts: number;
+  coverageRate: number;
+  totalHours: number;
+  agentsAssigned: number;
+}

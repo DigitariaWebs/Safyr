@@ -22,13 +22,11 @@ const navItems: NavItem[] = [
     label: "Sites & Postes",
     href: "/dashboard/planning/sites",
     icon: MapPin,
-    disabled: true,
   },
   {
     label: "Planning",
     href: "/dashboard/planning/schedule",
     icon: Calendar,
-    disabled: true,
   },
   {
     label: "Validation",
