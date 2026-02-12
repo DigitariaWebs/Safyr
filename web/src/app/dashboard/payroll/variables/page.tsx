@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataTable, ColumnDef, FilterDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,16 @@ import { EmployeePayrollVariables, ImportStatus } from "@/lib/types";
 type ModalMode = "view" | "edit" | null;
 
 export default function PayrollVariablesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PayrollVariablesContent />
+    </Suspense>
+  );
+}
+
+function PayrollVariablesContent() {
+  const searchParams = useSearchParams();
+
   // Convert PayrollPeriod to Period format
   const periods: PeriodType[] = mockPayrollPeriods.map((p) => ({
     id: p.id,
@@ -61,17 +71,71 @@ export default function PayrollVariablesPage() {
     label: p.label,
   }));
 
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>(periods[0]);
+  // Compute initial state from URL params
+  const getInitialStateFromParams = () => {
+    const employeeId = searchParams.get("employeeId");
+    const month = searchParams.get("month");
+    const year = searchParams.get("year");
+
+    if (employeeId && month && year) {
+      const targetPeriod = periods.find(
+        (p) => p.month === parseInt(month) && p.year === parseInt(year),
+      );
+      const periodString = `${year}-${month.padStart(2, "0")}`;
+      const variableRecord = mockEmployeePayrollVariables.find(
+        (v) => v.employeeId === employeeId && v.period === periodString,
+      );
+
+      if (variableRecord) {
+        return {
+          period: targetPeriod || periods[0],
+          modalMode: "view" as ModalMode,
+          selectedVariable: variableRecord,
+          formData: variableRecord,
+        };
+      } else {
+        const employee = mockEmployeePayrollVariables.find(
+          (v) => v.employeeId === employeeId,
+        );
+        const newVariable: Partial<EmployeePayrollVariables> = {
+          employeeId: employeeId,
+          employeeName: employee?.employeeName || "Employé inconnu",
+          period: periodString,
+          validated: false,
+          hasErrors: false,
+          hasWarnings: false,
+        };
+        return {
+          period: targetPeriod || periods[0],
+          modalMode: "edit" as ModalMode,
+          selectedVariable: null,
+          formData: newVariable,
+        };
+      }
+    }
+
+    return {
+      period: periods[0],
+      modalMode: null,
+      selectedVariable: null,
+      formData: {},
+    };
+  };
+
+  const initialState = getInitialStateFromParams();
+
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>(
+    initialState.period,
+  );
   const [variables, setVariables] = useState<EmployeePayrollVariables[]>(
     mockEmployeePayrollVariables,
   );
-  const [modalMode, setModalMode] = useState<ModalMode>(null);
+  const [modalMode, setModalMode] = useState<ModalMode>(initialState.modalMode);
   const [selectedVariable, setSelectedVariable] =
-    useState<EmployeePayrollVariables | null>(null);
+    useState<EmployeePayrollVariables | null>(initialState.selectedVariable);
   const [formData, setFormData] = useState<Partial<EmployeePayrollVariables>>(
-    {},
+    initialState.formData,
   );
-  const [activeTab, setActiveTab] = useState("overview");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Filter variables by selected period
@@ -231,8 +295,61 @@ export default function PayrollVariablesPage() {
     setFormData({});
   };
 
-  // Columns for overview table
-  const overviewColumns: ColumnDef<EmployeePayrollVariables>[] = [
+  // Enrich data with computed status for filtering
+  const enrichedVariables = periodVariables.map((v) => ({
+    ...v,
+    statusFilter: v.hasErrors
+      ? "errors"
+      : v.hasWarnings
+        ? "warnings"
+        : v.validated
+          ? "validated"
+          : "pending",
+    importStatus:
+      v.planningImportStatus === "imported" && v.hrImportStatus === "imported"
+        ? "imported"
+        : v.planningImportStatus === "error" || v.hrImportStatus === "error"
+          ? "error"
+          : "pending",
+  }));
+
+  // Filters for DataTable
+  const variableFilters: FilterDef[] = [
+    {
+      key: "statusFilter",
+      label: "Statut",
+      options: [
+        { value: "all", label: "Tous les statuts" },
+        { value: "validated", label: "Validés" },
+        { value: "pending", label: "À valider" },
+        { value: "errors", label: "Erreurs" },
+        { value: "warnings", label: "Avertissements" },
+      ],
+    },
+    {
+      key: "importStatus",
+      label: "Import",
+      options: [
+        { value: "all", label: "Tous" },
+        { value: "imported", label: "Importés" },
+        { value: "pending", label: "En attente" },
+        { value: "error", label: "Erreurs" },
+      ],
+    },
+    {
+      key: "contractType",
+      label: "Contrat",
+      options: [
+        { value: "all", label: "Tous les contrats" },
+        { value: "CDI", label: "CDI" },
+        { value: "CDD", label: "CDD" },
+        { value: "Apprentissage", label: "Apprentissage" },
+      ],
+    },
+  ];
+
+  // Combined columns for the unified table
+  const columns: ColumnDef<EmployeePayrollVariables>[] = [
     {
       key: "employeeName",
       label: "Employé",
@@ -246,6 +363,7 @@ export default function PayrollVariablesPage() {
     {
       key: "position",
       label: "Poste",
+      defaultVisible: false,
     },
     {
       key: "contractType",
@@ -253,13 +371,82 @@ export default function PayrollVariablesPage() {
     },
     {
       key: "planningImportStatus",
-      label: "Planning",
+      label: "Import Planning",
       render: (item) => getStatusBadge(item.planningImportStatus),
+      defaultVisible: false,
     },
     {
       key: "hrImportStatus",
-      label: "RH",
+      label: "Import RH",
       render: (item) => getStatusBadge(item.hrImportStatus),
+      defaultVisible: false,
+    },
+    // Planning hours columns
+    {
+      key: "normalHours",
+      label: "H. Normales",
+      render: (item) => item.planningData.normalHours.toFixed(2),
+    },
+    {
+      key: "nightHours",
+      label: "H. Nuit",
+      render: (item) => item.planningData.nightHours.toFixed(2),
+      defaultVisible: false,
+    },
+    {
+      key: "holidayHours",
+      label: "H. Fériées",
+      render: (item) => item.planningData.holidayHours.toFixed(2),
+      defaultVisible: false,
+    },
+    {
+      key: "overtimeHours25",
+      label: "H. Sup 25%",
+      render: (item) => item.planningData.overtimeHours25.toFixed(2),
+      defaultVisible: false,
+    },
+    {
+      key: "overtimeHours50",
+      label: "H. Sup 50%",
+      render: (item) => item.planningData.overtimeHours50.toFixed(2),
+      defaultVisible: false,
+    },
+    {
+      key: "sundayHours",
+      label: "H. Dimanche",
+      render: (item) => item.planningData.sundayHours.toFixed(2),
+      defaultVisible: false,
+    },
+    {
+      key: "mealAllowances",
+      label: "Paniers",
+      render: (item) => item.planningData.mealAllowances,
+      defaultVisible: false,
+    },
+    // HR absences columns
+    {
+      key: "paidLeave",
+      label: "Congés payés",
+      render: (item) => item.hrData.paidLeave,
+      defaultVisible: false,
+    },
+    {
+      key: "sickLeave",
+      label: "Maladie",
+      render: (item) => item.hrData.sickLeave,
+      defaultVisible: false,
+    },
+    {
+      key: "workAccident",
+      label: "AT",
+      render: (item) => item.hrData.workAccident,
+      defaultVisible: false,
+    },
+    {
+      key: "exceptionalLeave",
+      label: "Congés except.",
+      render: (item) => item.hrData.exceptionalLeave,
+      defaultVisible: false,
     },
     {
       key: "validated",
@@ -329,108 +516,6 @@ export default function PayrollVariablesPage() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-      ),
-    },
-  ];
-
-  // Columns for planning hours table
-  const planningColumns: ColumnDef<EmployeePayrollVariables>[] = [
-    {
-      key: "employeeName",
-      label: "Employé",
-    },
-    {
-      key: "normalHours",
-      label: "H. Normales",
-      render: (item) => item.planningData.normalHours.toFixed(2),
-    },
-    {
-      key: "nightHours",
-      label: "H. Nuit",
-      render: (item) => item.planningData.nightHours.toFixed(2),
-    },
-    {
-      key: "holidayHours",
-      label: "H. Fériées",
-      render: (item) => item.planningData.holidayHours.toFixed(2),
-    },
-    {
-      key: "overtimeHours25",
-      label: "H. Sup 25%",
-      render: (item) => item.planningData.overtimeHours25.toFixed(2),
-    },
-    {
-      key: "overtimeHours50",
-      label: "H. Sup 50%",
-      render: (item) => item.planningData.overtimeHours50.toFixed(2),
-    },
-    {
-      key: "sundayHours",
-      label: "H. Dimanche",
-      render: (item) => item.planningData.sundayHours.toFixed(2),
-    },
-    {
-      key: "mealAllowances",
-      label: "Paniers",
-      render: (item) => item.planningData.mealAllowances,
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (item) => (
-        <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
-      ),
-    },
-  ];
-
-  // Columns for HR absences table
-  const hrColumns: ColumnDef<EmployeePayrollVariables>[] = [
-    {
-      key: "employeeName",
-      label: "Employé",
-    },
-    {
-      key: "paidLeave",
-      label: "Congés payés",
-      render: (item) => item.hrData.paidLeave,
-    },
-    {
-      key: "sickLeave",
-      label: "Maladie",
-      render: (item) => item.hrData.sickLeave,
-    },
-    {
-      key: "workAccident",
-      label: "AT",
-      render: (item) => item.hrData.workAccident,
-    },
-    {
-      key: "exceptionalLeave",
-      label: "Congés except.",
-      render: (item) => item.hrData.exceptionalLeave,
-    },
-    {
-      key: "unionHours",
-      label: "H. Syndicales",
-      render: (item) => item.hrData.unionHours,
-    },
-    {
-      key: "salaryDeductions",
-      label: "Retenues",
-      render: (item) =>
-        item.hrData.salaryDeductions > 0
-          ? `${item.hrData.salaryDeductions}€`
-          : "-",
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (item) => (
-        <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
       ),
     },
   ];
@@ -634,7 +719,7 @@ export default function PayrollVariablesPage() {
         </Card>
       )}
 
-      {/* Data Tables with Tabs */}
+      {/* Data Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -643,37 +728,14 @@ export default function PayrollVariablesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Vue d&apos;ensemble</TabsTrigger>
-              <TabsTrigger value="planning">Heures Planning</TabsTrigger>
-              <TabsTrigger value="hr">Absences RH</TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="space-y-4">
-              <DataTable
-                columns={overviewColumns}
-                data={periodVariables}
-                searchKey="employeeName"
-                searchPlaceholder="Rechercher un employé..."
-              />
-            </TabsContent>
-            <TabsContent value="planning" className="space-y-4">
-              <DataTable
-                columns={planningColumns}
-                data={periodVariables}
-                searchKey="employeeName"
-                searchPlaceholder="Rechercher un employé..."
-              />
-            </TabsContent>
-            <TabsContent value="hr" className="space-y-4">
-              <DataTable
-                columns={hrColumns}
-                data={periodVariables}
-                searchKey="employeeName"
-                searchPlaceholder="Rechercher un employé..."
-              />
-            </TabsContent>
-          </Tabs>
+          <DataTable
+            columns={columns}
+            data={enrichedVariables}
+            filters={variableFilters}
+            searchKey="employeeName"
+            searchPlaceholder="Rechercher un employé..."
+            onRowClick={(item) => handleView(item)}
+          />
         </CardContent>
       </Card>
 

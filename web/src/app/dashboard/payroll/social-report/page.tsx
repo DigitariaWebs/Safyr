@@ -141,21 +141,6 @@ export default function PayrollSocialReportPage() {
     }),
   );
 
-  const hourlyCostBySiteData = report.costAnalysis.hourlyCostBySite.map(
-    (item) => ({
-      site: item.siteName,
-      cout: item.cost,
-    }),
-  );
-
-  const genderPayGapChartData = report.genderEquality.bySalaryCategory.map(
-    (item) => ({
-      categorie: item.category,
-      hommes: item.maleAverage,
-      femmes: item.femaleAverage,
-    }),
-  );
-
   const turnoverBySiteData = report.turnover.bySite.map((item) => ({
     site: item.siteName,
     taux: item.rate,
@@ -544,26 +529,6 @@ export default function PayrollSocialReportPage() {
               </div>
             </Card>
           </div>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Coût Horaire par Site
-            </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={hourlyCostBySiteData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="site" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  dataKey="cout"
-                  fill={COLORS.secondary}
-                  name="Coût horaire (€)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
         </TabsContent>
 
         {/* Demographics Tab */}
@@ -738,62 +703,6 @@ export default function PayrollSocialReportPage() {
               </div>
             </Card>
           </div>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              Égalité Professionnelle (Écart de Salaire H/F)
-            </h3>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-100 rounded-lg border border-blue-300">
-                  <span className="text-sm font-medium text-blue-900">
-                    Salaire brut moyen - Hommes
-                  </span>
-                  <span className="font-bold text-blue-900">
-                    {formatCurrency(report.genderEquality.averageMaleGross)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-pink-100 rounded-lg border border-pink-300">
-                  <span className="text-sm font-medium text-pink-900">
-                    Salaire brut moyen - Femmes
-                  </span>
-                  <span className="font-bold text-pink-900">
-                    {formatCurrency(report.genderEquality.averageFemaleGross)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-red-100 rounded-lg border border-red-400">
-                  <span className="text-sm font-medium text-red-900">
-                    Écart salarial
-                  </span>
-                  <div className="text-right">
-                    <div className="font-bold text-red-700">
-                      {formatCurrency(report.genderEquality.gap)}
-                    </div>
-                    <Badge variant="destructive" className="mt-1">
-                      {formatPercentage(report.genderEquality.gapPercentage)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={genderPayGapChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="categorie"
-                    tick={{ fontSize: 10 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="hommes" fill={COLORS.male} name="Hommes" />
-                  <Bar dataKey="femmes" fill={COLORS.female} name="Femmes" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
         </TabsContent>
 
         {/* Turnover Tab */}

@@ -44,7 +44,6 @@ interface StockNavigationBarProps {
 }
 
 export function StockNavigationBar({
-  isCollapsed,
   showNav = true,
 }: StockNavigationBarProps) {
   return (
@@ -52,7 +51,6 @@ export function StockNavigationBar({
       moduleIcon={Package}
       dashboardHref="/dashboard/stock"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

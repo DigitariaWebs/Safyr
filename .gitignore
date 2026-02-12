@@ -102,3 +102,7 @@ temp/
 
 # Metro
 .metro-health-check
+
+# Turbo
+.turbo/
+docs

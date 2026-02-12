@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { ProfileModal } from "@/components/layout/ProfileModal";
 import { ModuleTopBar } from "@/components/ui/module-top-bar";
 import { DollarSign } from "lucide-react";
@@ -11,6 +12,7 @@ export default function PayrollLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     if (typeof window !== "undefined") {
@@ -19,6 +21,13 @@ export default function PayrollLayout({
     }
     return false;
   });
+
+  // Hide navigation when viewing specific employee calculation
+  const isEmployeeCalculation = React.useMemo(() => {
+    const calculationRegex =
+      /^\/dashboard\/payroll\/calculation\/[^/]+\/\d+\/\d+$/;
+    return calculationRegex.test(pathname);
+  }, [pathname]);
 
   React.useEffect(() => {
     localStorage.setItem("payrollNavCollapsed", String(isCollapsed));
@@ -38,7 +47,10 @@ export default function PayrollLayout({
           isCollapsed={isCollapsed}
           onCollapseToggle={() => setIsCollapsed(!isCollapsed)}
         />
-        <PayrollNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <PayrollNavigationBar
+          isCollapsed={isCollapsed}
+          showNav={!isEmployeeCalculation}
+        />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

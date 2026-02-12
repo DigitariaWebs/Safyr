@@ -81,7 +81,6 @@ interface BillingNavigationBarProps {
 }
 
 export function BillingNavigationBar({
-  isCollapsed,
   showNav = true,
 }: BillingNavigationBarProps) {
   return (
@@ -89,7 +88,6 @@ export function BillingNavigationBar({
       moduleIcon={FileText}
       dashboardHref="/dashboard/billing"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

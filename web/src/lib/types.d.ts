@@ -475,6 +475,8 @@ export interface Document {
     | "cv"
     | "proof-address"
     | "pro-card"
+    | "dpae"
+    | "due"
     | "other";
   fileUrl: string;
   uploadedAt: Date;
@@ -509,15 +511,24 @@ export interface Contract {
   id: string;
   employeeId?: string;
   type: "CDI" | "CDD" | "INTERIM" | "APPRENTICESHIP" | "INTERNSHIP";
+  contractType?: "full-time" | "part-time"; // Temps complet (151.67h) ou temps partiel
   startDate: Date;
   endDate?: Date;
   position: string;
   department: string;
+
+  // Salary and classification
   salary: {
     gross: number;
     net: number;
     currency: string;
   };
+  hourlyRate?: number; // Taux horaire brut
+  category?: string; // Catégorie (ex: Agent de sécurité, Chef d'équipe)
+  level?: string; // Niveau
+  echelon?: string; // Échelon
+  coefficient?: number; // Coefficient
+
   workingHours: number; // Hours per week
   fileUrl?: string;
   signedAt?: Date;
@@ -2142,4 +2153,625 @@ export interface PayrollSocialReport {
 
   // Comparative analysis
   comparison?: YearOverYearComparison;
+}
+
+// ========================================
+// Payroll Workflow Types
+// ========================================
+
+// Organism Rule - cotisations sociales (taxes applied via organisms like URSSAF, AGIRC-ARRCO)
+export interface OrganismRule {
+  id: string;
+  code: string;
+  name: string; // e.g., "Assurance maladie", "Retraite complémentaire"
+  organism: string; // e.g., "URSSAF", "AGIRC-ARRCO"
+  category:
+    | "health"
+    | "retirement"
+    | "unemployment"
+    | "family"
+    | "accident"
+    | "csg"
+    | "crds"
+    | "other";
+  appliesTo: "employee" | "employer" | "both";
+  rateEmployee?: number; // percentage for employee
+  rateEmployer?: number; // percentage for employer
+  ceiling?: number; // plafond
+  tranche?: "A" | "B" | "C" | "all";
+  isActive: boolean;
+  effectiveDate: string;
+  endDate?: string;
+  description?: string;
+}
+
+// Applied organism rule in calculation
+export interface OrganismRuleApplication {
+  ruleId: string;
+  ruleName: string;
+  ruleCode: string;
+  organism: string;
+  category: OrganismRule["category"];
+  baseAmount: number;
+  rate: number;
+  amount: number;
+  ceiling?: number;
+  tranche?: "A" | "B" | "C";
+}
+
+// State Help - réductions/aides employeur
+export interface StateHelp {
+  id: string;
+  code: string;
+  name: string; // e.g., "Réduction Fillon", "Aide à l'embauche"
+  type: "reduction" | "credit" | "exoneration";
+  calculationMethod: "percentage" | "fixed" | "formula";
+  rate?: number;
+  amount?: number;
+  formula?: string;
+  conditions: string[];
+  maxAmount?: number;
+  isActive: boolean;
+  effectiveDate: string;
+  endDate?: string;
+  description?: string;
+}
+
+// Applied state help in calculation
+export interface StateHelpApplication {
+  helpId: string;
+  helpName: string;
+  helpCode: string;
+  type: StateHelp["type"];
+  baseAmount: number;
+  calculatedAmount: number;
+  appliedAmount: number; // after max cap
+}
+
+// Prime types configuration (included in gross salary, subject to contributions)
+export interface PrimeType {
+  id: string;
+  code: string;
+  name: string; // e.g., "Prime d'ancienneté", "Prime temps d'habillage"
+  category:
+    | "anciennete"
+    | "habillage"
+    | "risque"
+    | "astreinte"
+    | "objectif"
+    | "other";
+  subjectToContributions: boolean; // Always true for primes
+  defaultAmount?: number;
+  calculationMethod: "fixed" | "per_day" | "per_hour" | "percentage" | "custom";
+  isActive: boolean;
+  description?: string;
+}
+
+// Applied prime in calculation (included in gross)
+export interface PrimeApplication {
+  typeId: string;
+  typeName: string;
+  typeCode: string;
+  category: PrimeType["category"];
+  quantity?: number; // hours or days
+  rate?: number; // hourly or daily rate
+  amount: number;
+  subjectToContributions: boolean; // Always true
+}
+
+// Indemnité types configuration (added to net, not subject to contributions)
+export interface IndemniteType {
+  id: string;
+  code: string;
+  name: string; // e.g., "Indemnité de panier", "Indemnité transport"
+  category:
+    | "transport"
+    | "repas"
+    | "logement"
+    | "habillement"
+    | "outillage"
+    | "anciennete"
+    | "risque"
+    | "other";
+  taxable: boolean; // Usually false for indemnités
+  subjectToContributions: boolean; // Usually false for indemnités
+  defaultAmount?: number;
+  calculationMethod: "fixed" | "per_day" | "per_hour" | "percentage" | "custom";
+  isActive: boolean;
+  description?: string;
+}
+
+// Applied indemnité in calculation (added to net)
+export interface IndemniteApplication {
+  typeId: string;
+  typeName: string;
+  typeCode: string;
+  category: IndemniteType["category"];
+  quantity?: number; // days or occurrences
+  rate?: number; // daily rate
+  amount: number;
+  taxable: boolean; // Usually false
+  subjectToContributions: boolean; // Usually false
+  description?: string; // e.g., "22 jours × 5.40€"
+}
+
+// Leave Balance - Congés tracking
+export interface LeaveBalance {
+  employeeId: string;
+  period: string;
+  congesPayes: {
+    previousBalance: number; // solde N-1
+    acquired: number; // acquis période en cours
+    taken: number; // pris
+    remaining: number; // solde restant
+    monthlyAccrual: number; // 2.5 jours/mois
+  };
+  rtt?: {
+    acquired: number;
+    taken: number;
+    remaining: number;
+  };
+  congesAnciennete?: {
+    acquired: number;
+    taken: number;
+    remaining: number;
+  };
+}
+
+// Worked hours breakdown for brute calculation
+export interface WorkedHoursBreakdown {
+  normalHours: number;
+  nightHours: number;
+  sundayHours: number;
+  holidayHours: number;
+  overtime25: number; // heures sup majorées 25%
+  overtime50: number; // heures sup majorées 50%
+  overtime100: number; // heures sup majorées 100%
+  totalHours: number;
+}
+
+// Time off deduction detail
+export interface TimeOffDeduction {
+  type: TimeOffType;
+  days: number;
+  hours: number;
+  dailyRate: number;
+  amount: number; // negative for deduction
+  ijssAmount?: number; // if applicable
+  salaryMaintenance?: boolean;
+}
+
+// Employee tax (Prélèvement à la Source)
+export interface EmployeeTax {
+  type: "pas" | "other";
+  name: string;
+  baseAmount: number;
+  rate: number;
+  amount: number;
+}
+
+// Complete payroll calculation workflow
+export interface PayrollCalculationWorkflow {
+  employeeId: string;
+  employeeName: string;
+  employeeNumber: string;
+  period: string;
+  status: PayrollCalculationStatus;
+  position: string;
+  contractType: "CDI" | "CDD" | "Intérim" | "Apprentissage";
+
+  // Step 1: Brute calculation (excludes indemnités)
+  workedHours: WorkedHoursBreakdown;
+  baseSalary: number; // salaire de base mensuel
+  hoursAmount: number; // montant heures travaillées
+  overtimeAmount: number; // montant heures supplémentaires
+  nightBonus: number; // majoration nuit
+  sundayBonus: number; // majoration dimanche
+  holidayBonus: number; // majoration jours fériés
+  timeOffDeductions: TimeOffDeduction[];
+  totalTimeOffDeduction: number;
+
+  // Primes (included in gross salary, subject to contributions)
+  primes: PrimeApplication[];
+  totalPrimes: number;
+
+  bruteSalary: number; // Total brut = baseSalary + hours + overtime + bonuses + primes - timeOff
+
+  // Step 2: Employee deductions from organism rules
+  employeeDeductions: OrganismRuleApplication[];
+  totalEmployeeDeductions: number;
+
+  // Step 3: Employer charges from organism rules
+  employerCharges: OrganismRuleApplication[];
+  totalEmployerCharges: number;
+
+  // Step 4: State help for employer
+  stateHelps: StateHelpApplication[];
+  totalStateHelp: number;
+  employerNetCharges: number; // totalEmployerCharges - totalStateHelp
+
+  // Step 5: Indemnités (added to net after deductions, not subject to contributions)
+  indemnites: IndemniteApplication[];
+  totalIndemnitesNonTaxable: number;
+  totalIndemnitesTaxable: number;
+  totalIndemnites: number;
+
+  // Step 6: Employee taxes (PAS)
+  netBeforeTax: number;
+  employeeTaxes: EmployeeTax[];
+  totalEmployeeTaxes: number;
+
+  // Step 7: Final amounts
+  netToPay: number;
+  totalEmployerCost: number; // bruteSalary + indemnités taxables + employerNetCharges
+
+  // Leave balance
+  leaveBalance: LeaveBalance;
+
+  // Calculation metadata
+  calculatedAt?: Date;
+  calculatedBy?: string;
+  validatedAt?: Date;
+  validatedBy?: string;
+  errors: string[];
+  warnings: string[];
+  notes?: string;
+}
+
+// Payroll calculation run with workflow
+export interface PayrollCalculationRunWorkflow {
+  id: string;
+  period: string;
+  periodLabel: string;
+  status: PayrollCalculationStatus;
+  totalEmployees: number;
+  calculatedEmployees: number;
+  pendingEmployees: number;
+  errorEmployees: number;
+  validatedEmployees: number;
+
+  // Financial totals
+  totalBruteSalary: number;
+  totalIndemnites: number;
+  totalEmployeeDeductions: number;
+  totalEmployerCharges: number;
+  totalStateHelp: number;
+  totalEmployeeTaxes: number;
+  totalNetToPay: number;
+  totalEmployerCost: number;
+
+  // Metadata
+  startedAt?: Date;
+  startedBy?: string;
+  completedAt?: Date;
+  validatedAt?: Date;
+  validatedBy?: string;
+  exportedAt?: Date;
+
+  calculations: PayrollCalculationWorkflow[];
+}
+
+// ============================================================================
+// PLANNING TYPES - SITES & POSTES
+// ============================================================================
+
+export type PosteType =
+  | "rondier"
+  | "pc_securite"
+  | "controle_acces"
+  | "surveillance"
+  | "agent_cynophile"
+  | "agent_ssiap"
+  | "chef_equipe"
+  | "other";
+
+export interface Site {
+  id: string;
+  name: string;
+  clientId: string;
+  clientName: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  contact: {
+    name: string;
+    phone: string;
+    email: string;
+    position?: string;
+  };
+  // Contraintes spécifiques
+  constraints: {
+    mandatoryHours?: string[]; // Ex: ["08:00-18:00"]
+    requiredCertifications: string[]; // Ex: ["CQP APS", "SSIAP 1"]
+    accessInstructions?: string;
+    specialRequirements?: string;
+  };
+  // Facturation
+  billing: {
+    hourlyRate: number; // Taux horaire de facturation
+    overtimeRate?: number;
+    nightRate?: number;
+    weekendRate?: number;
+    holidayRate?: number;
+  };
+  // Metadata
+  status: "active" | "inactive" | "suspended";
+  contractStartDate: Date;
+  contractEndDate?: Date;
+  postes: Poste[];
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+  notes?: string;
+}
+
+export interface Poste {
+  id: string;
+  siteId: string;
+  name: string;
+  type: PosteType;
+  description?: string;
+  // Exigences
+  requirements: {
+    minimumExperience?: number; // en mois
+    requiredCertifications: string[]; // Ex: ["CQP APS", "SSIAP 1"]
+    requiredQualifications?: string[];
+    physicalRequirements?: string;
+  };
+  // Planning
+  schedule: {
+    defaultShiftDuration: number; // en heures
+    breakDuration?: number; // en minutes
+    nightShift: boolean;
+    weekendWork: boolean;
+    rotatingShift: boolean;
+  };
+  // Capacité
+  capacity: {
+    minAgents: number; // Nombre minimum d'agents requis
+    maxAgents: number; // Nombre maximum d'agents
+    currentAgents?: number; // Nombre d'agents actuellement affectés
+  };
+  // Instructions
+  instructions?: {
+    duties: string[]; // Tâches à effectuer
+    procedures?: string; // Procédures spécifiques
+    equipment?: string[]; // Équipement nécessaire
+    emergencyContact?: string;
+  };
+  // Metadata
+  status: "active" | "inactive";
+  priority: "low" | "medium" | "high" | "critical";
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+}
+
+export interface SiteFormData {
+  name: string;
+  clientId: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  contactPosition?: string;
+  mandatoryHours?: string;
+  requiredCertifications: string[];
+  accessInstructions?: string;
+  specialRequirements?: string;
+  hourlyRate: number;
+  overtimeRate?: number;
+  nightRate?: number;
+  weekendRate?: number;
+  holidayRate?: number;
+  status: "active" | "inactive" | "suspended";
+  contractStartDate: string;
+  contractEndDate?: string;
+  notes?: string;
+}
+
+export interface PosteFormData {
+  name: string;
+  type: PosteType;
+  description?: string;
+  minimumExperience?: number;
+  requiredCertifications: string[];
+  requiredQualifications?: string[];
+  physicalRequirements?: string;
+  defaultShiftDuration: number;
+  breakDuration?: number;
+  nightShift: boolean;
+  weekendWork: boolean;
+  rotatingShift: boolean;
+  minAgents: number;
+  maxAgents: number;
+  duties?: string;
+  procedures?: string;
+  equipment?: string;
+  emergencyContact?: string;
+  status: "active" | "inactive";
+  priority: "low" | "medium" | "high" | "critical";
+}
+
+export interface SiteStats {
+  total: number;
+  active: number;
+  inactive: number;
+  suspended: number;
+  totalPostes: number;
+  activePostes: number;
+  agentsDeployed: number;
+  coverageRate: number; // Pourcentage de postes couverts
+}
+// ============================================================================
+// PLANNING TYPES - ASSIGNMENTS & SCHEDULE
+// ============================================================================
+
+export type AssignmentStatus = "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled" | "no_show";
+
+export type AssignmentConflictType = "double_booking" | "missing_qualification" | "hours_exceeded" | "workload_exceeded" | "unavailable";
+
+export type AlertSeverity = "info" | "warning" | "error" | "critical";
+
+export interface Assignment {
+  id: string;
+  agentId: string;
+  agentName: string;
+  siteId: string;
+  siteName: string;
+  posteId: string;
+  posteName: string;
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+  plannedHours: number;
+  breakDuration?: number;
+  actualHours?: number;
+  status: AssignmentStatus;
+  confirmedByAgent?: boolean;
+  confirmedAt?: Date;
+  conflicts: AssignmentConflict[];
+  hasConflicts: boolean;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  modifiedBy?: string;
+}
+
+export interface AssignmentConflict {
+  type: AssignmentConflictType;
+  severity: AlertSeverity;
+  message: string;
+  details?: string;
+  relatedAssignmentId?: string;
+}
+
+export interface ScheduleAlert {
+  id: string;
+  type: AssignmentConflictType;
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+  assignmentId?: string;
+  agentId?: string;
+  siteId?: string;
+  posteId?: string;
+  timestamp: Date;
+  resolved: boolean;
+  resolvedAt?: Date;
+  resolvedBy?: string;
+}
+
+export type ScheduleView = "daily" | "weekly" | "monthly";
+export type ScheduleGroupBy = "agent" | "site" | "poste";
+
+export interface ScheduleFilters {
+  view: ScheduleView;
+  groupBy: ScheduleGroupBy;
+  startDate: Date;
+  endDate: Date;
+  agentIds?: string[];
+  siteIds?: string[];
+  posteIds?: string[];
+  status?: AssignmentStatus[];
+  showConflicts?: boolean;
+}
+
+export interface ScheduleTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  recurrence: "daily" | "weekly" | "monthly";
+  pattern: {
+    daysOfWeek?: number[];
+    weeksOfMonth?: number[];
+    monthsOfYear?: number[];
+  };
+  assignments: TemplateAssignment[];
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+export interface TemplateAssignment {
+  id: string;
+  agentId?: string;
+  siteId: string;
+  posteId: string;
+  startTime: string;
+  endTime: string;
+  breakDuration?: number;
+  notes?: string;
+}
+
+export interface AutoScheduleRequest {
+  startDate: Date;
+  endDate: Date;
+  siteIds?: string[];
+  posteIds?: string[];
+  prioritizeQualifications: boolean;
+  prioritizeCost: boolean;
+  allowOvertime: boolean;
+  maxHoursPerAgent?: number;
+  templateId?: string;
+}
+
+export interface AutoScheduleResult {
+  success: boolean;
+  assignmentsCreated: number;
+  conflicts: ScheduleAlert[];
+  unfilledShifts: UnfilledShift[];
+  message?: string;
+}
+
+export interface UnfilledShift {
+  siteId: string;
+  siteName: string;
+  posteId: string;
+  posteName: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  reason: string;
+  suggestedAgents?: SuggestedAgent[];
+}
+
+export interface SuggestedAgent {
+  agentId: string;
+  agentName: string;
+  matchScore: number;
+  qualificationMatch: boolean;
+  availabilityStatus: "available" | "partial" | "unavailable";
+  hoursThisWeek: number;
+  conflicts: string[];
+}
+
+export interface AssignmentFormData {
+  agentId: string;
+  siteId: string;
+  posteId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  breakDuration?: number;
+  notes?: string;
+}
+
+export interface ScheduleStats {
+  totalAssignments: number;
+  confirmed: number;
+  pending: number;
+  conflicts: number;
+  coverageRate: number;
+  totalHours: number;
+  agentsAssigned: number;
 }

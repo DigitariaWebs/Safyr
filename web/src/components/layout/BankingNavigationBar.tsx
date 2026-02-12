@@ -50,7 +50,6 @@ interface BankingNavigationBarProps {
 }
 
 export function BankingNavigationBar({
-  isCollapsed,
   showNav = true,
 }: BankingNavigationBarProps) {
   return (
@@ -58,7 +57,6 @@ export function BankingNavigationBar({
       moduleIcon={Building2}
       dashboardHref="/dashboard/banking"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataTable, ColumnDef } from "@/components/ui/DataTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataTable, ColumnDef, FilterDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   PeriodSelector,
   Period as PeriodType,
@@ -38,14 +38,12 @@ import {
   X,
   Clock,
   FileText,
-  Filter,
   Download,
 } from "lucide-react";
 import {
   PAYROLL_CONTROLS,
   MOCK_ANOMALIES,
   MOCK_EXECUTIONS,
-  getCategoryCounts,
 } from "@/data/payroll-controls";
 import { PayrollAnomaly, ControlExecution } from "@/lib/types";
 
@@ -144,9 +142,12 @@ export default function PayrollControlsPage() {
   );
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [executionModalOpen, setExecutionModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-  const [filterSeverity, setFilterSeverity] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
+  const [correctionForm, setCorrectionForm] = useState({
+    h_dimanche_nuit: "",
+    h_ferie_nuit: "",
+    acompte: "",
+  });
 
   const handleRunControls = (controlIds?: string[]) => {
     const controlsToRun = controlIds || selectedControls;
@@ -261,14 +262,26 @@ export default function PayrollControlsPage() {
     setDetailModalOpen(true);
   };
 
-  const handleApplyCorrection = (anomaly: PayrollAnomaly) => {
-    if (anomaly.correction) {
+  const handleOpenCorrectionModal = (anomaly: PayrollAnomaly) => {
+    setSelectedAnomaly(anomaly);
+    setCorrectionForm({
+      h_dimanche_nuit: "",
+      h_ferie_nuit: "",
+      acompte: "",
+    });
+    setDetailModalOpen(false);
+    setCorrectionModalOpen(true);
+  };
+
+  const handleApplyCorrection = () => {
+    if (selectedAnomaly) {
       setAnomalies(
         anomalies.map((a) =>
-          a.id === anomaly.id ? { ...a, status: "corrected" } : a,
+          a.id === selectedAnomaly.id ? { ...a, status: "corrected" } : a,
         ),
       );
-      setDetailModalOpen(false);
+      setCorrectionModalOpen(false);
+      setSelectedAnomaly(null);
     }
   };
 
@@ -389,16 +402,50 @@ export default function PayrollControlsPage() {
     return labels[category] || category;
   };
 
-  const filteredAnomalies = anomalies.filter((anomaly) => {
-    if (filterSeverity !== "all" && anomaly.severity !== filterSeverity)
-      return false;
-    if (filterStatus !== "all" && anomaly.status !== filterStatus) return false;
-    if (activeTab !== "all") {
-      const control = PAYROLL_CONTROLS.find((c) => c.id === anomaly.controlId);
-      if (control && control.category !== activeTab) return false;
-    }
-    return true;
+  // Enrich anomalies with category for filtering
+  const enrichedAnomalies = anomalies.map((anomaly) => {
+    const control = PAYROLL_CONTROLS.find((c) => c.id === anomaly.controlId);
+    return {
+      ...anomaly,
+      category: control?.category || "general",
+    };
   });
+
+  const anomalyFilters: FilterDef[] = [
+    {
+      key: "severity",
+      label: "Sévérité",
+      options: [
+        { value: "all", label: "Toutes les sévérités" },
+        { value: "critical", label: "Critiques" },
+        { value: "warning", label: "Avertissements" },
+        { value: "info", label: "Informations" },
+      ],
+    },
+    {
+      key: "status",
+      label: "Statut",
+      options: [
+        { value: "all", label: "Tous les statuts" },
+        { value: "pending", label: "En attente" },
+        { value: "reviewed", label: "Révisées" },
+        { value: "corrected", label: "Corrigées" },
+        { value: "ignored", label: "Ignorées" },
+      ],
+    },
+    {
+      key: "category",
+      label: "Catégorie",
+      options: [
+        { value: "all", label: "Toutes les catégories" },
+        { value: "hours", label: "Heures" },
+        { value: "legal", label: "Légal" },
+        { value: "bonuses", label: "Primes" },
+        { value: "ijss", label: "IJSS" },
+        { value: "duplicates", label: "Doublons" },
+      ],
+    },
+  ];
 
   const anomalyColumns: ColumnDef<PayrollAnomaly>[] = [
     {
@@ -507,8 +554,6 @@ export default function PayrollControlsPage() {
     },
   ];
 
-  const categoryCounts = getCategoryCounts();
-
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -602,105 +647,20 @@ export default function PayrollControlsPage() {
                   contrôle
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Sévérité
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFilterSeverity("all")}>
-                      Toutes
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterSeverity("critical")}
-                    >
-                      Critiques
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterSeverity("warning")}
-                    >
-                      Avertissements
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterSeverity("info")}>
-                      Informations
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Statut
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                      Tous
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("pending")}
-                    >
-                      En attente
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("reviewed")}
-                    >
-                      Révisées
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("corrected")}
-                    >
-                      Corrigées
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilterStatus("ignored")}
-                    >
-                      Ignorées
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Exporter
-                </Button>
-              </div>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Exporter
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">
-                  Toutes ({anomalies.length})
-                </TabsTrigger>
-                <TabsTrigger value="hours">
-                  Heures ({categoryCounts.hours || 0})
-                </TabsTrigger>
-                <TabsTrigger value="legal">
-                  Légal ({categoryCounts.legal || 0})
-                </TabsTrigger>
-                <TabsTrigger value="bonuses">
-                  Primes ({categoryCounts.bonuses || 0})
-                </TabsTrigger>
-                <TabsTrigger value="ijss">
-                  IJSS ({categoryCounts.ijss || 0})
-                </TabsTrigger>
-                <TabsTrigger value="duplicates">
-                  Doublons ({categoryCounts.duplicates || 0})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={activeTab} className="mt-4">
-                <DataTable
-                  data={filteredAnomalies}
-                  columns={anomalyColumns}
-                  searchPlaceholder="Rechercher par employé..."
-                  searchKey="employeeName"
-                />
-              </TabsContent>
-            </Tabs>
+            <DataTable
+              data={enrichedAnomalies}
+              columns={anomalyColumns}
+              filters={anomalyFilters}
+              searchPlaceholder="Rechercher par employé..."
+              searchKey="employeeName"
+            />
           </CardContent>
         </Card>
       )}
@@ -763,7 +723,7 @@ export default function PayrollControlsPage() {
                 {selectedControls.length > 1 ? "s" : ""}
               </Badge>
             </div>
-            <div className="space-y-2 max-h-[450px] overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-112 overflow-y-auto pr-2">
               {PAYROLL_CONTROLS.map((control) => {
                 const lastRun = getControlLastRunStatus(control.id);
                 const isSelected = selectedControls.includes(control.id);
@@ -1007,12 +967,14 @@ export default function PayrollControlsPage() {
                         {selectedAnomaly.correction.description}
                       </p>
                       <Button
-                        onClick={() => handleApplyCorrection(selectedAnomaly)}
+                        onClick={() =>
+                          handleOpenCorrectionModal(selectedAnomaly)
+                        }
                         size="sm"
                         className="mt-3"
                       >
                         <Check className="mr-2 h-4 w-4" />
-                        Appliquer la Correction
+                        Corriger
                       </Button>
                     </div>
                   </div>
@@ -1072,6 +1034,102 @@ export default function PayrollControlsPage() {
               <Button variant="ghost" onClick={() => setDetailModalOpen(false)}>
                 Fermer
               </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Correction Modal */}
+      {selectedAnomaly && (
+        <Modal
+          open={correctionModalOpen}
+          onOpenChange={setCorrectionModalOpen}
+          type="form"
+          title="Corriger l'anomalie"
+          actions={{
+            secondary: {
+              label: "Annuler",
+              onClick: () => setCorrectionModalOpen(false),
+              variant: "outline",
+            },
+            primary: {
+              label: "Appliquer la correction",
+              onClick: handleApplyCorrection,
+            },
+          }}
+        >
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium">{selectedAnomaly.title}</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                {selectedAnomaly.employeeName} -{" "}
+                {selectedAnomaly.date &&
+                  new Date(selectedAnomaly.date).toLocaleDateString("fr-FR")}
+              </p>
+            </div>
+
+            {/* Description de la correction */}
+            {selectedAnomaly.correction && (
+              <div className="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800 p-3">
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  {selectedAnomaly.correction.description}
+                </p>
+              </div>
+            )}
+
+            {/* Form fields */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="h_dimanche_nuit">Heures dimanches nuit</Label>
+                <Input
+                  id="h_dimanche_nuit"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.h_dimanche_nuit}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      h_dimanche_nuit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="h_ferie_nuit">Heures férié nuit</Label>
+                <Input
+                  id="h_ferie_nuit"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.h_ferie_nuit}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      h_ferie_nuit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="acompte">Acompte (€)</Label>
+                <Input
+                  id="acompte"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={correctionForm.acompte}
+                  onChange={(e) =>
+                    setCorrectionForm({
+                      ...correctionForm,
+                      acompte: e.target.value,
+                    })
+                  }
+                />
+              </div>
             </div>
           </div>
         </Modal>

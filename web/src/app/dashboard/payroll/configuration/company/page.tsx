@@ -29,30 +29,16 @@ import {
   Pencil,
   Trash2,
   Building2,
-  DollarSign,
-  FileText,
-  Clock,
   ArrowLeftRight,
 } from "lucide-react";
 import {
   mockCompanyStructures,
-  mockCostCenters,
-  mockInternalRules,
-  mockMonthlyClosings,
   mockAccountingTransfers,
   CompanyStructure,
-  CostCenter,
-  InternalRule,
-  MonthlyClosing,
   AccountingTransfer,
 } from "@/data/payroll-company-config";
 
-type EntityType =
-  | "structure"
-  | "costCenter"
-  | "internalRule"
-  | "closing"
-  | "transfer";
+type EntityType = "structure" | "transfer";
 type ModalMode = "view" | "create" | "edit" | null;
 
 export default function CompanyConfigurationPage() {
@@ -60,11 +46,6 @@ export default function CompanyConfigurationPage() {
   const [structures, setStructures] = useState<CompanyStructure[]>(
     mockCompanyStructures,
   );
-  const [costCenters, setCostCenters] = useState<CostCenter[]>(mockCostCenters);
-  const [internalRules, setInternalRules] =
-    useState<InternalRule[]>(mockInternalRules);
-  const [closings, setClosings] =
-    useState<MonthlyClosing[]>(mockMonthlyClosings);
   const [transfers, setTransfers] = useState<AccountingTransfer[]>(
     mockAccountingTransfers,
   );
@@ -72,12 +53,7 @@ export default function CompanyConfigurationPage() {
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [entityType, setEntityType] = useState<EntityType | null>(null);
   const [selectedItem, setSelectedItem] = useState<
-    | CompanyStructure
-    | CostCenter
-    | InternalRule
-    | MonthlyClosing
-    | AccountingTransfer
-    | null
+    CompanyStructure | AccountingTransfer | null
   >(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -111,132 +87,6 @@ export default function CompanyConfigurationPage() {
       sortable: true,
       render: (item) => (
         <Badge variant={item.status === "Actif" ? "default" : "secondary"}>
-          {item.status}
-        </Badge>
-      ),
-    },
-  ];
-
-  // Columns for Cost Centers
-  const costCenterColumns: ColumnDef<CostCenter>[] = [
-    {
-      key: "code",
-      label: "Code",
-      sortable: true,
-    },
-    {
-      key: "name",
-      label: "Nom",
-      sortable: true,
-    },
-    {
-      key: "type",
-      label: "Type",
-      sortable: true,
-      render: (item) => <Badge variant="outline">{item.type}</Badge>,
-    },
-    {
-      key: "budget",
-      label: "Budget",
-      sortable: true,
-      render: (item) =>
-        item.budget ? `${item.budget.toLocaleString("fr-FR")} €` : "-",
-    },
-    {
-      key: "status",
-      label: "Statut",
-      sortable: true,
-      render: (item) => (
-        <Badge variant={item.status === "Actif" ? "default" : "secondary"}>
-          {item.status}
-        </Badge>
-      ),
-    },
-  ];
-
-  // Columns for Internal Rules
-  const internalRuleColumns: ColumnDef<InternalRule>[] = [
-    {
-      key: "code",
-      label: "Code",
-      sortable: true,
-    },
-    {
-      key: "name",
-      label: "Nom",
-      sortable: true,
-    },
-    {
-      key: "type",
-      label: "Type",
-      sortable: true,
-      render: (item) => <Badge variant="outline">{item.type}</Badge>,
-    },
-    {
-      key: "calculationBasis",
-      label: "Base de Calcul",
-      sortable: true,
-    },
-    {
-      key: "frequency",
-      label: "Fréquence",
-      sortable: true,
-    },
-    {
-      key: "status",
-      label: "Statut",
-      sortable: true,
-      render: (item) => (
-        <Badge variant={item.status === "Actif" ? "default" : "secondary"}>
-          {item.status}
-        </Badge>
-      ),
-    },
-  ];
-
-  // Columns for Monthly Closings
-  const closingColumns: ColumnDef<MonthlyClosing>[] = [
-    {
-      key: "month",
-      label: "Mois",
-      sortable: true,
-    },
-    {
-      key: "year",
-      label: "Année",
-      sortable: true,
-    },
-    {
-      key: "closingDate",
-      label: "Date de Clôture",
-      sortable: true,
-      render: (item) => new Date(item.closingDate).toLocaleDateString("fr-FR"),
-    },
-    {
-      key: "payrollAmount",
-      label: "Montant Paie",
-      sortable: true,
-      render: (item) => `${item.payrollAmount.toLocaleString("fr-FR")} €`,
-    },
-    {
-      key: "employeeCount",
-      label: "Nb Salariés",
-      sortable: true,
-    },
-    {
-      key: "status",
-      label: "Statut",
-      sortable: true,
-      render: (item) => (
-        <Badge
-          variant={
-            item.status === "Validé"
-              ? "default"
-              : item.status === "Clôturé"
-                ? "secondary"
-                : "outline"
-          }
-        >
           {item.status}
         </Badge>
       ),
@@ -290,12 +140,7 @@ export default function CompanyConfigurationPage() {
   const handleOpenModal = (
     mode: ModalMode,
     type: EntityType,
-    item?:
-      | CompanyStructure
-      | CostCenter
-      | InternalRule
-      | MonthlyClosing
-      | AccountingTransfer,
+    item?: CompanyStructure | AccountingTransfer,
   ) => {
     setModalMode(mode);
     setEntityType(type);
@@ -314,23 +159,11 @@ export default function CompanyConfigurationPage() {
     switch (type) {
       case "structure":
         return { status: "Actif", type: "établissement" };
-      case "costCenter":
-        return { status: "Actif", type: "Analytique" };
-      case "internalRule":
-        return {
-          status: "Actif",
-          type: "Prime",
-          calculationBasis: "Fixe",
-          frequency: "Mensuelle",
-          eligibleCategories: [],
-        };
-      case "closing":
-        return { status: "Ouvert", employeeCount: 0, payrollAmount: 0 };
       case "transfer":
         return {
           status: "Actif",
           transferType: "Paie",
-          automaticTransfer: true,
+          automaticTransfer: false,
         };
       default:
         return {};
@@ -354,15 +187,6 @@ export default function CompanyConfigurationPage() {
         case "structure":
           setStructures([...structures, newItem as CompanyStructure]);
           break;
-        case "costCenter":
-          setCostCenters([...costCenters, newItem as CostCenter]);
-          break;
-        case "internalRule":
-          setInternalRules([...internalRules, newItem as InternalRule]);
-          break;
-        case "closing":
-          setClosings([...closings, newItem as MonthlyClosing]);
-          break;
         case "transfer":
           setTransfers([...transfers, newItem as AccountingTransfer]);
           break;
@@ -373,27 +197,6 @@ export default function CompanyConfigurationPage() {
           setStructures(
             structures.map((s) =>
               s.id === selectedItem.id ? { ...s, ...formData } : s,
-            ),
-          );
-          break;
-        case "costCenter":
-          setCostCenters(
-            costCenters.map((c) =>
-              c.id === selectedItem.id ? { ...c, ...formData } : c,
-            ),
-          );
-          break;
-        case "internalRule":
-          setInternalRules(
-            internalRules.map((r) =>
-              r.id === selectedItem.id ? { ...r, ...formData } : r,
-            ),
-          );
-          break;
-        case "closing":
-          setClosings(
-            closings.map((cl) =>
-              cl.id === selectedItem.id ? { ...cl, ...formData } : cl,
             ),
           );
           break;
@@ -411,26 +214,12 @@ export default function CompanyConfigurationPage() {
 
   const handleDelete = (
     type: EntityType,
-    item:
-      | CompanyStructure
-      | CostCenter
-      | InternalRule
-      | MonthlyClosing
-      | AccountingTransfer,
+    item: CompanyStructure | AccountingTransfer,
   ) => {
     if (confirm(`Êtes-vous sûr de vouloir supprimer cet élément ?`)) {
       switch (type) {
         case "structure":
           setStructures(structures.filter((s) => s.id !== item.id));
-          break;
-        case "costCenter":
-          setCostCenters(costCenters.filter((c) => c.id !== item.id));
-          break;
-        case "internalRule":
-          setInternalRules(internalRules.filter((r) => r.id !== item.id));
-          break;
-        case "closing":
-          setClosings(closings.filter((cl) => cl.id !== item.id));
           break;
         case "transfer":
           setTransfers(transfers.filter((t) => t.id !== item.id));
@@ -441,12 +230,7 @@ export default function CompanyConfigurationPage() {
 
   const renderActions = (
     type: EntityType,
-    item:
-      | CompanyStructure
-      | CostCenter
-      | InternalRule
-      | MonthlyClosing
-      | AccountingTransfer,
+    item: CompanyStructure | AccountingTransfer,
   ) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -583,357 +367,6 @@ export default function CompanyConfigurationPage() {
           </>
         );
 
-      case "costCenter":
-        return (
-          <>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="code" className="text-right">
-                Code *
-              </Label>
-              <Input
-                id="code"
-                value={formData.code || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nom *
-              </Label>
-              <Input
-                id="name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Type *
-              </Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, type: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Analytique">Analytique</SelectItem>
-                  <SelectItem value="Opérationnel">Opérationnel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="budget" className="text-right">
-                Budget (€)
-              </Label>
-              <Input
-                id="budget"
-                type="number"
-                value={formData.budget || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    budget: parseFloat(e.target.value),
-                  })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Statut
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="Inactif">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        );
-
-      case "internalRule":
-        return (
-          <>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="code" className="text-right">
-                Code *
-              </Label>
-              <Input
-                id="code"
-                value={formData.code || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nom *
-              </Label>
-              <Input
-                id="name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Type *
-              </Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, type: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Prime">Prime</SelectItem>
-                  <SelectItem value="Indemnité">Indemnité</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="calculationBasis" className="text-right">
-                Base de Calcul *
-              </Label>
-              <Select
-                value={formData.calculationBasis}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, calculationBasis: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Fixe">Fixe</SelectItem>
-                  <SelectItem value="% Salaire">% Salaire</SelectItem>
-                  <SelectItem value="% Heures">% Heures</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="amount" className="text-right">
-                Montant / Pourcentage
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                value={formData.amount || formData.percentage || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    [formData.calculationBasis === "Fixe"
-                      ? "amount"
-                      : "percentage"]: parseFloat(e.target.value),
-                  })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="frequency" className="text-right">
-                Fréquence *
-              </Label>
-              <Select
-                value={formData.frequency}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, frequency: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Mensuelle">Mensuelle</SelectItem>
-                  <SelectItem value="Trimestrielle">Trimestrielle</SelectItem>
-                  <SelectItem value="Annuelle">Annuelle</SelectItem>
-                  <SelectItem value="Ponctuelle">Ponctuelle</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Statut
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="Inactif">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        );
-
-      case "closing":
-        return (
-          <>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="month" className="text-right">
-                Mois *
-              </Label>
-              <Input
-                id="month"
-                value={formData.month || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, month: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="year" className="text-right">
-                Année *
-              </Label>
-              <Input
-                id="year"
-                type="number"
-                value={formData.year || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, year: parseInt(e.target.value) })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="closingDate" className="text-right">
-                Date de Clôture *
-              </Label>
-              <Input
-                id="closingDate"
-                type="date"
-                value={formData.closingDate || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, closingDate: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="closedBy" className="text-right">
-                Clôturé par
-              </Label>
-              <Input
-                id="closedBy"
-                value={formData.closedBy || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, closedBy: e.target.value })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="payrollAmount" className="text-right">
-                Montant Paie (€)
-              </Label>
-              <Input
-                id="payrollAmount"
-                type="number"
-                value={formData.payrollAmount || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    payrollAmount: parseFloat(e.target.value),
-                  })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="employeeCount" className="text-right">
-                Nombre de Salariés
-              </Label>
-              <Input
-                id="employeeCount"
-                type="number"
-                value={formData.employeeCount || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    employeeCount: parseInt(e.target.value),
-                  })
-                }
-                disabled={isView}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Statut
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-                disabled={isView}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Ouvert">Ouvert</SelectItem>
-                  <SelectItem value="Clôturé">Clôturé</SelectItem>
-                  <SelectItem value="Validé">Validé</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        );
-
       case "transfer":
         return (
           <>
@@ -1045,10 +478,7 @@ export default function CompanyConfigurationPage() {
 
   const getModalTitle = () => {
     const entityName = {
-      structure: "Structure",
-      costCenter: "Centre de Coûts",
-      internalRule: "Règle Interne",
-      closing: "Clôture",
+      structure: "Organisme",
       transfer: "Transfert Comptable",
     }[entityType || "structure"];
 
@@ -1063,9 +493,9 @@ export default function CompanyConfigurationPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Configuration Entreprise</h1>
+        <h1 className="text-3xl font-bold">Configuration Organisme Social</h1>
         <p className="text-muted-foreground">
-          Structures, centres de coûts, règles internes et paramètres comptables
+          Organismes et paramètres comptables
         </p>
       </div>
 
@@ -1074,19 +504,7 @@ export default function CompanyConfigurationPage() {
         <TabsList>
           <TabsTrigger value="structures">
             <Building2 className="h-4 w-4 mr-2" />
-            Structures
-          </TabsTrigger>
-          <TabsTrigger value="costCenters">
-            <DollarSign className="h-4 w-4 mr-2" />
-            Centres de Coûts
-          </TabsTrigger>
-          <TabsTrigger value="internalRules">
-            <FileText className="h-4 w-4 mr-2" />
-            Règles Internes
-          </TabsTrigger>
-          <TabsTrigger value="closings">
-            <Clock className="h-4 w-4 mr-2" />
-            Clôtures
+            Organismes
           </TabsTrigger>
           <TabsTrigger value="transfers">
             <ArrowLeftRight className="h-4 w-4 mr-2" />
@@ -1098,14 +516,14 @@ export default function CompanyConfigurationPage() {
         <TabsContent value="structures" className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-semibold">Structures Entreprise</h2>
+              <h2 className="text-xl font-semibold">Organismes</h2>
               <p className="text-sm text-muted-foreground">
                 Sociétés, établissements et services
               </p>
             </div>
             <Button onClick={() => handleOpenModal("create", "structure")}>
               <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Structure
+              Nouvel Organisme
             </Button>
           </div>
           <DataTable
@@ -1115,78 +533,6 @@ export default function CompanyConfigurationPage() {
             searchPlaceholder="Rechercher..."
             actions={(item) => renderActions("structure", item)}
             onRowClick={(item) => handleOpenModal("view", "structure", item)}
-          />
-        </TabsContent>
-
-        {/* Cost Centers Tab */}
-        <TabsContent value="costCenters" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold">Centres de Coûts</h2>
-              <p className="text-sm text-muted-foreground">
-                Sections analytiques et centres opérationnels
-              </p>
-            </div>
-            <Button onClick={() => handleOpenModal("create", "costCenter")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau Centre
-            </Button>
-          </div>
-          <DataTable
-            data={costCenters}
-            columns={costCenterColumns}
-            searchKeys={["code", "name", "type"]}
-            searchPlaceholder="Rechercher..."
-            actions={(item) => renderActions("costCenter", item)}
-            onRowClick={(item) => handleOpenModal("view", "costCenter", item)}
-          />
-        </TabsContent>
-
-        {/* Internal Rules Tab */}
-        <TabsContent value="internalRules" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold">Règles Internes</h2>
-              <p className="text-sm text-muted-foreground">
-                Primes et indemnités entreprise
-              </p>
-            </div>
-            <Button onClick={() => handleOpenModal("create", "internalRule")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Règle
-            </Button>
-          </div>
-          <DataTable
-            data={internalRules}
-            columns={internalRuleColumns}
-            searchKeys={["code", "name", "type"]}
-            searchPlaceholder="Rechercher..."
-            actions={(item) => renderActions("internalRule", item)}
-            onRowClick={(item) => handleOpenModal("view", "internalRule", item)}
-          />
-        </TabsContent>
-
-        {/* Closings Tab */}
-        <TabsContent value="closings" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold">Clôtures Mensuelles</h2>
-              <p className="text-sm text-muted-foreground">
-                Gestion des périodes de paie
-              </p>
-            </div>
-            <Button onClick={() => handleOpenModal("create", "closing")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Clôture
-            </Button>
-          </div>
-          <DataTable
-            data={closings}
-            columns={closingColumns}
-            searchKeys={["month", "year"]}
-            searchPlaceholder="Rechercher..."
-            actions={(item) => renderActions("closing", item)}
-            onRowClick={(item) => handleOpenModal("view", "closing", item)}
           />
         </TabsContent>
 

@@ -50,7 +50,6 @@ interface AccountingNavigationBarProps {
 }
 
 export function AccountingNavigationBar({
-  isCollapsed,
   showNav = true,
 }: AccountingNavigationBarProps) {
   return (
@@ -58,7 +57,6 @@ export function AccountingNavigationBar({
       moduleIcon={BookOpen}
       dashboardHref="/dashboard/accounting"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

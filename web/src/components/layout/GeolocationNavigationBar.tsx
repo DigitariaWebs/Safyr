@@ -50,7 +50,6 @@ interface GeolocationNavigationBarProps {
 }
 
 export function GeolocationNavigationBar({
-  isCollapsed,
   showNav = true,
 }: GeolocationNavigationBarProps) {
   return (
@@ -58,7 +57,6 @@ export function GeolocationNavigationBar({
       moduleIcon={MapPin}
       dashboardHref="/dashboard/geolocation"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );

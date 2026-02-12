@@ -18,20 +18,14 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Link2,
-  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";
-import { AgendaProvider, useAgenda } from "@/contexts/AgendaContext";
-import {
-  LiensUtilesProvider,
-  useLiensUtiles,
-} from "@/contexts/LiensUtilesContext";
+import { AgendaProvider } from "@/contexts/AgendaContext";
+import { LiensUtilesProvider } from "@/contexts/LiensUtilesContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { AgendaModal } from "@/components/modals/AgendaModal";
 import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 interface Module {
@@ -118,8 +112,6 @@ const modules: Module[] = [
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { sidebarMode, setSidebarMode, isHidden, setIsHidden } = useSidebar();
-  const { openAgenda } = useAgenda();
-  const { openLiensUtiles } = useLiensUtiles();
 
   const isExpandedDisplay = sidebarMode === "expanded";
 
@@ -157,64 +149,18 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
                 : "items-center justify-center",
             )}
           >
-            {isExpandedDisplay ? (
-              <>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center gap-2 min-w-0"
-                  >
-                    <Image
-                      src="/favicon.png"
-                      alt="Safyr"
-                      width={32}
-                      height={32}
-                      className="transition-transform hover:scale-110 shrink-0"
-                    />
-                    <span className="font-serif text-xl font-light truncate">
-                      Safyr
-                    </span>
-                  </Link>
-                </div>
-                <div className="flex flex-col gap-2 shrink-0">
-                  <Button
-                    onClick={() => openAgenda()}
-                    size="sm"
-                    className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
-                    title="Agenda"
-                  >
-                    <CalendarDays className="h-4 w-4 text-primary" />
-                  </Button>
-                  <Button
-                    onClick={() => openLiensUtiles()}
-                    size="sm"
-                    className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
-                    title="Liens Utiles"
-                  >
-                    <Link2 className="h-4 w-4 text-primary" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="flex gap-2 items-center">
-                <Button
-                  onClick={() => openAgenda()}
-                  size="sm"
-                  className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
-                  title="Agenda"
-                >
-                  <CalendarDays className="h-4 w-4 text-primary" />
-                </Button>
-                <Button
-                  onClick={() => openLiensUtiles()}
-                  size="sm"
-                  className="h-9 w-9 p-0 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/30 hover:scale-105 active:scale-95 transition-all shadow-sm"
-                  title="Liens Utiles"
-                >
-                  <Link2 className="h-4 w-4 text-primary" />
-                </Button>
-              </div>
-            )}
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <Image
+                src="/favicon.png"
+                alt="Safyr"
+                width={32}
+                height={32}
+                className="transition-transform hover:scale-110"
+              />
+              {isExpandedDisplay && (
+                <span className="font-serif text-xl font-light">Safyr</span>
+              )}
+            </Link>
           </div>
 
           {/* Expand/Collapse Button */}

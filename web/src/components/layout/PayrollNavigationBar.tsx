@@ -16,20 +16,28 @@ import {
 const navItems: NavItem[] = [
   {
     label: "Paramétrage",
-    href: "/dashboard/payroll/configuration/legal",
+    href: "/dashboard/payroll/configuration/organisms",
     icon: Settings,
     children: [
       {
-        label: "Légal",
+        label: "Règles Organismes",
+        href: "/dashboard/payroll/configuration/organisms",
+      },
+      {
+        label: "Aides État",
+        href: "/dashboard/payroll/configuration/state-help",
+      },
+      {
+        label: "Indemnités",
+        href: "/dashboard/payroll/configuration/indemnites",
+      },
+      {
+        label: "Conventions",
         href: "/dashboard/payroll/configuration/legal",
       },
       {
-        label: "Entreprise",
+        label: "Organisme Social",
         href: "/dashboard/payroll/configuration/company",
-      },
-      {
-        label: "Salariés",
-        href: "/dashboard/payroll/configuration/employee",
       },
     ],
   },
@@ -53,6 +61,11 @@ const navItems: NavItem[] = [
     href: "/dashboard/payroll/social-report",
     icon: TrendingUp,
   },
+  {
+    label: "Archives BS",
+    href: "/dashboard/payroll/archives",
+    icon: FileSpreadsheet,
+  },
 ];
 
 interface PayrollNavigationBarProps {
@@ -61,7 +74,6 @@ interface PayrollNavigationBarProps {
 }
 
 export function PayrollNavigationBar({
-  isCollapsed,
   showNav = true,
 }: PayrollNavigationBarProps) {
   return (
@@ -69,7 +81,6 @@ export function PayrollNavigationBar({
       moduleIcon={DollarSign}
       dashboardHref="/dashboard/payroll"
       navItems={navItems}
-      isCollapsed={isCollapsed}
       showNav={showNav}
     />
   );
