@@ -8,5 +8,9 @@ export type MainCouranteEvent = {
   createdAtIso: string;
   priority: MainCourantePriority;
   status: "open" | "closed";
+  photoUri?: string | null;
+  videoUri?: string | null;
+  audioUri?: string | null;
+  audioDuration?: number; // Durée en secondes
 };
 

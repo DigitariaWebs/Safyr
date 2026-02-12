@@ -1,6 +1,8 @@
 import { FlatList, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, Screen, VideoPlayer, VoiceRecorder } from "@/components/ui";
+import { Image } from "expo-image";
+import { Ionicons } from "@expo/vector-icons";
 import { mockMainCourante } from "@/features/mainCourante/mock";
 import type { MainCouranteEvent } from "@/features/mainCourante/types";
 
@@ -50,6 +52,55 @@ export default function MainCouranteListScreen() {
               </View>
 
               <Text className="text-sm text-foreground/90">{item.description}</Text>
+
+              {/* Afficher la photo si présente */}
+              {item.photoUri && (
+                <View className="overflow-hidden rounded-xl border border-border">
+                  <Image
+                    source={{ uri: item.photoUri }}
+                    style={{ width: "100%", height: 180 }}
+                    contentFit="cover"
+                  />
+                </View>
+              )}
+
+              {/* Afficher la vidéo si présente */}
+              {item.videoUri && (
+                <VideoPlayer uri={item.videoUri} />
+              )}
+
+              {/* Afficher le message vocal si présent */}
+              {item.audioUri && (
+                <VoiceRecorder
+                  existingUri={item.audioUri}
+                />
+              )}
+
+              {/* Indicateur de média */}
+              {(item.photoUri || item.videoUri || item.audioUri) && (
+                <View className="flex-row items-center gap-2">
+                  {item.photoUri && (
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="image-outline" size={14} color="#94a3b8" />
+                      <Text className="text-xs text-muted-foreground">Photo</Text>
+                    </View>
+                  )}
+                  {item.videoUri && (
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="videocam-outline" size={14} color="#94a3b8" />
+                      <Text className="text-xs text-muted-foreground">Vidéo</Text>
+                    </View>
+                  )}
+                  {item.audioUri && (
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="mic-outline" size={14} color="#94a3b8" />
+                      <Text className="text-xs text-muted-foreground">
+                        Audio {item.audioDuration ? `(${Math.floor(item.audioDuration / 60)}:${(item.audioDuration % 60).toString().padStart(2, "0")})` : ""}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
               <View className="flex-row justify-between">
                 <Text className="text-xs text-muted-foreground">
