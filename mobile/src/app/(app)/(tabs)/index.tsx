@@ -72,6 +72,20 @@ export default function HomeDashboardScreen() {
             Mon profil
           </Button>
         </Card>
+
+        <Card className="gap-3">
+          <Text className="text-sm font-medium text-foreground">Documents</Text>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/(app)/documents")}
+            className="w-full"
+          >
+            Télécharger PDF
+          </Button>
+          <Text className="text-xs text-muted-foreground">
+            Emploi du temps et bulletins de salaire
+          </Text>
+        </Card>
       </View>
     </Screen>
   );
