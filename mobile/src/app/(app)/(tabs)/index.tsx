@@ -61,6 +61,31 @@ export default function HomeDashboardScreen() {
             - Vérifier le matériel (radio, lampe)\n- Relire les consignes du site
           </Text>
         </Card>
+
+        <Card className="gap-3">
+          <Text className="text-sm font-medium text-foreground">Compte</Text>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/(app)/profile")}
+            className="w-full"
+          >
+            Mon profil
+          </Button>
+        </Card>
+
+        <Card className="gap-3">
+          <Text className="text-sm font-medium text-foreground">Documents</Text>
+          <Button
+            variant="outline"
+            onPress={() => router.push("/(app)/documents")}
+            className="w-full"
+          >
+            Télécharger PDF
+          </Button>
+          <Text className="text-xs text-muted-foreground">
+            Emploi du temps et bulletins de salaire
+          </Text>
+        </Card>
       </View>
     </Screen>
   );
