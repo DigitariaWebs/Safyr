@@ -44,7 +44,7 @@ export function Header({
           ) : null}
         </View>
       </View>
-      {right ? <View>{right}</View> : null}
+      {right ? <View className="ml-3">{right}</View> : null}
     </View>
   );
 }

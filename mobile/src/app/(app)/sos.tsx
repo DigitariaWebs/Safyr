@@ -1,8 +1,10 @@
 import { Alert, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 
 export default function SOSScreen() {
+  const { push } = useNotifications();
   return (
     <Screen>
       <Header
@@ -27,9 +29,15 @@ export default function SOSScreen() {
           <Button
             variant="destructive"
             size="lg"
-            onPress={() =>
-              Alert.alert("Alerte envoyée (démo)", "Le poste de contrôle a été notifié.")
-            }
+            onPress={async () => {
+              await push({
+                title: "SOS déclenché",
+                message: "Une alerte a été envoyée au poste de contrôle (démo).",
+                level: "destructive",
+                source: "sos",
+              });
+              Alert.alert("Alerte envoyée (démo)", "Le poste de contrôle a été notifié.");
+            }}
           >
             SOS
           </Button>

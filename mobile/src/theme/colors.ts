@@ -1,77 +1,135 @@
 export type ColorSchemeName = "light" | "dark";
 
-/**
- * Semantic color tokens aligned with the web app.
- * Keep these names consistent (background/foreground/card/primary/etc.).
- */
-export const colors = {
-  light: {
-    background: "hsl(0 0% 100%)",
-    foreground: "hsl(220 15% 10%)",
+export interface ThemeColors {
+    // Background colors
+    background: string;
+    surface: string;
+    surfaceVariant: string;
+    muted: string;
+    card: string;
 
-    card: "hsl(0 0% 100%)",
-    cardForeground: "hsl(220 15% 10%)",
+    // Text colors
+    text: string;
+    textSecondary: string;
+    textTertiary: string;
+    foreground: string;
+    mutedForeground: string;
+    cardForeground: string;
 
-    popover: "hsl(0 0% 100%)",
-    popoverForeground: "hsl(220 15% 10%)",
+    // Primary colors
+    primary: string;
+    primaryVariant: string;
+    onPrimary: string;
+    primaryForeground: string;
 
-    primary: "hsl(188 65% 52%)",
-    primaryForeground: "hsl(220 15% 10%)",
+    // Accent colors
+    accent: string;
+    onAccent: string;
+    accentForeground: string;
 
-    secondary: "hsl(220 10% 96%)",
-    secondaryForeground: "hsl(220 15% 20%)",
+    // Status colors
+    success: string;
+    warning: string;
+    error: string;
+    info: string;
+    destructive: string;
 
-    muted: "hsl(220 10% 97%)",
-    mutedForeground: "hsl(220 8% 45%)",
+    // Border and divider
+    border: string;
+    divider: string;
 
-    accent: "hsl(188 60% 95%)",
-    accentForeground: "hsl(188 100% 30%)",
+    // Interactive states
+    disabled: string;
+    placeholder: string;
+}
 
-    destructive: "hsl(0 72% 51%)",
-    destructiveForeground: "hsl(0 0% 98%)",
+const lightColors: ThemeColors = {
+    // Background colors
+    background: "#FFFFFF",
+    surface: "#F5F5F5",
+    surfaceVariant: "#E8E8E8",
+    muted: "#F5F5F5",
+    card: "#FFFFFF",
 
-    border: "hsl(220 13% 91%)",
-    input: "hsl(220 13% 91%)",
-    ring: "hsl(188 65% 52%)",
+    // Text colors
+    text: "#1A1A1A",
+    textSecondary: "#666666",
+    textTertiary: "#999999",
+    foreground: "#1A1A1A",
+    mutedForeground: "#666666",
+    cardForeground: "#1A1A1A",
 
-    success: "hsl(142 70% 40%)",
-    warning: "hsl(38 92% 50%)",
-    info: "hsl(188 65% 52%)",
-  },
-  dark: {
-    background: "hsl(245 25% 12%)",
-    foreground: "hsl(0 0% 95%)",
+    // Primary colors
+    primary: "#007AFF",
+    primaryVariant: "#0051D5",
+    onPrimary: "#FFFFFF",
+    primaryForeground: "#FFFFFF",
 
-    card: "hsl(245 22% 16%)",
-    cardForeground: "hsl(0 0% 95%)",
+    // Accent colors
+    accent: "#FF9500",
+    onAccent: "#FFFFFF",
+    accentForeground: "#FFFFFF",
 
-    popover: "hsl(245 24% 14%)",
-    popoverForeground: "hsl(0 0% 95%)",
+    // Status colors
+    success: "#34C759",
+    warning: "#FF9500",
+    error: "#FF3B30",
+    info: "#5AC8FA",
+    destructive: "#FF3B30",
 
-    primary: "hsl(195 70% 65%)",
-    primaryForeground: "hsl(245 20% 15%)",
+    // Border and divider
+    border: "#D1D1D6",
+    divider: "#E5E5EA",
 
-    secondary: "hsl(245 18% 22%)",
-    secondaryForeground: "hsl(0 0% 98%)",
+    // Interactive states
+    disabled: "#C7C7CC",
+    placeholder: "#A0A0A0",
+};
 
-    muted: "hsl(245 16% 20%)",
-    mutedForeground: "hsl(195 10% 70%)",
+const darkColors: ThemeColors = {
+    // Background colors
+    background: "#000000",
+    surface: "#1C1C1E",
+    surfaceVariant: "#2C2C2E",
+    muted: "#2C2C2E",
+    card: "#1C1C1E",
 
-    accent: "hsl(195 50% 30%)",
-    accentForeground: "hsl(0 0% 98%)",
+    // Text colors
+    text: "#FFFFFF",
+    textSecondary: "#EBEBF5",
+    textTertiary: "#8E8E93",
+    foreground: "#FFFFFF",
+    mutedForeground: "#8E8E93",
+    cardForeground: "#FFFFFF",
 
-    destructive: "hsl(0 62% 45%)",
-    destructiveForeground: "hsl(0 0% 98%)",
+    // Primary colors
+    primary: "#0A84FF",
+    primaryVariant: "#409CFF",
+    onPrimary: "#FFFFFF",
+    primaryForeground: "#FFFFFF",
 
-    border: "hsl(245 15% 25%)",
-    input: "hsl(245 15% 25%)",
-    ring: "hsl(195 70% 65%)",
+    // Accent colors
+    accent: "#FF9F0A",
+    onAccent: "#000000",
+    accentForeground: "#000000",
 
-    success: "hsl(145 60% 45%)",
-    warning: "hsl(38 92% 55%)",
-    info: "hsl(195 70% 65%)",
-  },
-} as const;
+    // Status colors
+    success: "#30D158",
+    warning: "#FF9F0A",
+    error: "#FF453A",
+    info: "#64D2FF",
+    destructive: "#FF453A",
 
-export type ThemeColors = (typeof colors)[ColorSchemeName];
+    // Border and divider
+    border: "#38383A",
+    divider: "#48484A",
 
+    // Interactive states
+    disabled: "#48484A",
+    placeholder: "#636366",
+};
+
+export const colors: Record<ColorSchemeName, ThemeColors> = {
+    light: lightColors,
+    dark: darkColors,
+};
