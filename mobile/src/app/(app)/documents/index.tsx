@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
+import { useTheme } from "@/theme";
 
 // Imports conditionnels pour expo-file-system et expo-sharing
 let FileSystem: any = null;
@@ -306,9 +307,9 @@ export default function DocumentsScreen() {
                         disabled={loading !== null}
                       >
                         {loading === `schedule-${doc.month || "current"}-${doc.year || "current"}` ? (
-                          <ActivityIndicator size="small" />
+                          <ActivityIndicator size="small" color={colors.foreground} />
                         ) : (
-                          <Ionicons name="download-outline" size={16} />
+                          <Ionicons name="download-outline" size={16} color={colors.foreground} />
                         )}
                       </Button>
                     </View>
@@ -376,9 +377,9 @@ export default function DocumentsScreen() {
                         disabled={loading !== null}
                       >
                         {loading === `payroll-${doc.month || "current"}-${doc.year || "current"}` ? (
-                          <ActivityIndicator size="small" />
+                          <ActivityIndicator size="small" color={colors.foreground} />
                         ) : (
-                          <Ionicons name="download-outline" size={16} />
+                          <Ionicons name="download-outline" size={16} color={colors.foreground} />
                         )}
                       </Button>
                     </View>
