@@ -20,6 +20,7 @@ try {
 }
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { getSession, clearSession, type Session } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
 
@@ -181,8 +182,8 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
               {LinearGradient ? (
                 <LinearGradient
                   colors={theme.scheme === "dark" 
-                    ? [theme.colors.primary, theme.colors.primaryVariant]
-                    : [theme.colors.primary, theme.colors.primaryVariant]}
+                    ? [theme.colors.accent, theme.colors.surfaceVariant]
+                    : [theme.colors.accent, theme.colors.surfaceVariant]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -192,7 +193,14 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                   }}
                 >
                   <View className="flex-row items-center justify-between mb-4">
-                    <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    <View className="flex-row items-center gap-3">
+                      <Image
+                        source={require("../../../assets/images/Logo.png")}
+                        style={{ width: 40, height: 40 }}
+                        contentFit="contain"
+                      />
+                      <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    </View>
                     <TouchableOpacity
                       onPress={onClose}
                       style={{
@@ -221,11 +229,18 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                     paddingTop: Platform.OS === "ios" ? 60 : 40,
                     paddingBottom: 24,
                     paddingHorizontal: 20,
-                    backgroundColor: theme.colors.primary,
+                    backgroundColor: theme.colors.accent,
                   }}
                 >
                   <View className="flex-row items-center justify-between mb-4">
-                    <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    <View className="flex-row items-center gap-3">
+                      <Image
+                        source={require("../../../assets/images/Logo.png")}
+                        style={{ width: 40, height: 40 }}
+                        contentFit="contain"
+                      />
+                      <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    </View>
                     <TouchableOpacity
                       onPress={onClose}
                       style={{

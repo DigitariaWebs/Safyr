@@ -44,15 +44,11 @@ export default function TabsLayout() {
           height: Platform.OS === "ios" ? 60 + insets.bottom : 60,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, Platform.OS === "ios" ? 8 : 8),
-          shadowColor: scheme === "dark" ? colors.primary : "#000",
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: scheme === "dark" ? 0.2 : 0.1,
-          shadowRadius: scheme === "dark" ? 12 : 8,
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
           elevation: 8,
-          // Subtle glow for dark mode
-          ...(scheme === "dark" && {
-            borderTopWidth: 0.5,
-          }),
         },
       }}
     >
