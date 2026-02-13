@@ -1,10 +1,28 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme";
+import { colors as defaultColors } from "@/theme/colors";
 import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
-  const { colors, scheme } = useTheme();
+  // Use theme with fallback
+  let theme;
+  try {
+    theme = useTheme();
+  } catch (error) {
+    // Fallback if theme context is not available
+    theme = { scheme: "light" as const, colors: defaultColors.light };
+  }
+  const { colors, scheme } = theme;
+  
+  // Get safe area insets with fallback
+  let insets;
+  try {
+    insets = useSafeAreaInsets();
+  } catch (error) {
+    insets = { top: 0, bottom: 0, left: 0, right: 0 };
+  }
 
   return (
     <Tabs
@@ -23,14 +41,18 @@ export default function TabsLayout() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: Platform.OS === "ios" ? 88 : 68,
+          height: Platform.OS === "ios" ? 60 + insets.bottom : 60,
           paddingTop: 8,
-          paddingBottom: Platform.OS === "ios" ? 24 : 8,
-          shadowColor: "#000",
+          paddingBottom: Math.max(insets.bottom, Platform.OS === "ios" ? 8 : 8),
+          shadowColor: scheme === "dark" ? colors.primary : "#000",
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: scheme === "dark" ? 0.3 : 0.1,
-          shadowRadius: 8,
+          shadowOpacity: scheme === "dark" ? 0.2 : 0.1,
+          shadowRadius: scheme === "dark" ? 12 : 8,
           elevation: 8,
+          // Subtle glow for dark mode
+          ...(scheme === "dark" && {
+            borderTopWidth: 0.5,
+          }),
         },
       }}
     >

@@ -48,8 +48,8 @@ export default function NotificationsScreen() {
         <View className="gap-3">
           {items.length === 0 ? (
             <Card className="gap-2">
-              <Text className="text-base font-semibold text-foreground">Aucune notification</Text>
-              <Text className="text-sm text-muted-foreground">
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Aucune notification</Text>
+              <Text className="text-sm" style={{ color: colors.foreground }}>
                 Les alertes (géoloc, SOS, congés, etc.) apparaîtront ici.
               </Text>
               <Button
@@ -100,12 +100,12 @@ export default function NotificationsScreen() {
                 </View>
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between gap-2">
-                    <Text className="text-base font-semibold text-foreground">{n.title}</Text>
-                    <Text className="text-xs text-muted-foreground">
+                    <Text className="text-base font-semibold" style={{ color: colors.foreground }}>{n.title}</Text>
+                    <Text className="text-xs" style={{ color: colors.foreground }}>
                       {new Date(n.createdAtIso).toLocaleString()}
                     </Text>
                   </View>
-                  <Text className="mt-1 text-sm text-muted-foreground">{n.message}</Text>
+                  <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>{n.message}</Text>
                   {!n.read ? (
                     <Text className="mt-2 text-xs" style={{ color: colors.primary }}>
                       Nouveau

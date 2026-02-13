@@ -1,10 +1,22 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, useColorScheme } from "react-native";
-import Mapbox from "@rnmapbox/maps";
-import { MAPBOX_ACCESS_TOKEN, MAPBOX_THEME } from "@/constants/mapbox";
+import { StyleSheet, View, useColorScheme, Text } from "react-native";
 import * as Location from "expo-location";
 import { useTheme } from "@/theme";
 import type { WorkZone } from "@/features/geolocation/workZone";
+
+// Conditional import for Mapbox
+let Mapbox: any = null;
+let MAPBOX_ACCESS_TOKEN: string | undefined;
+let MAPBOX_THEME: { dark: string; streets: string } | undefined;
+
+try {
+    Mapbox = require("@rnmapbox/maps").default;
+    const mapboxConstants = require("@/constants/mapbox");
+    MAPBOX_ACCESS_TOKEN = mapboxConstants.MAPBOX_ACCESS_TOKEN;
+    MAPBOX_THEME = mapboxConstants.MAPBOX_THEME;
+} catch (e) {
+    console.warn("@rnmapbox/maps not available:", e);
+}
 
 interface MapViewProps {
     location: Location.LocationObject | null;
@@ -47,12 +59,26 @@ export function MapView({ location, className, zone }: MapViewProps) {
 
     // Set the access token when component mounts
     useEffect(() => {
-        try {
-            Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
-        } catch (error) {
-            console.error("Failed to set Mapbox access token:", error);
+        if (Mapbox && MAPBOX_ACCESS_TOKEN) {
+            try {
+                Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
+            } catch (error) {
+                console.error("Failed to set Mapbox access token:", error);
+            }
         }
     }, []);
+
+    // If Mapbox is not available, show fallback UI
+    if (!Mapbox || !MAPBOX_THEME) {
+        return (
+            <View className={`flex-1 overflow-hidden rounded-xl items-center justify-center bg-muted ${className}`}>
+                <Text className="text-sm text-muted-foreground text-center px-4">
+                    Carte non disponible.{"\n"}
+                    Rebuild requis pour activer Mapbox.
+                </Text>
+            </View>
+        );
+    }
 
     // Style URL based on theme
     const styleURL = colorScheme === "dark" ? MAPBOX_THEME.dark : MAPBOX_THEME.streets;

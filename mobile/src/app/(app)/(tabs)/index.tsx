@@ -1,6 +1,7 @@
-import { Switch, Text, View } from "react-native";
+import { Switch, Text, View, ScrollView, Platform } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
@@ -10,6 +11,9 @@ export default function HomeDashboardScreen() {
   const { colors } = useTheme();
   const { unreadCount } = useNotifications();
   const [inService, setInService] = useState(true);
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 24);
+
   return (
     <Screen>
       <Header
@@ -38,20 +42,29 @@ export default function HomeDashboardScreen() {
         }
       />
 
-      <View className="px-4 gap-4">
+      <ScrollView 
+        className="flex-1 px-4"
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingBottom: bottomPadding }}
+        showsVerticalScrollIndicator={true}
+      >
+        <View className="gap-4">
         <Card
           style={{
-            backgroundColor: inService ? "rgba(76, 175, 80, 0.15)" : "rgba(255, 152, 0, 0.15)",
-            borderColor: inService ? "#4CAF50" : "#FF9800",
-            borderWidth: 2,
+            borderColor: inService ? colors.success : colors.destructive,
+            borderWidth: 1.5,
+            shadowColor: inService ? colors.success : colors.destructive,
+            shadowOpacity: 0.6,
+            shadowRadius: 20,
+            elevation: 12,
           }}
         >
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-sm font-medium text-muted-foreground">Statut</Text>
+              <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Statut</Text>
               <Text
                 className="mt-1 text-xl font-bold"
-                style={{ color: inService ? "#81C784" : "#FFB74D" }}
+                style={{ color: colors.foreground }}
               >
                 {inService ? "En service" : "Hors service"}
               </Text>
@@ -60,34 +73,26 @@ export default function HomeDashboardScreen() {
               value={inService}
               onValueChange={setInService}
               trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={"#ffffff"}
+              thumbColor={colors.foreground}
             />
           </View>
-          <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
-            <Text className="text-sm font-medium text-muted-foreground">Poste actuel</Text>
-            <Text className="mt-1 text-base font-semibold text-foreground">
+          <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: inService ? colors.success : colors.destructive }}>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Poste actuel</Text>
+            <Text className="mt-1 text-base font-semibold" style={{ color: colors.foreground }}>
               Siège • Paris — Poste Accueil
             </Text>
-            <Text className="mt-1 text-sm text-muted-foreground">
+            <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
               08:00 → 16:00
             </Text>
           </View>
         </Card>
 
         <Card className="gap-4">
-          <Text className="text-base font-bold text-foreground">Actions rapides</Text>
+          <Text className="text-base font-bold" style={{ color: colors.foreground }}>Actions rapides</Text>
           <View className="flex-row gap-3">
             <Button
               onPress={() => router.push("/(app)/(tabs)/main-courante")}
               className="flex-1"
-              style={{
-                backgroundColor: "#50C878",
-                shadowColor: "#50C878",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 6,
-              }}
             >
               Main courante
             </Button>
@@ -95,14 +100,6 @@ export default function HomeDashboardScreen() {
               variant="secondary"
               onPress={() => router.push("/(app)/(tabs)/ronde")}
               className="flex-1"
-              style={{
-                backgroundColor: "#9B59B6",
-                shadowColor: "#9B59B6",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 6,
-              }}
             >
               Ronde
             </Button>
@@ -112,10 +109,6 @@ export default function HomeDashboardScreen() {
               variant="outline"
               onPress={() => router.push("/(app)/(tabs)/geolocation")}
               className="flex-1"
-              style={{
-                borderColor: "#E67E22",
-                borderWidth: 2,
-              }}
             >
               Géoloc
             </Button>
@@ -123,13 +116,6 @@ export default function HomeDashboardScreen() {
               variant="destructive"
               onPress={() => router.push("/(app)/sos")}
               className="flex-1"
-              style={{
-                shadowColor: colors.destructive,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 6,
-              }}
             >
               SOS
             </Button>
@@ -137,14 +123,14 @@ export default function HomeDashboardScreen() {
         </Card>
 
         <Card>
-          <Text className="text-sm font-medium text-foreground">Rappels</Text>
-          <Text className="mt-2 text-sm text-muted-foreground">
+          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Rappels</Text>
+          <Text className="mt-2 text-sm" style={{ color: colors.foreground }}>
             - Vérifier le matériel (radio, lampe)\n- Relire les consignes du site
           </Text>
         </Card>
 
         <Card className="gap-3">
-          <Text className="text-sm font-medium text-foreground">Compte</Text>
+          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Compte</Text>
           <Button
             variant="outline"
             onPress={() => router.push("/(app)/profile")}
@@ -155,7 +141,7 @@ export default function HomeDashboardScreen() {
         </Card>
 
         <Card className="gap-3">
-          <Text className="text-sm font-medium text-foreground">Documents</Text>
+          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Documents</Text>
           <Button
             variant="outline"
             onPress={() => router.push("/(app)/documents")}
@@ -163,11 +149,12 @@ export default function HomeDashboardScreen() {
           >
             Télécharger PDF
           </Button>
-          <Text className="text-xs text-muted-foreground">
+          <Text className="text-xs" style={{ color: colors.foreground }}>
             Emploi du temps et bulletins de salaire
           </Text>
         </Card>
-      </View>
+        </View>
+      </ScrollView>
     </Screen>
   );
 }

@@ -1,7 +1,8 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView, Pressable, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Screen, Header, Card } from "@/components/ui";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Screen, Header, Card, MenuButton } from "@/components/ui";
 import { useTheme, useThemeContext } from "@/theme";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 
@@ -37,18 +38,25 @@ export default function SettingsScreen() {
     const { colors, scheme } = useTheme();
     const { mode, setMode } = useThemeContext();
     const { unreadCount } = useNotifications();
+    const insets = useSafeAreaInsets();
+    const bottomPadding = Math.max(insets.bottom, 24);
 
     return (
         <Screen>
-            <Header title="Paramètres" subtitle="Configuration de l'application" />
+            <Header title="Paramètres" subtitle="Configuration de l'application" left={<MenuButton />} />
 
-            <ScrollView className="flex-1 px-4">
-                <View className="gap-4 pb-8">
+            <ScrollView 
+                className="flex-1 px-4"
+                style={{ backgroundColor: colors.background }}
+                contentContainerStyle={{ paddingBottom: bottomPadding }}
+                showsVerticalScrollIndicator={true}
+            >
+                <View className="gap-4">
                     {/* Account / Navigation */}
                     <View className="gap-3 mt-2">
                         <Text
                             className="text-xs font-semibold uppercase tracking-wider px-1"
-                            style={{ color: colors.mutedForeground }}
+                            style={{ color: colors.foreground }}
                         >
                             Compte & outils
                         </Text>
@@ -62,12 +70,12 @@ export default function SettingsScreen() {
                                     <View className="flex-row items-center gap-4">
                                         <View
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
-                                            style={{ backgroundColor: colors.muted }}
+                                            style={{ backgroundColor: `${colors.primary}20` }}
                                         >
                                             <Ionicons
                                                 name="person"
                                                 size={22}
-                                                color={colors.mutedForeground}
+                                                color={colors.primary}
                                             />
                                         </View>
                                         <View>
@@ -79,13 +87,13 @@ export default function SettingsScreen() {
                                             </Text>
                                             <Text
                                                 className="text-sm"
-                                                style={{ color: colors.mutedForeground }}
+                                                style={{ color: colors.foreground }}
                                             >
                                                 Informations agent & contacts
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
@@ -98,12 +106,12 @@ export default function SettingsScreen() {
                                     <View className="flex-row items-center gap-4">
                                         <View
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
-                                            style={{ backgroundColor: colors.muted }}
+                                            style={{ backgroundColor: `${colors.primary}20` }}
                                         >
                                             <Ionicons
                                                 name="notifications"
                                                 size={22}
-                                                color={colors.mutedForeground}
+                                                color={colors.primary}
                                             />
                                         </View>
                                         <View>
@@ -115,13 +123,13 @@ export default function SettingsScreen() {
                                             </Text>
                                             <Text
                                                 className="text-sm"
-                                                style={{ color: colors.mutedForeground }}
+                                                style={{ color: colors.foreground }}
                                             >
                                                 {unreadCount > 0 ? `${unreadCount} non lue(s)` : "Historique des alertes"}
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
@@ -134,12 +142,12 @@ export default function SettingsScreen() {
                                     <View className="flex-row items-center gap-4">
                                         <View
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
-                                            style={{ backgroundColor: colors.muted }}
+                                            style={{ backgroundColor: `${colors.primary}20` }}
                                         >
                                             <Ionicons
                                                 name="calendar"
                                                 size={22}
-                                                color={colors.mutedForeground}
+                                                color={colors.primary}
                                             />
                                         </View>
                                         <View>
@@ -151,13 +159,13 @@ export default function SettingsScreen() {
                                             </Text>
                                             <Text
                                                 className="text-sm"
-                                                style={{ color: colors.mutedForeground }}
+                                                style={{ color: colors.foreground }}
                                             >
                                                 Planning & heures prévues
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
@@ -170,12 +178,12 @@ export default function SettingsScreen() {
                                     <View className="flex-row items-center gap-4">
                                         <View
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
-                                            style={{ backgroundColor: colors.muted }}
+                                            style={{ backgroundColor: `${colors.primary}20` }}
                                         >
                                             <Ionicons
                                                 name="time"
                                                 size={22}
-                                                color={colors.mutedForeground}
+                                                color={colors.primary}
                                             />
                                         </View>
                                         <View>
@@ -187,16 +195,16 @@ export default function SettingsScreen() {
                                             </Text>
                                             <Text
                                                 className="text-sm"
-                                                style={{ color: colors.mutedForeground }}
+                                                style={{ color: colors.foreground }}
                                             >
                                                 Historique & demandes
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
                                 </Pressable>
 
-                                <View className="h-px" style={{ backgroundColor: colors.border }} />
+                                <View className="h-px" style={{ backgroundColor: colors.primary }} />
 
                                 <Pressable
                                     onPress={() => router.push("/(app)/payroll")}
@@ -206,12 +214,12 @@ export default function SettingsScreen() {
                                     <View className="flex-row items-center gap-4">
                                         <View
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
-                                            style={{ backgroundColor: colors.muted }}
+                                            style={{ backgroundColor: `${colors.primary}20` }}
                                         >
                                             <Ionicons
                                                 name="card"
                                                 size={22}
-                                                color={colors.mutedForeground}
+                                                color={colors.primary}
                                             />
                                         </View>
                                         <View>
@@ -223,13 +231,13 @@ export default function SettingsScreen() {
                                             </Text>
                                             <Text
                                                 className="text-sm"
-                                                style={{ color: colors.mutedForeground }}
+                                                style={{ color: colors.foreground }}
                                             >
                                                 Détails de paie
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
                                 </Pressable>
                             </View>
                         </Card>
@@ -239,7 +247,7 @@ export default function SettingsScreen() {
                     <View className="gap-3 mt-2">
                         <Text
                             className="text-xs font-semibold uppercase tracking-wider px-1"
-                            style={{ color: colors.mutedForeground }}
+                            style={{ color: colors.foreground }}
                         >
                             Apparence
                         </Text>
@@ -286,7 +294,7 @@ export default function SettingsScreen() {
                                                         </Text>
                                                         <Text
                                                             className="text-sm"
-                                                            style={{ color: colors.mutedForeground }}
+                                                            style={{ color: colors.foreground }}
                                                         >
                                                             {option.description}
                                                         </Text>
@@ -323,12 +331,12 @@ export default function SettingsScreen() {
                         <View className="flex-row items-center gap-3">
                             <View
                                 className="w-10 h-10 rounded-xl items-center justify-center"
-                                style={{ backgroundColor: colors.accent }}
+                                style={{ backgroundColor: `${colors.primary}20` }}
                             >
                                 <Ionicons
                                     name="information-circle"
                                     size={20}
-                                    color={colors.accentForeground}
+                                    color={colors.primary}
                                 />
                             </View>
                             <View className="flex-1">
@@ -340,7 +348,7 @@ export default function SettingsScreen() {
                                 </Text>
                                 <Text
                                     className="text-xs"
-                                    style={{ color: colors.mutedForeground }}
+                                    style={{ color: colors.foreground }}
                                 >
                                     {mode === "system"
                                         ? "Défini automatiquement par le système"
@@ -354,7 +362,7 @@ export default function SettingsScreen() {
                     <View className="gap-3 mt-4">
                         <Text
                             className="text-xs font-semibold uppercase tracking-wider px-1"
-                            style={{ color: colors.mutedForeground }}
+                            style={{ color: colors.foreground }}
                         >
                             À propos
                         </Text>
@@ -363,7 +371,7 @@ export default function SettingsScreen() {
                                 <View className="flex-row justify-between items-center py-2">
                                     <Text
                                         className="text-sm"
-                                        style={{ color: colors.mutedForeground }}
+                                        style={{ color: colors.foreground }}
                                     >
                                         Version
                                     </Text>
@@ -376,12 +384,12 @@ export default function SettingsScreen() {
                                 </View>
                                 <View
                                     className="h-px"
-                                    style={{ backgroundColor: colors.border }}
+                                    style={{ backgroundColor: colors.primary }}
                                 />
                                 <View className="flex-row justify-between items-center py-2">
                                     <Text
                                         className="text-sm"
-                                        style={{ color: colors.mutedForeground }}
+                                        style={{ color: colors.foreground }}
                                     >
                                         Application
                                     </Text>

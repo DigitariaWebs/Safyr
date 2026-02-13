@@ -17,8 +17,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = "@safyr/theme-mode";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    // Get system color scheme (can be null, so we default to dark for premium theme)
     const systemScheme = useColorScheme();
-    const [mode, setModeState] = useState<ThemeMode>("system");
+    const [mode, setModeState] = useState<ThemeMode>("dark"); // Force dark mode for premium theme
 
     // Load saved theme preference on mount
     useEffect(() => {
@@ -26,16 +27,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
                 setModeState(saved as ThemeMode);
             }
+        }).catch((error) => {
+            // Silently fail if AsyncStorage is not available
+            console.warn("Failed to load theme preference:", error);
         });
     }, []);
 
     // Determine the actual scheme to use
+    // Default to dark for premium Dark Blue Light theme
     const scheme: ColorSchemeName =
         mode === "system"
-            ? systemScheme === "dark"
-                ? "dark"
-                : "light"
-            : mode;
+            ? (systemScheme === "dark" ? "dark" : "dark") // Force dark
+            : mode === "light" ? "light" : "dark"; // Default to dark
 
     const setMode = (newMode: ThemeMode) => {
         setModeState(newMode);

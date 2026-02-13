@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch, Text, View } from "react-native";
+import { Switch, Text, View, ScrollView } from "react-native";
 import { Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useAgentLocation } from "@/features/geolocation/useAgentLocation";
@@ -40,32 +40,37 @@ export default function GeolocationScreen() {
     <Screen>
       <Header title="Géolocalisation" subtitle="Auto • statut & position" left={<MenuButton />} />
 
-      <View className="px-4 gap-4">
+      <ScrollView 
+        className="flex-1 px-4"
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <View className="gap-4">
         <Card className="flex-row items-center justify-between">
           <View>
-            <Text className="text-base font-semibold text-foreground">
+            <Text className="text-base font-semibold" style={{ color: colors.foreground }}>
               Géolocalisation auto
             </Text>
-            <Text className="mt-1 text-sm text-muted-foreground">
+            <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
               Active/désactive le suivi (MVP: foreground).
             </Text>
           </View>
-          <Switch
-            value={enabled}
-            onValueChange={setEnabled}
-            trackColor={{ true: colors.primary, false: colors.border }}
-            thumbColor={"#ffffff"}
-          />
+            <Switch
+              value={enabled}
+              onValueChange={setEnabled}
+              trackColor={{ true: colors.primary, false: colors.border }}
+              thumbColor={colors.foreground}
+            />
         </Card>
 
         <Card className="gap-2">
-          <Text className="text-base font-semibold text-foreground">Statut</Text>
-          <Text className="text-sm text-muted-foreground">
+          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Statut</Text>
+          <Text className="text-sm" style={{ color: colors.foreground }}>
             Permission: {permission}
           </Text>
-          {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
+          {error ? <Text className="text-sm" style={{ color: colors.destructive }}>{error}</Text> : null}
           {enabled && coords ? (
-            <Text className="text-sm text-muted-foreground">
+            <Text className="text-sm" style={{ color: colors.foreground }}>
               Zone: {monitor.outside ? "Hors zone" : "Dans la zone"} • Distance:{" "}
               {monitor.distanceMeters ? `${Math.round(monitor.distanceMeters)}m` : "—"}
             </Text>
@@ -73,29 +78,29 @@ export default function GeolocationScreen() {
         </Card>
 
         <Card className="gap-2">
-          <Text className="text-base font-semibold text-foreground">Position</Text>
+          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Position</Text>
           {coords ? (
             <>
-              <Text className="text-sm text-muted-foreground">
+              <Text className="text-sm" style={{ color: colors.foreground }}>
                 Latitude: {coords.latitude.toFixed(6)}
               </Text>
-              <Text className="text-sm text-muted-foreground">
+              <Text className="text-sm" style={{ color: colors.foreground }}>
                 Longitude: {coords.longitude.toFixed(6)}
               </Text>
-              <Text className="text-sm text-muted-foreground">
+              <Text className="text-sm" style={{ color: colors.foreground }}>
                 Précision: ±{Math.round(coords.accuracy ?? 0)}m
               </Text>
             </>
           ) : (
-            <Text className="text-sm text-muted-foreground">
+            <Text className="text-sm" style={{ color: colors.foreground }}>
               Aucune position (activez le toggle).
             </Text>
           )}
         </Card>
 
         <Card className="gap-2">
-          <Text className="text-base font-semibold text-foreground">Carte</Text>
-          <Text className="text-sm text-muted-foreground">
+          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Carte</Text>
+          <Text className="text-sm" style={{ color: colors.foreground }}>
             afficher la position.
           </Text>
           <View className="mt-2 h-64 rounded-xl border border-border overflow-hidden">
@@ -110,7 +115,8 @@ export default function GeolocationScreen() {
             )}
           </View>
         </Card>
-      </View>
+        </View>
+      </ScrollView>
     </Screen>
   );
 }

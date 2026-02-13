@@ -3,6 +3,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "r
 import { router } from "expo-router";
 import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
 import { getSession, setSession, type Session } from "@/features/auth/auth.storage";
+import { useTheme } from "@/theme";
 import {
   clearProfile,
   defaultProfileFromSession,
@@ -12,6 +13,7 @@ import {
 } from "@/features/profile/profile.storage";
 
 export default function ProfileScreen() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [session, setSessionState] = useState<Session | null>(null);
@@ -69,11 +71,6 @@ export default function ProfileScreen() {
       return;
     }
 
-    if (fullName.trim().length < 3) {
-      Alert.alert("Erreur", "Le nom complet doit contenir au moins 3 caractères");
-      return;
-    }
-
     // Validate email if provided
     if (email.trim() && !validateEmail(email.trim())) {
       Alert.alert("Erreur", "Veuillez entrer une adresse email valide");
@@ -82,14 +79,15 @@ export default function ProfileScreen() {
 
     setSaving(true);
     try {
+      // Only save email and phone, other fields are read-only
       await upsertProfile({
-        fullName: fullName.trim(),
+        fullName: fullName.trim(), // Keep existing fullName (read-only but needed for storage)
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
-        siteName: siteName.trim() || undefined,
-        badgeId: badgeId.trim() || undefined,
-        emergencyContactName: emergencyContactName.trim() || undefined,
-        emergencyContactPhone: emergencyContactPhone.trim() || undefined,
+        siteName: siteName.trim() || undefined, // Keep existing (read-only)
+        badgeId: badgeId.trim() || undefined, // Keep existing (read-only)
+        emergencyContactName: emergencyContactName.trim() || undefined, // Keep existing (read-only)
+        emergencyContactPhone: emergencyContactPhone.trim() || undefined, // Keep existing (read-only)
       });
 
       Alert.alert("Succès", "Profil mis à jour avec succès", [
@@ -188,24 +186,32 @@ export default function ProfileScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView 
+          className="flex-1 px-4" 
+          style={{ backgroundColor: colors.background }}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
           <View className="gap-4">
             <Card className="gap-4">
-              <Text className="text-base font-semibold text-foreground">Informations personnelles</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations personnelles</Text>
 
               <View className="gap-3">
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Nom complet</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom complet</Text>
                   <Input
                     value={fullName}
-                    onChangeText={setFullName}
+                    editable={false}
                     placeholder="Prénom Nom"
                     autoCapitalize="words"
+                    className="opacity-60"
                   />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le nom complet ne peut pas être modifié depuis l'application mobile
+                  </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Email</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Email *</Text>
                   <Input
                     value={email}
                     onChangeText={setEmail}
@@ -213,52 +219,86 @@ export default function ProfileScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Modifiez votre adresse email
+                  </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Téléphone</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
                   <Input
                     value={phone}
                     onChangeText={setPhone}
                     placeholder="+33 6 12 34 56 78"
                     keyboardType="phone-pad"
                   />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Modifiez votre numéro de téléphone
+                  </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Site</Text>
-                  <Input value={siteName} onChangeText={setSiteName} placeholder="Ex: Siège • Paris" />
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Site</Text>
+                  <Input 
+                    value={siteName} 
+                    editable={false}
+                    placeholder="Ex: Siège • Paris"
+                    className="opacity-60"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le site ne peut pas être modifié depuis l'application mobile
+                  </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Badge / matricule</Text>
-                  <Input value={badgeId} onChangeText={setBadgeId} placeholder="agent_001" />
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Badge / matricule</Text>
+                  <Input 
+                    value={badgeId} 
+                    editable={false}
+                    placeholder="agent_001"
+                    className="opacity-60"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le badge ne peut pas être modifié depuis l'application mobile
+                  </Text>
                 </View>
               </View>
             </Card>
 
             <Card className="gap-4">
-              <Text className="text-base font-semibold text-foreground">Contact d'urgence</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Contact d'urgence</Text>
               <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Nom</Text>
-                <Input value={emergencyContactName} onChangeText={setEmergencyContactName} placeholder="Nom du contact" />
+                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom</Text>
+                <Input 
+                  value={emergencyContactName} 
+                  editable={false}
+                  placeholder="Nom du contact"
+                  className="opacity-60"
+                />
+                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  Le contact d'urgence ne peut pas être modifié depuis l'application mobile
+                </Text>
               </View>
               <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Téléphone</Text>
+                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
                 <Input
                   value={emergencyContactPhone}
-                  onChangeText={setEmergencyContactPhone}
+                  editable={false}
                   keyboardType="phone-pad"
                   placeholder="+33 ..."
+                  className="opacity-60"
                 />
+                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  Le téléphone du contact d'urgence ne peut pas être modifié depuis l'application mobile
+                </Text>
               </View>
             </Card>
 
             <Card className="gap-4">
-              <Text className="text-base font-semibold text-foreground">Changer le mot de passe</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Changer le mot de passe</Text>
               <View className="gap-3">
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Mot de passe actuel *</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Mot de passe actuel *</Text>
                   <Input
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
@@ -268,20 +308,20 @@ export default function ProfileScreen() {
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Nouveau mot de passe *</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nouveau mot de passe *</Text>
                   <Input
                     value={newPassword}
                     onChangeText={setNewPassword}
                     placeholder="Au moins 6 caractères"
                     secureTextEntry
                   />
-                  <Text className="mt-1 text-xs text-muted-foreground">
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
                     Le mot de passe doit contenir au moins 6 caractères
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium text-foreground">Confirmer le mot de passe *</Text>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Confirmer le mot de passe *</Text>
                   <Input
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -301,17 +341,17 @@ export default function ProfileScreen() {
             </Card>
 
             <Card className="gap-2">
-              <Text className="text-base font-semibold text-foreground">Informations de compte</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations de compte</Text>
               <View className="gap-2">
                 <View className="flex-row justify-between">
-                  <Text className="text-sm text-muted-foreground">Identifiant</Text>
-                  <Text className="text-sm font-medium text-foreground">{session?.userId}</Text>
+                  <Text className="text-sm" style={{ color: colors.foreground }}>Identifiant</Text>
+                  <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{session?.userId}</Text>
                 </View>
               </View>
             </Card>
 
             <View className="gap-3 pt-2">
-              <Button onPress={handleSave} disabled={saving || fullName.trim().length < 3}>
+              <Button onPress={handleSave} disabled={saving}>
                 {saving ? "Enregistrement..." : "Enregistrer les modifications"}
               </Button>
               <Button variant="outline" onPress={onReset}>

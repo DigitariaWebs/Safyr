@@ -1,6 +1,7 @@
 import * as React from "react";
-import { TextInput, View, type TextInputProps } from "react-native";
+import { TextInput, View, type TextInputProps, Animated } from "react-native";
 import { cn } from "@/lib/cn";
+import { useTheme } from "@/theme";
 
 export type InputProps = TextInputProps & {
   className?: string;
@@ -8,28 +9,97 @@ export type InputProps = TextInputProps & {
 };
 
 export const Input = React.forwardRef<TextInput, InputProps>(
-  ({ className, containerClassName, ...props }, ref) => {
+  ({ className, containerClassName, onFocus, onBlur, ...props }, ref) => {
+    const { colors, scheme } = useTheme();
+    const [isFocused, setIsFocused] = React.useState(false);
+    const glowAnim = React.useRef(new Animated.Value(0)).current;
+    const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+    const handleFocus = (e: any) => {
+      setIsFocused(true);
+      Animated.parallel([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: false,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1.01,
+          tension: 200,
+          friction: 3,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      onFocus?.(e);
+    };
+
+    const handleBlur = (e: any) => {
+      setIsFocused(false);
+      Animated.parallel([
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 200,
+          friction: 3,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      onBlur?.(e);
+    };
+
+    const glowOpacity = glowAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, scheme === "dark" ? 0.25 : 0.1],
+    });
+
+    const borderColor = glowAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [
+        scheme === "dark" ? colors.border : colors.border,
+        colors.primary,
+      ],
+    });
+
     return (
-      <View
-        className={cn(
-          "h-11 flex-row items-center rounded-lg border border-input bg-background px-3",
-          containerClassName,
-        )}
+      <Animated.View
+        style={{
+          transform: [{ scale: scaleAnim }],
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: glowOpacity,
+          shadowRadius: 8,
+          elevation: isFocused ? 4 : 0,
+        }}
       >
-        <TextInput
-          ref={ref}
-          placeholderTextColor={"#94a3b8"}
+        <Animated.View
           className={cn(
-            "flex-1 text-base text-foreground",
-            // iOS sometimes compresses text inputs without a line height
-            "leading-5",
-            className,
+            "h-12 flex-row items-center rounded-xl border bg-background px-4",
+            containerClassName,
           )}
-          {...props}
-        />
-      </View>
+          style={{
+            borderColor,
+            borderWidth: 1.5,
+          }}
+        >
+          <TextInput
+            ref={ref}
+            placeholderTextColor={colors.placeholder}
+            className={cn(
+              "flex-1 text-base text-foreground",
+              "leading-5",
+              className,
+            )}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            {...props}
+          />
+        </Animated.View>
+      </Animated.View>
     );
   },
 );
 Input.displayName = "Input";
-

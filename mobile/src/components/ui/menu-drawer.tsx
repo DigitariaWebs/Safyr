@@ -104,56 +104,43 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
       label: "Accueil",
       route: "/(app)/(tabs)/",
       onPress: () => handleNavigate("/(app)/(tabs)/"),
-      color: "#4A90E2",
-      gradient: ["#4A90E2", "#357ABD"],
     },
     {
       icon: "list",
       label: "Main courante",
       route: "/(app)/(tabs)/main-courante",
       onPress: () => handleNavigate("/(app)/(tabs)/main-courante"),
-      color: "#50C878",
-      gradient: ["#50C878", "#3FA85F"],
     },
     {
       icon: "walk",
       label: "Ronde",
       route: "/(app)/(tabs)/ronde",
       onPress: () => handleNavigate("/(app)/(tabs)/ronde"),
-      color: "#9B59B6",
-      gradient: ["#9B59B6", "#8E44AD"],
     },
     {
       icon: "location",
       label: "Géolocalisation",
       route: "/(app)/(tabs)/geolocation",
       onPress: () => handleNavigate("/(app)/(tabs)/geolocation"),
-      color: "#E67E22",
-      gradient: ["#E67E22", "#D35400"],
     },
     {
       icon: "document-text",
       label: "Documents",
       route: "/(app)/documents",
       onPress: () => handleNavigate("/(app)/documents"),
-      color: "#3498DB",
-      gradient: ["#3498DB", "#2980B9"],
     },
     {
       icon: "person",
       label: "Mon profil",
       route: "/(app)/profile",
       onPress: () => handleNavigate("/(app)/profile"),
-      color: "#1ABC9C",
-      gradient: ["#1ABC9C", "#16A085"],
     },
     {
       icon: "warning",
       label: "SOS",
       route: "/(app)/sos",
       onPress: () => handleNavigate("/(app)/sos"),
-      color: "#E74C3C",
-      gradient: ["#E74C3C", "#C0392B"],
+      isDestructive: true,
     },
   ];
 
@@ -193,7 +180,9 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
               {/* Header with Gradient */}
               {LinearGradient ? (
                 <LinearGradient
-                  colors={["#4A90E2", "#357ABD"]}
+                  colors={theme.scheme === "dark" 
+                    ? [theme.colors.primary, theme.colors.primaryVariant]
+                    : [theme.colors.primary, theme.colors.primaryVariant]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -297,7 +286,9 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                         width: 44,
                         height: 44,
                         borderRadius: 12,
-                        backgroundColor: `${item.color}20`,
+                        backgroundColor: item.isDestructive
+                          ? `${theme.colors.destructive}20`
+                          : `${theme.colors.primary}20`,
                         alignItems: "center",
                         justifyContent: "center",
                         marginRight: 12,
@@ -306,7 +297,7 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                       <Ionicons
                         name={item.icon as any}
                         size={22}
-                        color={item.color}
+                        color={item.isDestructive ? theme.colors.destructive : theme.colors.primary}
                       />
                     </View>
                     <Text
