@@ -235,15 +235,18 @@ export default function CreateMainCouranteEventScreen() {
         }
       />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
+      <ScrollView 
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+        style={{ backgroundColor: colors.background }}
+      >
         <Card className="gap-4">
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Titre</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Titre</Text>
             <Input value={title} onChangeText={setTitle} placeholder="Ex: Ronde effectuée" />
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Site</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Site</Text>
             <Input
               value={siteName}
               onChangeText={setSiteName}
@@ -252,7 +255,7 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Priorité</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Priorité</Text>
             <View className="flex-row gap-2">
               <PriorityOption
                 label="Info"
@@ -276,7 +279,7 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Description</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Description</Text>
             <Input
               value={description}
               onChangeText={setDescription}
@@ -289,15 +292,15 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium text-foreground">Média (Photo / Vidéo)</Text>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Média (Photo / Vidéo)</Text>
             <View className="flex-row gap-2">
               <Button variant="outline" onPress={onAddMedia} className="flex-1">
-                <Ionicons name="camera-outline" size={18} />
-                <Text className="ml-2">Ajouter un média</Text>
+                <Ionicons name="camera-outline" size={18} color={colors.foreground} />
+                <Text className="ml-2" style={{ color: colors.foreground }}>Ajouter un média</Text>
               </Button>
               <Button variant="primary" onPress={onRecordVideo} className="flex-1">
-                <Ionicons name="videocam" size={18} />
-                <Text className="ml-2">Enregistrer vidéo</Text>
+                <Ionicons name="videocam" size={18} color={colors.primaryForeground} />
+                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer vidéo</Text>
               </Button>
               {(photoUri || videoUri) && (
                 <Button
@@ -337,13 +340,13 @@ export default function CreateMainCouranteEventScreen() {
               </View>
             ) : null}
 
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-xs" style={{ color: colors.mutedForeground }}>
               MVP: média stocké localement (démo). Étape suivante: upload backend.
             </Text>
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium text-foreground">Message vocal</Text>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Message vocal</Text>
             <VoiceRecorder
               onRecordingComplete={(uri, duration) => {
                 setAudioUri(uri);

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Pressable, Text, type PressableProps, Animated } from "react-native";
+import { Pressable, Text, View, type PressableProps, Animated } from "react-native";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
 
@@ -153,6 +153,9 @@ export function Button({
     outputRange: [scheme === "dark" ? 0.3 : 0.1, scheme === "dark" ? 0.6 : 0.2],
   });
 
+  // Check if children is a simple string
+  const isString = typeof children === "string";
+
   return (
     <Animated.View
       style={{
@@ -162,39 +165,62 @@ export function Button({
         shadowOpacity: isPrimary ? glowOpacity : (variant === "outline" || variant === "ghost" ? buttonGlowOpacity : 0),
         shadowRadius: isPrimary ? 20 : (variant === "outline" || variant === "ghost" ? 16 : 0),
         elevation: isPrimary ? 12 : (variant === "outline" || variant === "ghost" ? 8 : 0),
+        transform: [{ scale: scaleAnim }],
       }}
     >
-      <Animated.View
+      <Pressable
+        accessibilityRole="button"
+        disabled={disabled}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        className={cn(
+          "items-center justify-center flex-row",
+          v.container,
+          s.container,
+          disabled ? "opacity-50" : "",
+          className,
+        )}
         style={{
-          // Scale animation (native driver)
-          transform: [{ scale: scaleAnim }],
+          opacity: disabled ? 0.5 : 1,
         }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        {...props}
       >
-        <Pressable
-          accessibilityRole="button"
-          disabled={disabled}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          className={cn(
-            "items-center justify-center",
-            v.container,
-            s.container,
-            disabled ? "opacity-50" : "",
-            className,
+          {isString ? (
+            <Text 
+              className={cn("font-semibold", s.text, textClassName)}
+              style={{ color: getTextColor() }}
+            >
+              {children}
+            </Text>
+          ) : (
+            <View className="flex-row items-center justify-center">
+              {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
+                  // Check if it's a Text component by checking the component name
+                  const childType = child.type as any;
+                  const isTextComponent = 
+                    childType === Text ||
+                    (childType?.displayName && childType.displayName.includes("Text")) ||
+                    (typeof childType === "function" && (childType.name === "Text" || childType.displayName === "Text"));
+                  
+                  if (isTextComponent) {
+                    const childProps = child.props as any;
+                    return React.cloneElement(child as React.ReactElement<any>, {
+                      key: `text-${index}`,
+                      style: [
+                        { color: getTextColor() },
+                        childProps.style,
+                      ],
+                      className: cn("font-semibold", s.text, textClassName, childProps.className),
+                    });
+                  }
+                }
+                return <React.Fragment key={`child-${index}`}>{child}</React.Fragment>;
+              })}
+            </View>
           )}
-          style={{
-            opacity: disabled ? 0.5 : 1,
-          }}
-          {...props}
-        >
-          <Text 
-            className={cn("font-semibold", s.text, textClassName)}
-            style={{ color: getTextColor() }}
-          >
-            {children}
-          </Text>
         </Pressable>
-      </Animated.View>
     </Animated.View>
   );
 }
