@@ -86,10 +86,11 @@ export function Button({
   const glowAnim = React.useRef(new Animated.Value(0)).current;
 
   const handlePressIn = () => {
+    // Use non-native driver for all animations since shadowOpacity requires it
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 0.96,
-        useNativeDriver: true,
+        useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
         tension: 300,
         friction: 10,
       }),
@@ -102,10 +103,11 @@ export function Button({
   };
 
   const handlePressOut = () => {
+    // Use non-native driver for all animations since shadowOpacity requires it
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
-        useNativeDriver: true,
+        useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
         tension: 300,
         friction: 10,
       }),
@@ -154,7 +156,7 @@ export function Button({
   return (
     <Animated.View
       style={{
-        transform: [{ scale: scaleAnim }],
+        // Shadow/glow animation (non-native driver)
         shadowColor: isPrimary ? colors.primary : (variant === "outline" || variant === "ghost" ? colors.primary : "transparent"),
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: isPrimary ? glowOpacity : (variant === "outline" || variant === "ghost" ? buttonGlowOpacity : 0),
@@ -162,30 +164,37 @@ export function Button({
         elevation: isPrimary ? 12 : (variant === "outline" || variant === "ghost" ? 8 : 0),
       }}
     >
-      <Pressable
-        accessibilityRole="button"
-        disabled={disabled}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        className={cn(
-          "items-center justify-center",
-          v.container,
-          s.container,
-          disabled ? "opacity-50" : "",
-          className,
-        )}
+      <Animated.View
         style={{
-          opacity: disabled ? 0.5 : 1,
+          // Scale animation (native driver)
+          transform: [{ scale: scaleAnim }],
         }}
-        {...props}
       >
-        <Text 
-          className={cn("font-semibold", s.text, textClassName)}
-          style={{ color: getTextColor() }}
+        <Pressable
+          accessibilityRole="button"
+          disabled={disabled}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          className={cn(
+            "items-center justify-center",
+            v.container,
+            s.container,
+            disabled ? "opacity-50" : "",
+            className,
+          )}
+          style={{
+            opacity: disabled ? 0.5 : 1,
+          }}
+          {...props}
         >
-          {children}
-        </Text>
-      </Pressable>
+          <Text 
+            className={cn("font-semibold", s.text, textClassName)}
+            style={{ color: getTextColor() }}
+          >
+            {children}
+          </Text>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 }

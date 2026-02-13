@@ -17,6 +17,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
 
     const handleFocus = (e: any) => {
       setIsFocused(true);
+      // Use non-native driver for all animations since shadowOpacity requires it
       Animated.parallel([
         Animated.timing(glowAnim, {
           toValue: 1,
@@ -27,7 +28,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
           toValue: 1.01,
           tension: 200,
           friction: 3,
-          useNativeDriver: true,
+          useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
         }),
       ]).start();
       onFocus?.(e);
@@ -35,6 +36,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
 
     const handleBlur = (e: any) => {
       setIsFocused(false);
+      // Use non-native driver for all animations since shadowOpacity requires it
       Animated.parallel([
         Animated.timing(glowAnim, {
           toValue: 0,
@@ -45,7 +47,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
           toValue: 1,
           tension: 200,
           friction: 3,
-          useNativeDriver: true,
+          useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
         }),
       ]).start();
       onBlur?.(e);

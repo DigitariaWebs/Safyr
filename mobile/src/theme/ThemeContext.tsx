@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Default to dark for premium Dark Blue Light theme
     const scheme: ColorSchemeName =
         mode === "system"
-            ? (systemScheme === "dark" ? "dark" : "dark") // Force dark
+            ? (systemScheme === "dark" ? "dark" : "dark") // Always use dark for system
             : mode === "light" ? "light" : "dark"; // Default to dark
 
     const setMode = (newMode: ThemeMode) => {

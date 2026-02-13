@@ -11,8 +11,8 @@ export default function TabsLayout() {
   try {
     theme = useTheme();
   } catch (error) {
-    // Fallback if theme context is not available
-    theme = { scheme: "light" as const, colors: defaultColors.light };
+    // Fallback if theme context is not available - default to dark
+    theme = { scheme: "dark" as const, colors: defaultColors.dark };
   }
   const { colors, scheme } = theme;
   
