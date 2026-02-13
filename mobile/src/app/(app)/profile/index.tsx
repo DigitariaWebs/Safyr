@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Input, Screen } from "@/components/ui";
+import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
 import { getSession, setSession, type Session } from "@/features/auth/auth.storage";
 
 export default function ProfileScreen() {
@@ -136,7 +136,8 @@ export default function ProfileScreen() {
       <Header
         title="Mon profil"
         subtitle="Informations personnelles"
-        left={
+        left={<MenuButton />}
+        right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             Retour
           </Button>

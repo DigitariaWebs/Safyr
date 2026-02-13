@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Switch, Text, View } from "react-native";
-import { Card, Header, Screen } from "@/components/ui";
+import { Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useAgentLocation } from "@/features/geolocation/useAgentLocation";
 
@@ -13,7 +13,7 @@ export default function GeolocationScreen() {
 
   return (
     <Screen>
-      <Header title="Géolocalisation" subtitle="Auto • statut & position" />
+      <Header title="Géolocalisation" subtitle="Auto • statut & position" left={<MenuButton />} />
 
       <View className="px-4 gap-4">
         <Card className="flex-row items-center justify-between">

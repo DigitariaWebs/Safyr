@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Alert, ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
 
 // Imports conditionnels pour expo-file-system et expo-sharing
@@ -233,7 +233,8 @@ export default function DocumentsScreen() {
       <Header
         title="Mes documents"
         subtitle="Téléchargements PDF"
-        left={
+        left={<MenuButton />}
+        right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             Retour
           </Button>

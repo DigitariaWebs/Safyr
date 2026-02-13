@@ -1,6 +1,6 @@
 import { Switch, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 
@@ -9,7 +9,7 @@ export default function HomeDashboardScreen() {
   const [inService, setInService] = useState(true);
   return (
     <Screen>
-      <Header title="Accueil agent" subtitle="Poste & statut" />
+      <Header title="Accueil agent" subtitle="Poste & statut" left={<MenuButton />} />
 
       <View className="px-4 gap-4">
         <Card>

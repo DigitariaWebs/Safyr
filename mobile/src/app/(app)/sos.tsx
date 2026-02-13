@@ -1,6 +1,6 @@
 import { Alert, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 
 export default function SOSScreen() {
   return (
@@ -8,6 +8,7 @@ export default function SOSScreen() {
       <Header
         title="SOS"
         subtitle="Alerte & assistance (MVP)"
+        left={<MenuButton />}
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             Fermer

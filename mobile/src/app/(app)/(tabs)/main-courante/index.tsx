@@ -1,6 +1,6 @@
 import { FlatList, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Screen, VideoPlayer, VoiceRecorder } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen, VideoPlayer, VoiceRecorder } from "@/components/ui";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { mockMainCourante } from "@/features/mainCourante/mock";
@@ -28,6 +28,7 @@ export default function MainCouranteListScreen() {
       <Header
         title="Main Courante"
         subtitle="Événements & compte-rendus"
+        left={<MenuButton />}
         right={<Button size="sm" onPress={() => router.push("/(app)/main-courante/new")}>+ Nouveau</Button>}
       />
 

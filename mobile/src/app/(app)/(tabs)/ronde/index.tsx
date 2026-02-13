@@ -1,10 +1,10 @@
 import { Text, View } from "react-native";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 
 export default function RondeScreen() {
   return (
     <Screen>
-      <Header title="Ronde" subtitle="Suivi des rondes (MVP)" />
+      <Header title="Ronde" subtitle="Suivi des rondes (MVP)" left={<MenuButton />} />
 
       <View className="px-4 gap-4">
         <Card className="gap-3">
