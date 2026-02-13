@@ -1,16 +1,30 @@
 import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Card, Header, Input, Screen } from "@/components/ui";
+import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
 import { getSession, setSession, type Session } from "@/features/auth/auth.storage";
+import { useTheme } from "@/theme";
+import {
+  clearProfile,
+  defaultProfileFromSession,
+  getProfile,
+  upsertProfile,
+  type AgentProfile,
+} from "@/features/profile/profile.storage";
 
 export default function ProfileScreen() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [session, setSessionState] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<AgentProfile | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [siteName, setSiteName] = useState("");
+  const [badgeId, setBadgeId] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,13 +39,17 @@ export default function ProfileScreen() {
       const currentSession = await getSession();
       if (currentSession) {
         setSessionState(currentSession);
-        setFullName(currentSession.fullName);
-        // Email and phone would come from a user profile API in production
-        // For now, we'll use placeholder or empty values
-        setEmail("");
-        setPhone("");
+        const stored = await getProfile();
+        const base = stored ?? { ...(defaultProfileFromSession(currentSession) as any), updatedAtIso: "" };
+        setProfile(stored);
+        setFullName(base.fullName ?? currentSession.fullName);
+        setEmail(base.email ?? "");
+        setPhone(base.phone ?? "");
+        setSiteName(base.siteName ?? "");
+        setBadgeId(base.badgeId ?? "");
+        setEmergencyContactName(base.emergencyContactName ?? "");
+        setEmergencyContactPhone(base.emergencyContactPhone ?? "");
       } else {
-        // No session, redirect to login
         router.replace("/(auth)/login");
       }
     } catch (error) {
@@ -61,11 +79,16 @@ export default function ProfileScreen() {
 
     setSaving(true);
     try {
-      // In production, you would update email/phone via API
-      // await updateUserProfile({ email: email.trim(), phone: phone.trim() });
-
-      // For MVP, we just show success (actual API call would be here)
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Only save email and phone, other fields are read-only
+      await upsertProfile({
+        fullName: fullName.trim(), // Keep existing fullName (read-only but needed for storage)
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        siteName: siteName.trim() || undefined, // Keep existing (read-only)
+        badgeId: badgeId.trim() || undefined, // Keep existing (read-only)
+        emergencyContactName: emergencyContactName.trim() || undefined, // Keep existing (read-only)
+        emergencyContactPhone: emergencyContactPhone.trim() || undefined, // Keep existing (read-only)
+      });
 
       Alert.alert("Succès", "Profil mis à jour avec succès", [
         {
@@ -123,10 +146,25 @@ export default function ProfileScreen() {
     }
   }
 
+  async function onReset() {
+    Alert.alert("Réinitialiser", "Supprimer le profil local et repartir du profil par défaut ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Confirmer",
+        style: "destructive",
+        onPress: async () => {
+          await clearProfile();
+          Alert.alert("OK", "Profil local supprimé. Rouvrez l'écran pour recharger le défaut.");
+          router.back();
+        },
+      },
+    ]);
+  }
+
   if (loading) {
     return (
       <Screen>
-        <Header title="Profil" subtitle="Chargement..." />
+        <Header title="Profil" subtitle="Chargement..." left={<MenuButton />} />
       </Screen>
     );
   }
@@ -135,8 +173,9 @@ export default function ProfileScreen() {
     <Screen>
       <Header
         title="Mon profil"
-        subtitle="Informations personnelles"
-        left={
+        subtitle={profile ? "Synchronisé (local)" : "Par défaut (démo)"}
+        left={<MenuButton />}
+        right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             Retour
           </Button>
@@ -147,119 +186,181 @@ export default function ProfileScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView 
+          className="flex-1 px-4" 
+          style={{ backgroundColor: colors.background }}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
           <View className="gap-4">
             <Card className="gap-4">
-            <Text className="text-base font-semibold text-foreground">Informations personnelles</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations personnelles</Text>
 
-            <View className="gap-3">
+              <View className="gap-3">
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom complet</Text>
+                  <Input
+                    value={fullName}
+                    editable={false}
+                    placeholder="Prénom Nom"
+                    autoCapitalize="words"
+                    className="opacity-60"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le nom complet ne peut pas être modifié depuis l'application mobile
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Email *</Text>
+                  <Input
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="email@exemple.com"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Modifiez votre adresse email
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
+                  <Input
+                    value={phone}
+                    onChangeText={setPhone}
+                    placeholder="+33 6 12 34 56 78"
+                    keyboardType="phone-pad"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Modifiez votre numéro de téléphone
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Site</Text>
+                  <Input 
+                    value={siteName} 
+                    editable={false}
+                    placeholder="Ex: Siège • Paris"
+                    className="opacity-60"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le site ne peut pas être modifié depuis l'application mobile
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Badge / matricule</Text>
+                  <Input 
+                    value={badgeId} 
+                    editable={false}
+                    placeholder="agent_001"
+                    className="opacity-60"
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le badge ne peut pas être modifié depuis l'application mobile
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
+            <Card className="gap-4">
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Contact d'urgence</Text>
               <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Nom complet</Text>
-                <Input
-                  value={fullName}
-                  placeholder="Prénom Nom"
-                  autoCapitalize="words"
+                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom</Text>
+                <Input 
+                  value={emergencyContactName} 
                   editable={false}
+                  placeholder="Nom du contact"
                   className="opacity-60"
                 />
-                <Text className="mt-1 text-xs text-muted-foreground">
-                  Le nom complet ne peut pas être modifié depuis l'application mobile
+                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  Le contact d'urgence ne peut pas être modifié depuis l'application mobile
                 </Text>
               </View>
-
               <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Email *</Text>
+                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
                 <Input
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="email@exemple.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-                <Text className="mt-1 text-xs text-muted-foreground">
-                  Modifiez votre adresse email
-                </Text>
-              </View>
-
-              <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Téléphone</Text>
-                <Input
-                  value={phone}
-                  onChangeText={setPhone}
-                  placeholder="+33 6 12 34 56 78"
+                  value={emergencyContactPhone}
+                  editable={false}
                   keyboardType="phone-pad"
+                  placeholder="+33 ..."
+                  className="opacity-60"
                 />
-                <Text className="mt-1 text-xs text-muted-foreground">
-                  Modifiez votre numéro de téléphone
+                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  Le téléphone du contact d'urgence ne peut pas être modifié depuis l'application mobile
                 </Text>
               </View>
-            </View>
-          </Card>
+            </Card>
 
-          <Card className="gap-4">
-            <Text className="text-base font-semibold text-foreground">Changer le mot de passe</Text>
-            <View className="gap-3">
-              <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Mot de passe actuel *</Text>
-                <Input
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  placeholder="••••••••"
-                  secureTextEntry
-                />
+            <Card className="gap-4">
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Changer le mot de passe</Text>
+              <View className="gap-3">
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Mot de passe actuel *</Text>
+                  <Input
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                    placeholder="••••••••"
+                    secureTextEntry
+                  />
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nouveau mot de passe *</Text>
+                  <Input
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    placeholder="Au moins 6 caractères"
+                    secureTextEntry
+                  />
+                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                    Le mot de passe doit contenir au moins 6 caractères
+                  </Text>
+                </View>
+
+                <View>
+                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Confirmer le mot de passe *</Text>
+                  <Input
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder="Répétez le nouveau mot de passe"
+                    secureTextEntry
+                  />
+                </View>
+
+                <Button
+                  onPress={handleChangePassword}
+                  disabled={changingPassword || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()}
+                  variant="outline"
+                >
+                  {changingPassword ? "Modification..." : "Modifier le mot de passe"}
+                </Button>
               </View>
+            </Card>
 
-              <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Nouveau mot de passe *</Text>
-                <Input
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder="Au moins 6 caractères"
-                  secureTextEntry
-                />
-                <Text className="mt-1 text-xs text-muted-foreground">
-                  Le mot de passe doit contenir au moins 6 caractères
-                </Text>
+            <Card className="gap-2">
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations de compte</Text>
+              <View className="gap-2">
+                <View className="flex-row justify-between">
+                  <Text className="text-sm" style={{ color: colors.foreground }}>Identifiant</Text>
+                  <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{session?.userId}</Text>
+                </View>
               </View>
+            </Card>
 
-              <View>
-                <Text className="mb-2 text-sm font-medium text-foreground">Confirmer le mot de passe *</Text>
-                <Input
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Répétez le nouveau mot de passe"
-                  secureTextEntry
-                />
-              </View>
-
-              <Button
-                onPress={handleChangePassword}
-                disabled={changingPassword || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()}
-                variant="outline"
-              >
-                {changingPassword ? "Modification..." : "Modifier le mot de passe"}
+            <View className="gap-3 pt-2">
+              <Button onPress={handleSave} disabled={saving}>
+                {saving ? "Enregistrement..." : "Enregistrer les modifications"}
+              </Button>
+              <Button variant="outline" onPress={onReset}>
+                Réinitialiser le profil local
+              </Button>
+              <Button variant="outline" onPress={() => router.back()}>
+                Annuler
               </Button>
             </View>
-          </Card>
-
-          <Card className="gap-2">
-            <Text className="text-base font-semibold text-foreground">Informations de compte</Text>
-            <View className="gap-2">
-              <View className="flex-row justify-between">
-                <Text className="text-sm text-muted-foreground">Identifiant</Text>
-                <Text className="text-sm font-medium text-foreground">{session?.userId}</Text>
-              </View>
-            </View>
-          </Card>
-
-          <View className="gap-3 pt-2">
-            <Button onPress={handleSave} disabled={saving}>
-              {saving ? "Enregistrement..." : "Enregistrer les modifications"}
-            </Button>
-            <Button variant="outline" onPress={() => router.back()}>
-              Annuler
-            </Button>
-          </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

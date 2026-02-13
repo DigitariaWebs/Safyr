@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Alert, ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Header, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
 
 // Imports conditionnels pour expo-file-system et expo-sharing
@@ -33,6 +33,7 @@ interface DocumentHistory {
 }
 
 export default function DocumentsScreen() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState<string | null>(null);
   const [session, setSession] = useState<{ userId: string; fullName: string } | null>(null);
   const [scheduleHistory, setScheduleHistory] = useState<DocumentHistory[]>([]);
@@ -233,22 +234,27 @@ export default function DocumentsScreen() {
       <Header
         title="Mes documents"
         subtitle="Téléchargements PDF"
-        left={
+        left={<MenuButton />}
+        right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             Retour
           </Button>
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView 
+        className="flex-1 px-4" 
+        style={{ backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <View className="gap-4">
           {/* Section Emploi du temps */}
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="calendar-outline" size={24} color="#16a34a" />
+              <Ionicons name="calendar-outline" size={24} color={colors.primary} />
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-foreground">Emploi du temps</Text>
-                <Text className="mt-1 text-sm text-muted-foreground">
+                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Emploi du temps</Text>
+                <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
                   Téléchargez votre emploi du temps au format PDF
                 </Text>
               </View>
@@ -261,11 +267,11 @@ export default function DocumentsScreen() {
               className="w-full"
             >
               {loading?.startsWith("schedule") ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <Ionicons name="download-outline" size={20} color="#fff" />
-                  <Text className="ml-2 text-white">Télécharger l'emploi du temps actuel</Text>
+                  <Ionicons name="download-outline" size={20} color={colors.primaryForeground} />
+                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger l'emploi du temps actuel</Text>
                 </>
               )}
             </Button>
@@ -273,19 +279,23 @@ export default function DocumentsScreen() {
             {/* Historique emploi du temps */}
             {scheduleHistory.length > 0 && (
               <View className="mt-4 gap-2">
-                <Text className="text-sm font-medium text-foreground">Historique</Text>
+                <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Historique</Text>
                 <View className="gap-2">
                   {scheduleHistory.map((doc) => (
                     <View
                       key={doc.id}
-                      className="flex-row items-center justify-between rounded-lg border border-border bg-card p-3"
+                      className="flex-row items-center justify-between rounded-lg border p-3"
+                      style={{ 
+                        borderColor: colors.primary,
+                        backgroundColor: colors.surface,
+                      }}
                     >
                       <View className="flex-1">
-                        <Text className="text-sm font-medium text-foreground">{doc.title}</Text>
-                        <Text className="mt-1 text-xs text-muted-foreground">
+                        <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
+                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
                           {doc.month} {doc.year}
                         </Text>
-                        <Text className="mt-1 text-xs text-muted-foreground">
+                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
                           Téléchargé le {doc.downloadedAt}
                         </Text>
                       </View>
@@ -311,10 +321,10 @@ export default function DocumentsScreen() {
           {/* Section Bulletins de salaire */}
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="document-text-outline" size={24} color="#16a34a" />
+              <Ionicons name="document-text-outline" size={24} color={colors.primary} />
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-foreground">Bulletins de salaire</Text>
-                <Text className="mt-1 text-sm text-muted-foreground">
+                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Bulletins de salaire</Text>
+                <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
                   Téléchargez vos bulletins de salaire (archives BS) au format PDF
                 </Text>
               </View>
@@ -327,11 +337,11 @@ export default function DocumentsScreen() {
               className="w-full"
             >
               {loading?.startsWith("payroll") ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <Ionicons name="download-outline" size={20} color="#fff" />
-                  <Text className="ml-2 text-white">Télécharger le bulletin de salaire actuel</Text>
+                  <Ionicons name="download-outline" size={20} color={colors.primaryForeground} />
+                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger le bulletin de salaire actuel</Text>
                 </>
               )}
             </Button>
@@ -339,19 +349,23 @@ export default function DocumentsScreen() {
             {/* Historique bulletins de salaire */}
             {payrollHistory.length > 0 && (
               <View className="mt-4 gap-2">
-                <Text className="text-sm font-medium text-foreground">Historique</Text>
+                <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Historique</Text>
                 <View className="gap-2">
                   {payrollHistory.map((doc) => (
                     <View
                       key={doc.id}
-                      className="flex-row items-center justify-between rounded-lg border border-border bg-card p-3"
+                      className="flex-row items-center justify-between rounded-lg border p-3"
+                      style={{ 
+                        borderColor: colors.primary,
+                        backgroundColor: colors.surface,
+                      }}
                     >
                       <View className="flex-1">
-                        <Text className="text-sm font-medium text-foreground">{doc.title}</Text>
-                        <Text className="mt-1 text-xs text-muted-foreground">
+                        <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
+                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
                           {doc.month} {doc.year}
                         </Text>
-                        <Text className="mt-1 text-xs text-muted-foreground">
+                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
                           Téléchargé le {doc.downloadedAt}
                         </Text>
                       </View>
@@ -375,8 +389,8 @@ export default function DocumentsScreen() {
           </Card>
 
           <Card className="gap-2">
-            <Text className="text-sm font-medium text-foreground">Information</Text>
-            <Text className="text-xs text-muted-foreground">
+            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
+            <Text className="text-xs" style={{ color: colors.foreground }}>
               Les documents sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil. L'historique conserve les documents que vous avez téléchargés.
             </Text>
           </Card>

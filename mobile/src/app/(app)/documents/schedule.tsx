@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
+import { useTheme } from "@/theme";
 
 // Imports conditionnels pour expo-file-system et expo-sharing
 let FileSystem: any = null;
@@ -32,6 +33,7 @@ interface ScheduleDocument {
 }
 
 export default function ScheduleScreen() {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState<string | null>(null);
   const [session, setSession] = useState<{ userId: string; fullName: string } | null>(null);
 
@@ -179,10 +181,10 @@ export default function ScheduleScreen() {
         <View className="gap-4">
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="calendar-outline" size={24} color="#16a34a" />
-              <Text className="text-lg font-semibold text-foreground">Mes emplois du temps</Text>
+              <Ionicons name="calendar-outline" size={24} color={colors.primary} />
+              <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Mes emplois du temps</Text>
             </View>
-            <Text className="text-sm text-muted-foreground">
+            <Text className="text-sm" style={{ color: colors.foreground }}>
               Téléchargez votre emploi du temps au format PDF
             </Text>
 
@@ -191,8 +193,8 @@ export default function ScheduleScreen() {
                 <View key={doc.id} className="gap-2">
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1">
-                      <Text className="text-base font-medium text-foreground">{doc.title}</Text>
-                      <Text className="mt-1 text-sm text-muted-foreground">{doc.description}</Text>
+                      <Text className="text-base font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
+                      <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>{doc.description}</Text>
                     </View>
                     <Button
                       variant="outline"
@@ -216,7 +218,7 @@ export default function ScheduleScreen() {
           </Card>
 
           <Card className="gap-2">
-            <Text className="text-sm font-medium text-foreground">Information</Text>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
             <Text className="text-xs text-muted-foreground">
               Les emplois du temps sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil.
             </Text>

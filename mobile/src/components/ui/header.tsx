@@ -1,6 +1,8 @@
 import * as React from "react";
-import { Text, View, type ViewProps } from "react-native";
+import { Text, View, type ViewProps, Platform, Animated } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@/lib/cn";
+import { useTheme } from "@/theme";
 
 export type HeaderProps = ViewProps & {
   title: string;
@@ -18,22 +20,70 @@ export function Header({
   className,
   ...props
 }: HeaderProps) {
+  const insets = useSafeAreaInsets();
+  const { colors, scheme } = useTheme();
+  const paddingTop = Math.max(insets.top + 8, Platform.OS === "ios" ? 12 : 16);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(-10)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   return (
-    <View
-      className={cn("flex-row items-center justify-between px-4 pb-2 pt-4", className)}
+    <Animated.View
+      className={cn(
+        "flex-row items-center justify-between px-4 pb-3",
+        "border-b",
+        className
+      )}
+      style={{
+        paddingTop,
+        backgroundColor: colors.background,
+        borderBottomColor: colors.border,
+        borderBottomWidth: 1,
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: scheme === "dark" ? 0.15 : 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
       {...props}
     >
-      <View className="flex-row items-center gap-3">
+      <View className="flex-row items-center gap-3 flex-1">
         {left}
-        <View>
-          <Text className="text-xl font-semibold text-foreground">{title}</Text>
+        <View className="flex-1">
+          <Text 
+            className="text-2xl font-bold" 
+            style={{ color: colors.foreground }}
+          >
+            {title}
+          </Text>
           {subtitle ? (
-            <Text className="mt-1 text-sm text-muted-foreground">{subtitle}</Text>
+            <Text 
+              className="mt-0.5 text-sm" 
+              style={{ color: colors.foreground }}
+            >
+              {subtitle}
+            </Text>
           ) : null}
         </View>
       </View>
-      {right ? <View>{right}</View> : null}
-    </View>
+      {right ? <View className="ml-3">{right}</View> : null}
+    </Animated.View>
   );
 }
-
