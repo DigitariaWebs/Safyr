@@ -2613,9 +2613,20 @@ export interface SiteStats {
 // PLANNING TYPES - ASSIGNMENTS & SCHEDULE
 // ============================================================================
 
-export type AssignmentStatus = "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled" | "no_show";
+export type AssignmentStatus =
+  | "scheduled"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "no_show";
 
-export type AssignmentConflictType = "double_booking" | "missing_qualification" | "hours_exceeded" | "workload_exceeded" | "unavailable";
+export type AssignmentConflictType =
+  | "double_booking"
+  | "missing_qualification"
+  | "hours_exceeded"
+  | "workload_exceeded"
+  | "unavailable";
 
 export type AlertSeverity = "info" | "warning" | "error" | "critical";
 

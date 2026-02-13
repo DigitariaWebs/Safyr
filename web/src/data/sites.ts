@@ -11,7 +11,8 @@ export const mockPostes: Poste[] = [
       minimumExperience: 6,
       requiredCertifications: ["CQP APS", "Carte Professionnelle"],
       requiredQualifications: ["Formation ronde"],
-      physicalRequirements: "Bonne condition physique, station debout prolongée",
+      physicalRequirements:
+        "Bonne condition physique, station debout prolongée",
     },
     schedule: {
       defaultShiftDuration: 10,
@@ -32,7 +33,8 @@ export const mockPostes: Poste[] = [
         "Signaler toute anomalie dans la main courante",
         "Contrôler les accès et fermetures",
       ],
-      procedures: "Suivre le parcours défini avec points de contrôle obligatoires",
+      procedures:
+        "Suivre le parcours défini avec points de contrôle obligatoires",
       equipment: ["Lampe torche", "Radio", "Smartphone avec app"],
       emergencyContact: "Chef de secteur: 06 12 34 56 78",
     },
@@ -339,8 +341,7 @@ export const mockSites: Site[] = [
       mandatoryHours: ["07:00-19:00"],
       requiredCertifications: ["CQP APS", "Carte Professionnelle"],
       accessInstructions: "Badgeage obligatoire à l'entrée et sortie",
-      specialRequirements:
-        "Discrétion absolue exigée. Confidentialité signée",
+      specialRequirements: "Discrétion absolue exigée. Confidentialité signée",
     },
     billing: {
       hourlyRate: 17.0,
