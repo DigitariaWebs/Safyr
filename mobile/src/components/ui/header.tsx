@@ -20,15 +20,27 @@ export function Header({
 }: HeaderProps) {
   return (
     <View
-      className={cn("flex-row items-center justify-between px-4 pb-2 pt-4", className)}
+      className={cn(
+        "flex-row items-center justify-between px-4 pb-3 pt-4",
+        "border-b border-border/50",
+        className
+      )}
+      style={{
+        backgroundColor: "transparent",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+      }}
       {...props}
     >
-      <View className="flex-row items-center gap-3">
+      <View className="flex-row items-center gap-3 flex-1">
         {left}
-        <View>
-          <Text className="text-xl font-semibold text-foreground">{title}</Text>
+        <View className="flex-1">
+          <Text className="text-2xl font-bold text-foreground">{title}</Text>
           {subtitle ? (
-            <Text className="mt-1 text-sm text-muted-foreground">{subtitle}</Text>
+            <Text className="mt-0.5 text-sm text-muted-foreground">{subtitle}</Text>
           ) : null}
         </View>
       </View>

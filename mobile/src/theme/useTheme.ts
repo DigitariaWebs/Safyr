@@ -3,12 +3,12 @@ import { colors, type ColorSchemeName, type ThemeColors } from "./colors";
 
 /**
  * Single place to pick theme colors.
- * - Defaults to system color scheme
+ * - Defaults to dark mode
  * - You can later wire a user setting override.
  */
 export function useTheme(): { scheme: ColorSchemeName; colors: ThemeColors } {
-  const system = useColorScheme();
-  const scheme: ColorSchemeName = system === "dark" ? "dark" : "light";
+  // Force dark mode for now
+  const scheme: ColorSchemeName = "dark";
   return { scheme, colors: colors[scheme] };
 }
 

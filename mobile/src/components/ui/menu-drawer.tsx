@@ -8,7 +8,16 @@ import {
   Animated,
   Platform,
   Alert,
+  ScrollView,
 } from "react-native";
+// Import conditionnel pour expo-linear-gradient
+let LinearGradient: any = null;
+try {
+  // @ts-ignore
+  LinearGradient = require("expo-linear-gradient").LinearGradient;
+} catch (e) {
+  console.warn("expo-linear-gradient not installed. Install with: npx expo install expo-linear-gradient");
+}
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getSession, clearSession, type Session } from "@/features/auth/auth.storage";
@@ -91,46 +100,60 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
 
   const menuItems = [
     {
-      icon: "person-outline",
-      label: "Mon profil",
-      route: "/(app)/profile",
-      onPress: () => handleNavigate("/(app)/profile"),
-    },
-    {
-      icon: "document-text-outline",
-      label: "Documents",
-      route: "/(app)/documents",
-      onPress: () => handleNavigate("/(app)/documents"),
-    },
-    {
-      icon: "home-outline",
+      icon: "home",
       label: "Accueil",
       route: "/(app)/(tabs)/",
       onPress: () => handleNavigate("/(app)/(tabs)/"),
+      color: "#4A90E2",
+      gradient: ["#4A90E2", "#357ABD"],
     },
     {
-      icon: "list-outline",
+      icon: "list",
       label: "Main courante",
       route: "/(app)/(tabs)/main-courante",
       onPress: () => handleNavigate("/(app)/(tabs)/main-courante"),
+      color: "#50C878",
+      gradient: ["#50C878", "#3FA85F"],
     },
     {
-      icon: "walk-outline",
+      icon: "walk",
       label: "Ronde",
       route: "/(app)/(tabs)/ronde",
       onPress: () => handleNavigate("/(app)/(tabs)/ronde"),
+      color: "#9B59B6",
+      gradient: ["#9B59B6", "#8E44AD"],
     },
     {
-      icon: "location-outline",
+      icon: "location",
       label: "Géolocalisation",
       route: "/(app)/(tabs)/geolocation",
       onPress: () => handleNavigate("/(app)/(tabs)/geolocation"),
+      color: "#E67E22",
+      gradient: ["#E67E22", "#D35400"],
     },
     {
-      icon: "warning-outline",
+      icon: "document-text",
+      label: "Documents",
+      route: "/(app)/documents",
+      onPress: () => handleNavigate("/(app)/documents"),
+      color: "#3498DB",
+      gradient: ["#3498DB", "#2980B9"],
+    },
+    {
+      icon: "person",
+      label: "Mon profil",
+      route: "/(app)/profile",
+      onPress: () => handleNavigate("/(app)/profile"),
+      color: "#1ABC9C",
+      gradient: ["#1ABC9C", "#16A085"],
+    },
+    {
+      icon: "warning",
       label: "SOS",
       route: "/(app)/sos",
       onPress: () => handleNavigate("/(app)/sos"),
+      color: "#E74C3C",
+      gradient: ["#E74C3C", "#C0392B"],
     },
   ];
 
@@ -148,78 +171,164 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
         <Animated.View
           style={{
             flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
             opacity: overlayOpacity,
           }}
         >
           <Pressable onPress={(e) => e.stopPropagation()}>
             <Animated.View
               style={{
-                width: 280,
+                width: 300,
                 height: "100%",
                 backgroundColor: theme.colors.background,
                 transform: [{ translateX: slideAnim }],
                 shadowColor: "#000",
-                shadowOffset: { width: 2, height: 0 },
-                shadowOpacity: 0.25,
-                shadowRadius: 8,
-                elevation: 8,
+                shadowOffset: { width: 4, height: 0 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 16,
+                flexDirection: "column",
               }}
             >
-              {/* Header */}
-              <View
-                style={{
-                  paddingTop: Platform.OS === "ios" ? 60 : 40,
-                  paddingBottom: 20,
-                  paddingHorizontal: 20,
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.colors.border,
-                  backgroundColor: theme.colors.card,
-                }}
-              >
-                <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-xl font-bold text-foreground">Menu</Text>
-                  <TouchableOpacity
-                    onPress={onClose}
-                    className="rounded-full p-2"
-                    style={{ backgroundColor: theme.colors.muted }}
-                  >
-                    <Ionicons name="close" size={20} color={theme.colors.foreground} />
-                  </TouchableOpacity>
-                </View>
-                {session && (
-                  <View>
-                    <Text className="text-sm text-muted-foreground">Connecté en tant que</Text>
-                    <Text className="mt-1 text-base font-semibold text-foreground">
-                      {session.fullName}
-                    </Text>
+              {/* Header with Gradient */}
+              {LinearGradient ? (
+                <LinearGradient
+                  colors={["#4A90E2", "#357ABD"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    paddingTop: Platform.OS === "ios" ? 60 : 40,
+                    paddingBottom: 24,
+                    paddingHorizontal: 20,
+                  }}
+                >
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    <TouchableOpacity
+                      onPress={onClose}
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        borderRadius: 20,
+                        padding: 8,
+                      }}
+                    >
+                      <Ionicons name="close" size={20} color="#fff" />
+                    </TouchableOpacity>
                   </View>
-                )}
-              </View>
+                  {session && (
+                    <View style={{ backgroundColor: "rgba(255, 255, 255, 0.15)", borderRadius: 12, padding: 12 }}>
+                      <Text className="text-xs text-white/80" style={{ marginBottom: 4 }}>
+                        Connecté en tant que
+                      </Text>
+                      <Text className="text-base font-semibold text-white">
+                        {session.fullName}
+                      </Text>
+                    </View>
+                  )}
+                </LinearGradient>
+              ) : (
+                <View
+                  style={{
+                    paddingTop: Platform.OS === "ios" ? 60 : 40,
+                    paddingBottom: 24,
+                    paddingHorizontal: 20,
+                    backgroundColor: theme.colors.primary,
+                  }}
+                >
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-2xl font-bold text-white">Safyr</Text>
+                    <TouchableOpacity
+                      onPress={onClose}
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        borderRadius: 20,
+                        padding: 8,
+                      }}
+                    >
+                      <Ionicons name="close" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                  {session && (
+                    <View style={{ backgroundColor: "rgba(255, 255, 255, 0.15)", borderRadius: 12, padding: 12 }}>
+                      <Text className="text-xs text-white/80" style={{ marginBottom: 4 }}>
+                        Connecté en tant que
+                      </Text>
+                      <Text className="text-base font-semibold text-white">
+                        {session.fullName}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
 
-              {/* Menu Items */}
-              <View className="flex-1 pt-4">
+              {/* Menu Items - Scrollable */}
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                }}
+                showsVerticalScrollIndicator={true}
+                indicatorStyle={theme.scheme === "dark" ? "white" : "black"}
+              >
                 {menuItems.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={item.onPress}
-                    className="flex-row items-center px-5 py-4 active:bg-muted"
+                    activeOpacity={0.7}
                     style={{
-                      borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
-                      borderBottomColor: theme.colors.border,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingHorizontal: 20,
+                      paddingVertical: 16,
+                      marginHorizontal: 12,
+                      marginVertical: 4,
+                      borderRadius: 12,
+                      backgroundColor: theme.colors.card,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 3,
                     }}
                   >
+                    <View
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        backgroundColor: `${item.color}20`,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 12,
+                      }}
+                    >
+                      <Ionicons
+                        name={item.icon as any}
+                        size={22}
+                        color={item.color}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "600",
+                        color: theme.colors.foreground,
+                        flex: 1,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
                     <Ionicons
-                      name={item.icon as any}
-                      size={22}
-                      color={theme.colors.foreground}
+                      name="chevron-forward"
+                      size={18}
+                      color={theme.colors.mutedForeground}
                     />
-                    <Text className="ml-4 text-base text-foreground">{item.label}</Text>
                   </TouchableOpacity>
                 ))}
-              </View>
+              </ScrollView>
 
-              {/* Footer */}
+              {/* Footer - Fixed at bottom */}
               <View
                 style={{
                   padding: 20,
@@ -230,11 +339,25 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
               >
                 <TouchableOpacity
                   onPress={handleLogout}
-                  className="flex-row items-center justify-center rounded-lg py-3"
-                  style={{ backgroundColor: theme.colors.destructive }}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    backgroundColor: theme.colors.destructive,
+                    shadowColor: theme.colors.destructive,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 6,
+                  }}
                 >
                   <Ionicons name="log-out-outline" size={20} color="#fff" />
-                  <Text className="ml-2 font-semibold text-white">Déconnexion</Text>
+                  <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: "600", color: "#fff" }}>
+                    Déconnexion
+                  </Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>

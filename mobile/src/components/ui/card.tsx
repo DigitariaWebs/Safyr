@@ -11,10 +11,17 @@ export function Card({ className, ...props }: CardProps) {
     <View
       className={cn(
         "rounded-xl border border-border bg-card p-4",
-        // mild "glass" feel; safe on mobile
-        "shadow-sm",
+        // Enhanced shadow for modern look
+        "shadow-md",
         className,
       )}
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+      }}
       {...props}
     />
   );

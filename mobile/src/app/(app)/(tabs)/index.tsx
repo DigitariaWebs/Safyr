@@ -12,11 +12,20 @@ export default function HomeDashboardScreen() {
       <Header title="Accueil agent" subtitle="Poste & statut" left={<MenuButton />} />
 
       <View className="px-4 gap-4">
-        <Card>
+        <Card
+          style={{
+            backgroundColor: inService ? "rgba(76, 175, 80, 0.15)" : "rgba(255, 152, 0, 0.15)",
+            borderColor: inService ? "#4CAF50" : "#FF9800",
+            borderWidth: 2,
+          }}
+        >
           <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm text-muted-foreground">Statut</Text>
-              <Text className="mt-1 text-lg font-semibold text-foreground">
+            <View className="flex-1">
+              <Text className="text-sm font-medium text-muted-foreground">Statut</Text>
+              <Text
+                className="mt-1 text-xl font-bold"
+                style={{ color: inService ? "#81C784" : "#FFB74D" }}
+              >
                 {inService ? "En service" : "Hors service"}
               </Text>
             </View>
@@ -27,29 +36,74 @@ export default function HomeDashboardScreen() {
               thumbColor={"#ffffff"}
             />
           </View>
-          <View className="mt-4">
-            <Text className="text-sm text-muted-foreground">Poste actuel</Text>
-            <Text className="mt-1 text-base font-medium text-foreground">
-              Siège • Paris — Poste Accueil (08:00 → 16:00)
+          <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text className="text-sm font-medium text-muted-foreground">Poste actuel</Text>
+            <Text className="mt-1 text-base font-semibold text-foreground">
+              Siège • Paris — Poste Accueil
+            </Text>
+            <Text className="mt-1 text-sm text-muted-foreground">
+              08:00 → 16:00
             </Text>
           </View>
         </Card>
 
-        <Card className="gap-3">
-          <Text className="text-sm font-medium text-foreground">Actions rapides</Text>
+        <Card className="gap-4">
+          <Text className="text-base font-bold text-foreground">Actions rapides</Text>
           <View className="flex-row gap-3">
-            <Button onPress={() => router.push("/(app)/(tabs)/main-courante")} className="flex-1">
+            <Button
+              onPress={() => router.push("/(app)/(tabs)/main-courante")}
+              className="flex-1"
+              style={{
+                backgroundColor: "#50C878",
+                shadowColor: "#50C878",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
               Main courante
             </Button>
-            <Button variant="secondary" onPress={() => router.push("/(app)/(tabs)/ronde")} className="flex-1">
+            <Button
+              variant="secondary"
+              onPress={() => router.push("/(app)/(tabs)/ronde")}
+              className="flex-1"
+              style={{
+                backgroundColor: "#9B59B6",
+                shadowColor: "#9B59B6",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
               Ronde
             </Button>
           </View>
           <View className="flex-row gap-3">
-            <Button variant="outline" onPress={() => router.push("/(app)/(tabs)/geolocation")} className="flex-1">
+            <Button
+              variant="outline"
+              onPress={() => router.push("/(app)/(tabs)/geolocation")}
+              className="flex-1"
+              style={{
+                borderColor: "#E67E22",
+                borderWidth: 2,
+              }}
+            >
               Géoloc
             </Button>
-            <Button variant="destructive" onPress={() => router.push("/(app)/sos")} className="flex-1">
+            <Button
+              variant="destructive"
+              onPress={() => router.push("/(app)/sos")}
+              className="flex-1"
+              style={{
+                shadowColor: colors.destructive,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }}
+            >
               SOS
             </Button>
           </View>
