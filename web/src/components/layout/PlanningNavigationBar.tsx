@@ -43,7 +43,6 @@ const navItems: NavItem[] = [
 ];
 
 interface PlanningNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

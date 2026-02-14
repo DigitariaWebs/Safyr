@@ -5,9 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { Grid3x3 } from "lucide-react";
+import { Grid3x3, ChevronDown } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigation } from "@/contexts/NavigationContext";
 
 export interface NavItem {
   label: string;
@@ -29,6 +36,8 @@ export interface ModuleNavigationBarProps {
   showNav?: boolean;
 }
 
+const MAX_NAV_ITEMS = 6;
+
 export function ModuleNavigationBar({
   moduleIcon: ModuleIcon,
   dashboardHref,
@@ -36,8 +45,13 @@ export function ModuleNavigationBar({
   showNav = true,
 }: ModuleNavigationBarProps) {
   const pathname = usePathname();
+  const { isNavExpanded } = useNavigation();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<NavItem | null>(null);
+  const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
+
+  const canExpand = navItems.length <= MAX_NAV_ITEMS;
+  const shouldExpand = isNavExpanded && canExpand;
 
   const isActiveItem = (item: NavItem) => {
     if (item.href && pathname === item.href) return true;
@@ -58,31 +72,152 @@ export function ModuleNavigationBar({
     <div className="border-t bg-muted/30">
       {showNav && (
         <nav className="flex items-center gap-3 px-6 py-2 overflow-x-auto">
-          {/* Active Menu Item Name */}
-          <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary">
-            {isDashboardActive ? (
-              <>
+          {!shouldExpand ? (
+            <>
+              {/* Active Menu Item Name */}
+              <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary">
+                {isDashboardActive ? (
+                  <>
+                    <ModuleIcon className="h-4 w-4" />
+                    <span>Tableau de bord</span>
+                  </>
+                ) : activeItem ? (
+                  <>
+                    <activeItem.icon className="h-4 w-4" />
+                    <span>{activeItem.label}</span>
+                  </>
+                ) : null}
+              </div>
+
+              {/* Module Items Modal Trigger */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Grid3x3 className="h-4 w-4" />
+                <span>Menu</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* Dashboard Link */}
+              <Link
+                href={dashboardHref}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-all whitespace-nowrap font-medium",
+                  isDashboardActive
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
                 <ModuleIcon className="h-4 w-4" />
                 <span>Tableau de bord</span>
-              </>
-            ) : activeItem ? (
-              <>
-                <activeItem.icon className="h-4 w-4" />
-                <span>{activeItem.label}</span>
-              </>
-            ) : null}
-          </div>
+              </Link>
 
-          {/* Module Items Modal Trigger */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <Grid3x3 className="h-4 w-4" />
-            <span>Menu</span>
-          </Button>
+              <div className="h-6 w-px bg-border" />
+
+              {/* All Navigation Items */}
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActiveItem(item);
+
+                if (item.disabled) {
+                  return (
+                    <div
+                      key={item.label}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg text-muted-foreground opacity-50 cursor-not-allowed whitespace-nowrap"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </div>
+                  );
+                }
+
+                if (item.children) {
+                  return (
+                    <DropdownMenu
+                      key={item.label}
+                      open={openDropdown === item.label}
+                      onOpenChange={(open) =>
+                        setOpenDropdown(open ? item.label : null)
+                      }
+                    >
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-all whitespace-nowrap font-medium",
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-foreground hover:bg-accent hover:text-foreground",
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                          <ChevronDown className="h-3 w-3" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {item.children.map((child) => {
+                          if (child.disabled) {
+                            return (
+                              <DropdownMenuItem
+                                key={child.href}
+                                disabled
+                                className="opacity-50"
+                              >
+                                {child.label}
+                              </DropdownMenuItem>
+                            );
+                          }
+
+                          return (
+                            <DropdownMenuItem key={child.href} asChild>
+                              <Link
+                                href={child.href}
+                                className={cn(
+                                  "w-full cursor-pointer",
+                                  pathname === child.href && "bg-accent",
+                                )}
+                              >
+                                <span>{child.label}</span>
+                                {child.isNew && (
+                                  <span className="ml-auto px-1.5 py-0.5 text-xs font-semibold rounded-full bg-green-500 text-white">
+                                    Nouveau
+                                  </span>
+                                )}
+                              </Link>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                }
+
+                if (item.href) {
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-all whitespace-nowrap font-medium",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                }
+
+                return null;
+              })}
+            </>
+          )}
 
           {/* Modules Modal */}
           <Modal
@@ -234,7 +369,7 @@ export function ModuleNavigationBar({
           )}
 
           {/* Active Item's Children (Sub-items) */}
-          {activeItem?.children && (
+          {!shouldExpand && activeItem?.children && (
             <>
               <div className="h-6 w-px bg-border" />
               <div className="flex items-center gap-1 flex-1 overflow-x-auto">
