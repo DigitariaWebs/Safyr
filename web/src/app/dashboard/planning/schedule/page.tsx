@@ -54,6 +54,10 @@ import {
   Ban,
   Moon,
   AlertCircle,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Timer,
 } from "lucide-react";
 
 import type {
@@ -100,12 +104,36 @@ declare global {
 }
 
 export default function SchedulePage() {
+  // Auto-select first client and site on mount
+  const getInitialClientId = () => {
+    if (mockClients.length > 0) {
+      return mockClients[0].id;
+    }
+    return null;
+  };
+
+  const getInitialSiteId = () => {
+    if (mockClients.length > 0) {
+      const firstClient = mockClients[0];
+      const clientSites = mockSites.filter(
+        (s) => s.clientId === firstClient.id && s.status === "active",
+      );
+      if (clientSites.length > 0) {
+        return clientSites[0].id;
+      }
+    }
+    return null;
+  };
+
   // State
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(
+    getInitialClientId,
+  );
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(
+    getInitialSiteId,
+  );
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<ViewType>("weekly");
-  const [editMode, setEditMode] = useState(false);
 
   // Data state
   const [standardShifts, setStandardShifts] =
@@ -165,6 +193,17 @@ export default function SchedulePage() {
     breakDuration: 30,
     color: "#3b82f6",
   });
+
+  // Get selected client
+  const selectedClient = useMemo(() => {
+    return mockClients.find((c) => c.id === selectedClientId);
+  }, [selectedClientId]);
+
+  // Get available sites for selected client
+  const availableSites = useMemo(() => {
+    if (!selectedClientId) return [];
+    return mockSites.filter((s) => s.clientId === selectedClientId);
+  }, [selectedClientId]);
 
   // Get selected site
   const selectedSite = useMemo(() => {
@@ -709,6 +748,21 @@ export default function SchedulePage() {
     }
   };
 
+  const handleRemoveConflictingShift = () => {
+    if (!conflictDetails) return;
+    const shift = agentShifts.find(
+      (s) =>
+        s.agentId === conflictDetails.agentId &&
+        s.date === conflictDetails.date &&
+        s.siteId === selectedSiteId,
+    );
+    if (shift) {
+      handleDeleteShift(shift.id);
+    }
+    setShowConflictModal(false);
+    setConflictDetails(null);
+  };
+
   const handleOverrideConfirm = () => {
     if (!pendingPasteAction) return;
 
@@ -754,8 +808,8 @@ export default function SchedulePage() {
     return weeks;
   }, [displayDates, viewType]);
 
-  // Render site selector
-  if (!selectedSiteId) {
+  // Main schedule view
+  if (!selectedSiteId || !selectedClientId) {
     return (
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
@@ -765,30 +819,73 @@ export default function SchedulePage() {
                 <Calendar className="h-5 w-5" />
                 Planning par site
               </CardTitle>
-              <CardDescription>
-                Sélectionnez un client puis un site pour gérer les plannings des
-                agents
-              </CardDescription>
+              <CardDescription>Chargement...</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => setShowClientSelector(true)}
-                className="w-full h-auto py-4"
-                variant="outline"
-              >
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5" />
-                  <div className="text-left">
-                    <div className="font-medium">Sélectionner un site</div>
-                    <div className="text-sm text-muted-foreground">
-                      Choisir un client puis un site
-                    </div>
-                  </div>
-                </div>
-              </Button>
-            </CardContent>
           </Card>
         </div>
+      </div>
+    );
+  }
+
+  const totalPlannedHours = assignedAgents.reduce(
+    (sum, { agentId }) => sum + calculateAgentHours(agentId, displayDates),
+    0,
+  );
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header with Client/Site Selectors */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Planning</h1>
+            <p className="text-muted-foreground">
+              {assignedAgents.length} agent(s) assigné(s) •{" "}
+              {totalPlannedHours.toFixed(1)}h planifiées
+            </p>
+          </div>
+        </div>
+
+        {/* Client and Site Selectors */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">Client</Label>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowClientSelector(true)}
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  {selectedClient?.name || "Sélectionner un client"}
+                </Button>
+              </div>
+
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">Site</Label>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setShowSiteSelector(true)}
+                  disabled={!selectedClientId}
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {selectedSite ? (
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="truncate">{selectedSite.name}</span>
+                      <Badge variant="secondary" className="ml-auto shrink-0">
+                        {selectedSite.address.city}
+                      </Badge>
+                    </div>
+                  ) : (
+                    "Sélectionner un site"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Client Selector Dialog */}
         <Dialog open={showClientSelector} onOpenChange={setShowClientSelector}>
@@ -811,7 +908,16 @@ export default function SchedulePage() {
                         onSelect={() => {
                           setSelectedClientId(client.id);
                           setShowClientSelector(false);
-                          setShowSiteSelector(true);
+                          // Auto-select first site of new client
+                          const clientSites = mockSites.filter(
+                            (s) =>
+                              s.clientId === client.id && s.status === "active",
+                          );
+                          if (clientSites.length > 0) {
+                            setSelectedSiteId(clientSites[0].id);
+                          } else {
+                            setSelectedSiteId(null);
+                          }
                         }}
                       >
                         <div className="flex items-start gap-3 w-full">
@@ -845,98 +951,54 @@ export default function SchedulePage() {
               <CommandList>
                 <CommandEmpty>Aucun site trouvé.</CommandEmpty>
                 <CommandGroup>
-                  {mockSites
-                    .filter((s) => s.clientId === selectedClientId)
-                    .map((site) => {
-                      const siteAgentCount = siteAgents.filter(
-                        (sa) => sa.siteId === site.id && sa.active,
-                      ).length;
-                      return (
-                        <CommandItem
-                          key={site.id}
-                          onSelect={() => {
-                            setSelectedSiteId(site.id);
-                            setShowSiteSelector(false);
-                          }}
-                        >
-                          <div className="flex items-start gap-3 w-full">
-                            <MapPin className="h-5 w-5 mt-1 shrink-0 text-primary" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{site.name}</span>
-                                <Badge
-                                  variant={
-                                    site.status === "active"
-                                      ? "default"
-                                      : site.status === "inactive"
-                                        ? "secondary"
-                                        : "destructive"
-                                  }
-                                >
-                                  {site.status === "active"
-                                    ? "Actif"
+                  {availableSites.map((site) => {
+                    const siteAgentCount = siteAgents.filter(
+                      (sa) => sa.siteId === site.id && sa.active,
+                    ).length;
+                    return (
+                      <CommandItem
+                        key={site.id}
+                        onSelect={() => {
+                          setSelectedSiteId(site.id);
+                          setShowSiteSelector(false);
+                        }}
+                      >
+                        <div className="flex items-start gap-3 w-full">
+                          <MapPin className="h-5 w-5 mt-1 shrink-0 text-primary" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{site.name}</span>
+                              <Badge
+                                variant={
+                                  site.status === "active"
+                                    ? "default"
                                     : site.status === "inactive"
-                                      ? "Inactif"
-                                      : "Suspendu"}
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {site.address.city} • {site.address.postalCode}
-                                {siteAgentCount > 0 &&
-                                  ` • ${siteAgentCount} agent(s)`}
-                              </div>
+                                      ? "secondary"
+                                      : "destructive"
+                                }
+                              >
+                                {site.status === "active"
+                                  ? "Actif"
+                                  : site.status === "inactive"
+                                    ? "Inactif"
+                                    : "Suspendu"}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {site.address.city} • {site.address.postalCode}
+                              {siteAgentCount > 0 &&
+                                ` • ${siteAgentCount} agent(s)`}
                             </div>
                           </div>
-                        </CommandItem>
-                      );
-                    })}
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
                 </CommandGroup>
               </CommandList>
             </Command>
           </DialogContent>
         </Dialog>
-      </div>
-    );
-  }
-
-  // Main schedule view
-  const totalPlannedHours = assignedAgents.reduce(
-    (sum, { agentId }) => sum + calculateAgentHours(agentId, displayDates),
-    0,
-  );
-
-  return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Planning - {selectedSite?.name}
-          </h1>
-          <p className="text-muted-foreground">
-            {selectedSite?.address.city} • {assignedAgents.length} agent(s)
-            assigné(s) • {totalPlannedHours.toFixed(1)}h planifiées
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSelectedSiteId(null);
-              setSelectedClientId(null);
-            }}
-          >
-            <Building2 className="h-4 w-4 mr-2" />
-            Changer de site
-          </Button>
-          <Button
-            variant={editMode ? "default" : "outline"}
-            onClick={() => setEditMode(!editMode)}
-          >
-            <Pencil className="h-4 w-4 mr-2" />
-            {editMode ? "Mode consultation" : "Mode édition"}
-          </Button>
-        </div>
       </div>
 
       {/* View controls */}
@@ -1014,96 +1076,93 @@ export default function SchedulePage() {
       </Card>
 
       {/* Legend & Copied info */}
-      {editMode && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-6 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <span className="text-sm">Congé</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <span className="text-sm">Double affectation</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="text-sm">Terminé</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <span className="text-sm">Absent</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-gray-500" />
-                  <span className="text-sm">En attente</span>
-                </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="text-sm">Congé</span>
               </div>
-
-              {copiedShift && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-2">
-                    <Clipboard className="h-3 w-3" />
-                    Service copié: {copiedShift.startTime} -{" "}
-                    {copiedShift.endTime}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setEditingShift(copiedShift);
-                      setShiftForm({
-                        shiftType: copiedShift.shiftType,
-                        standardShiftId: copiedShift.standardShiftId || "",
-                        startTime: copiedShift.startTime,
-                        endTime: copiedShift.endTime,
-                        breakDuration: copiedShift.breakDuration,
-                        color: copiedShift.color || "#3b82f6",
-                        notes: copiedShift.notes || "",
-                        isOvernight: isOvernightShift(
-                          copiedShift.startTime,
-                          copiedShift.endTime,
-                        ),
-                      });
-                      setShowShiftModal(true);
-                    }}
-                  >
-                    <Pencil className="h-3 w-3 mr-1" />
-                    Modifier
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setCopiedShift(null)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-
-              {copiedWeekDates && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="gap-2">
-                    <Clipboard className="h-3 w-3" />
-                    Semaine copiée
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setCopiedWeekDates(null);
-                      setCopiedWeekAgentId(null);
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                <span className="text-sm">Double affectation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="text-sm">Terminé</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="text-sm">Absent</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gray-500" />
+                <span className="text-sm">En attente</span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+
+            {copiedShift && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="gap-2">
+                  <Clipboard className="h-3 w-3" />
+                  Service copié: {copiedShift.startTime} - {copiedShift.endTime}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingShift(copiedShift);
+                    setShiftForm({
+                      shiftType: copiedShift.shiftType,
+                      standardShiftId: copiedShift.standardShiftId || "",
+                      startTime: copiedShift.startTime,
+                      endTime: copiedShift.endTime,
+                      breakDuration: copiedShift.breakDuration,
+                      color: copiedShift.color || "#3b82f6",
+                      notes: copiedShift.notes || "",
+                      isOvernight: isOvernightShift(
+                        copiedShift.startTime,
+                        copiedShift.endTime,
+                      ),
+                    });
+                    setShowShiftModal(true);
+                  }}
+                >
+                  <Pencil className="h-3 w-3 mr-1" />
+                  Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setCopiedShift(null)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+
+            {copiedWeekDates && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="gap-2">
+                  <Clipboard className="h-3 w-3" />
+                  Semaine copiée
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setCopiedWeekDates(null);
+                    setCopiedWeekAgentId(null);
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Schedule Grid */}
       <Card>
@@ -1113,7 +1172,6 @@ export default function SchedulePage() {
               date={displayDates[0]}
               agents={assignedAgents}
               shifts={agentShifts.filter((s) => s.siteId === selectedSiteId)}
-              editMode={editMode}
               copiedShift={copiedShift}
               onCreateShift={handleCreateShift}
               onEditShift={handleEditShift}
@@ -1123,6 +1181,9 @@ export default function SchedulePage() {
               onConflictClick={handleConflictClick}
               getDateConflict={getDateConflict}
               getOvernightShift={getOvernightShiftForDate}
+              calculateAgentHours={calculateAgentHours}
+              onRemoveAgent={handleRemoveAgent}
+              onAssignAgent={() => setShowAgentCommand(true)}
             />
           )}
 
@@ -1131,7 +1192,6 @@ export default function SchedulePage() {
               dates={displayDates}
               agents={assignedAgents}
               shifts={agentShifts.filter((s) => s.siteId === selectedSiteId)}
-              editMode={editMode}
               copiedShift={copiedShift}
               copiedWeekDates={copiedWeekDates}
               copiedWeekAgentId={copiedWeekAgentId}
@@ -1155,7 +1215,6 @@ export default function SchedulePage() {
               weekGroups={weekGroups}
               agents={assignedAgents}
               shifts={agentShifts.filter((s) => s.siteId === selectedSiteId)}
-              editMode={editMode}
               copiedShift={copiedShift}
               copiedWeekDates={copiedWeekDates}
               copiedWeekAgentId={copiedWeekAgentId}
@@ -1171,39 +1230,6 @@ export default function SchedulePage() {
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
             />
-          )}
-
-          {/* Agent management section */}
-          {editMode && (
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium">Agents assignés au site</h3>
-                <Button onClick={() => setShowAgentCommand(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Assigner un agent
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {assignedAgents.map(({ agentId, agentName }) => (
-                  <Badge
-                    key={agentId}
-                    variant="secondary"
-                    className="gap-2 px-3 py-2"
-                  >
-                    <Users className="h-3 w-3" />
-                    {agentName}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleRemoveAgent(agentId)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
           )}
         </CardContent>
       </Card>
@@ -1260,6 +1286,15 @@ export default function SchedulePage() {
             label: editingShift ? "Enregistrer" : "Créer",
             onClick: handleSaveShift,
           },
+          ...(shiftForm.shiftType === "on_demand" && !editingShift
+            ? {
+                tertiary: {
+                  label: "Enregistrer comme modèle",
+                  onClick: () => setShowTemplateModal(true),
+                  variant: "outline" as const,
+                },
+              }
+            : {}),
         }}
       >
         <div className="space-y-4">
@@ -1279,8 +1314,10 @@ export default function SchedulePage() {
 
             <TabsContent value="standard" className="space-y-4">
               <div>
-                <Label>Modèle de service</Label>
-                <div className="grid gap-2 mt-2">
+                <Label className="text-base font-semibold">
+                  Sélectionner un modèle de service
+                </Label>
+                <div className="grid gap-3 mt-3">
                   {siteStandardShifts.map((template) => {
                     const length = calculateShiftLength(
                       template.startTime,
@@ -1295,26 +1332,46 @@ export default function SchedulePage() {
                           setShiftForm({
                             ...shiftForm,
                             standardShiftId: template.id,
+                            startTime: template.startTime,
+                            endTime: template.endTime,
+                            breakDuration: template.breakDuration,
+                            color: template.color,
                           })
                         }
-                        className={`flex items-center gap-3 p-3 border rounded-lg text-left transition-colors ${
+                        className={`flex items-center gap-4 p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${
                           shiftForm.standardShiftId === template.id
-                            ? "border-primary bg-primary/5"
+                            ? "border-primary bg-primary/5 shadow-sm"
                             : "hover:border-primary/50"
                         }`}
                       >
                         <div
-                          className="w-4 h-4 rounded shrink-0"
+                          className="w-12 h-12 rounded-lg shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-sm"
                           style={{ backgroundColor: template.color }}
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium">{template.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {template.startTime} - {template.endTime} ({length})
-                            {isOvernightShift(
-                              template.startTime,
-                              template.endTime,
-                            ) && <Moon className="inline h-3 w-3 ml-1" />}
+                        >
+                          {template.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-base mb-1">
+                            {template.name}
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge
+                              variant="secondary"
+                              className="gap-1 font-medium"
+                            >
+                              <Clock className="h-3 w-3" />
+                              {template.startTime} - {template.endTime}
+                              {isOvernightShift(
+                                template.startTime,
+                                template.endTime,
+                              ) && <Moon className="h-3 w-3 ml-1" />}
+                            </Badge>
+                            <Badge variant="outline" className="gap-1">
+                              Pause: {template.breakDuration}min
+                            </Badge>
+                            <Badge variant="default" className="gap-1">
+                              {length}
+                            </Badge>
                           </div>
                         </div>
                       </button>
@@ -1339,51 +1396,139 @@ export default function SchedulePage() {
               )}
             </TabsContent>
 
-            <TabsContent value="on_demand" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Heure de début</Label>
-                  <Input
-                    type="time"
-                    value={shiftForm.startTime}
-                    onChange={(e) =>
-                      setShiftForm({ ...shiftForm, startTime: e.target.value })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Heure de fin</Label>
-                  <Input
-                    type="time"
-                    value={shiftForm.endTime}
-                    onChange={(e) =>
-                      setShiftForm({ ...shiftForm, endTime: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="overnight"
-                  checked={shiftForm.isOvernight}
-                  onChange={(e) =>
-                    setShiftForm({
-                      ...shiftForm,
-                      isOvernight: e.target.checked,
-                    })
-                  }
-                  className="rounded"
-                />
-                <Label htmlFor="overnight" className="text-sm cursor-pointer">
-                  Service de nuit (se termine le jour suivant)
+            <TabsContent value="on_demand" className="space-y-5">
+              {/* Shift Preview Card */}
+              <div className="relative">
+                <Label className="text-base font-semibold mb-3 block">
+                  Aperçu du créneau
                 </Label>
+                <div
+                  className="relative h-24 rounded-lg border-l-4 p-4 shadow-sm overflow-hidden"
+                  style={{
+                    backgroundColor: shiftForm.color,
+                    borderLeftColor: shiftForm.color,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2 relative z-10">
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                        {isOvernightShift(
+                          shiftForm.startTime,
+                          shiftForm.endTime,
+                        ) && <Moon className="h-4 w-4" />}
+                        {shiftForm.startTime || "00:00"} -{" "}
+                        {shiftForm.endTime || "00:00"}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs h-5 bg-white/20 text-white border-0"
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          {calculateShiftLength(
+                            shiftForm.startTime,
+                            shiftForm.endTime,
+                            shiftForm.breakDuration,
+                          )}
+                        </Badge>
+                        {shiftForm.breakDuration > 0 && (
+                          <span className="text-xs text-white/80">
+                            Pause: {shiftForm.breakDuration}min
+                          </span>
+                        )}
+                      </div>
+                      {shiftForm.notes && (
+                        <div className="text-xs text-white/80 mt-1 truncate">
+                          {shiftForm.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {(() => {
+                    const [startH] = shiftForm.startTime.split(":").map(Number);
+                    const [endH] = shiftForm.endTime.split(":").map(Number);
+                    let mins = endH * 60 - startH * 60;
+                    if (mins < 0) mins += 24 * 60;
+                    mins -= shiftForm.breakDuration;
+                    if (mins > 12 * 60) {
+                      return (
+                        <div className="absolute top-2 right-2 z-10">
+                          <Badge
+                            variant="secondary"
+                            className="bg-orange-500 text-white border-0 gap-1"
+                          >
+                            <AlertTriangle className="h-3 w-3" />
+                            +12h
+                          </Badge>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
               </div>
 
+              {/* Time Inputs */}
               <div>
-                <Label>Pause (minutes)</Label>
-                <div className="flex gap-2 mt-2">
+                <Label className="text-base font-semibold mb-3 block">
+                  Horaires
+                </Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm mb-2 block">Début</Label>
+                    <Input
+                      type="time"
+                      value={shiftForm.startTime}
+                      onChange={(e) =>
+                        setShiftForm({
+                          ...shiftForm,
+                          startTime: e.target.value,
+                        })
+                      }
+                      className="text-base"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm mb-2 block">Fin</Label>
+                    <Input
+                      type="time"
+                      value={shiftForm.endTime}
+                      onChange={(e) =>
+                        setShiftForm({ ...shiftForm, endTime: e.target.value })
+                      }
+                      className="text-base"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3 p-3 bg-muted rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="overnight"
+                    checked={shiftForm.isOvernight}
+                    onChange={(e) =>
+                      setShiftForm({
+                        ...shiftForm,
+                        isOvernight: e.target.checked,
+                      })
+                    }
+                    className="rounded h-4 w-4"
+                  />
+                  <Label
+                    htmlFor="overnight"
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                  >
+                    <Moon className="h-4 w-4" />
+                    Service de nuit (se termine le jour suivant)
+                  </Label>
+                </div>
+              </div>
+
+              {/* Break Duration */}
+              <div>
+                <Label className="text-base font-semibold mb-3 block">
+                  Durée de pause
+                </Label>
+                <div className="flex gap-2 flex-wrap">
                   {[0, 15, 30, 45, 60].map((min) => (
                     <Button
                       key={min}
@@ -1391,20 +1536,23 @@ export default function SchedulePage() {
                       variant={
                         shiftForm.breakDuration === min ? "default" : "outline"
                       }
-                      size="sm"
                       onClick={() =>
                         setShiftForm({ ...shiftForm, breakDuration: min })
                       }
+                      className="flex-1 min-w-[80px]"
                     >
-                      {min}min
+                      {min === 0 ? "Aucune" : `${min}min`}
                     </Button>
                   ))}
                 </div>
               </div>
 
+              {/* Color Selection */}
               <div>
-                <Label>Couleur</Label>
-                <div className="flex gap-2 mt-2 flex-wrap">
+                <Label className="text-base font-semibold mb-3 block">
+                  Couleur du créneau
+                </Label>
+                <div className="flex gap-3 flex-wrap">
                   {[
                     "#3b82f6",
                     "#f59e0b",
@@ -1418,66 +1566,32 @@ export default function SchedulePage() {
                       key={color}
                       type="button"
                       onClick={() => setShiftForm({ ...shiftForm, color })}
-                      className={`w-8 h-8 rounded border-2 transition-all ${
+                      className={`w-12 h-12 rounded-lg border-2 transition-all hover:scale-110 ${
                         shiftForm.color === color
-                          ? "border-foreground scale-110"
-                          : "border-transparent"
+                          ? "border-foreground scale-110 shadow-md"
+                          : "border-border"
                       }`}
                       style={{ backgroundColor: color }}
+                      title={color}
                     />
                   ))}
                 </div>
               </div>
 
+              {/* Notes */}
               <div>
-                <Label>Notes</Label>
+                <Label className="text-base font-semibold mb-3 block">
+                  Notes (optionnel)
+                </Label>
                 <Input
                   value={shiftForm.notes}
                   onChange={(e) =>
                     setShiftForm({ ...shiftForm, notes: e.target.value })
                   }
-                  placeholder="Notes optionnelles..."
+                  placeholder="Ajouter des notes sur ce créneau..."
+                  className="text-base"
                 />
               </div>
-
-              <div className="p-3 bg-muted rounded-lg">
-                <div className="text-sm font-medium mb-1">Résumé</div>
-                <div className="text-sm text-muted-foreground">
-                  Durée:{" "}
-                  {calculateShiftLength(
-                    shiftForm.startTime,
-                    shiftForm.endTime,
-                    shiftForm.breakDuration,
-                  )}
-                  {isOvernightShift(shiftForm.startTime, shiftForm.endTime) && (
-                    <Moon className="inline h-3 w-3 ml-1" />
-                  )}
-                </div>
-                {(() => {
-                  const [startH] = shiftForm.startTime.split(":").map(Number);
-                  const [endH] = shiftForm.endTime.split(":").map(Number);
-                  let mins = endH * 60 - startH * 60;
-                  if (mins < 0) mins += 24 * 60;
-                  mins -= shiftForm.breakDuration;
-                  if (mins > 12 * 60) {
-                    return (
-                      <div className="text-sm text-orange-600 mt-1 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        Service de plus de 12 heures
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={() => setShowTemplateModal(true)}
-                className="w-full"
-              >
-                Enregistrer comme modèle
-              </Button>
             </TabsContent>
           </Tabs>
         </div>
@@ -1535,64 +1649,209 @@ export default function SchedulePage() {
         onOpenChange={setShowConflictModal}
         type="warning"
         title="Conflit détecté"
+        actions={{
+          tertiary: {
+            label: "Supprimer de l'autre site",
+            onClick: () => {
+              if (!conflictDetails?.conflict.details) return;
+              const conflictingShift = conflictDetails.conflict
+                .details as AgentShift;
+              if (
+                conflictDetails.conflict.type === "double_booking" &&
+                conflictingShift.id
+              ) {
+                handleDeleteShift(conflictingShift.id);
+              }
+              setShowConflictModal(false);
+              setConflictDetails(null);
+            },
+            variant: "outline",
+          },
+          secondary: {
+            label: "Garder ici",
+            onClick: () => setShowConflictModal(false),
+            variant: "outline",
+          },
+          primary: {
+            label: "Supprimer d'ici",
+            onClick: handleRemoveConflictingShift,
+            variant: "destructive",
+          },
+        }}
       >
         {conflictDetails && (
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <AlertTriangle
-                className={`h-5 w-5 shrink-0 mt-0.5 ${
-                  conflictDetails.conflict.severity === "high"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-                }`}
-              />
+          <div className="space-y-4">
+            {/* Agent and Date Info */}
+            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+              <Users className="h-5 w-5 text-muted-foreground" />
               <div>
                 <div className="font-medium">
-                  {conflictDetails.conflict.message}
+                  {
+                    mockPlanningAgents.find(
+                      (a) => a.id === conflictDetails.agentId,
+                    )?.name
+                  }
                 </div>
-                {conflictDetails.conflict.type === "time_off" &&
-                  conflictDetails.conflict.details && (
-                    <div className="text-sm text-muted-foreground mt-2">
-                      Type:{" "}
-                      {
-                        (conflictDetails.conflict.details as TimeOffRequest)
-                          .type
-                      }
-                      <br />
-                      Du{" "}
-                      {new Date(
-                        (conflictDetails.conflict.details as TimeOffRequest)
-                          .startDate,
-                      ).toLocaleDateString("fr-FR")}{" "}
-                      au{" "}
-                      {new Date(
-                        (conflictDetails.conflict.details as TimeOffRequest)
-                          .endDate,
-                      ).toLocaleDateString("fr-FR")}
-                    </div>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(conflictDetails.date).toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Conflict Details */}
+            <div className="space-y-3">
+              <div
+                className={`flex items-start gap-3 p-4 rounded-lg border-2 ${
+                  conflictDetails.conflict.severity === "high"
+                    ? "bg-red-50 border-red-400"
+                    : "bg-yellow-50 border-yellow-400"
+                }`}
+              >
+                <div
+                  className={`p-2 rounded-full shrink-0 ${
+                    conflictDetails.conflict.severity === "high"
+                      ? "bg-red-600"
+                      : "bg-yellow-600"
+                  }`}
+                >
+                  {conflictDetails.conflict.type === "time_off" ? (
+                    <Ban className="h-5 w-5 text-white" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 text-white" />
                   )}
-                {conflictDetails.conflict.type === "double_booking" &&
-                  conflictDetails.conflict.details && (
-                    <div className="text-sm text-muted-foreground mt-2">
-                      Service existant:{" "}
-                      {
-                        (conflictDetails.conflict.details as AgentShift)
-                          .startTime
-                      }{" "}
-                      -{" "}
-                      {(conflictDetails.conflict.details as AgentShift).endTime}
-                      <br />
-                      Site:{" "}
-                      {
-                        mockSites.find(
-                          (s) =>
-                            s.id ===
-                            (conflictDetails.conflict.details as AgentShift)
-                              .siteId,
-                        )?.name
-                      }
-                    </div>
-                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-base mb-2 text-gray-900">
+                    {conflictDetails.conflict.message}
+                  </div>
+
+                  {/* Time Off Details */}
+                  {conflictDetails.conflict.type === "time_off" &&
+                    conflictDetails.conflict.details && (
+                      <div className="space-y-2 text-sm text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-white font-semibold text-gray-900 border border-gray-300"
+                          >
+                            {
+                              (
+                                conflictDetails.conflict
+                                  .details as TimeOffRequest
+                              ).type
+                            }
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            className="bg-white font-semibold text-gray-900 border border-gray-300"
+                          >
+                            {
+                              (
+                                conflictDetails.conflict
+                                  .details as TimeOffRequest
+                              ).totalDays
+                            }{" "}
+                            jour
+                            {(
+                              conflictDetails.conflict.details as TimeOffRequest
+                            ).totalDays > 1
+                              ? "s"
+                              : ""}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 font-semibold text-gray-900">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            Du{" "}
+                            {new Date(
+                              (
+                                conflictDetails.conflict
+                                  .details as TimeOffRequest
+                              ).startDate,
+                            ).toLocaleDateString("fr-FR")}{" "}
+                            au{" "}
+                            {new Date(
+                              (
+                                conflictDetails.conflict
+                                  .details as TimeOffRequest
+                              ).endDate,
+                            ).toLocaleDateString("fr-FR")}
+                          </span>
+                        </div>
+                        {(conflictDetails.conflict.details as TimeOffRequest)
+                          .reason && (
+                          <div className="mt-2 p-3 bg-white rounded border border-gray-300">
+                            <div className="font-bold text-gray-900 mb-1">
+                              Raison:
+                            </div>
+                            <div className="text-gray-900">
+                              {
+                                (
+                                  conflictDetails.conflict
+                                    .details as TimeOffRequest
+                                ).reason
+                              }
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  {/* Double Booking Details */}
+                  {conflictDetails.conflict.type === "double_booking" &&
+                    conflictDetails.conflict.details && (
+                      <div className="space-y-2 text-sm text-gray-900">
+                        <div className="flex items-center gap-2 font-semibold">
+                          <Clock className="h-4 w-4" />
+                          <span className="font-bold">
+                            {
+                              (conflictDetails.conflict.details as AgentShift)
+                                .startTime
+                            }{" "}
+                            -{" "}
+                            {
+                              (conflictDetails.conflict.details as AgentShift)
+                                .endTime
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 font-semibold">
+                          <MapPin className="h-4 w-4" />
+                          <span>
+                            {
+                              mockSites.find(
+                                (s) =>
+                                  s.id ===
+                                  (
+                                    conflictDetails.conflict
+                                      .details as AgentShift
+                                  ).siteId,
+                              )?.name
+                            }
+                          </span>
+                        </div>
+                        {(conflictDetails.conflict.details as AgentShift)
+                          .notes && (
+                          <div className="mt-2 p-3 bg-white rounded border border-gray-300">
+                            <div className="font-bold text-gray-900 mb-1">
+                              Notes:
+                            </div>
+                            <div className="text-gray-900">
+                              {
+                                (conflictDetails.conflict.details as AgentShift)
+                                  .notes
+                              }
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                </div>
               </div>
             </div>
           </div>
@@ -1679,7 +1938,6 @@ function DailyView({
   date,
   agents,
   shifts,
-  editMode,
   copiedShift,
   onCreateShift,
   onEditShift,
@@ -1689,11 +1947,13 @@ function DailyView({
   onConflictClick,
   getDateConflict,
   getOvernightShift,
+  calculateAgentHours,
+  onRemoveAgent,
+  onAssignAgent,
 }: {
   date: Date;
   agents: { agentId: string; agentName: string }[];
   shifts: AgentShift[];
-  editMode: boolean;
   copiedShift: AgentShift | null;
   onCreateShift: (agentId: string, date: string) => void;
   onEditShift: (shift: AgentShift) => void;
@@ -1703,6 +1963,9 @@ function DailyView({
   onConflictClick: (agentId: string, date: string) => void;
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   getOvernightShift: (agentId: string, date: string) => AgentShift | null;
+  calculateAgentHours: (agentId: string, dates: Date[]) => number;
+  onRemoveAgent: (agentId: string) => void;
+  onAssignAgent: () => void;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const dateStr = formatDate(date);
@@ -1727,7 +1990,7 @@ function DailyView({
 
       {/* Timeline header */}
       <div className="flex mb-2">
-        <div className="w-48 shrink-0" />
+        <div className="w-56 shrink-0" />
         <div className="flex-1 flex border-b">
           {Array.from({ length: 24 }, (_, i) => (
             <div
@@ -1741,7 +2004,7 @@ function DailyView({
       </div>
 
       {/* Agent rows */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {agents.map(({ agentId, agentName }) => {
           const shift = shifts.find(
             (s) => s.agentId === agentId && s.date === dateStr,
@@ -1749,14 +2012,33 @@ function DailyView({
           const overnightShift = getOvernightShift(agentId, dateStr);
           const conflict = getDateConflict(agentId, dateStr);
           const isPast = isDateInPast(dateStr);
+          const agentHours = calculateAgentHours(agentId, [date]);
 
           return (
-            <div key={agentId} className="flex items-center gap-2">
-              <div className="w-48 shrink-0 p-2 bg-muted rounded font-medium text-sm">
-                {agentName}
+            <div key={agentId} className="flex items-center gap-3">
+              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg group relative">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => onRemoveAgent(agentId)}
+                  title="Retirer l'agent"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+                <div className="font-medium text-sm mb-2">{agentName}</div>
+                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="font-bold text-base text-primary">
+                    {agentHours.toFixed(1)}h
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    aujourd&apos;hui
+                  </span>
+                </div>
               </div>
 
-              <div className="flex-1 relative h-12 border rounded bg-background">
+              <div className="flex-1 relative h-24 border rounded-lg bg-background">
                 {/* 24-hour grid */}
                 {Array.from({ length: 24 }, (_, i) => (
                   <div
@@ -1769,20 +2051,43 @@ function DailyView({
                 {/* Overnight continuation from previous day */}
                 {overnightShift && (
                   <div
-                    className="absolute top-1 bottom-1 rounded border-2 border-dashed flex items-center justify-center text-xs font-medium cursor-pointer opacity-50"
+                    className="absolute top-2 bottom-2 flex flex-col items-start justify-center text-xs font-medium cursor-pointer hover:shadow-md transition-all overflow-hidden"
                     style={{
                       left: "0%",
                       width: `${
                         (parseInt(overnightShift.endTime.split(":")[0]) / 24) *
                         100
                       }%`,
-                      backgroundColor: overnightShift.color + "40",
-                      borderColor: overnightShift.color,
-                      color: overnightShift.color,
+                      backgroundColor: overnightShift.color,
+                      color: "#fff",
+                      borderRadius: "0 0.5rem 0.5rem 0",
                     }}
-                    onClick={() => editMode && onEditShift(overnightShift)}
+                    onClick={() => onEditShift(overnightShift)}
                   >
-                    {overnightShift.startTime} - {overnightShift.endTime}
+                    {/* Left edge indicator showing continuation from previous day */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/40" />
+
+                    {/* Diagonal stripes pattern for continuation indicator */}
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-8 opacity-20"
+                      style={{
+                        background:
+                          "repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 8px)",
+                      }}
+                    />
+
+                    <div className="px-3 flex flex-col gap-1 relative z-10">
+                      <div className="font-bold text-sm flex items-center gap-2">
+                        <Moon className="h-3.5 w-3.5" />
+                        {overnightShift.startTime} - {overnightShift.endTime}
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="text-xs h-5 bg-white/20 text-white border-0 w-fit"
+                      >
+                        Nuit précédente
+                      </Badge>
+                    </div>
                   </div>
                 )}
 
@@ -1790,19 +2095,31 @@ function DailyView({
                 {shift ? (
                   <ShiftBlock
                     shift={shift}
-                    editMode={editMode}
+                    conflict={conflict}
                     onEdit={onEditShift}
                     onDelete={onDeleteShift}
                     onCopy={onCopyShift}
+                    onConflictClick={onConflictClick}
                   />
-                ) : editMode && !isPast ? (
+                ) : !isPast ? (
                   conflict?.type === "time_off" ? (
                     <button
                       onClick={() => onConflictClick(agentId, dateStr)}
-                      className="absolute inset-1 flex items-center justify-center gap-2 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                      className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-200"
                     >
                       <Ban className="h-4 w-4" />
-                      <span className="text-xs font-medium">Congé</span>
+                      <span className="text-sm font-medium">Congé</span>
+                    </button>
+                  ) : conflict?.type === "double_booking" ? (
+                    <button
+                      onClick={() => onConflictClick(agentId, dateStr)}
+                      disabled
+                      className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Double affectation
+                      </span>
                     </button>
                   ) : (
                     <button
@@ -1811,52 +2128,46 @@ function DailyView({
                           ? onPasteShift(agentId, dateStr)
                           : onCreateShift(agentId, dateStr)
                       }
-                      className="absolute inset-1 flex items-center justify-center gap-2 rounded hover:bg-primary/10 transition-colors group"
+                      className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg hover:bg-primary/10 transition-colors group border border-dashed border-muted-foreground/30"
                     >
                       {copiedShift ? (
                         <>
                           <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                          <span className="text-xs text-muted-foreground group-hover:text-primary">
+                          <span className="text-sm text-muted-foreground group-hover:text-primary">
                             Coller
                           </span>
                         </>
                       ) : (
                         <>
                           <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                          <span className="text-xs text-muted-foreground group-hover:text-primary">
-                            Ajouter
+                          <span className="text-sm text-muted-foreground group-hover:text-primary">
+                            Ajouter un créneau
                           </span>
                         </>
-                      )}
-                      {conflict?.type === "double_booking" && (
-                        <AlertTriangle className="h-3 w-3 text-yellow-500" />
                       )}
                     </button>
                   )
                 ) : isPast ? (
-                  <div className="absolute inset-1 flex items-center justify-center text-xs text-muted-foreground">
+                  <div className="absolute inset-2 flex items-center justify-center text-sm text-muted-foreground">
                     Date passée
                   </div>
                 ) : null}
-
-                {conflict && (
-                  <button
-                    onClick={() => onConflictClick(agentId, dateStr)}
-                    className="absolute top-1 right-1 z-10"
-                  >
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        conflict.type === "time_off"
-                          ? "bg-red-500"
-                          : "bg-yellow-500"
-                      }`}
-                    />
-                  </button>
-                )}
               </div>
             </div>
           );
         })}
+
+        {/* Add Agent Button */}
+        <div className="flex items-center gap-3 mt-2">
+          <Button
+            variant="outline"
+            className="w-56 shrink-0 border-dashed"
+            onClick={onAssignAgent}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Assigner un agent
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -1865,16 +2176,18 @@ function DailyView({
 // Shift Block Component (for daily timeline)
 function ShiftBlock({
   shift,
-  editMode,
+  conflict,
   onEdit,
   onDelete,
   onCopy,
+  onConflictClick,
 }: {
   shift: AgentShift;
-  editMode: boolean;
+  conflict: DateConflict | null;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
+  onConflictClick: (agentId: string, date: string) => void;
 }) {
   const [startHour, startMin] = shift.startTime.split(":").map(Number);
   const [endHour, endMin] = shift.endTime.split(":").map(Number);
@@ -1888,6 +2201,18 @@ function ShiftBlock({
 
   const widthPercent = endPercent - startPercent;
 
+  // Calculate shift duration
+  const calculateDuration = () => {
+    let minutes = endHour * 60 + endMin - (startHour * 60 + startMin);
+    if (minutes < 0) minutes += 24 * 60;
+    minutes -= shift.breakDuration;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0
+      ? `${hours}h${mins.toString().padStart(2, "0")}`
+      : `${hours}h`;
+  };
+
   const isShiftInPast = (s: AgentShift) => {
     const check = new Date(s.date);
     const today = new Date();
@@ -1899,71 +2224,164 @@ function ShiftBlock({
   const getShiftCompletionStatus = (s: AgentShift) => {
     if (!isShiftInPast(s)) return null;
     if (s.completed)
-      return { type: "completed", label: "Terminé", color: "#10b981" };
-    if (s.noShow) return { type: "no_show", label: "Absent", color: "#ef4444" };
-    return { type: "pending", label: "En attente", color: "#6b7280" };
+      return {
+        type: "completed",
+        label: "Terminé",
+        color: "#10b981",
+        icon: CheckCircle,
+      };
+    if (s.noShow)
+      return {
+        type: "no_show",
+        label: "Absent",
+        color: "#ef4444",
+        icon: XCircle,
+      };
+    return {
+      type: "pending",
+      label: "En attente",
+      color: "#f59e0b",
+      icon: Timer,
+    };
   };
 
   const isPast = isShiftInPast(shift);
   const completionStatus = getShiftCompletionStatus(shift);
+  const duration = calculateDuration();
+
+  // Check if shift is overnight (extends past midnight)
+  const isOvernight = endPercent >= 100;
+  const continuesNextDay =
+    endHour < startHour || (endHour === 0 && endMin === 0 && startHour !== 0);
 
   return (
     <div
-      className={`absolute top-1 bottom-1 rounded border-2 flex items-center px-2 group cursor-pointer ${
-        isPast ? "opacity-70" : ""
+      className={`absolute top-2 bottom-2 border-l-4 flex flex-col p-3 group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
+        isPast ? "opacity-80" : ""
       }`}
       style={{
         left: `${startPercent}%`,
         width: `${widthPercent}%`,
-        backgroundColor: shift.color + "40",
-        borderColor: shift.color,
-        color: shift.color,
+        backgroundColor: shift.color,
+        borderLeftColor: shift.color,
+        borderRadius: isOvernight ? "0.5rem 0 0 0.5rem" : "0.5rem",
       }}
-      onClick={() => editMode && !isPast && onEdit(shift)}
+      onClick={() => !isPast && onEdit(shift)}
     >
-      {completionStatus && (
-        <div
-          className="absolute left-1 top-1 bottom-1 w-1 rounded"
-          style={{ backgroundColor: completionStatus.color }}
-        />
+      {/* Right edge indicator for overnight shifts that continue to next day */}
+      {isOvernight && continuesNextDay && (
+        <>
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/40" />
+          <div
+            className="absolute right-0 top-0 bottom-0 w-8 opacity-20"
+            style={{
+              background:
+                "repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 8px)",
+            }}
+          />
+        </>
+      )}
+      {/* Conflict/Warning indicator at top-right corner */}
+      {conflict && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onConflictClick(shift.agentId, shift.date);
+          }}
+          className="absolute -top-1 -right-1 z-10 p-1 bg-white rounded-full shadow-md"
+        >
+          {conflict.type === "time_off" ? (
+            <Ban className="h-4 w-4 text-red-500" />
+          ) : (
+            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          )}
+        </button>
       )}
 
-      <div className="flex-1 truncate text-xs font-medium">
-        {shift.startTime} - {shift.endTime}
-      </div>
-
-      {editMode && !isPast && (
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Header with time and actions */}
+      <div className="flex items-start justify-between gap-2 relative z-10">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-white truncate flex items-center gap-2">
+            {continuesNextDay && <Moon className="h-3.5 w-3.5 flex-shrink-0" />}
+            {shift.startTime} - {shift.endTime}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <Badge
+              variant="secondary"
+              className="text-xs h-5 bg-white/20 text-white border-0"
+            >
+              <Clock className="h-3 w-3 mr-1" />
+              {duration}
+            </Badge>
+            {shift.breakDuration > 0 && (
+              <span className="text-xs text-white/80">
+                Pause: {shift.breakDuration}min
+              </span>
+            )}
+            {completionStatus && (
+              <Badge
+                variant="secondary"
+                className="text-xs h-5 font-semibold border-0 gap-1"
+                style={{
+                  backgroundColor: completionStatus.color,
+                  color: "#fff",
+                }}
+              >
+                <completionStatus.icon className="h-3 w-3" />
+                {completionStatus.label}
+              </Badge>
+            )}
+          </div>
+        </div>
+        {!isPast && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0"
+                className="h-7 w-7 p-0 hover:bg-white/20 bg-white/10 rounded shrink-0"
                 onClick={(e) => e.stopPropagation()}
               >
-                <MoreVertical className="h-3 w-3" />
+                <MoreVertical className="h-4 w-4 text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(shift)}>
-                <Pencil className="h-3 w-3 mr-2" />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(shift);
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
                 Modifier
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onCopy(shift)}>
-                <Copy className="h-3 w-3 mr-2" />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopy(shift);
+                }}
+              >
+                <Copy className="h-4 w-4 mr-2" />
                 Copier
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onDelete(shift.id)}
-                className="text-destructive"
+                variant="destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(shift.id);
+                }}
               >
-                <Trash2 className="h-3 w-3 mr-2" />
+                <Trash2 className="h-4 w-4 mr-2" />
                 Supprimer
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+        )}
+      </div>
+
+      {/* Notes */}
+      {shift.notes && (
+        <div className="text-xs text-white/80 truncate mt-1">{shift.notes}</div>
       )}
     </div>
   );
@@ -1974,7 +2392,6 @@ function WeeklyView({
   dates,
   agents,
   shifts,
-  editMode,
   copiedShift,
   copiedWeekDates,
   copiedWeekAgentId,
@@ -1993,7 +2410,6 @@ function WeeklyView({
   dates: Date[];
   agents: { agentId: string; agentName: string }[];
   shifts: AgentShift[];
-  editMode: boolean;
   copiedShift: AgentShift | null;
   copiedWeekDates: string[] | null;
   copiedWeekAgentId: string | null;
@@ -2019,7 +2435,7 @@ function WeeklyView({
   };
 
   const weekDates = dates.map(formatDate);
-  const showActions = editMode;
+  const showActions = true;
 
   return (
     <div>
@@ -2099,12 +2515,11 @@ function WeeklyView({
                     {shift ? (
                       <ShiftCard
                         shift={shift}
-                        editMode={editMode}
                         onEdit={onEditShift}
                         onDelete={onDeleteShift}
                         onCopy={onCopyShift}
                       />
-                    ) : editMode && !isPast ? (
+                    ) : !isPast ? (
                       conflict?.type === "time_off" ? (
                         <button
                           onClick={() => onConflictClick(agentId, dateStr)}
@@ -2165,27 +2580,21 @@ function WeeklyView({
 
               {showActions && (
                 <div className="w-12 shrink-0 border-l flex items-center justify-center">
-                  {editMode && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {hasAnyShift && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {hasAnyShift && (
+                        <>
                           <DropdownMenuItem
                             onClick={() => onCopyWeek(agentId, weekDates)}
                           >
                             <Copy className="h-3 w-3 mr-2" />
                             Copier la semaine
                           </DropdownMenuItem>
-                        )}
-                        {hasAnyShift && (
                           <DropdownMenuItem
                             onClick={() => onDeleteWeek(agentId, weekDates)}
                             className="text-destructive"
@@ -2193,10 +2602,10 @@ function WeeklyView({
                             <Trash2 className="h-3 w-3 mr-2" />
                             Vider la semaine
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
 
@@ -2223,10 +2632,10 @@ function WeeklyView({
 
 // Monthly View Component
 function MonthlyView({
+  dates,
   weekGroups,
   agents,
   shifts,
-  editMode,
   copiedShift,
   copiedWeekDates,
   copiedWeekAgentId,
@@ -2242,10 +2651,10 @@ function MonthlyView({
   getDateConflict,
   calculateAgentHours,
 }: {
+  dates: Date[];
   weekGroups: { dates: Date[]; startIdx: number }[];
   agents: { agentId: string; agentName: string }[];
   shifts: AgentShift[];
-  editMode: boolean;
   copiedShift: AgentShift | null;
   copiedWeekDates: string[] | null;
   copiedWeekAgentId: string | null;
@@ -2276,7 +2685,7 @@ function MonthlyView({
         (week: { dates: Date[]; startIdx: number }, weekIdx: number) => {
           const weekDates = week.dates.map(formatDate);
           const isCompleteWeek = week.dates.length === 7;
-          const showActionsColumn = editMode && isCompleteWeek;
+          const showActionsColumn = isCompleteWeek;
 
           return (
             <div key={weekIdx} className="mb-6">
@@ -2383,12 +2792,11 @@ function MonthlyView({
                               {shift ? (
                                 <ShiftCard
                                   shift={shift}
-                                  editMode={editMode}
                                   onEdit={onEditShift}
                                   onDelete={onDeleteShift}
                                   onCopy={onCopyShift}
                                 />
-                              ) : editMode && !isPast ? (
+                              ) : !isPast ? (
                                 conflict?.type === "time_off" ? (
                                   <button
                                     onClick={() =>
@@ -2453,25 +2861,25 @@ function MonthlyView({
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 {hasAnyShift && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      onCopyWeek(agentId, weekDates)
-                                    }
-                                  >
-                                    <Copy className="h-3 w-3 mr-2" />
-                                    Copier la semaine
-                                  </DropdownMenuItem>
-                                )}
-                                {hasAnyShift && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      onDeleteWeek(agentId, weekDates)
-                                    }
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="h-3 w-3 mr-2" />
-                                    Vider la semaine
-                                  </DropdownMenuItem>
+                                  <>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        onCopyWeek(agentId, weekDates)
+                                      }
+                                    >
+                                      <Copy className="h-3 w-3 mr-2" />
+                                      Copier la semaine
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        onDeleteWeek(agentId, weekDates)
+                                      }
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-2" />
+                                      Vider la semaine
+                                    </DropdownMenuItem>
+                                  </>
                                 )}
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -2508,13 +2916,11 @@ function MonthlyView({
 // Shift Card Component (for weekly/monthly)
 function ShiftCard({
   shift,
-  editMode,
   onEdit,
   onDelete,
   onCopy,
 }: {
   shift: AgentShift;
-  editMode: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
@@ -2568,7 +2974,7 @@ function ShiftCard({
         borderLeftColor: shift.color,
         backgroundColor: shift.color + "20",
       }}
-      onClick={() => editMode && !isPast && onEdit(shift)}
+      onClick={() => !isPast && onEdit(shift)}
     >
       {completionStatus && (
         <div
@@ -2591,17 +2997,17 @@ function ShiftCard({
         )}
       </div>
 
-      {editMode && !isPast && (
-        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      {!isPast && (
+        <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 w-6 p-0 bg-background"
+                className="h-6 w-6 p-0 bg-background/90 backdrop-blur-sm shadow-sm"
                 onClick={(e) => e.stopPropagation()}
               >
-                <MoreVertical className="h-3 w-3" />
+                <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
