@@ -33,6 +33,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -667,13 +668,26 @@ export default function SchedulePage() {
   ) => {
     if (!copiedWeekDates || !copiedWeekAgentId || !selectedSiteId) return;
 
-    // Check for time-off conflicts
-    const hasTimeOffConflict = targetDates.some((date) => {
+    // Check if agent's week is empty
+    const hasExistingShifts = targetDates.some((date) => {
+      if (isDateInPast(date)) return false;
+      return agentShifts.some(
+        (s) =>
+          s.agentId === agentId &&
+          s.date === date &&
+          s.siteId === selectedSiteId,
+      );
+    });
+
+    if (hasExistingShifts) return;
+
+    // Check for time-off conflicts - these cannot be overridden
+    const timeOffDates = targetDates.filter((date) => {
       if (isDateInPast(date)) return false;
       return hasTimeOff(agentId, date);
     });
 
-    if (hasTimeOffConflict) return;
+    if (timeOffDates.length > 0) return;
 
     // Check for double booking conflicts
     const hasDoubleBooking = targetDates.some((date) => {
@@ -702,16 +716,6 @@ export default function SchedulePage() {
       if (isDateInPast(targetDate)) return;
       const sourceShift = sourceShifts[idx];
       if (!sourceShift) return;
-
-      const existingShift = agentShifts.find(
-        (s) =>
-          s.agentId === agentId &&
-          s.date === targetDate &&
-          s.siteId === selectedSiteId,
-      );
-      if (existingShift) {
-        setAgentShifts((prev) => prev.filter((s) => s.id !== existingShift.id));
-      }
 
       newShifts.push({
         ...sourceShift,
@@ -1206,6 +1210,7 @@ export default function SchedulePage() {
               onConflictClick={handleConflictClick}
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
+              onAssignAgent={() => setShowAgentCommand(true)}
             />
           )}
 
@@ -1539,7 +1544,7 @@ export default function SchedulePage() {
                       onClick={() =>
                         setShiftForm({ ...shiftForm, breakDuration: min })
                       }
-                      className="flex-1 min-w-[80px]"
+                      className="flex-1 min-w-20"
                     >
                       {min === 0 ? "Aucune" : `${min}min`}
                     </Button>
@@ -1649,35 +1654,44 @@ export default function SchedulePage() {
         onOpenChange={setShowConflictModal}
         type="warning"
         title="Conflit détecté"
-        actions={{
-          tertiary: {
-            label: "Supprimer de l'autre site",
-            onClick: () => {
-              if (!conflictDetails?.conflict.details) return;
-              const conflictingShift = conflictDetails.conflict
-                .details as AgentShift;
-              if (
-                conflictDetails.conflict.type === "double_booking" &&
-                conflictingShift.id
-              ) {
-                handleDeleteShift(conflictingShift.id);
+        actions={
+          conflictDetails?.conflict.type === "time_off"
+            ? {
+                primary: {
+                  label: "Fermer",
+                  onClick: () => setShowConflictModal(false),
+                },
               }
-              setShowConflictModal(false);
-              setConflictDetails(null);
-            },
-            variant: "outline",
-          },
-          secondary: {
-            label: "Garder ici",
-            onClick: () => setShowConflictModal(false),
-            variant: "outline",
-          },
-          primary: {
-            label: "Supprimer d'ici",
-            onClick: handleRemoveConflictingShift,
-            variant: "destructive",
-          },
-        }}
+            : {
+                tertiary: {
+                  label: "Supprimer de l'autre site",
+                  onClick: () => {
+                    if (!conflictDetails?.conflict.details) return;
+                    const conflictingShift = conflictDetails.conflict
+                      .details as AgentShift;
+                    if (
+                      conflictDetails.conflict.type === "double_booking" &&
+                      conflictingShift.id
+                    ) {
+                      handleDeleteShift(conflictingShift.id);
+                    }
+                    setShowConflictModal(false);
+                    setConflictDetails(null);
+                  },
+                  variant: "outline",
+                },
+                secondary: {
+                  label: "Garder ici",
+                  onClick: () => setShowConflictModal(false),
+                  variant: "outline",
+                },
+                primary: {
+                  label: "Supprimer d'ici",
+                  onClick: handleRemoveConflictingShift,
+                  variant: "destructive",
+                },
+              }
+        }
       >
         {conflictDetails && (
           <div className="space-y-4">
@@ -2406,6 +2420,7 @@ function WeeklyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
+  onAssignAgent,
 }: {
   dates: Date[];
   agents: { agentId: string; agentName: string }[];
@@ -2424,6 +2439,7 @@ function WeeklyView({
   onConflictClick: (agentId: string, date: string) => void;
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
+  onAssignAgent: () => void;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -2439,150 +2455,169 @@ function WeeklyView({
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex mb-2" style={{ minWidth: "800px" }}>
-        <div className="w-48 shrink-0 p-2">
-          <div className="font-medium">Agent</div>
-          <div className="text-xs text-muted-foreground">Heures</div>
-        </div>
-        {dates.map((date: Date, idx: number) => {
-          const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-          return (
-            <div
-              key={idx}
-              className="flex-1 text-center p-2 border-l"
-              style={{ minWidth: "150px" }}
-            >
+      {/* Header with dates as x-axis */}
+      <div className="flex mb-4 gap-2">
+        <div className="w-56 shrink-0" />
+        <div className="flex-1 flex gap-2">
+          {dates.map((date: Date, idx: number) => {
+            return (
               <div
-                className={`text-sm font-medium ${
-                  isWeekend ? "text-muted-foreground" : ""
-                }`}
+                key={idx}
+                className={`flex-1 text-center p-3 rounded-lg`}
+                style={{ minWidth: "120px" }}
               >
-                {date.toLocaleDateString("fr-FR", { weekday: "short" })}
+                <div className="text-sm font-medium">
+                  {date.toLocaleDateString("fr-FR", { weekday: "short" })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {date.toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {date.toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </div>
-            </div>
-          );
-        })}
-        {showActions && <div className="w-12 shrink-0 border-l" />}
+            );
+          })}
+          <div className="w-10 shrink-0" />
+        </div>
       </div>
 
       {/* Agent rows */}
-      <div className="space-y-1" style={{ minWidth: "800px" }}>
+      <div className="space-y-3">
         {agents.map(({ agentId, agentName }) => {
           const agentHours = calculateAgentHours(agentId, dates);
           const hasAnyShift = weekDates.some((date) =>
             shifts.find((s) => s.agentId === agentId && s.date === date),
           );
 
+          const hasWeekConflicts = weekDates.some((date) => {
+            const conflict = getDateConflict(agentId, date);
+            return conflict !== null;
+          });
+
           const showWeekPasteBlock =
             copiedWeekDates &&
             copiedWeekAgentId &&
             !hasAnyShift &&
+            !hasWeekConflicts &&
             weekDates.every((d) => !isDateInPast(d));
 
           return (
-            <div key={agentId} className="flex items-stretch border rounded">
-              <div className="w-48 shrink-0 p-2 bg-muted flex flex-col justify-center">
-                <div className="font-medium text-sm">{agentName}</div>
-                <div className="text-xs text-muted-foreground">
-                  {agentHours.toFixed(1)}h
+            <div key={agentId} className="flex items-start gap-3">
+              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg group relative">
+                <div className="font-medium text-sm mb-2">{agentName}</div>
+                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="font-bold text-base text-primary">
+                    {agentHours.toFixed(1)}h
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    cette semaine
+                  </span>
                 </div>
               </div>
 
-              {dates.map((date: Date, idx: number) => {
-                const dateStr = formatDate(date);
-                const shift = shifts.find(
-                  (s) => s.agentId === agentId && s.date === dateStr,
-                );
-                const conflict = getDateConflict(agentId, dateStr);
-                const isPast = isDateInPast(dateStr);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+              <div className="flex-1 relative flex gap-2">
+                {dates.map((date: Date, idx: number) => {
+                  const dateStr = formatDate(date);
+                  const shift = shifts.find(
+                    (s) => s.agentId === agentId && s.date === dateStr,
+                  );
+                  const conflict = getDateConflict(agentId, dateStr);
+                  const isPast = isDateInPast(dateStr);
+                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
-                return (
-                  <div
-                    key={idx}
-                    className={`flex-1 border-l p-1 ${
-                      isWeekend ? "bg-muted/30" : ""
-                    }`}
-                    style={{ minWidth: "150px" }}
-                  >
-                    {shift ? (
-                      <ShiftCard
-                        shift={shift}
-                        onEdit={onEditShift}
-                        onDelete={onDeleteShift}
-                        onCopy={onCopyShift}
-                      />
-                    ) : !isPast ? (
-                      conflict?.type === "time_off" ? (
-                        <button
-                          onClick={() => onConflictClick(agentId, dateStr)}
-                          className="w-full h-full min-h-15 flex items-center justify-center gap-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
-                        >
-                          <Ban className="h-3 w-3" />
-                          <span className="text-xs">Congé</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            copiedShift
-                              ? onPasteShift(agentId, dateStr)
-                              : onCreateShift(agentId, dateStr)
-                          }
-                          className="w-full h-full min-h-15 flex flex-col items-center justify-center gap-1 rounded hover:bg-primary/10 group"
-                        >
-                          {copiedShift ? (
-                            <>
-                              <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                              <span className="text-xs text-muted-foreground group-hover:text-primary">
-                                Coller
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                            </>
-                          )}
-                          {conflict?.type === "double_booking" && (
-                            <AlertTriangle className="h-3 w-3 text-yellow-500 mt-1" />
-                          )}
-                        </button>
-                      )
-                    ) : isPast ? (
-                      <div className="w-full h-full min-h-15 flex items-center justify-center text-xs text-muted-foreground opacity-50">
-                        -
-                      </div>
-                    ) : null}
-
-                    {conflict && shift && (
-                      <button
-                        onClick={() => onConflictClick(agentId, dateStr)}
-                        className="absolute top-1 right-1"
-                      >
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            conflict.type === "time_off"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
-                          }`}
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex-1 border rounded-lg relative p-2 ${
+                        isWeekend ? "bg-muted/30" : "bg-background"
+                      } ${showWeekPasteBlock ? "invisible" : ""}`}
+                      style={{ minWidth: "140px", height: "120px" }}
+                    >
+                      {shift ? (
+                        <ShiftCard
+                          shift={shift}
+                          onEdit={onEditShift}
+                          onDelete={onDeleteShift}
+                          onCopy={onCopyShift}
                         />
-                      </button>
-                    )}
+                      ) : !isPast ? (
+                        conflict?.type === "time_off" ? (
+                          <button
+                            onClick={() => onConflictClick(agentId, dateStr)}
+                            className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors border border-red-200"
+                          >
+                            <Ban className="h-4 w-4" />
+                            <span className="text-sm font-medium">Congé</span>
+                          </button>
+                        ) : conflict?.type === "double_booking" ? (
+                          <button
+                            onClick={() => onConflictClick(agentId, dateStr)}
+                            disabled
+                            className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
+                          >
+                            <AlertTriangle className="h-4 w-4" />
+                            <span className="text-sm font-medium">
+                              Double affectation
+                            </span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              copiedShift
+                                ? onPasteShift(agentId, dateStr)
+                                : onCreateShift(agentId, dateStr)
+                            }
+                            className="absolute inset-2 flex items-center justify-center gap-2 rounded-lg hover:bg-primary/10 transition-colors group border border-dashed border-muted-foreground/30"
+                          >
+                            {copiedShift ? (
+                              <>
+                                <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                                <span className="text-sm text-muted-foreground group-hover:text-primary">
+                                  Coller
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                              </>
+                            )}
+                          </button>
+                        )
+                      ) : isPast ? (
+                        <div className="absolute inset-2 flex items-center justify-center text-sm text-muted-foreground">
+                          Date passée
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+
+                {showWeekPasteBlock && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded-lg cursor-pointer hover:bg-primary/10 transition-colors"
+                    onClick={() => onPasteWeek(agentId, weekDates)}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <Clipboard className="h-6 w-6 text-primary" />
+                      <span className="text-sm font-medium text-primary">
+                        Coller la semaine
+                      </span>
+                    </div>
                   </div>
-                );
-              })}
+                )}
+              </div>
 
               {showActions && (
-                <div className="w-12 shrink-0 border-l flex items-center justify-center">
+                <div className="w-12 shrink-0 h-24 flex items-center justify-center bg-muted/50 rounded-lg">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 hover:bg-muted"
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -2604,27 +2639,34 @@ function WeeklyView({
                           </DropdownMenuItem>
                         </>
                       )}
+                      {!hasAnyShift && (
+                        <DropdownMenuItem
+                          onClick={() => onDeleteWeek(agentId, weekDates)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3 mr-2" />
+                          Vider la semaine
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </div>
-              )}
-
-              {showWeekPasteBlock && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => onPasteWeek(agentId, weekDates)}
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Clipboard className="h-6 w-6 text-primary" />
-                    <span className="text-sm font-medium text-primary">
-                      Coller la semaine
-                    </span>
-                  </div>
                 </div>
               )}
             </div>
           );
         })}
+
+        {/* Add Agent Button */}
+        <div className="flex items-center gap-3 mt-2">
+          <Button
+            variant="outline"
+            className="w-56 shrink-0 border-dashed"
+            onClick={onAssignAgent}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Assigner un agent
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -2632,7 +2674,6 @@ function WeeklyView({
 
 // Monthly View Component
 function MonthlyView({
-  dates,
   weekGroups,
   agents,
   shifts,
@@ -2751,7 +2792,6 @@ function MonthlyView({
                       copiedWeekDates &&
                       copiedWeekAgentId &&
                       !hasAnyShift &&
-                      isCompleteWeek &&
                       weekDates.every((d) => !isDateInPast(d));
 
                     return (
@@ -2786,7 +2826,7 @@ function MonthlyView({
                               key={idx}
                               className={`flex-1 border-l p-1 relative ${
                                 isWeekend ? "bg-muted/30" : ""
-                              }`}
+                              } ${showWeekPasteBlock ? "invisible" : ""}`}
                               style={{ minWidth: "120px" }}
                             >
                               {shift ? (
@@ -2881,6 +2921,19 @@ function MonthlyView({
                                     </DropdownMenuItem>
                                   </>
                                 )}
+                                {showWeekPasteBlock && (
+                                  <>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        onPasteWeek(agentId, weekDates)
+                                      }
+                                    >
+                                      <Clipboard className="h-3 w-3 mr-2" />
+                                      Coller la semaine
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -2888,9 +2941,14 @@ function MonthlyView({
 
                         {showWeekPasteBlock && (
                           <div
-                            className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-6"
+                            className="absolute flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-6"
                             onClick={() => onPasteWeek(agentId, weekDates)}
-                            style={{ left: "192px" }}
+                            style={{
+                              left: "192px",
+                              right: "48px",
+                              top: 0,
+                              bottom: 0,
+                            }}
                           >
                             <div className="flex flex-col items-center gap-1">
                               <Clipboard className="h-5 w-5 text-primary" />
@@ -2936,9 +2994,25 @@ function ShiftCard({
   const getShiftCompletionStatus = (s: AgentShift) => {
     if (!isShiftInPast(s)) return null;
     if (s.completed)
-      return { type: "completed", label: "Terminé", color: "#10b981" };
-    if (s.noShow) return { type: "no_show", label: "Absent", color: "#ef4444" };
-    return { type: "pending", label: "En attente", color: "#6b7280" };
+      return {
+        type: "completed",
+        label: "Terminé",
+        color: "#10b981",
+        icon: CheckCircle,
+      };
+    if (s.noShow)
+      return {
+        type: "no_show",
+        label: "Absent",
+        color: "#ef4444",
+        icon: XCircle,
+      };
+    return {
+      type: "pending",
+      label: "En attente",
+      color: "#f59e0b",
+      icon: Timer,
+    };
   };
 
   const isOvernightShift = (startTime: string, endTime: string) => {
@@ -2959,7 +3033,9 @@ function ShiftCard({
     minutes -= breakDuration;
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours}h${mins > 0 ? mins.toString().padStart(2, "0") : ""}`;
+    return mins > 0
+      ? `${hours}h${mins.toString().padStart(2, "0")}`
+      : `${hours}h`;
   };
 
   const isPast = isShiftInPast(shift);
@@ -2967,80 +3043,116 @@ function ShiftCard({
 
   return (
     <div
-      className={`relative rounded p-2 border-l-4 group cursor-pointer ${
-        isPast ? "opacity-70" : ""
+      className={`relative rounded p-2 border-l-4 flex flex-col flex-1 group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
+        isPast ? "opacity-80" : ""
       }`}
       style={{
         borderLeftColor: shift.color,
-        backgroundColor: shift.color + "20",
+        backgroundColor: shift.color,
       }}
       onClick={() => !isPast && onEdit(shift)}
     >
       {completionStatus && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+          className="absolute left-0 top-0 bottom-0 w-1"
           style={{ backgroundColor: completionStatus.color }}
         />
       )}
 
-      <div className="text-xs font-medium mb-1">
-        {shift.startTime} - {shift.endTime}
-        {isOvernightShift(shift.startTime, shift.endTime) && (
-          <Moon className="inline h-3 w-3 ml-1" />
-        )}
-      </div>
-      <div className="text-xs text-muted-foreground">
-        {calculateShiftLength(
-          shift.startTime,
-          shift.endTime,
-          shift.breakDuration,
-        )}
+      <div className="flex items-start justify-between gap-2 relative z-10">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-white truncate flex items-center gap-2">
+            {isOvernightShift(shift.startTime, shift.endTime) && (
+              <Moon className="h-3.5 w-3.5 flex-shrink-0" />
+            )}
+            {shift.startTime} - {shift.endTime}
+          </div>
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            <Badge
+              variant="secondary"
+              className="text-xs h-5 bg-white/20 text-white border-0"
+            >
+              <Clock className="h-3 w-3 mr-1" />
+              {calculateShiftLength(
+                shift.startTime,
+                shift.endTime,
+                shift.breakDuration,
+              )}
+            </Badge>
+            {shift.breakDuration > 0 && (
+              <span className="text-xs text-white/80">
+                {shift.breakDuration}min
+              </span>
+            )}
+            {completionStatus && (
+              <Badge
+                variant="secondary"
+                className="text-xs h-5 font-semibold border-0 gap-1"
+                style={{
+                  backgroundColor: completionStatus.color,
+                  color: "#fff",
+                }}
+              >
+                <completionStatus.icon className="h-3 w-3" />
+                {completionStatus.label}
+              </Badge>
+            )}
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 hover:bg-white/20 bg-white/10 rounded shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-3.5 w-3.5 text-white" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {!isPast && (
+              <>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(shift);
+                  }}
+                >
+                  <Pencil className="h-3 w-3 mr-2" />
+                  Modifier
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopy(shift);
+              }}
+            >
+              <Copy className="h-3 w-3 mr-2" />
+              Copier
+            </DropdownMenuItem>
+            {!isPast && (
+              <>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(shift.id);
+                  }}
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-3 w-3 mr-2" />
+                  Supprimer
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {!isPast && (
-        <div className="absolute top-1 right-1 opacity-70 group-hover:opacity-100 transition-opacity">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 bg-background/90 backdrop-blur-sm shadow-sm"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(shift)}>
-                <Pencil className="h-3 w-3 mr-2" />
-                Modifier
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onCopy(shift)}>
-                <Copy className="h-3 w-3 mr-2" />
-                Copier
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete(shift.id)}
-                className="text-destructive"
-              >
-                <Trash2 className="h-3 w-3 mr-2" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-
-      {isPast && completionStatus && (
-        <div className="mt-1">
-          <Badge
-            variant="secondary"
-            className="text-xs"
-            style={{ backgroundColor: completionStatus.color + "20" }}
-          >
-            {completionStatus.label}
-          </Badge>
-        </div>
+      {shift.notes && (
+        <div className="text-xs text-white/80 truncate mt-1">{shift.notes}</div>
       )}
     </div>
   );
