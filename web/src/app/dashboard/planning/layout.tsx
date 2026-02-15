@@ -12,17 +12,6 @@ export default function PlanningLayout({
   children: React.ReactNode;
 }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("planningNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("planningNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -34,11 +23,8 @@ export default function PlanningLayout({
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={() => setIsCollapsed(!isCollapsed)}
         />
-        <PlanningNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <PlanningNavigationBar />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

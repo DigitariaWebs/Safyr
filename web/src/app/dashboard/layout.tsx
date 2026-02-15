@@ -24,6 +24,7 @@ import { SendEmailProvider } from "@/contexts/SendEmailContext";
 import { AgendaProvider } from "@/contexts/AgendaContext";
 import { LiensUtilesProvider } from "@/contexts/LiensUtilesContext";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { NavigationProvider } from "@/contexts/NavigationContext";
 import { AgendaModal } from "@/components/modals/AgendaModal";
 import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
 import Image from "next/image";
@@ -270,13 +271,15 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
-      <SendEmailProvider>
-        <AgendaProvider>
-          <LiensUtilesProvider>
-            <DashboardLayoutContent>{children}</DashboardLayoutContent>
-          </LiensUtilesProvider>
-        </AgendaProvider>
-      </SendEmailProvider>
+      <NavigationProvider>
+        <SendEmailProvider>
+          <AgendaProvider>
+            <LiensUtilesProvider>
+              <DashboardLayoutContent>{children}</DashboardLayoutContent>
+            </LiensUtilesProvider>
+          </AgendaProvider>
+        </SendEmailProvider>
+      </NavigationProvider>
     </SidebarProvider>
   );
 }

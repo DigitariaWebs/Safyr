@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, CalendarDays, Link2 } from "lucide-react";
+import { CalendarDays, Link2, LayoutGrid, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAgenda } from "@/contexts/AgendaContext";
 import { useLiensUtiles } from "@/contexts/LiensUtilesContext";
+import { useNavigation } from "@/contexts/NavigationContext";
 
 export interface ModuleTopBarProps {
   moduleTitle: string;
@@ -14,9 +15,6 @@ export interface ModuleTopBarProps {
   userInitials?: string;
   userAvatar?: string;
   showConteurs?: boolean;
-  collapsible?: boolean;
-  isCollapsed?: boolean;
-  onCollapseToggle?: () => void;
 }
 
 export function ModuleTopBar({
@@ -26,33 +24,30 @@ export function ModuleTopBar({
   userInitials = "JD",
   userAvatar,
   showConteurs = true,
-  collapsible = true,
-  isCollapsed = false,
-  onCollapseToggle,
 }: ModuleTopBarProps) {
   const { openAgenda } = useAgenda();
   const { openLiensUtiles } = useLiensUtiles();
+  const { isNavExpanded, toggleNavExpanded } = useNavigation();
 
   return (
     <header className="sticky top-0 z-10 border-b bg-card">
       <div className="flex h-14 items-center justify-between px-6">
-        {/* Left: Module Title and Collapse Button */}
+        {/* Left: Navigation Toggle and Module Title */}
         <div className="flex items-center gap-3">
-          {collapsible && onCollapseToggle && (
-            <button
-              onClick={onCollapseToggle}
-              className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-accent transition-colors"
-              aria-label={
-                isCollapsed ? "Expand navigation" : "Collapse navigation"
-              }
-            >
-              {isCollapsed ? (
-                <Menu className="h-4 w-4" />
-              ) : (
-                <X className="h-4 w-4" />
-              )}
-            </button>
-          )}
+          <button
+            onClick={toggleNavExpanded}
+            className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-accent transition-colors"
+            aria-label={
+              isNavExpanded ? "Collapse navigation" : "Expand navigation"
+            }
+            title={isNavExpanded ? "Voir menu compact" : "Voir tous les items"}
+          >
+            {isNavExpanded ? (
+              <LayoutList className="h-4 w-4" />
+            ) : (
+              <LayoutGrid className="h-4 w-4" />
+            )}
+          </button>
           <div className="flex items-center gap-2">
             <ModuleIcon className="h-5 w-5 text-primary" />
             <h1 className="font-serif text-lg font-light">{moduleTitle}</h1>

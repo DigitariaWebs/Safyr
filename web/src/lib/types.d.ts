@@ -2609,6 +2609,69 @@ export interface SiteStats {
   agentsDeployed: number;
   coverageRate: number; // Pourcentage de postes couverts
 }
+
+// ============================================================================
+// PLANNING TYPES - SITE SHIFTS & SCHEDULING
+// ============================================================================
+
+export type ShiftType = "standard" | "on_demand";
+
+export interface StandardShift {
+  id: string;
+  siteId: string;
+  name: string;
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  breakDuration: number; // minutes
+  color: string; // hex color
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AgentShift {
+  id: string;
+  agentId: string;
+  siteId: string;
+  date: string; // YYYY-MM-DD format
+  shiftType: ShiftType;
+  // For standard shifts
+  standardShiftId?: string;
+  // For on-demand shifts
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  breakDuration: number; // minutes
+  color: string; // hex color
+  notes?: string;
+  // Completion status (for past shifts)
+  completed?: boolean; // Whether the agent completed the shift
+  completedAt?: Date; // When the shift was marked as completed
+  noShow?: boolean; // Agent didn't show up for the shift
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SiteAgentAssignment {
+  id: string;
+  siteId: string;
+  agentId: string;
+  agentName: string;
+  assignedAt: Date;
+  active: boolean;
+}
+
+export interface ShiftCopyData {
+  agentId: string;
+  shiftType: ShiftType;
+  standardShiftId?: string;
+  startTime: string;
+  endTime: string;
+  breakDuration: number;
+  color: string;
+  notes?: string;
+}
+
+export type ScheduleViewType = "daily" | "weekly" | "monthly";
+
 // ============================================================================
 // PLANNING TYPES - ASSIGNMENTS & SCHEDULE
 // ============================================================================
