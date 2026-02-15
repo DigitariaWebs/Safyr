@@ -2721,252 +2721,272 @@ function MonthlyView({
   };
 
   return (
-    <div>
-      {weekGroups.map(
-        (week: { dates: Date[]; startIdx: number }, weekIdx: number) => {
-          const weekDates = week.dates.map(formatDate);
-          const isCompleteWeek = week.dates.length === 7;
-          const showActionsColumn = isCompleteWeek;
-
-          return (
-            <div key={weekIdx} className="mb-6">
-              {/* Week header */}
-              <div
-                className="flex mb-2 sticky top-0 bg-background z-10"
-                style={{ minWidth: "800px" }}
-              >
-                <div
-                  className="w-48 shrink-0 p-2"
-                  style={{
-                    marginLeft: weekIdx > 0 ? "-192px" : "0",
-                    marginRight: weekIdx > 0 ? "192px" : "0",
-                  }}
-                >
-                  <div className="font-medium">Agent</div>
-                  <div className="text-xs text-muted-foreground">Heures</div>
-                </div>
-                {week.dates.map((date: Date, idx: number) => {
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex-1 text-center p-2 border-l"
-                      style={{ minWidth: "120px" }}
-                    >
-                      <div
-                        className={`text-sm ${
-                          isWeekend ? "text-muted-foreground" : "font-medium"
-                        }`}
-                      >
-                        {date.toLocaleDateString("fr-FR", { weekday: "short" })}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {date.getDate()}
-                      </div>
-                    </div>
-                  );
-                })}
-                {showActionsColumn && (
-                  <div className="w-12 shrink-0 border-l" />
-                )}
-              </div>
-
-              {/* Agent rows */}
-              <div className="space-y-1" style={{ minWidth: "800px" }}>
-                {agents.map(
-                  ({
-                    agentId,
-                    agentName,
-                  }: {
-                    agentId: string;
-                    agentName: string;
-                  }) => {
-                    const agentHours = calculateAgentHours(agentId, week.dates);
-                    const hasAnyShift = weekDates.some((date: string) =>
-                      shifts.find(
-                        (s) => s.agentId === agentId && s.date === date,
-                      ),
-                    );
-
-                    const showWeekPasteBlock =
-                      copiedWeekDates &&
-                      copiedWeekAgentId &&
-                      !hasAnyShift &&
-                      weekDates.every((d) => !isDateInPast(d));
-
+    <div className="overflow-x-auto">
+      {/* Header row with sticky agent column */}
+      <div className="flex mb-4">
+        <div className="w-56 shrink-0 sticky left-0 bg-background z-20 pr-2">
+          <div className="p-2">
+            <div className="font-medium">Agent</div>
+            <div className="text-xs text-muted-foreground">Heures</div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {weekGroups.map(
+            (week: { dates: Date[]; startIdx: number }, weekIdx: number) => {
+              const isCompleteWeek = week.dates.length === 7;
+              return (
+                <div key={weekIdx} className="flex gap-0">
+                  {week.dates.map((date: Date, idx: number) => {
+                    const isWeekend =
+                      date.getDay() === 0 || date.getDay() === 6;
                     return (
                       <div
-                        key={agentId}
-                        className="flex items-stretch border rounded relative"
+                        key={idx}
+                        className="text-center p-2"
+                        style={{ width: "120px" }}
                       >
                         <div
-                          className="w-48 shrink-0 p-2 bg-muted flex flex-col justify-center sticky left-0 z-5"
-                          style={{
-                            boxShadow: "2px 0 4px rgba(0,0,0,0.05)",
-                          }}
+                          className={`text-sm ${
+                            isWeekend ? "text-muted-foreground" : "font-medium"
+                          }`}
                         >
-                          <div className="font-medium text-sm">{agentName}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {agentHours.toFixed(1)}h
-                          </div>
+                          {date.toLocaleDateString("fr-FR", {
+                            weekday: "short",
+                          })}
                         </div>
-
-                        {week.dates.map((date: Date, idx: number) => {
-                          const dateStr = formatDate(date);
-                          const shift = shifts.find(
-                            (s) => s.agentId === agentId && s.date === dateStr,
-                          );
-                          const conflict = getDateConflict(agentId, dateStr);
-                          const isPast = isDateInPast(dateStr);
-                          const isWeekend =
-                            date.getDay() === 0 || date.getDay() === 6;
-
-                          return (
-                            <div
-                              key={idx}
-                              className={`flex-1 border-l p-1 relative ${
-                                isWeekend ? "bg-muted/30" : ""
-                              } ${showWeekPasteBlock ? "invisible" : ""}`}
-                              style={{ minWidth: "120px" }}
-                            >
-                              {shift ? (
-                                <ShiftCard
-                                  shift={shift}
-                                  onEdit={onEditShift}
-                                  onDelete={onDeleteShift}
-                                  onCopy={onCopyShift}
-                                />
-                              ) : !isPast ? (
-                                conflict?.type === "time_off" ? (
-                                  <button
-                                    onClick={() =>
-                                      onConflictClick(agentId, dateStr)
-                                    }
-                                    className="w-full h-full min-h-12.5 flex items-center justify-center gap-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
-                                  >
-                                    <Ban className="h-3 w-3" />
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() =>
-                                      copiedShift
-                                        ? onPasteShift(agentId, dateStr)
-                                        : onCreateShift(agentId, dateStr)
-                                    }
-                                    className="w-full h-full min-h-12.5 flex items-center justify-center rounded hover:bg-primary/10 group"
-                                  >
-                                    {copiedShift ? (
-                                      <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                                    ) : (
-                                      <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                                    )}
-                                    {conflict?.type === "double_booking" && (
-                                      <AlertTriangle className="h-3 w-3 text-yellow-500 absolute bottom-1 right-1" />
-                                    )}
-                                  </button>
-                                )
-                              ) : null}
-
-                              {conflict && shift && (
-                                <button
-                                  onClick={() =>
-                                    onConflictClick(agentId, dateStr)
-                                  }
-                                  className="absolute top-1 right-1 z-10"
-                                >
-                                  <div
-                                    className={`w-2 h-2 rounded-full ${
-                                      conflict.type === "time_off"
-                                        ? "bg-red-500"
-                                        : "bg-yellow-500"
-                                    }`}
-                                  />
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-
-                        {showActionsColumn && (
-                          <div className="w-12 shrink-0 border-l flex items-center justify-center">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {hasAnyShift && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        onCopyWeek(agentId, weekDates)
-                                      }
-                                    >
-                                      <Copy className="h-3 w-3 mr-2" />
-                                      Copier la semaine
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        onDeleteWeek(agentId, weekDates)
-                                      }
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="h-3 w-3 mr-2" />
-                                      Vider la semaine
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                                {showWeekPasteBlock && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        onPasteWeek(agentId, weekDates)
-                                      }
-                                    >
-                                      <Clipboard className="h-3 w-3 mr-2" />
-                                      Coller la semaine
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        )}
-
-                        {showWeekPasteBlock && (
-                          <div
-                            className="absolute flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-6"
-                            onClick={() => onPasteWeek(agentId, weekDates)}
-                            style={{
-                              left: "192px",
-                              right: "48px",
-                              top: 0,
-                              bottom: 0,
-                            }}
-                          >
-                            <div className="flex flex-col items-center gap-1">
-                              <Clipboard className="h-5 w-5 text-primary" />
-                              <span className="text-xs font-medium text-primary">
-                                Coller
-                              </span>
-                            </div>
-                          </div>
-                        )}
+                        <div className="text-xs text-muted-foreground">
+                          {date.getDate()}
+                        </div>
                       </div>
                     );
-                  },
-                )}
+                  })}
+                  {isCompleteWeek && <div className="w-12 shrink-0" />}
+                </div>
+              );
+            },
+          )}
+        </div>
+      </div>
+
+      {/* Agent rows */}
+      <div className="space-y-3">
+        {agents.map(
+          ({ agentId, agentName }: { agentId: string; agentName: string }) => {
+            return (
+              <div key={agentId} className="flex">
+                <div className="w-56 shrink-0 p-3 bg-muted rounded-lg sticky left-0 z-10 mr-2 group relative">
+                  <div className="font-medium text-sm mb-2">{agentName}</div>
+                  <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span className="font-bold text-base text-primary">
+                      {weekGroups
+                        .reduce(
+                          (total, week) =>
+                            total + calculateAgentHours(agentId, week.dates),
+                          0,
+                        )
+                        .toFixed(1)}
+                      h
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      ce mois
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {weekGroups.map(
+                    (
+                      week: { dates: Date[]; startIdx: number },
+                      weekIdx: number,
+                    ) => {
+                      const weekDates = week.dates.map(formatDate);
+                      const isCompleteWeek = week.dates.length === 7;
+                      const hasAnyShift = weekDates.some((date: string) =>
+                        shifts.find(
+                          (s) => s.agentId === agentId && s.date === date,
+                        ),
+                      );
+
+                      const showWeekPasteBlock =
+                        copiedWeekDates &&
+                        copiedWeekAgentId &&
+                        !hasAnyShift &&
+                        weekDates.every((d) => !isDateInPast(d));
+
+                      return (
+                        <div key={weekIdx} className="flex relative">
+                          <div className="flex gap-0">
+                            {week.dates.map((date: Date, idx: number) => {
+                              const dateStr = formatDate(date);
+                              const shift = shifts.find(
+                                (s) =>
+                                  s.agentId === agentId && s.date === dateStr,
+                              );
+                              const conflict = getDateConflict(
+                                agentId,
+                                dateStr,
+                              );
+                              const isPast = isDateInPast(dateStr);
+                              const isWeekend =
+                                date.getDay() === 0 || date.getDay() === 6;
+
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`border rounded-lg relative p-1 ${
+                                    isWeekend ? "bg-muted/30" : "bg-background"
+                                  } ${showWeekPasteBlock ? "invisible" : ""}`}
+                                  style={{ width: "120px", height: "100px" }}
+                                >
+                                  {shift ? (
+                                    <ShiftCard
+                                      shift={shift}
+                                      onEdit={onEditShift}
+                                      onDelete={onDeleteShift}
+                                      onCopy={onCopyShift}
+                                    />
+                                  ) : !isPast ? (
+                                    conflict?.type === "time_off" ? (
+                                      <button
+                                        onClick={() =>
+                                          onConflictClick(agentId, dateStr)
+                                        }
+                                        className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
+                                      >
+                                        <Ban className="h-3 w-3" />
+                                      </button>
+                                    ) : conflict?.type === "double_booking" ? (
+                                      <button
+                                        onClick={() =>
+                                          onConflictClick(agentId, dateStr)
+                                        }
+                                        disabled
+                                        className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
+                                      >
+                                        <AlertTriangle className="h-3 w-3" />
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() =>
+                                          copiedShift
+                                            ? onPasteShift(agentId, dateStr)
+                                            : onCreateShift(agentId, dateStr)
+                                        }
+                                        className="absolute inset-1 flex items-center justify-center rounded hover:bg-primary/10 group border border-dashed border-muted-foreground/30"
+                                      >
+                                        {copiedShift ? (
+                                          <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                                        ) : (
+                                          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                                        )}
+                                      </button>
+                                    )
+                                  ) : isPast ? (
+                                    <div className="absolute inset-1 flex items-center justify-center text-xs text-muted-foreground">
+                                      Date passée
+                                    </div>
+                                  ) : null}
+
+                                  {conflict && shift && (
+                                    <button
+                                      onClick={() =>
+                                        onConflictClick(agentId, dateStr)
+                                      }
+                                      className="absolute top-1 right-1 z-10"
+                                    >
+                                      <div
+                                        className={`w-2 h-2 rounded-full ${
+                                          conflict.type === "time_off"
+                                            ? "bg-red-500"
+                                            : "bg-yellow-500"
+                                        }`}
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {isCompleteWeek && (
+                            <div className="w-12 shrink-0 flex items-center justify-center ml-0">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {hasAnyShift && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          onCopyWeek(agentId, weekDates)
+                                        }
+                                      >
+                                        <Copy className="h-3 w-3 mr-2" />
+                                        Copier la semaine
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          onDeleteWeek(agentId, weekDates)
+                                        }
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="h-3 w-3 mr-2" />
+                                        Vider la semaine
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {showWeekPasteBlock && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          onPasteWeek(agentId, weekDates)
+                                        }
+                                      >
+                                        <Clipboard className="h-3 w-3 mr-2" />
+                                        Coller la semaine
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          )}
+
+                          {showWeekPasteBlock && (
+                            <div
+                              className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-[5]"
+                              onClick={() => onPasteWeek(agentId, weekDates)}
+                              style={{
+                                right: isCompleteWeek ? "48px" : "0",
+                              }}
+                            >
+                              <div className="flex flex-col items-center gap-1">
+                                <Clipboard className="h-5 w-5 text-primary" />
+                                <span className="text-xs font-medium text-primary">
+                                  Coller
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        },
-      )}
+            );
+          },
+        )}
+      </div>
     </div>
   );
 }
