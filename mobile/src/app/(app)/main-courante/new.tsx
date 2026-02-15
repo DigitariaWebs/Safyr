@@ -230,7 +230,8 @@ export default function CreateMainCouranteEventScreen() {
         subtitle="Main Courante"
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            Fermer
+            <Ionicons name="close-outline" size={18} color={colors.foreground} />
+            <Text className="ml-1" style={{ color: colors.foreground }}>Fermer</Text>
           </Button>
         }
       />
@@ -363,7 +364,17 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <Button onPress={onSave} disabled={!canSubmit || saving}>
-            {saving ? "Enregistrement..." : "Enregistrer"}
+            {saving ? (
+              <>
+                <Ionicons name="hourglass-outline" size={18} color={colors.primaryForeground} />
+                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle-outline" size={18} color={colors.primaryForeground} />
+                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer</Text>
+              </>
+            )}
           </Button>
         </Card>
       </ScrollView>

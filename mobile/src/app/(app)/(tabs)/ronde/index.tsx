@@ -1,4 +1,5 @@
 import { Text, View, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,10 +27,12 @@ export default function RondeScreen() {
           </Text>
           <View className="flex-row gap-3">
             <Button onPress={() => {}} className="flex-1">
-              Démarrer
+              <Ionicons name="play-outline" size={18} color={colors.primaryForeground} />
+              <Text className="ml-2" style={{ color: colors.primaryForeground }}>Démarrer</Text>
             </Button>
             <Button variant="secondary" onPress={() => {}} className="flex-1">
-              Terminer
+              <Ionicons name="checkmark-circle-outline" size={18} color={colors.foreground} />
+              <Text className="ml-2" style={{ color: colors.foreground }}>Terminer</Text>
             </Button>
           </View>
         </Card>

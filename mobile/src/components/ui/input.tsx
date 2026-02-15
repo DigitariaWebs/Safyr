@@ -62,7 +62,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
       inputRange: [0, 1],
       outputRange: [
         scheme === "dark" ? colors.border : colors.border,
-        colors.primary,
+        scheme === "dark" ? colors.borderPrimary : colors.primary,
       ],
     });
 
@@ -87,18 +87,22 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             borderWidth: 1.5,
           }}
         >
-          <TextInput
-            ref={ref}
-            placeholderTextColor={colors.placeholder}
-            className={cn(
-              "flex-1 text-base text-foreground",
-              "leading-5",
-              className,
-            )}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            {...props}
-          />
+                      <TextInput
+                        ref={ref}
+                        placeholderTextColor={colors.placeholder}
+                        className={cn(
+                          "flex-1 text-base text-foreground",
+                          "leading-5",
+                          className,
+                        )}
+                        style={[
+                          { fontFamily: "Montserrat-Regular" },
+                          props.style,
+                        ]}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        {...props}
+                      />
         </Animated.View>
       </Animated.View>
     );

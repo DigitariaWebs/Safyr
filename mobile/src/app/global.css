@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -45,8 +47,8 @@
     --popover-foreground: 0 0% 96%;
     --primary: 195 85% 65%;           /* Cyan-blue - main accent */
     --primary-foreground: 0 0% 98%;   /* Light text on blue */
-    --secondary: 220 25% 15%;         /* Muted background */
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 220 10% 96%;         /* Light gray/white background for secondary buttons */
+    --secondary-foreground: 220 15% 10%; /* Black text on white secondary buttons */
     --muted: 220 25% 15%;             /* Muted background */
     --muted-foreground: 220 15% 70%;  /* Softer secondary text */
     --accent: 195 40% 20%;            /* Darker cyan-blue accent */
@@ -71,13 +73,20 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
+    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
     transition: background-color 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
                 color 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Apply Montserrat to all text elements */
+  p, span, div, h1, h2, h3, h4, h5, h6, a, button, input, textarea, select, label {
+    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
   }
 
   button {

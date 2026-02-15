@@ -69,14 +69,14 @@ export function Header({
         <View className="flex-1">
           <Text 
             className="text-2xl font-bold" 
-            style={{ color: colors.foreground }}
+            style={{ color: colors.foreground, fontFamily: "Montserrat-Bold" }}
           >
             {title}
           </Text>
           {subtitle ? (
             <Text 
               className="mt-0.5 text-sm" 
-              style={{ color: colors.foreground }}
+              style={{ color: colors.foreground, fontFamily: "Montserrat-Regular" }}
             >
               {subtitle}
             </Text>

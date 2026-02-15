@@ -1,8 +1,8 @@
 export const typography = {
   fontFamily: {
-    // Keep system-safe by default; you can later load the web fonts via expo-font.
-    sans: undefined,
-    mono: undefined,
+    // Montserrat font family
+    sans: "Montserrat",
+    mono: "Montserrat",
   },
   fontSize: {
     xs: 12,

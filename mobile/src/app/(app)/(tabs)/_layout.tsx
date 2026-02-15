@@ -38,17 +38,7 @@ export default function TabsLayout() {
           marginBottom: 4,
         },
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          height: Platform.OS === "ios" ? 60 + insets.bottom : 60,
-          paddingTop: 8,
-          paddingBottom: Math.max(insets.bottom, Platform.OS === "ios" ? 8 : 8),
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 8,
+          display: "none",
         },
       }}
     >

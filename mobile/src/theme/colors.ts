@@ -27,6 +27,10 @@ export interface ThemeColors {
     onAccent: string;
     accentForeground: string;
 
+    // Secondary colors
+    secondary: string;
+    secondaryForeground: string;
+
     // Status colors
     success: string;
     warning: string;
@@ -37,6 +41,7 @@ export interface ThemeColors {
     // Border and divider
     border: string;
     divider: string;
+    borderPrimary: string; // Dark cyan border for cards and primary elements
 
     // Interactive states
     disabled: string;
@@ -98,6 +103,9 @@ const lightColors: ThemeColors = {
     onAccent: hslToHex("210 70% 40%"),
     accentForeground: hslToHex("210 70% 40%"),
 
+    secondary: hslToHex("220 10% 96%"), // Light gray/white background
+    secondaryForeground: hslToHex("220 15% 10%"), // Black text on white buttons
+
     success: hslToHex("142 70% 40%"),
     warning: hslToHex("38 92% 50%"),
     error: hslToHex("0 72% 51%"),
@@ -106,6 +114,7 @@ const lightColors: ThemeColors = {
 
     border: hslToHex("220 13% 91%"),
     divider: hslToHex("220 13% 91%"),
+    borderPrimary: hslToHex("195 60% 45%"), // Dark cyan border for light theme
 
     disabled: hslToHex("220 8% 45%"),
     placeholder: hslToHex("220 8% 45%"),
@@ -142,6 +151,10 @@ const darkColors: ThemeColors = {
     onAccent: hslToHex("195 85% 70%"),       // Light cyan-blue on accent
     accentForeground: hslToHex("195 85% 70%"),
 
+    // Secondary: Light surface for secondary buttons (white/light background)
+    secondary: hslToHex("220 10% 96%"),       // Light gray/white background for secondary buttons
+    secondaryForeground: hslToHex("220 15% 10%"), // Black text on white secondary buttons
+
     // Status colors (refined for dark theme)
     success: hslToHex("145 65% 50%"),        // Soft green
     warning: hslToHex("38 85% 55%"),         // Soft amber
@@ -152,6 +165,7 @@ const darkColors: ThemeColors = {
     // Border: Very subtle, low contrast, elegant
     border: hslToHex("220 20% 18%"),         // Very subtle border
     divider: hslToHex("220 20% 16%"),       // Subtle divider
+    borderPrimary: hslToHex("195 70% 35%"), // Dark cyan border for cards and primary elements
 
     // Interactive states
     disabled: hslToHex("220 15% 30%"),       // Disabled state

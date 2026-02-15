@@ -44,7 +44,7 @@ export function Card({ className, style, animated = true, ...props }: CardProps)
     : colors.card;
   
   const cardBorderColor = scheme === "dark"
-    ? colors.primary  // Cyan-blue border (195 85% 65%)
+    ? colors.borderPrimary  // Dark cyan border
     : colors.border;
 
   return (
