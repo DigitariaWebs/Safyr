@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { mockMainCourante } from "@/features/mainCourante/mock";
 import type { MainCouranteEvent } from "@/features/mainCourante/types";
 import { useTheme } from "@/theme";
+import { getMontserratFont } from "@/utils/text-style";
 
 function PriorityPill({ priority }: { priority: MainCouranteEvent["priority"] }) {
   const { colors } = useTheme();

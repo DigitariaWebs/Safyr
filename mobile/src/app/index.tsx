@@ -3,6 +3,7 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { router } from "expo-router";
 import { getSession } from "@/features/auth/auth.storage";
 import { Screen } from "@/components/ui";
+import { getMontserratFont } from "@/utils/text-style";
 
 export default function Index() {
   const [loading, setLoading] = useState(true);
@@ -35,8 +36,8 @@ export default function Index() {
   return (
     <Screen contentClassName="items-center justify-center px-6">
       <View className="items-center">
-        <Text className="text-3xl font-semibold text-foreground">Safyr</Text>
-        <Text className="mt-2 text-sm text-muted-foreground">
+        <Text className="text-3xl font-semibold text-foreground" style={{ fontFamily: getMontserratFont("600") }}>Safyr</Text>
+        <Text className="mt-2 text-sm text-muted-foreground" style={{ fontFamily: getMontserratFont("400") }}>
           Portail Agent • Sécurité • RH
         </Text>
         <View className="mt-6">

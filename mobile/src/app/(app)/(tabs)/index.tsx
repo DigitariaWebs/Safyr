@@ -65,7 +65,7 @@ export default function HomeDashboardScreen() {
               <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Statut</Text>
               <Text
                 className="mt-1 text-xl font-bold"
-                style={{ color: colors.foreground }}
+                style={{ color: colors.foreground, fontFamily: getMontserratFont("700") }}
               >
                 {inService ? "En service" : "Hors service"}
               </Text>

@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getMontserratFont } from "@/utils/text-style";
 
 export default function RondeScreen() {
   const { colors } = useTheme();
@@ -20,8 +21,8 @@ export default function RondeScreen() {
       >
         <View className="gap-4">
         <Card className="gap-3">
-          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Ronde actuelle</Text>
-          <Text className="text-sm" style={{ color: colors.foreground }}>
+          <Text className="text-base font-semibold" style={{ color: colors.foreground, fontFamily: getMontserratFont("600") }}>Ronde actuelle</Text>
+          <Text className="text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
             Placeholder: cette page affichera la ronde en cours, les points de passage,
             et l'historique.
           </Text>
@@ -38,8 +39,8 @@ export default function RondeScreen() {
         </Card>
 
         <Card className="gap-2">
-          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Points de contrôle</Text>
-          <Text className="text-sm" style={{ color: colors.foreground }}>
+          <Text className="text-base font-semibold" style={{ color: colors.foreground, fontFamily: getMontserratFont("600") }}>Points de contrôle</Text>
+          <Text className="text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
             - Entrée principale{"\n"}- Parking{"\n"}- Zone stockage
           </Text>
         </Card>
