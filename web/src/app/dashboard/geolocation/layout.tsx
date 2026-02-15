@@ -34,9 +34,6 @@ export default function GeolocationLayout({
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <GeolocationNavigationBar isCollapsed={isCollapsed} showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>

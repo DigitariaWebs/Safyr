@@ -40,11 +40,6 @@ export default function LogbookLayout({
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={
-            !isEventDetails ? () => setIsCollapsed(!isCollapsed) : undefined
-          }
         />
         {!isEventDetails && (
           <LogbookNavigationBar

@@ -34,9 +34,6 @@ export default function BankingLayout({
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <BankingNavigationBar isCollapsed={isCollapsed} showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>

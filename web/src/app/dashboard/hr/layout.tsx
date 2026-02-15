@@ -50,11 +50,6 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={
-            !isEmployeeDetails ? () => setIsCollapsed(!isCollapsed) : undefined
-          }
         />
         {!isEmployeeDetails && (
           <HRNavigationBar

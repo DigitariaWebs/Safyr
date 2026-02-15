@@ -43,9 +43,6 @@ export default function PayrollLayout({
           userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
-          collapsible={true}
-          isCollapsed={isCollapsed}
-          onCollapseToggle={() => setIsCollapsed(!isCollapsed)}
         />
         <PayrollNavigationBar
           isCollapsed={isCollapsed}
