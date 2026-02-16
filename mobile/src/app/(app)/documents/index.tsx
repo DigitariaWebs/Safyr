@@ -287,7 +287,7 @@ export default function DocumentsScreen() {
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
                       style={{ 
-                        borderColor: colors.primary,
+                        borderColor: colors.borderPrimary,
                         backgroundColor: colors.surface,
                       }}
                     >
@@ -357,7 +357,7 @@ export default function DocumentsScreen() {
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
                       style={{ 
-                        borderColor: colors.primary,
+                        borderColor: colors.borderPrimary,
                         backgroundColor: colors.surface,
                       }}
                     >

@@ -27,6 +27,10 @@ export interface ThemeColors {
     onAccent: string;
     accentForeground: string;
 
+    // Secondary colors
+    secondary: string;
+    secondaryForeground: string;
+
     // Status colors
     success: string;
     warning: string;
@@ -37,6 +41,7 @@ export interface ThemeColors {
     // Border and divider
     border: string;
     divider: string;
+    borderPrimary: string; // Dark cyan border for cards and primary elements
 
     // Interactive states
     disabled: string;
@@ -89,14 +94,17 @@ const lightColors: ThemeColors = {
     mutedForeground: hslToHex("220 8% 45%"),
     cardForeground: hslToHex("220 15% 10%"),
 
-    primary: hslToHex("210 60% 65%"),
-    primaryVariant: hslToHex("210 70% 50%"),
-    onPrimary: hslToHex("0 0% 100%"),
-    primaryForeground: hslToHex("0 0% 100%"),
+    primary: hslToHex("200 100% 55%"),        // Vibrant cyan-blue for light theme
+    primaryVariant: hslToHex("200 100% 45%"), // Deeper cyan-blue variant
+    onPrimary: hslToHex("0 0% 100%"),         // White text on primary
+    primaryForeground: hslToHex("0 0% 100%"), // White text on primary buttons
 
-    accent: hslToHex("210 50% 92%"),
-    onAccent: hslToHex("210 70% 40%"),
-    accentForeground: hslToHex("210 70% 40%"),
+    accent: hslToHex("200 60% 90%"),         // Light cyan accent
+    onAccent: hslToHex("200 100% 40%"),       // Dark cyan text on accent
+    accentForeground: hslToHex("200 100% 40%"),
+
+    secondary: hslToHex("220 10% 96%"), // Light gray/white background
+    secondaryForeground: hslToHex("220 15% 10%"), // Black text on white buttons
 
     success: hslToHex("142 70% 40%"),
     warning: hslToHex("38 92% 50%"),
@@ -104,8 +112,9 @@ const lightColors: ThemeColors = {
     info: hslToHex("210 60% 65%"),
     destructive: hslToHex("0 72% 51%"),
 
-    border: hslToHex("220 13% 91%"),
-    divider: hslToHex("220 13% 91%"),
+    border: hslToHex("220 15% 88%"),         // Subtle border
+    divider: hslToHex("220 15% 88%"),        // Divider
+    borderPrimary: hslToHex("200 80% 50%"),  // Vibrant cyan border for light theme
 
     disabled: hslToHex("220 8% 45%"),
     placeholder: hslToHex("220 8% 45%"),
@@ -116,12 +125,12 @@ const lightColors: ThemeColors = {
 
 // Premium Dark Blue Light Theme
 const darkColors: ThemeColors = {
-    // Background: Very dark blue, slightly luminous (not pure black)
-    background: hslToHex("220 35% 8%"),      // Deep dark blue with subtle luminosity
-    surface: hslToHex("220 30% 12%"),        // Slightly lighter dark blue
-    surfaceVariant: hslToHex("220 28% 10%"), // Variant surface
-    muted: hslToHex("220 25% 15%"),          // Muted background
-    card: hslToHex("220 30% 12%"),           // Card background (slightly lighter)
+    // Background: Black cyan (very dark cyan, almost black)
+    background: hslToHex("180 100% 8%"),       // Black cyan background - very dark with cyan tint
+    surface: hslToHex("180 90% 12%"),        // Elevated surface with cyan tint
+    surfaceVariant: hslToHex("180 95% 10%"),  // Variant surface
+    muted: hslToHex("180 85% 14%"),          // Muted background
+    card: hslToHex("180 90% 12%"),           // Card background with modern depth
 
     // Text: Soft white, optimized for readability
     text: hslToHex("0 0% 96%"),              // Soft white (not pure white)
@@ -131,16 +140,20 @@ const darkColors: ThemeColors = {
     mutedForeground: hslToHex("220 15% 70%"), // Muted foreground
     cardForeground: hslToHex("0 0% 96%"),     // Card text
 
-    // Primary: Cyan-blue ("blue light") that glows subtly
-    primary: hslToHex("195 85% 65%"),        // Cyan-blue - main accent (shifted from 210° to 195° for cyan)
-    primaryVariant: hslToHex("195 80% 55%"), // Slightly darker cyan variant
-    onPrimary: hslToHex("220 35% 8%"),     // Dark text on blue (for contrast)
-    primaryForeground: hslToHex("0 0% 98%"),  // Light text on blue
+    // Primary: Vibrant cyan-blue inspired by modern templates
+    primary: hslToHex("200 100% 60%"),        // Bright cyan-blue - modern and vibrant
+    primaryVariant: hslToHex("200 100% 50%"), // Deeper cyan-blue for hover/pressed states
+    onPrimary: hslToHex("0 0% 100%"),         // Pure white text on primary
+    primaryForeground: hslToHex("0 0% 100%"), // White text on primary buttons
 
-    // Accent: Subtle cyan-blue accent
-    accent: hslToHex("195 40% 20%"),         // Darker cyan-blue accent
-    onAccent: hslToHex("195 85% 70%"),       // Light cyan-blue on accent
-    accentForeground: hslToHex("195 85% 70%"),
+    // Accent: Modern cyan accent with gradient support
+    accent: hslToHex("200 80% 25%"),          // Dark cyan-blue for accents
+    onAccent: hslToHex("200 100% 70%"),       // Light cyan on accent
+    accentForeground: hslToHex("200 100% 70%"),
+
+    // Secondary: Light surface for secondary buttons (white/light background)
+    secondary: hslToHex("220 10% 96%"),       // Light gray/white background for secondary buttons
+    secondaryForeground: hslToHex("220 15% 10%"), // Black text on white secondary buttons
 
     // Status colors (refined for dark theme)
     success: hslToHex("145 65% 50%"),        // Soft green
@@ -149,17 +162,18 @@ const darkColors: ThemeColors = {
     info: hslToHex("195 85% 65%"),           // Cyan-blue (same as primary)
     destructive: hslToHex("0 70% 55%"),      // Soft red
 
-    // Border: Very subtle, low contrast, elegant
-    border: hslToHex("220 20% 18%"),         // Very subtle border
-    divider: hslToHex("220 20% 16%"),       // Subtle divider
+    // Border: Modern cyan borders with better visibility
+    border: hslToHex("220 25% 20%"),         // Subtle border with cyan hint
+    divider: hslToHex("220 25% 18%"),        // Divider with cyan tint
+    borderPrimary: hslToHex("200 80% 45%"), // Vibrant cyan border for cards and primary elements
 
     // Interactive states
     disabled: hslToHex("220 15% 30%"),       // Disabled state
     placeholder: hslToHex("220 15% 50%"),    // Placeholder text
 
-    // Glow effects for premium feel
-    glowPrimary: hslToHex("195 85% 65%"),    // Primary glow color (cyan-blue)
-    glowPrimarySubtle: hslToHex("195 85% 65%"), // Subtle glow variant (cyan-blue)
+    // Glow effects for premium modern feel
+    glowPrimary: hslToHex("200 100% 60%"),   // Vibrant cyan glow
+    glowPrimarySubtle: hslToHex("200 80% 50%"), // Subtle cyan glow variant
 };
 
 export const colors: Record<ColorSchemeName, ThemeColors> = {

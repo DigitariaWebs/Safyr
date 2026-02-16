@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
 import { getSession, setSession, type Session } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
@@ -177,7 +178,8 @@ export default function ProfileScreen() {
         left={<MenuButton />}
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            Retour
+            <Ionicons name="arrow-back-outline" size={18} color={colors.foreground} />
+            <Text className="ml-1" style={{ color: colors.foreground }}>Retour</Text>
           </Button>
         }
       />
@@ -335,7 +337,17 @@ export default function ProfileScreen() {
                   disabled={changingPassword || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()}
                   variant="outline"
                 >
-                  {changingPassword ? "Modification..." : "Modifier le mot de passe"}
+                  {changingPassword ? (
+                    <>
+                      <Ionicons name="hourglass-outline" size={18} color={colors.foreground} />
+                      <Text className="ml-2" style={{ color: colors.foreground }}>Modification...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons name="lock-closed-outline" size={18} color={colors.foreground} />
+                      <Text className="ml-2" style={{ color: colors.foreground }}>Modifier le mot de passe</Text>
+                    </>
+                  )}
                 </Button>
               </View>
             </Card>
@@ -352,13 +364,25 @@ export default function ProfileScreen() {
 
             <View className="gap-3 pt-2">
               <Button onPress={handleSave} disabled={saving}>
-                {saving ? "Enregistrement..." : "Enregistrer les modifications"}
+                {saving ? (
+                  <>
+                    <Ionicons name="hourglass-outline" size={18} color={colors.primaryForeground} />
+                    <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color={colors.primaryForeground} />
+                    <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer les modifications</Text>
+                  </>
+                )}
               </Button>
               <Button variant="outline" onPress={onReset}>
-                Réinitialiser le profil local
+                <Ionicons name="refresh-outline" size={18} color={colors.foreground} />
+                <Text className="ml-2" style={{ color: colors.foreground }}>Réinitialiser le profil local</Text>
               </Button>
               <Button variant="outline" onPress={() => router.back()}>
-                Annuler
+                <Ionicons name="close-outline" size={18} color={colors.foreground} />
+                <Text className="ml-2" style={{ color: colors.foreground }}>Annuler</Text>
               </Button>
             </View>
           </View>

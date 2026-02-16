@@ -2,6 +2,7 @@ import * as React from "react";
 import { Pressable, Text, View, type PressableProps, Animated } from "react-native";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
+import { getMontserratFont } from "@/utils/text-style";
 
 export type ButtonVariant =
   | "default"
@@ -33,7 +34,7 @@ function getVariantClasses(variant: ButtonVariant) {
     case "secondary":
       return {
         container: "bg-secondary",
-        text: "text-secondary-foreground",
+        text: "", // Remove Tailwind text class to avoid conflicts
       };
     case "outline":
       return {
@@ -119,13 +120,22 @@ export function Button({
     ]).start();
   };
 
-  // Enhanced glow effect for primary buttons in dark mode
+  // Enhanced glow effect for primary buttons - more vibrant cyan
   const glowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.4 : 0.1, scheme === "dark" ? 0.7 : 0.25],
+    outputRange: [scheme === "dark" ? 0.5 : 0.15, scheme === "dark" ? 0.85 : 0.35],
   });
 
   const isPrimary = variant === "default" || variant === "primary";
+
+  // Helper function to check if a color is light (brightness > 50%)
+  const isLightColor = (hex: string): boolean => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  };
 
   // Get text color based on variant and theme
   const getTextColor = () => {
@@ -134,23 +144,27 @@ export function Button({
       case "primary":
         return colors.primaryForeground; // White text on primary buttons
       case "secondary":
-        return colors.secondaryForeground;
+        // Secondary buttons always have light background, so always use black text
+        return colors.secondaryForeground; // This is now black text
       case "outline":
       case "ghost":
-        return colors.foreground; // White text in dark mode
+        // Black text in light mode, white text in dark mode
+        return scheme === "light" ? colors.text : colors.foreground;
       case "destructive":
         return colors.destructiveForeground;
       case "warning":
-        return colors.foreground; // White text on warning buttons in dark mode
+        // Check if warning background is light - if so, use black text
+        const warningIsLight = isLightColor(colors.warning);
+        return warningIsLight ? colors.text : colors.foreground;
       default:
-        return colors.foreground;
+        return scheme === "light" ? colors.text : colors.foreground;
     }
   };
 
-  // Enhanced glow for outline and ghost buttons
+  // Enhanced glow for outline and ghost buttons - modern cyan glow
   const buttonGlowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.3 : 0.1, scheme === "dark" ? 0.6 : 0.2],
+    outputRange: [scheme === "dark" ? 0.4 : 0.12, scheme === "dark" ? 0.75 : 0.3],
   });
 
   // Check if children is a simple string
@@ -161,10 +175,10 @@ export function Button({
       style={{
         // Shadow/glow animation (non-native driver)
         shadowColor: isPrimary ? colors.primary : (variant === "outline" || variant === "ghost" ? colors.primary : "transparent"),
-        shadowOffset: { width: 0, height: 0 },
+        shadowOffset: { width: 0, height: isPrimary ? 4 : 2 },
         shadowOpacity: isPrimary ? glowOpacity : (variant === "outline" || variant === "ghost" ? buttonGlowOpacity : 0),
-        shadowRadius: isPrimary ? 20 : (variant === "outline" || variant === "ghost" ? 16 : 0),
-        elevation: isPrimary ? 12 : (variant === "outline" || variant === "ghost" ? 8 : 0),
+        shadowRadius: isPrimary ? 24 : (variant === "outline" || variant === "ghost" ? 18 : 0),
+        elevation: isPrimary ? 16 : (variant === "outline" || variant === "ghost" ? 10 : 0),
         transform: [{ scale: scaleAnim }],
       }}
     >
@@ -180,16 +194,21 @@ export function Button({
           disabled ? "opacity-50" : "",
           className,
         )}
-        style={{
-          opacity: disabled ? 0.5 : 1,
-        }}
+        style={[
+          {
+            opacity: disabled ? 0.5 : 1,
+            // Force background color for secondary buttons to ensure correct text color
+            ...(variant === "secondary" ? { backgroundColor: colors.secondary } : {}),
+          },
+          props.style,
+        ]}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        {...props}
+        {...(props as any)}
       >
           {isString ? (
             <Text 
               className={cn("font-semibold", s.text, textClassName)}
-              style={{ color: getTextColor() }}
+              style={{ color: getTextColor(), fontFamily: getMontserratFont("600") }}
             >
               {children}
             </Text>
@@ -197,22 +216,48 @@ export function Button({
             <View className="flex-row items-center justify-center">
               {React.Children.map(children, (child, index) => {
                 if (React.isValidElement(child)) {
-                  // Check if it's a Text component by checking the component name
                   const childType = child.type as any;
+                  const childProps = child.props as any;
+                  
+                  // Check if it's a Text component
                   const isTextComponent = 
                     childType === Text ||
                     (childType?.displayName && childType.displayName.includes("Text")) ||
                     (typeof childType === "function" && (childType.name === "Text" || childType.displayName === "Text"));
                   
+                  // Check if it's an Ionicons component - Ionicons always have a 'name' prop
+                  const isIonicons = childProps && typeof childProps.name === "string";
+                  
                   if (isTextComponent) {
-                    const childProps = child.props as any;
+                    // Force text color and font family - put it last to override any existing styles
+                    const textColor = getTextColor();
+                    // Extract fontWeight from existing style to determine Montserrat variant
+                    const existingStyle = Array.isArray(childProps.style) 
+                      ? childProps.style.reduce((acc, s) => ({ ...acc, ...s }), {})
+                      : childProps.style || {};
+                    const fontWeight = existingStyle.fontWeight || "600"; // Default to semibold for buttons
+                    const fontFamily = getMontserratFont(fontWeight);
+                    
+                    // Merge styles properly - ensure color and fontFamily are always applied
+                    const mergedStyle = Array.isArray(childProps.style)
+                      ? [...childProps.style, { color: textColor, fontFamily }]
+                      : childProps.style
+                        ? [childProps.style, { color: textColor, fontFamily }]
+                        : { color: textColor, fontFamily };
                     return React.cloneElement(child as React.ReactElement<any>, {
                       key: `text-${index}`,
-                      style: [
-                        { color: getTextColor() },
-                        childProps.style,
-                      ],
+                      style: mergedStyle,
                       className: cn("font-semibold", s.text, textClassName, childProps.className),
+                    });
+                  }
+                  
+                  // Apply color to Ionicons - always override color for consistency
+                  if (isIonicons) {
+                    const iconColor = getTextColor();
+                    return React.cloneElement(child as React.ReactElement<any>, {
+                      key: `icon-${index}`,
+                      ...childProps,
+                      color: iconColor, // Always override color
                     });
                   }
                 }

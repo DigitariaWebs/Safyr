@@ -55,14 +55,14 @@ export const Input = React.forwardRef<TextInput, InputProps>(
 
     const glowOpacity = glowAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, scheme === "dark" ? 0.25 : 0.1],
+      outputRange: [0, scheme === "dark" ? 0.4 : 0.2],
     });
 
     const borderColor = glowAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [
         scheme === "dark" ? colors.border : colors.border,
-        colors.primary,
+        scheme === "dark" ? colors.borderPrimary : colors.primary,
       ],
     });
 
@@ -71,10 +71,10 @@ export const Input = React.forwardRef<TextInput, InputProps>(
         style={{
           transform: [{ scale: scaleAnim }],
           shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 0 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: glowOpacity,
-          shadowRadius: 8,
-          elevation: isFocused ? 4 : 0,
+          shadowRadius: 12,
+          elevation: isFocused ? 6 : 0,
         }}
       >
         <Animated.View
@@ -87,18 +87,22 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             borderWidth: 1.5,
           }}
         >
-          <TextInput
-            ref={ref}
-            placeholderTextColor={colors.placeholder}
-            className={cn(
-              "flex-1 text-base text-foreground",
-              "leading-5",
-              className,
-            )}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            {...props}
-          />
+                      <TextInput
+                        ref={ref}
+                        placeholderTextColor={colors.placeholder}
+                        className={cn(
+                          "flex-1 text-base text-foreground",
+                          "leading-5",
+                          className,
+                        )}
+                        style={[
+                          { fontFamily: "Montserrat-Regular" },
+                          props.style,
+                        ]}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        {...props}
+                      />
         </Animated.View>
       </Animated.View>
     );

@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { mockMainCourante } from "@/features/mainCourante/mock";
 import type { MainCouranteEvent } from "@/features/mainCourante/types";
 import { useTheme } from "@/theme";
+import { getMontserratFont } from "@/utils/text-style";
 
 function PriorityPill({ priority }: { priority: MainCouranteEvent["priority"] }) {
   const { colors } = useTheme();
@@ -33,7 +34,12 @@ export default function MainCouranteListScreen() {
         title="Main Courante"
         subtitle="Événements & compte-rendus"
         left={<MenuButton />}
-        right={<Button size="sm" onPress={() => router.push("/(app)/main-courante/new")}>+ Nouveau</Button>}
+        right={
+          <Button size="sm" onPress={() => router.push("/(app)/main-courante/new")}>
+            <Ionicons name="add-circle-outline" size={18} color={colors.primaryForeground} />
+            <Text className="ml-1" style={{ color: colors.primaryForeground }}>Nouveau</Text>
+          </Button>
+        }
       />
 
       <FlatList

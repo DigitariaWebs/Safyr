@@ -32,15 +32,17 @@ export function MenuButton() {
           style={{
             borderRadius: 12,
             padding: 10,
-            backgroundColor: theme.colors.primary,
+            backgroundColor: "transparent",
+            borderWidth: 2,
+            borderColor: theme.colors.borderPrimary,
             shadowColor: theme.colors.primary,
             shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 4,
+            shadowOpacity: theme.scheme === "dark" ? 0.3 : 0.1,
+            shadowRadius: 8,
+            elevation: 2,
           }}
         >
-          <Ionicons name="menu" size={22} color="#fff" />
+          <Ionicons name="menu" size={22} color={theme.colors.foreground} />
         </TouchableOpacity>
       </Animated.View>
       <MenuDrawer visible={menuVisible} onClose={() => setMenuVisible(false)} />

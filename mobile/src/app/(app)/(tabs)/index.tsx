@@ -1,11 +1,12 @@
-import { Switch, Text, View, ScrollView, Platform } from "react-native";
+import { Text, View, ScrollView, Platform, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen, Toggle } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
+import { getMontserratFont } from "@/utils/text-style";
 
 export default function HomeDashboardScreen() {
   const { colors } = useTheme();
@@ -52,56 +53,57 @@ export default function HomeDashboardScreen() {
         <Card
           style={{
             borderColor: inService ? colors.success : colors.destructive,
-            borderWidth: 1.5,
+            borderWidth: 2,
             shadowColor: inService ? colors.success : colors.destructive,
-            shadowOpacity: 0.6,
-            shadowRadius: 20,
-            elevation: 12,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.7,
+            shadowRadius: 24,
+            elevation: 16,
           }}
         >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Statut</Text>
-              <Text
-                className="mt-1 text-xl font-bold"
-                style={{ color: colors.foreground }}
-              >
-                {inService ? "En service" : "Hors service"}
-              </Text>
+          <View className="gap-4">
+            <View>
+              <Text className="text-sm font-medium mb-2" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Statut</Text>
+              <Toggle
+                value={inService}
+                onValueChange={setInService}
+                enabledLabel="En service"
+                disabledLabel="Hors service"
+                enabledIcon="checkmark-circle"
+                disabledIcon="close-circle"
+                size="lg"
+                className="w-full"
+              />
             </View>
-            <Switch
-              value={inService}
-              onValueChange={setInService}
-              trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={colors.foreground}
-            />
           </View>
           <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: inService ? colors.success : colors.destructive }}>
-            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Poste actuel</Text>
-            <Text className="mt-1 text-base font-semibold" style={{ color: colors.foreground }}>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Poste actuel</Text>
+            <Text className="mt-1 text-base font-semibold" style={{ color: colors.foreground, fontFamily: getMontserratFont("600") }}>
               Siège • Paris — Poste Accueil
             </Text>
-            <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
+            <Text className="mt-1 text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
               08:00 → 16:00
             </Text>
           </View>
         </Card>
 
         <Card className="gap-4">
-          <Text className="text-base font-bold" style={{ color: colors.foreground }}>Actions rapides</Text>
+          <Text className="text-base font-bold" style={{ color: colors.foreground, fontFamily: getMontserratFont("700") }}>Actions rapides</Text>
           <View className="flex-row gap-3">
             <Button
               onPress={() => router.push("/(app)/(tabs)/main-courante")}
               className="flex-1"
             >
-              Main courante
+              <Ionicons name="list-outline" size={18} color={colors.primaryForeground} />
+              <Text className="ml-2" style={{ color: colors.primaryForeground }}>Main courante</Text>
             </Button>
             <Button
               variant="secondary"
               onPress={() => router.push("/(app)/(tabs)/ronde")}
               className="flex-1"
             >
-              Ronde
+              <Ionicons name="walk-outline" size={18} />
+              <Text className="ml-2">Ronde</Text>
             </Button>
           </View>
           <View className="flex-row gap-3">
@@ -110,46 +112,50 @@ export default function HomeDashboardScreen() {
               onPress={() => router.push("/(app)/(tabs)/geolocation")}
               className="flex-1"
             >
-              Géoloc
+              <Ionicons name="location-outline" size={18} />
+              <Text className="ml-2">Géoloc</Text>
             </Button>
             <Button
               variant="destructive"
               onPress={() => router.push("/(app)/sos")}
               className="flex-1"
             >
-              SOS
+              <Ionicons name="warning-outline" size={18} color={colors.destructiveForeground} />
+              <Text className="ml-2" style={{ color: colors.destructiveForeground }}>SOS</Text>
             </Button>
           </View>
         </Card>
 
         <Card>
-          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Rappels</Text>
-          <Text className="mt-2 text-sm" style={{ color: colors.foreground }}>
+          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Rappels</Text>
+          <Text className="mt-2 text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
             - Vérifier le matériel (radio, lampe)\n- Relire les consignes du site
           </Text>
         </Card>
 
         <Card className="gap-3">
-          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Compte</Text>
+          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Compte</Text>
           <Button
             variant="outline"
             onPress={() => router.push("/(app)/profile")}
             className="w-full"
           >
-            Mon profil
+            <Ionicons name="person-outline" size={18} />
+            <Text className="ml-2">Mon profil</Text>
           </Button>
         </Card>
 
         <Card className="gap-3">
-          <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Documents</Text>
+          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Documents</Text>
           <Button
             variant="outline"
             onPress={() => router.push("/(app)/documents")}
             className="w-full"
           >
-            Télécharger PDF
+            <Ionicons name="document-text-outline" size={18} />
+            <Text className="ml-2">Télécharger PDF</Text>
           </Button>
-          <Text className="text-xs" style={{ color: colors.foreground }}>
+          <Text className="text-xs" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
             Emploi du temps et bulletins de salaire
           </Text>
         </Card>
