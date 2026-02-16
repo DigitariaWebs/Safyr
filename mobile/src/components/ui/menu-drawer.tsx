@@ -10,6 +10,7 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
+import type { ReactNode } from "react";
 // Import conditionnel pour expo-linear-gradient
 let LinearGradient: any = null;
 try {
@@ -33,6 +34,8 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
   const [session, setSession] = useState<Session | null>(null);
   const slideAnim = useRef(new Animated.Value(-300)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const contentFadeAnim = useRef(new Animated.Value(0)).current;
   const theme = useTheme();
 
   useEffect(() => {
@@ -41,19 +44,44 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
 
   useEffect(() => {
     if (visible) {
+      // Reset animations
+      slideAnim.setValue(-300);
+      overlayOpacity.setValue(0);
+      scaleAnim.setValue(0.95);
+      contentFadeAnim.setValue(0);
+      
+      // Start entrance animations
       Animated.parallel([
-        Animated.timing(slideAnim, {
+        // Smooth slide in with spring
+        Animated.spring(slideAnim, {
           toValue: 0,
-          duration: 300,
+          tension: 50,
+          friction: 10,
           useNativeDriver: true,
         }),
+        // Overlay fade in
         Animated.timing(overlayOpacity, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
-      ]).start();
+        // Scale animation for smooth entrance
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Fade in content after drawer is visible
+        Animated.timing(contentFadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
     } else {
+      // Exit animations
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -300,
@@ -63,6 +91,16 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
         Animated.timing(overlayOpacity, {
           toValue: 0,
           duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 0.95,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentFadeAnim, {
+          toValue: 0,
+          duration: 150,
           useNativeDriver: true,
         }),
       ]).start();
@@ -169,21 +207,30 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                 width: 300,
                 height: "100%",
                 backgroundColor: theme.colors.background,
-                transform: [{ translateX: slideAnim }],
-                shadowColor: "#000",
+                transform: [
+                  { translateX: slideAnim },
+                  { scale: scaleAnim },
+                ],
+                shadowColor: theme.colors.primary,
                 shadowOffset: { width: 4, height: 0 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 16,
+                shadowOpacity: theme.scheme === "dark" ? 0.5 : 0.2,
+                shadowRadius: 16,
+                elevation: 20,
                 flexDirection: "column",
               }}
             >
+              <Animated.View
+                style={{
+                  flex: 1,
+                  opacity: contentFadeAnim,
+                }}
+              >
               {/* Header with Gradient */}
               {LinearGradient ? (
                 <LinearGradient
                   colors={theme.scheme === "dark" 
-                    ? [theme.colors.accent, theme.colors.surfaceVariant]
-                    : [theme.colors.accent, theme.colors.surfaceVariant]}
+                    ? ["#004d4d", "#001a1a"] // Black cyan gradient: from medium cyan to very dark cyan (inverted)
+                    : [theme.colors.primary, theme.colors.accent]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -229,7 +276,7 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                     paddingTop: Platform.OS === "ios" ? 60 : 40,
                     paddingBottom: 24,
                     paddingHorizontal: 20,
-                    backgroundColor: theme.colors.accent,
+                    backgroundColor: "#001a1a", // Black cyan fallback
                   }}
                 >
                   <View className="flex-row items-center justify-between mb-4">
@@ -275,27 +322,60 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                 showsVerticalScrollIndicator={true}
                 indicatorStyle={theme.scheme === "dark" ? "white" : "black"}
               >
-                {menuItems.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={item.onPress}
-                    activeOpacity={0.7}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingHorizontal: 20,
-                      paddingVertical: 16,
-                      marginHorizontal: 12,
-                      marginVertical: 4,
-                      borderRadius: 12,
-                      backgroundColor: theme.colors.card,
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 4,
-                      elevation: 3,
-                    }}
-                  >
+                {menuItems.map((item, index) => {
+                  const itemFadeAnim = useRef(new Animated.Value(0)).current;
+                  const itemSlideAnim = useRef(new Animated.Value(-20)).current;
+                  
+                  useEffect(() => {
+                    if (visible) {
+                      Animated.parallel([
+                        Animated.timing(itemFadeAnim, {
+                          toValue: 1,
+                          duration: 300,
+                          delay: index * 50 + 100,
+                          useNativeDriver: true,
+                        }),
+                        Animated.spring(itemSlideAnim, {
+                          toValue: 0,
+                          tension: 100,
+                          friction: 8,
+                          delay: index * 50 + 100,
+                          useNativeDriver: true,
+                        }),
+                      ]).start();
+                    } else {
+                      itemFadeAnim.setValue(0);
+                      itemSlideAnim.setValue(-20);
+                    }
+                  }, [visible]);
+                  
+                  return (
+                    <Animated.View
+                      key={item.route}
+                      style={{
+                        opacity: itemFadeAnim,
+                        transform: [{ translateX: itemSlideAnim }],
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={item.onPress}
+                        activeOpacity={0.7}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          paddingHorizontal: 20,
+                          paddingVertical: 16,
+                          marginHorizontal: 12,
+                          marginVertical: 4,
+                          borderRadius: 12,
+                          backgroundColor: theme.colors.card,
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }}
+                      >
                     <View
                       style={{
                         width: 44,
@@ -330,8 +410,10 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                       size={18}
                       color={theme.colors.mutedForeground}
                     />
-                  </TouchableOpacity>
-                ))}
+                      </TouchableOpacity>
+                    </Animated.View>
+                  );
+                })}
               </ScrollView>
 
               {/* Footer - Fixed at bottom */}
@@ -366,6 +448,7 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                   </Text>
                 </TouchableOpacity>
               </View>
+              </Animated.View>
             </Animated.View>
           </Pressable>
         </Animated.View>

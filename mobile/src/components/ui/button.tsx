@@ -120,10 +120,10 @@ export function Button({
     ]).start();
   };
 
-  // Enhanced glow effect for primary buttons in dark mode
+  // Enhanced glow effect for primary buttons - more vibrant cyan
   const glowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.4 : 0.1, scheme === "dark" ? 0.7 : 0.25],
+    outputRange: [scheme === "dark" ? 0.5 : 0.15, scheme === "dark" ? 0.85 : 0.35],
   });
 
   const isPrimary = variant === "default" || variant === "primary";
@@ -161,10 +161,10 @@ export function Button({
     }
   };
 
-  // Enhanced glow for outline and ghost buttons
+  // Enhanced glow for outline and ghost buttons - modern cyan glow
   const buttonGlowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.3 : 0.1, scheme === "dark" ? 0.6 : 0.2],
+    outputRange: [scheme === "dark" ? 0.4 : 0.12, scheme === "dark" ? 0.75 : 0.3],
   });
 
   // Check if children is a simple string
@@ -175,10 +175,10 @@ export function Button({
       style={{
         // Shadow/glow animation (non-native driver)
         shadowColor: isPrimary ? colors.primary : (variant === "outline" || variant === "ghost" ? colors.primary : "transparent"),
-        shadowOffset: { width: 0, height: 0 },
+        shadowOffset: { width: 0, height: isPrimary ? 4 : 2 },
         shadowOpacity: isPrimary ? glowOpacity : (variant === "outline" || variant === "ghost" ? buttonGlowOpacity : 0),
-        shadowRadius: isPrimary ? 20 : (variant === "outline" || variant === "ghost" ? 16 : 0),
-        elevation: isPrimary ? 12 : (variant === "outline" || variant === "ghost" ? 8 : 0),
+        shadowRadius: isPrimary ? 24 : (variant === "outline" || variant === "ghost" ? 18 : 0),
+        elevation: isPrimary ? 16 : (variant === "outline" || variant === "ghost" ? 10 : 0),
         transform: [{ scale: scaleAnim }],
       }}
     >

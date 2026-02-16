@@ -55,7 +55,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
 
     const glowOpacity = glowAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, scheme === "dark" ? 0.25 : 0.1],
+      outputRange: [0, scheme === "dark" ? 0.4 : 0.2],
     });
 
     const borderColor = glowAnim.interpolate({
@@ -71,10 +71,10 @@ export const Input = React.forwardRef<TextInput, InputProps>(
         style={{
           transform: [{ scale: scaleAnim }],
           shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 0 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: glowOpacity,
-          shadowRadius: 8,
-          elevation: isFocused ? 4 : 0,
+          shadowRadius: 12,
+          elevation: isFocused ? 6 : 0,
         }}
       >
         <Animated.View

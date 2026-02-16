@@ -8,20 +8,20 @@
   :root {
     /* Light theme (keeping for compatibility) */
     --background: 0 0% 100%;
-    --foreground: 220 15% 10%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
-    --primary: 210 60% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 220 15% 20%;
-    --muted: 220 10% 97%;
-    --muted-foreground: 220 8% 45%;
-    --accent: 210 50% 92%;
-    --accent-foreground: 210 70% 40%;
-    --destructive: 0 72% 51%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --success: 142 70% 40%;
     --success-foreground: 0 0% 98%;
@@ -31,29 +31,34 @@
     --info-foreground: 0 0% 100%;
     --neutral: 220 5% 50%;
     --neutral-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 210 60% 65%;
-    --radius: 0.75rem;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
     /* Premium Dark Blue Light Theme */
-    --background: 220 35% 8%;        /* Very dark blue, slightly luminous */
-    --foreground: 0 0% 96%;          /* Soft white (not pure white) */
-    --card: 220 30% 12%;             /* Slightly lighter dark blue */
-    --card-foreground: 0 0% 96%;      /* Soft white text */
-    --popover: 220 28% 10%;           /* Variant surface */
-    --popover-foreground: 0 0% 96%;
-    --primary: 195 85% 65%;           /* Cyan-blue - main accent */
-    --primary-foreground: 0 0% 98%;   /* Light text on blue */
-    --secondary: 220 10% 96%;         /* Light gray/white background for secondary buttons */
-    --secondary-foreground: 220 15% 10%; /* Black text on white secondary buttons */
-    --muted: 220 25% 15%;             /* Muted background */
-    --muted-foreground: 220 15% 70%;  /* Softer secondary text */
-    --accent: 195 40% 20%;            /* Darker cyan-blue accent */
-    --accent-foreground: 195 85% 70%; /* Light cyan-blue on accent */
-    --destructive: 0 70% 55%;         /* Soft red */
+    --background: 240 10% 3.9%;        /* Very dark blue, slightly luminous */
+    --foreground: 0 0% 98%;          /* Soft white (not pure white) */
+    --card: 240 10% 3.9%;             /* Slightly lighter dark blue */
+    --card-foreground: 0 0% 98%;      /* Soft white text */
+    --popover: 240 10% 3.9%;           /* Variant surface */
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;           /* Cyan-blue - main accent */
+    --primary-foreground: 240 5.9% 10%;   /* Light text on blue */
+    --secondary: 240 3.7% 15.9%;         /* Light gray/white background for secondary buttons */
+    --secondary-foreground: 0 0% 98%; /* Black text on white secondary buttons */
+    --muted: 240 3.7% 15.9%;             /* Muted background */
+    --muted-foreground: 240 5% 64.9%;  /* Softer secondary text */
+    --accent: 240 3.7% 15.9%;            /* Darker cyan-blue accent */
+    --accent-foreground: 0 0% 98%; /* Light cyan-blue on accent */
+    --destructive: 0 62.8% 30.6%;         /* Soft red */
     --destructive-foreground: 0 0% 98%;
     --success: 145 65% 50%;           /* Soft green */
     --success-foreground: 0 0% 98%;
@@ -63,10 +68,15 @@
     --info-foreground: 0 0% 98%;
     --neutral: 220 15% 50%;           /* Neutral gray */
     --neutral-foreground: 0 0% 98%;
-    --border: 220 20% 18%;            /* Very subtle border */
-    --input: 220 20% 18%;             /* Input border */
-    --ring: 195 85% 65%;              /* Focus ring - cyan-blue */
+    --border: 240 3.7% 15.9%;            /* Very subtle border */
+    --input: 240 3.7% 15.9%;             /* Input border */
+    --ring: 240 4.9% 83.9%;              /* Focus ring - cyan-blue */
     --radius: 0.75rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -227,5 +237,16 @@
 
   .dark .btn-premium:hover {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

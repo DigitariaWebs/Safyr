@@ -6,7 +6,6 @@ import { NotificationsProvider } from "@/features/notifications/NotificationsCon
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { applyMontserratGlobally } from "@/utils/apply-montserrat";
 import "./global.css";
 
 // Keep the splash screen visible while we load fonts
@@ -24,13 +23,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      // Apply Montserrat globally once fonts are loaded
-      applyMontserratGlobally();
-      SplashScreen.hideAsync();
-    } else if (fontError) {
-      // Even if fonts fail to load, try to apply defaults
-      applyMontserratGlobally();
+    if (fontsLoaded || fontError) {
+      // Fonts are loaded (or failed), hide splash screen
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);

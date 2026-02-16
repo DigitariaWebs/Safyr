@@ -56,11 +56,11 @@ export function Header({
         borderBottomWidth: 1,
         opacity: fadeAnim,
         transform: [{ translateY: slideAnim }],
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: scheme === "dark" ? 0.15 : 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: scheme === "dark" ? 0.25 : 0.1,
+        shadowRadius: 12,
+        elevation: 4,
       }}
       {...props}
     >

@@ -38,29 +38,32 @@ export function Card({ className, style, animated = true, ...props }: CardProps)
       }
     : {};
 
-  // Dark blue background with light blue border for all cards
+  // Modern card styling with cyan accents
   const cardBackgroundColor = scheme === "dark" 
-    ? colors.surface  // Dark blue surface (220 30% 12%)
+    ? colors.surface  // Modern dark blue-cyan surface
     : colors.card;
   
   const cardBorderColor = scheme === "dark"
-    ? colors.borderPrimary  // Dark cyan border
-    : colors.border;
+    ? colors.borderPrimary  // Vibrant cyan border
+    : colors.borderPrimary;  // Cyan border for light theme too
 
   return (
     <Animated.View
-      className={cn("rounded-2xl p-5", className)}
+      className={cn(
+        "rounded-2xl p-5",
+        className
+      )}
       style={[
         {
           backgroundColor: cardBackgroundColor,
-          borderWidth: 1.5,
+          borderWidth: 2,
           borderColor: cardBorderColor,
-          // Enhanced glow effect with primary cyan-blue color
-          shadowColor: scheme === "dark" ? colors.primary : "#000",
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: scheme === "dark" ? 0.6 : 0.08,
-          shadowRadius: scheme === "dark" ? 20 : 4,
-          elevation: scheme === "dark" ? 10 : 2,
+          // Modern glow effect with vibrant cyan
+          shadowColor: scheme === "dark" ? colors.primary : colors.primary,
+          shadowOffset: { width: 0, height: scheme === "dark" ? 4 : 2 },
+          shadowOpacity: scheme === "dark" ? 0.7 : 0.15,
+          shadowRadius: scheme === "dark" ? 24 : 8,
+          elevation: scheme === "dark" ? 12 : 4,
         },
         cardStyle,
         style,

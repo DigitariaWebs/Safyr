@@ -20,6 +20,8 @@
     "@react-navigation/native": "^7.1.8",
     "@rnmapbox/maps": "^10.2.10",
     "babel-preset-expo": "^54.0.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "expo": "~54.0.33",
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.13",
@@ -37,7 +39,9 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "lucide-react": "^0.564.0",
     "mapbox-gl": "^3.18.0",
+    "motion": "^12.34.0",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -50,7 +54,10 @@
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.5.1"
+    "react-native-worklets": "0.5.1",
+    "react-use-measure": "^2.1.7",
+    "tailwind-merge": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/mapbox-gl": "^3.4.1",

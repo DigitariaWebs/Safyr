@@ -9,6 +9,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme";
+import { getMontserratFont } from "@/utils/text-style";
 
 function PriorityOption({
   label,

@@ -1,8 +1,8 @@
-import { Switch, Text, View, ScrollView, Platform, StyleSheet } from "react-native";
+import { Text, View, ScrollView, Platform, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
+import { Button, Card, Header, MenuButton, Screen, Toggle } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
@@ -53,29 +53,28 @@ export default function HomeDashboardScreen() {
         <Card
           style={{
             borderColor: inService ? colors.success : colors.destructive,
-            borderWidth: 1.5,
+            borderWidth: 2,
             shadowColor: inService ? colors.success : colors.destructive,
-            shadowOpacity: 0.6,
-            shadowRadius: 20,
-            elevation: 12,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.7,
+            shadowRadius: 24,
+            elevation: 16,
           }}
         >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Statut</Text>
-              <Text
-                className="mt-1 text-xl font-bold"
-                style={{ color: colors.foreground, fontFamily: getMontserratFont("700") }}
-              >
-                {inService ? "En service" : "Hors service"}
-              </Text>
+          <View className="gap-4">
+            <View>
+              <Text className="text-sm font-medium mb-2" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Statut</Text>
+              <Toggle
+                value={inService}
+                onValueChange={setInService}
+                enabledLabel="En service"
+                disabledLabel="Hors service"
+                enabledIcon="checkmark-circle"
+                disabledIcon="close-circle"
+                size="lg"
+                className="w-full"
+              />
             </View>
-            <Switch
-              value={inService}
-              onValueChange={setInService}
-              trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={colors.foreground}
-            />
           </View>
           <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: inService ? colors.success : colors.destructive }}>
             <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Poste actuel</Text>
