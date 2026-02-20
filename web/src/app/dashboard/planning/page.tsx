@@ -16,6 +16,7 @@ import {
   BarChart3,
   ChevronUp,
   ChevronDown,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,7 +125,7 @@ function AgentStatsWidget({ isLoading }: { isLoading: boolean }) {
               <p className="text-xl font-light">{stats.cdd}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Intérim</p>
+              <p className="text-xs text-muted-foreground">Sous traitants</p>
               <p className="text-xl font-light">{stats.interim}</p>
             </div>
           </div>
@@ -321,7 +322,7 @@ function ContractTypesWidget({ isLoading }: { isLoading: boolean }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-orange-500" />
-              <span className="text-sm">Intérim</span>
+              <span className="text-sm">Sous traitants</span>
             </div>
             <span className="text-2xl font-light">{stats.interim}</span>
           </div>
@@ -515,6 +516,16 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       label: "Rapports",
       href: "/dashboard/planning/reports",
       icon: BarChart3,
+    },
+    {
+      label: "Nouveau Shift",
+      href: "/dashboard/planning/shifts",
+      icon: RotateCcw,
+    },
+    {
+      label: "Nouveau Site",
+      href: "/dashboard/planning/sites",
+      icon: MapPin,
     },
   ];
 

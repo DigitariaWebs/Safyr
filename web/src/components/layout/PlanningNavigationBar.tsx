@@ -10,6 +10,8 @@ import {
   CheckCircle,
   AlertCircle,
   MapPin,
+  Briefcase,
+  RotateCcw,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -24,21 +26,19 @@ const navItems: NavItem[] = [
     icon: MapPin,
   },
   {
+    label: "Poste",
+    href: "/dashboard/planning/postes",
+    icon: Briefcase,
+  },
+  {
+    label: "Shift",
+    href: "/dashboard/planning/shifts",
+    icon: RotateCcw,
+  },
+  {
     label: "Planning",
     href: "/dashboard/planning/schedule",
     icon: Calendar,
-  },
-  {
-    label: "Validation",
-    href: "/dashboard/planning/validation",
-    icon: CheckCircle,
-    disabled: true,
-  },
-  {
-    label: "Alertes",
-    href: "/dashboard/planning/alerts",
-    icon: AlertCircle,
-    disabled: true,
   },
 ];
 
