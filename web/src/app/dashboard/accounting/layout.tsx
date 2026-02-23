@@ -12,17 +12,6 @@ export default function AccountingLayout({
   children: React.ReactNode;
 }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("accountingNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("accountingNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -35,7 +24,7 @@ export default function AccountingLayout({
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        <AccountingNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <AccountingNavigationBar showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

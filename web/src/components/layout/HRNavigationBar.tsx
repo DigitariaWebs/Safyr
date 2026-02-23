@@ -285,7 +285,6 @@ const navItems: NavItem[] = [
 ];
 
 interface HRNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

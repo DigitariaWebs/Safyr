@@ -84,7 +84,6 @@ const navItems: NavItem[] = [
 ];
 
 interface LogbookNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

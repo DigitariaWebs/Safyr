@@ -8,17 +8,6 @@ import { OCRNavigationBar } from "@/components/layout/OCRNavigationBar";
 
 export default function OCRLayout({ children }: { children: React.ReactNode }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("ocrNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("ocrNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -31,7 +20,7 @@ export default function OCRLayout({ children }: { children: React.ReactNode }) {
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        <OCRNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <OCRNavigationBar showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

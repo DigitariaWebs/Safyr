@@ -45,7 +45,6 @@ const navItems: NavItem[] = [
 ];
 
 interface OCRNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

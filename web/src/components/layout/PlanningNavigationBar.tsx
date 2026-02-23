@@ -7,11 +7,10 @@ import {
 import {
   Users,
   Calendar,
-  CheckCircle,
-  AlertCircle,
   MapPin,
   Briefcase,
   RotateCcw,
+  Settings,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -39,6 +38,11 @@ const navItems: NavItem[] = [
     label: "Planning",
     href: "/dashboard/planning/schedule",
     icon: Calendar,
+  },
+  {
+    label: "Paramètres",
+    href: "/dashboard/planning/settings",
+    icon: Settings,
   },
 ];
 

@@ -69,7 +69,6 @@ const navItems: NavItem[] = [
 ];
 
 interface PayrollNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { usePlanningSettingsStore } from "@/lib/stores/planningSettingsStore";
+import type { PlanningSettings } from "@/lib/stores/planningSettingsStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +61,8 @@ import {
   CheckCircle,
   XCircle,
   Timer,
+  Lock,
+  CalendarOff,
 } from "lucide-react";
 
 import type {
@@ -105,6 +109,13 @@ declare global {
 }
 
 export default function SchedulePage() {
+  const { settings } = usePlanningSettingsStore();
+  const idCounterRef = React.useRef(0);
+  const generateShiftId = () => {
+    idCounterRef.current += 1;
+    return `shift-popover-${idCounterRef.current}`;
+  };
+
   // Auto-select first client and site on mount
   const getInitialClientId = () => {
     if (mockClients.length > 0) {
@@ -153,6 +164,14 @@ export default function SchedulePage() {
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [showRemoveAgentModal, setShowRemoveAgentModal] = useState(false);
   const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [showTemplatePopover, setShowTemplatePopover] = useState(false);
+  const [templatePopoverContext, setTemplatePopoverContext] = useState<{
+    agentId: string;
+    date: string;
+  } | null>(null);
+  const [selectedPopoverTemplateId, setSelectedPopoverTemplateId] = useState<
+    string | null
+  >(null);
 
   // Modal data
   const [editingShift, setEditingShift] = useState<AgentShift | null>(null);
@@ -280,6 +299,78 @@ export default function SchedulePage() {
     return checkDate < today;
   };
 
+  const isClosedDay = (date: Date | string): boolean => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    const dayIndex = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const dayMap: (keyof PlanningSettings["openDays"])[] = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    return !settings.openDays[dayMap[dayIndex]];
+  };
+
+  const isPublicHoliday = (date: Date | string): boolean => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    const month = d.getMonth() + 1; // 1-indexed
+    const day = d.getDate();
+    const ph = settings.publicHolidays;
+
+    if (ph.newYear && month === 1 && day === 1) return true;
+    if (ph.laborDay && month === 5 && day === 1) return true;
+    if (ph.victoryDay && month === 5 && day === 8) return true;
+    if (ph.nationalDay && month === 7 && day === 14) return true;
+    if (ph.assumption && month === 8 && day === 15) return true;
+    if (ph.allSaints && month === 11 && day === 1) return true;
+    if (ph.armistice && month === 11 && day === 11) return true;
+    if (ph.christmas && month === 12 && day === 25) return true;
+
+    // Variable dates — approximate via year
+    const year = d.getFullYear();
+    if (ph.easterMonday) {
+      const easter = getEasterDate(year);
+      const easterMonday = new Date(easter);
+      easterMonday.setDate(easter.getDate() + 1);
+      if (
+        month === easterMonday.getMonth() + 1 &&
+        day === easterMonday.getDate()
+      )
+        return true;
+    }
+    if (ph.ascension) {
+      const easter = getEasterDate(year);
+      const ascension = new Date(easter);
+      ascension.setDate(easter.getDate() + 39);
+      if (month === ascension.getMonth() + 1 && day === ascension.getDate())
+        return true;
+    }
+
+    return false;
+  };
+
+  // Anonymous Gregorian algorithm for Easter
+  const getEasterDate = (year: number): Date => {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  };
+
   const isShiftInPast = (shift: AgentShift): boolean => {
     return isDateInPast(shift.date);
   };
@@ -359,6 +450,14 @@ export default function SchedulePage() {
     agentId: string,
     date: string,
   ): DateConflict | null => {
+    if (isPublicHoliday(date)) {
+      return {
+        type: "time_off",
+        severity: "medium",
+        message: "Jour férié",
+        details: undefined,
+      };
+    }
     if (hasTimeOff(agentId, date)) {
       const timeOff = mockTimeOffRequests.find((req) => {
         if (req.employeeId !== agentId || req.status !== "approved")
@@ -495,7 +594,11 @@ export default function SchedulePage() {
       notes: "",
       isOvernight: false,
     });
-    setShowShiftModal(true);
+
+    // Open compact template popover instead of full modal
+    setTemplatePopoverContext({ agentId, date });
+    setSelectedPopoverTemplateId(siteStandardShifts[0]?.id ?? null);
+    setShowTemplatePopover(true);
 
     // Store context for creation
     window.__shiftContext = { agentId, date };
@@ -521,6 +624,57 @@ export default function SchedulePage() {
     const shift = agentShifts.find((s) => s.id === shiftId);
     if (shift && isShiftInPast(shift)) return;
     setAgentShifts(agentShifts.filter((s) => s.id !== shiftId));
+  };
+
+  const handleSelectTemplateFromPopover = (templateId: string) => {
+    const template = siteStandardShifts.find((t) => t.id === templateId);
+    if (!template || !templatePopoverContext) return;
+
+    const { agentId, date } = templatePopoverContext;
+    const newShift: AgentShift = {
+      id: generateShiftId(),
+      agentId,
+      siteId: selectedSiteId!,
+      date,
+      shiftType: "standard",
+      standardShiftId: templateId,
+      startTime: template.startTime,
+      endTime: template.endTime,
+      breakDuration: template.breakDuration,
+      color: template.color,
+      notes: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setAgentShifts((prev) => [...prev, newShift]);
+    setShowTemplatePopover(false);
+    setTemplatePopoverContext(null);
+    setSelectedPopoverTemplateId(null);
+  };
+
+  const handleOpenCustomShiftFromPopover = () => {
+    if (!templatePopoverContext) return;
+    const { agentId, date } = templatePopoverContext;
+    window.__shiftContext = { agentId, date };
+
+    const baseTemplate = selectedPopoverTemplateId
+      ? siteStandardShifts.find((t) => t.id === selectedPopoverTemplateId)
+      : null;
+
+    setShowTemplatePopover(false);
+    setSelectedPopoverTemplateId(null);
+    setShiftForm({
+      shiftType: "on_demand",
+      standardShiftId: "",
+      startTime: baseTemplate?.startTime ?? "08:00",
+      endTime: baseTemplate?.endTime ?? "16:00",
+      breakDuration: baseTemplate?.breakDuration ?? 30,
+      color: baseTemplate?.color ?? "#3b82f6",
+      notes: "",
+      isOvernight: false,
+    });
+    setShowShiftModal(true);
   };
 
   const handleSaveShift = () => {
@@ -838,172 +992,308 @@ export default function SchedulePage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header with Client/Site Selectors */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Planning</h1>
-            <p className="text-muted-foreground">
-              {assignedAgents.length} agent(s) assigné(s) •{" "}
-              {totalPlannedHours.toFixed(1)}h planifiées
-            </p>
-          </div>
-        </div>
+      {/* Header */}
+      <Card className="border-border/40">
+        <CardContent className="pt-5 pb-5">
+          <div className="flex items-center gap-6">
+            {/* Title */}
+            <div className="shrink-0">
+              <h1 className="text-2xl font-bold">Planning</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {assignedAgents.length} agent(s) •{" "}
+                {totalPlannedHours.toFixed(1)}h planifiées
+              </p>
+            </div>
 
-        {/* Client and Site Selectors */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">Client</Label>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => setShowClientSelector(true)}
-                >
-                  <Building2 className="h-4 w-4 mr-2" />
-                  {selectedClient?.name || "Sélectionner un client"}
-                </Button>
+            <div className="h-10 w-px bg-border shrink-0" />
+
+            {/* Client selector */}
+            <button
+              onClick={() => setShowClientSelector(true)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors text-left group min-w-0"
+            >
+              <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <Building2 className="h-4 w-4 text-primary" />
               </div>
-
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">Site</Label>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => setShowSiteSelector(true)}
-                  disabled={!selectedClientId}
-                >
-                  <MapPin className="h-4 w-4 mr-2" />
-                  {selectedSite ? (
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="truncate">{selectedSite.name}</span>
-                      <Badge variant="secondary" className="ml-auto shrink-0">
-                        {selectedSite.address.city}
-                      </Badge>
-                    </div>
-                  ) : (
-                    "Sélectionner un site"
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">Client</div>
+                <div className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                  {selectedClient?.name || (
+                    <span className="text-muted-foreground">Sélectionner…</span>
                   )}
-                </Button>
+                </div>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            <div className="h-10 w-px bg-border shrink-0" />
+
+            {/* Site selector */}
+            <button
+              onClick={() => setShowSiteSelector(true)}
+              disabled={!selectedClientId}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors text-left group min-w-0 disabled:opacity-50 disabled:pointer-events-none flex-1"
+            >
+              <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-muted-foreground">Site</div>
+                {selectedSite ? (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-lg leading-tight truncate">
+                      {selectedSite.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {selectedSite.address.city}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="font-medium text-sm text-muted-foreground">
+                    Sélectionner…
+                  </div>
+                )}
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Client Selector Dialog */}
+      <Dialog open={showClientSelector} onOpenChange={setShowClientSelector}>
+        <DialogContent className="max-w-lg max-h-[70vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              Sélectionner un client
+            </DialogTitle>
+          </DialogHeader>
+          <Command>
+            <CommandInput placeholder="Rechercher un client..." />
+            <CommandList>
+              <CommandEmpty>Aucun client trouvé.</CommandEmpty>
+              <CommandGroup>
+                {mockClients.map((client) => {
+                  const clientSiteCount = mockSites.filter(
+                    (s) => s.clientId === client.id && s.status === "active",
+                  ).length;
+                  const isSelected = client.id === selectedClientId;
+                  return (
+                    <CommandItem
+                      key={client.id}
+                      onSelect={() => {
+                        setSelectedClientId(client.id);
+                        setShowClientSelector(false);
+                        const clientSites = mockSites.filter(
+                          (s) =>
+                            s.clientId === client.id && s.status === "active",
+                        );
+                        if (clientSites.length > 0) {
+                          setSelectedSiteId(clientSites[0].id);
+                        } else {
+                          setSelectedSiteId(null);
+                        }
+                      }}
+                      className="flex items-center gap-3 py-3"
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                      >
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium">{client.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {client.city && `${client.city} • `}
+                          {clientSiteCount} site{clientSiteCount > 1 ? "s" : ""}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          Actuel
+                        </Badge>
+                      )}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
+
+      {/* Site Selector Dialog */}
+      <Dialog open={showSiteSelector} onOpenChange={setShowSiteSelector}>
+        <DialogContent className="max-w-lg max-h-[70vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              Sélectionner un site
+            </DialogTitle>
+          </DialogHeader>
+          <Command>
+            <CommandInput placeholder="Rechercher un site..." />
+            <CommandList>
+              <CommandEmpty>Aucun site trouvé.</CommandEmpty>
+              <CommandGroup>
+                {availableSites.map((site) => {
+                  const siteAgentCount = siteAgents.filter(
+                    (sa) => sa.siteId === site.id && sa.active,
+                  ).length;
+                  const isSelected = site.id === selectedSiteId;
+                  return (
+                    <CommandItem
+                      key={site.id}
+                      onSelect={() => {
+                        setSelectedSiteId(site.id);
+                        setShowSiteSelector(false);
+                      }}
+                      className="flex items-center gap-3 py-3"
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                      >
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{site.name}</span>
+                          <Badge
+                            variant={
+                              site.status === "active"
+                                ? "default"
+                                : site.status === "inactive"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                            className="text-xs"
+                          >
+                            {site.status === "active"
+                              ? "Actif"
+                              : site.status === "inactive"
+                                ? "Inactif"
+                                : "Suspendu"}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {site.address.city} • {site.address.postalCode}
+                          {siteAgentCount > 0 &&
+                            ` • ${siteAgentCount} agent(s)`}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          Actuel
+                        </Badge>
+                      )}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
+
+      {/* Legend & Copied info */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="text-sm">Congé</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                <span className="text-sm">Double affectation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="text-sm">Terminé</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <span className="text-sm">Absent</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gray-500" />
+                <span className="text-sm">En attente</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Client Selector Dialog */}
-        <Dialog open={showClientSelector} onOpenChange={setShowClientSelector}>
-          <DialogContent className="max-w-2xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Sélectionner un client</DialogTitle>
-            </DialogHeader>
-            <Command>
-              <CommandInput placeholder="Rechercher un client..." />
-              <CommandList>
-                <CommandEmpty>Aucun client trouvé.</CommandEmpty>
-                <CommandGroup>
-                  {mockClients.map((client) => {
-                    const clientSiteCount = mockSites.filter(
-                      (s) => s.clientId === client.id && s.status === "active",
-                    ).length;
-                    return (
-                      <CommandItem
-                        key={client.id}
-                        onSelect={() => {
-                          setSelectedClientId(client.id);
-                          setShowClientSelector(false);
-                          // Auto-select first site of new client
-                          const clientSites = mockSites.filter(
-                            (s) =>
-                              s.clientId === client.id && s.status === "active",
-                          );
-                          if (clientSites.length > 0) {
-                            setSelectedSiteId(clientSites[0].id);
-                          } else {
-                            setSelectedSiteId(null);
-                          }
-                        }}
-                      >
-                        <div className="flex items-start gap-3 w-full">
-                          <Building2 className="h-5 w-5 mt-1 shrink-0 text-primary" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium">{client.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {client.city && `${client.city} • `}
-                              {clientSiteCount} site
-                              {clientSiteCount > 1 ? "s" : ""}
-                            </div>
-                          </div>
-                        </div>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </DialogContent>
-        </Dialog>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAgentCommand(true)}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Assigner un agent
+            </Button>
 
-        {/* Site Selector Dialog */}
-        <Dialog open={showSiteSelector} onOpenChange={setShowSiteSelector}>
-          <DialogContent className="max-w-2xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>Sélectionner un site</DialogTitle>
-            </DialogHeader>
-            <Command>
-              <CommandInput placeholder="Rechercher un site..." />
-              <CommandList>
-                <CommandEmpty>Aucun site trouvé.</CommandEmpty>
-                <CommandGroup>
-                  {availableSites.map((site) => {
-                    const siteAgentCount = siteAgents.filter(
-                      (sa) => sa.siteId === site.id && sa.active,
-                    ).length;
-                    return (
-                      <CommandItem
-                        key={site.id}
-                        onSelect={() => {
-                          setSelectedSiteId(site.id);
-                          setShowSiteSelector(false);
-                        }}
-                      >
-                        <div className="flex items-start gap-3 w-full">
-                          <MapPin className="h-5 w-5 mt-1 shrink-0 text-primary" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{site.name}</span>
-                              <Badge
-                                variant={
-                                  site.status === "active"
-                                    ? "default"
-                                    : site.status === "inactive"
-                                      ? "secondary"
-                                      : "destructive"
-                                }
-                              >
-                                {site.status === "active"
-                                  ? "Actif"
-                                  : site.status === "inactive"
-                                    ? "Inactif"
-                                    : "Suspendu"}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {site.address.city} • {site.address.postalCode}
-                              {siteAgentCount > 0 &&
-                                ` • ${siteAgentCount} agent(s)`}
-                            </div>
-                          </div>
-                        </div>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </DialogContent>
-        </Dialog>
-      </div>
+            {copiedShift && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="gap-2">
+                  <Clipboard className="h-3 w-3" />
+                  Service copié: {copiedShift.startTime} - {copiedShift.endTime}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditingShift(copiedShift);
+                    setShiftForm({
+                      shiftType: copiedShift.shiftType,
+                      standardShiftId: copiedShift.standardShiftId || "",
+                      startTime: copiedShift.startTime,
+                      endTime: copiedShift.endTime,
+                      breakDuration: copiedShift.breakDuration,
+                      color: copiedShift.color || "#3b82f6",
+                      notes: copiedShift.notes || "",
+                      isOvernight: isOvernightShift(
+                        copiedShift.startTime,
+                        copiedShift.endTime,
+                      ),
+                    });
+                    setShowShiftModal(true);
+                  }}
+                >
+                  <Pencil className="h-3 w-3 mr-1" />
+                  Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setCopiedShift(null)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+
+            {copiedWeekDates && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="gap-2">
+                  <Clipboard className="h-3 w-3" />
+                  Semaine copiée
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setCopiedWeekDates(null);
+                    setCopiedWeekAgentId(null);
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* View controls */}
       <Card>
@@ -1079,95 +1369,6 @@ export default function SchedulePage() {
         </CardContent>
       </Card>
 
-      {/* Legend & Copied info */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-sm">Congé</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <span className="text-sm">Double affectation</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-sm">Terminé</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-sm">Absent</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-500" />
-                <span className="text-sm">En attente</span>
-              </div>
-            </div>
-
-            {copiedShift && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="gap-2">
-                  <Clipboard className="h-3 w-3" />
-                  Service copié: {copiedShift.startTime} - {copiedShift.endTime}
-                </Badge>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setEditingShift(copiedShift);
-                    setShiftForm({
-                      shiftType: copiedShift.shiftType,
-                      standardShiftId: copiedShift.standardShiftId || "",
-                      startTime: copiedShift.startTime,
-                      endTime: copiedShift.endTime,
-                      breakDuration: copiedShift.breakDuration,
-                      color: copiedShift.color || "#3b82f6",
-                      notes: copiedShift.notes || "",
-                      isOvernight: isOvernightShift(
-                        copiedShift.startTime,
-                        copiedShift.endTime,
-                      ),
-                    });
-                    setShowShiftModal(true);
-                  }}
-                >
-                  <Pencil className="h-3 w-3 mr-1" />
-                  Modifier
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setCopiedShift(null)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-
-            {copiedWeekDates && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="gap-2">
-                  <Clipboard className="h-3 w-3" />
-                  Semaine copiée
-                </Badge>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setCopiedWeekDates(null);
-                    setCopiedWeekAgentId(null);
-                  }}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Schedule Grid */}
       <Card>
         <CardContent className="pt-6">
@@ -1188,6 +1389,8 @@ export default function SchedulePage() {
               calculateAgentHours={calculateAgentHours}
               onRemoveAgent={handleRemoveAgent}
               onAssignAgent={() => setShowAgentCommand(true)}
+              isClosedDay={isClosedDay}
+              maxDailyWorkHours={settings.maxDailyWorkHours}
             />
           )}
 
@@ -1211,6 +1414,8 @@ export default function SchedulePage() {
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
               onAssignAgent={() => setShowAgentCommand(true)}
+              isClosedDay={isClosedDay}
+              maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
             />
           )}
 
@@ -1234,10 +1439,135 @@ export default function SchedulePage() {
               onConflictClick={handleConflictClick}
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
+              isClosedDay={isClosedDay}
+              maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
             />
           )}
         </CardContent>
       </Card>
+
+      {/* Compact Shift Template Popover */}
+      <Dialog open={showTemplatePopover} onOpenChange={setShowTemplatePopover}>
+        <DialogContent className="max-w-xs p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Ajouter un service</DialogTitle>
+          </DialogHeader>
+          <div className="bg-primary text-primary-foreground p-3 flex items-center justify-between">
+            <span className="text-sm font-medium">Ajouter un service</span>
+          </div>
+          <Tabs defaultValue="standard" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-none border-b h-9">
+              <TabsTrigger value="standard" className="text-xs rounded-none">
+                Standard
+              </TabsTrigger>
+              <TabsTrigger value="on_demand" className="text-xs rounded-none">
+                Sur mesure
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="standard" className="m-0">
+              {/* Weekday selector */}
+              {templatePopoverContext &&
+                (() => {
+                  const d = new Date(templatePopoverContext.date + "T00:00:00");
+                  const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                  const dayLabels = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
+                  return (
+                    <div className="flex justify-center gap-1 px-3 pt-3 pb-1">
+                      {dayLabels.map((label, i) => (
+                        <div
+                          key={i}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                            i === dayIdx
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+              <div className="p-3 space-y-2 max-h-72 overflow-y-auto">
+                {siteStandardShifts.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    Aucun modèle disponible
+                  </p>
+                ) : (
+                  siteStandardShifts.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() =>
+                        handleSelectTemplateFromPopover(template.id)
+                      }
+                      onMouseEnter={() =>
+                        setSelectedPopoverTemplateId(template.id)
+                      }
+                      className={`w-full text-left rounded-lg p-3 text-white font-medium text-sm transition-all ring-2 ${
+                        selectedPopoverTemplateId === template.id
+                          ? "ring-white/80 scale-[1.02] shadow-lg"
+                          : "ring-transparent hover:opacity-90"
+                      }`}
+                      style={{ backgroundColor: template.color }}
+                    >
+                      <div className="font-semibold">
+                        {template.startTime} - {template.endTime}
+                      </div>
+                      <div className="text-xs opacity-80 mt-0.5">
+                        ▶ {template.name}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="on_demand" className="m-0 p-3 space-y-3">
+              {selectedPopoverTemplateId ? (
+                (() => {
+                  const base = siteStandardShifts.find(
+                    (t) => t.id === selectedPopoverTemplateId,
+                  );
+                  return base ? (
+                    <div
+                      className="rounded-lg p-3 text-white text-sm"
+                      style={{ backgroundColor: base.color }}
+                    >
+                      <div className="text-xs opacity-70 mb-0.5">
+                        Base sélectionnée
+                      </div>
+                      <div className="font-semibold">
+                        {base.startTime} - {base.endTime}
+                      </div>
+                      <div className="text-xs opacity-80">
+                        ▶ {base.name} • {base.breakDuration}min pause
+                      </div>
+                    </div>
+                  ) : null;
+                })()
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Sélectionnez un modèle dans l&apos;onglet Standard pour
+                  l&apos;utiliser comme base, ou créez depuis zéro.
+                </p>
+              )}
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={handleOpenCustomShiftFromPopover}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {selectedPopoverTemplateId
+                  ? "Personnaliser ce modèle"
+                  : "Créer depuis zéro"}
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
 
       {/* Agent Command Palette */}
       <Dialog open={showAgentCommand} onOpenChange={setShowAgentCommand}>
@@ -1964,6 +2294,8 @@ function DailyView({
   calculateAgentHours,
   onRemoveAgent,
   onAssignAgent,
+  isClosedDay,
+  maxDailyWorkHours,
 }: {
   date: Date;
   agents: { agentId: string; agentName: string }[];
@@ -1980,6 +2312,8 @@ function DailyView({
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onRemoveAgent: (agentId: string) => void;
   onAssignAgent: () => void;
+  isClosedDay: (date: Date | string) => boolean;
+  maxDailyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const dateStr = formatDate(date);
@@ -2041,9 +2375,15 @@ function DailyView({
                   <X className="h-3.5 w-3.5" />
                 </Button>
                 <div className="font-medium text-sm mb-2">{agentName}</div>
-                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-bold text-base text-primary">
+                <div
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${agentHours > maxDailyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
+                >
+                  <Clock
+                    className={`h-4 w-4 ${agentHours > maxDailyWorkHours ? "text-destructive" : "text-primary"}`}
+                  />
+                  <span
+                    className={`font-bold text-base ${agentHours > maxDailyWorkHours ? "text-destructive" : "text-primary"}`}
+                  >
                     {agentHours.toFixed(1)}h
                   </span>
                   <span className="text-xs text-muted-foreground ml-auto">
@@ -2110,6 +2450,7 @@ function DailyView({
                   <ShiftBlock
                     shift={shift}
                     conflict={conflict}
+                    isClosed={isClosedDay(dateStr)}
                     onEdit={onEditShift}
                     onDelete={onDeleteShift}
                     onCopy={onCopyShift}
@@ -2133,6 +2474,22 @@ function DailyView({
                       <AlertTriangle className="h-4 w-4" />
                       <span className="text-sm font-medium">
                         Double affectation
+                      </span>
+                    </button>
+                  ) : isClosedDay(dateStr) ? (
+                    <button
+                      onClick={() =>
+                        copiedShift
+                          ? onPasteShift(agentId, dateStr)
+                          : onCreateShift(agentId, dateStr)
+                      }
+                      className="absolute inset-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                      title="Jour fermé — cliquer pour forcer l'ajout"
+                    >
+                      <CalendarOff className="h-4 w-4" />
+                      <span className="text-xs">Fermé</span>
+                      <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                        Forcer
                       </span>
                     </button>
                   ) : (
@@ -2191,6 +2548,7 @@ function DailyView({
 function ShiftBlock({
   shift,
   conflict,
+  isClosed,
   onEdit,
   onDelete,
   onCopy,
@@ -2198,6 +2556,7 @@ function ShiftBlock({
 }: {
   shift: AgentShift;
   conflict: DateConflict | null;
+  isClosed?: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
@@ -2311,12 +2670,21 @@ function ShiftBlock({
           )}
         </button>
       )}
+      {/* Closed-day override indicator */}
+      {isClosed && !conflict && (
+        <div
+          className="absolute -top-1 -right-1 z-10 p-1 bg-white rounded-full shadow-md"
+          title="Service planifié un jour fermé"
+        >
+          <Lock className="h-3.5 w-3.5 text-orange-500" />
+        </div>
+      )}
 
       {/* Header with time and actions */}
       <div className="flex items-start justify-between gap-2 relative z-10">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-bold text-white truncate flex items-center gap-2">
-            {continuesNextDay && <Moon className="h-3.5 w-3.5 flex-shrink-0" />}
+            {continuesNextDay && <Moon className="h-3.5 w-3.5 shrink-0" />}
             {shift.startTime} - {shift.endTime}
           </div>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -2420,7 +2788,8 @@ function WeeklyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
-  onAssignAgent,
+  isClosedDay,
+  maxWeeklyWorkHours,
 }: {
   dates: Date[];
   agents: { agentId: string; agentName: string }[];
@@ -2440,6 +2809,8 @@ function WeeklyView({
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onAssignAgent: () => void;
+  isClosedDay: (date: Date | string) => boolean;
+  maxWeeklyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -2453,18 +2824,38 @@ function WeeklyView({
   const weekDates = dates.map(formatDate);
   const showActions = true;
 
+  const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil(
+      ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+    );
+  };
+
+  const weekNumber = dates.length > 0 ? getWeekNumber(dates[0]) : null;
+
+  const MIN_COL_WIDTH = 100;
+  const MIN_TOTAL = 224 + 8 + dates.length * (MIN_COL_WIDTH + 8) + 40;
+
   return (
-    <div>
+    <div className="overflow-x-auto">
       {/* Header with dates as x-axis */}
-      <div className="flex mb-4 gap-2">
-        <div className="w-56 shrink-0" />
+      <div className="flex mb-4 gap-2" style={{ minWidth: `${MIN_TOTAL}px` }}>
+        <div className="w-56 shrink-0 flex items-end pb-1">
+          {weekNumber !== null && (
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
+              S.{weekNumber}
+            </span>
+          )}
+        </div>
         <div className="flex-1 flex gap-2">
           {dates.map((date: Date, idx: number) => {
             return (
               <div
                 key={idx}
-                className={`flex-1 text-center p-3 rounded-lg`}
-                style={{ minWidth: "120px" }}
+                className="flex-1 text-center p-3 rounded-lg"
+                style={{ minWidth: `${MIN_COL_WIDTH}px` }}
               >
                 <div className="text-sm font-medium">
                   {date.toLocaleDateString("fr-FR", { weekday: "short" })}
@@ -2483,7 +2874,7 @@ function WeeklyView({
       </div>
 
       {/* Agent rows */}
-      <div className="space-y-3">
+      <div className="space-y-3" style={{ minWidth: `${MIN_TOTAL}px` }}>
         {agents.map(({ agentId, agentName }) => {
           const agentHours = calculateAgentHours(agentId, dates);
           const hasAnyShift = weekDates.some((date) =>
@@ -2503,12 +2894,18 @@ function WeeklyView({
             weekDates.every((d) => !isDateInPast(d));
 
           return (
-            <div key={agentId} className="flex items-start gap-3">
-              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg group relative">
+            <div key={agentId} className="flex items-stretch gap-2">
+              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center">
                 <div className="font-medium text-sm mb-2">{agentName}</div>
-                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-bold text-base text-primary">
+                <div
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${agentHours > maxWeeklyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
+                >
+                  <Clock
+                    className={`h-4 w-4 ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                  />
+                  <span
+                    className={`font-bold text-base ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                  >
                     {agentHours.toFixed(1)}h
                   </span>
                   <span className="text-xs text-muted-foreground ml-auto">
@@ -2525,19 +2922,23 @@ function WeeklyView({
                   );
                   const conflict = getDateConflict(agentId, dateStr);
                   const isPast = isDateInPast(dateStr);
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                  const isClosed = isClosedDay(date);
 
                   return (
                     <div
                       key={idx}
-                      className={`flex-1 border rounded-lg relative p-2 ${
-                        isWeekend ? "bg-muted/30" : "bg-background"
+                      className={`flex-1 border rounded-lg relative overflow-hidden ${
+                        isClosed ? "bg-muted/30" : "bg-background"
                       } ${showWeekPasteBlock ? "invisible" : ""}`}
-                      style={{ minWidth: "140px", height: "120px" }}
+                      style={{
+                        minWidth: `${MIN_COL_WIDTH}px`,
+                        height: "120px",
+                      }}
                     >
                       {shift ? (
                         <ShiftCard
                           shift={shift}
+                          isClosed={isClosed}
                           onEdit={onEditShift}
                           onDelete={onDeleteShift}
                           onCopy={onCopyShift}
@@ -2560,6 +2961,21 @@ function WeeklyView({
                             <AlertTriangle className="h-4 w-4" />
                             <span className="text-sm font-medium">
                               Double affectation
+                            </span>
+                          </button>
+                        ) : isClosed ? (
+                          <button
+                            onClick={() =>
+                              copiedShift
+                                ? onPasteShift(agentId, dateStr)
+                                : onCreateShift(agentId, dateStr)
+                            }
+                            className="absolute inset-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                            title="Jour fermé — cliquer pour forcer l'ajout"
+                          >
+                            <CalendarOff className="h-4 w-4" />
+                            <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                              Forcer
                             </span>
                           </button>
                         ) : (
@@ -2655,18 +3071,6 @@ function WeeklyView({
             </div>
           );
         })}
-
-        {/* Add Agent Button */}
-        <div className="flex items-center gap-3 mt-2">
-          <Button
-            variant="outline"
-            className="w-56 shrink-0 border-dashed"
-            onClick={onAssignAgent}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Assigner un agent
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -2691,6 +3095,8 @@ function MonthlyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
+  isClosedDay,
+  maxWeeklyWorkHours,
 }: {
   dates: Date[];
   weekGroups: { dates: Date[]; startIdx: number }[];
@@ -2710,6 +3116,8 @@ function MonthlyView({
   onConflictClick: (agentId: string, date: string) => void;
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
+  isClosedDay: (date: Date | string) => boolean;
+  maxWeeklyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -2718,6 +3126,15 @@ function MonthlyView({
     today.setHours(0, 0, 0, 0);
     check.setHours(0, 0, 0, 0);
     return check < today;
+  };
+
+  const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil(
+      ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+    );
   };
 
   return (
@@ -2734,33 +3151,43 @@ function MonthlyView({
           {weekGroups.map(
             (week: { dates: Date[]; startIdx: number }, weekIdx: number) => {
               const isCompleteWeek = week.dates.length === 7;
+              const weekNum =
+                week.dates.length > 0 ? getWeekNumber(week.dates[0]) : null;
               return (
-                <div key={weekIdx} className="flex gap-0">
-                  {week.dates.map((date: Date, idx: number) => {
-                    const isWeekend =
-                      date.getDay() === 0 || date.getDay() === 6;
-                    return (
-                      <div
-                        key={idx}
-                        className="text-center p-2"
-                        style={{ width: "120px" }}
-                      >
+                <div key={weekIdx} className="flex flex-col gap-0">
+                  {weekNum !== null && (
+                    <div className="text-center pb-1">
+                      <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                        S.{weekNum}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex gap-0">
+                    {week.dates.map((date: Date, idx: number) => {
+                      const isClosed = isClosedDay(date);
+                      return (
                         <div
-                          className={`text-sm ${
-                            isWeekend ? "text-muted-foreground" : "font-medium"
-                          }`}
+                          key={idx}
+                          className="text-center p-2"
+                          style={{ width: "120px" }}
                         >
-                          {date.toLocaleDateString("fr-FR", {
-                            weekday: "short",
-                          })}
+                          <div
+                            className={`text-sm ${
+                              isClosed ? "text-muted-foreground" : "font-medium"
+                            }`}
+                          >
+                            {date.toLocaleDateString("fr-FR", {
+                              weekday: "short",
+                            })}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {date.getDate()}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {date.getDate()}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {isCompleteWeek && <div className="w-12 shrink-0" />}
+                      );
+                    })}
+                    {isCompleteWeek && <div className="w-12 shrink-0" />}
+                  </div>
                 </div>
               );
             },
@@ -2773,25 +3200,36 @@ function MonthlyView({
         {agents.map(
           ({ agentId, agentName }: { agentId: string; agentName: string }) => {
             return (
-              <div key={agentId} className="flex">
-                <div className="w-56 shrink-0 p-3 bg-muted rounded-lg sticky left-0 z-10 mr-2 group relative">
+              <div key={agentId} className="flex items-stretch">
+                <div className="w-56 shrink-0 p-3 bg-muted rounded-lg sticky left-0 z-10 mr-2 flex flex-col justify-center">
                   <div className="font-medium text-sm mb-2">{agentName}</div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="font-bold text-base text-primary">
-                      {weekGroups
-                        .reduce(
-                          (total, week) =>
-                            total + calculateAgentHours(agentId, week.dates),
-                          0,
-                        )
-                        .toFixed(1)}
-                      h
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      ce mois
-                    </span>
-                  </div>
+                  {(() => {
+                    const monthHours = weekGroups.reduce(
+                      (total, week) =>
+                        total + calculateAgentHours(agentId, week.dates),
+                      0,
+                    );
+                    const monthMaxHours =
+                      maxWeeklyWorkHours * (weekGroups.length || 1);
+                    const isOver = monthHours > monthMaxHours;
+                    return (
+                      <div
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${isOver ? "bg-destructive/10" : "bg-primary/10"}`}
+                      >
+                        <Clock
+                          className={`h-4 w-4 ${isOver ? "text-destructive" : "text-primary"}`}
+                        />
+                        <span
+                          className={`font-bold text-base ${isOver ? "text-destructive" : "text-primary"}`}
+                        >
+                          {monthHours.toFixed(1)}h
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          ce mois
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="flex gap-2">
@@ -2828,20 +3266,20 @@ function MonthlyView({
                                 dateStr,
                               );
                               const isPast = isDateInPast(dateStr);
-                              const isWeekend =
-                                date.getDay() === 0 || date.getDay() === 6;
+                              const isClosed = isClosedDay(date);
 
                               return (
                                 <div
                                   key={idx}
-                                  className={`border rounded-lg relative p-1 ${
-                                    isWeekend ? "bg-muted/30" : "bg-background"
+                                  className={`border rounded-lg relative overflow-hidden ${
+                                    isClosed ? "bg-muted/30" : "bg-background"
                                   } ${showWeekPasteBlock ? "invisible" : ""}`}
                                   style={{ width: "120px", height: "100px" }}
                                 >
                                   {shift ? (
                                     <ShiftCard
                                       shift={shift}
+                                      isClosed={isClosed}
                                       onEdit={onEditShift}
                                       onDelete={onDeleteShift}
                                       onCopy={onCopyShift}
@@ -2865,6 +3303,21 @@ function MonthlyView({
                                         className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
                                       >
                                         <AlertTriangle className="h-3 w-3" />
+                                      </button>
+                                    ) : isClosed ? (
+                                      <button
+                                        onClick={() =>
+                                          copiedShift
+                                            ? onPasteShift(agentId, dateStr)
+                                            : onCreateShift(agentId, dateStr)
+                                        }
+                                        className="absolute inset-1 flex flex-col items-center justify-center gap-0.5 rounded border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                                        title="Jour fermé — cliquer pour forcer l'ajout"
+                                      >
+                                        <CalendarOff className="h-3 w-3" />
+                                        <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity leading-none">
+                                          Forcer
+                                        </span>
                                       </button>
                                     ) : (
                                       <button
@@ -2963,7 +3416,7 @@ function MonthlyView({
 
                           {showWeekPasteBlock && (
                             <div
-                              className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-[5]"
+                              className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-5"
                               onClick={() => onPasteWeek(agentId, weekDates)}
                               style={{
                                 right: isCompleteWeek ? "48px" : "0",
@@ -2994,11 +3447,13 @@ function MonthlyView({
 // Shift Card Component (for weekly/monthly)
 function ShiftCard({
   shift,
+  isClosed,
   onEdit,
   onDelete,
   onCopy,
 }: {
   shift: AgentShift;
+  isClosed?: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
@@ -3063,7 +3518,7 @@ function ShiftCard({
 
   return (
     <div
-      className={`relative rounded p-2 border-l-4 flex flex-col flex-1 group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
+      className={`absolute inset-0 rounded p-2 border-l-4 flex flex-col group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
         isPast ? "opacity-80" : ""
       }`}
       style={{
@@ -3072,6 +3527,14 @@ function ShiftCard({
       }}
       onClick={() => !isPast && onEdit(shift)}
     >
+      {isClosed && (
+        <div
+          className="absolute top-1 right-1 z-10"
+          title="Service planifié un jour fermé"
+        >
+          <Lock className="h-3 w-3 text-white/80" />
+        </div>
+      )}
       {completionStatus && (
         <div
           className="absolute left-0 top-0 bottom-0 w-1"
@@ -3083,7 +3546,7 @@ function ShiftCard({
         <div className="flex-1 min-w-0">
           <div className="text-sm font-bold text-white truncate flex items-center gap-2">
             {isOvernightShift(shift.startTime, shift.endTime) && (
-              <Moon className="h-3.5 w-3.5 flex-shrink-0" />
+              <Moon className="h-3.5 w-3.5 shrink-0" />
             )}
             {shift.startTime} - {shift.endTime}
           </div>

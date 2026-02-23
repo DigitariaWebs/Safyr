@@ -76,7 +76,6 @@ const navItems: NavItem[] = [
 ];
 
 interface BillingNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 
