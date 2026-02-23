@@ -19,10 +19,10 @@ function AnimatedContainer({
   if (shouldReduce) return <div className={className}>{children}</div>;
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+      initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.7 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay, duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={className}
     >
       {children}
@@ -43,7 +43,16 @@ export default function Footer() {
       {/* Top accent line */}
       <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/30 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+      {/* Background glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(34,211,238,0.03) 0%, transparent 65%)",
+        }}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 relative">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
           {/* Brand column */}
           <AnimatedContainer delay={0} className="lg:col-span-1">
@@ -53,7 +62,7 @@ export default function Footer() {
                 alt={assets.logo.alt}
                 width={assets.logo.footerWidth}
                 height={assets.logo.footerHeight}
-                className="h-13 w-auto object-contain drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                className="h-13 w-auto object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
               />
             </div>
             <p className="text-sm text-[#64748b] leading-relaxed mb-6 max-w-xs">
@@ -65,7 +74,7 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-9 h-9 rounded-lg border border-[#2d4160] flex items-center justify-center text-[#64748b] hover:text-[#22d3ee] hover:border-[#22d3ee]/40 transition-all duration-200"
+                  className="w-9 h-9 rounded-lg border border-[#2d4160] flex items-center justify-center text-[#64748b] hover:text-[#22d3ee] hover:border-[#22d3ee]/40 hover:bg-[#22d3ee]/5 transition-all duration-200"
                 >
                   <Icon size={16} />
                 </a>
@@ -76,7 +85,7 @@ export default function Footer() {
           {/* Link columns */}
           <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {siteConfig.footer.links.map((col, i) => (
-              <AnimatedContainer key={col.label} delay={0.1 + i * 0.08}>
+              <AnimatedContainer key={col.label} delay={0.1 + i * 0.09}>
                 <h4 className="text-xs font-semibold text-[#f1f5f9] uppercase tracking-widest mb-4">
                   {col.label}
                 </h4>
@@ -85,7 +94,7 @@ export default function Footer() {
                     <li key={item.title}>
                       <a
                         href={item.href}
-                        className="text-sm text-[#64748b] hover:text-[#94a3b8] transition-colors"
+                        className="text-sm text-[#64748b] hover:text-[#94a3b8] hover:translate-x-0.5 inline-block transition-all duration-200"
                       >
                         {item.title}
                       </a>
@@ -98,31 +107,41 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 pt-6 border-t border-[#2d4160]/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="mt-14 pt-6 border-t border-[#2d4160]/40 flex flex-col sm:flex-row items-center justify-between gap-3"
+        >
           <p className="text-xs text-[#64748b]">
-            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+            © {new Date().getFullYear()}{" "}
+            <span className="text-[#94a3b8] font-medium">
+              {siteConfig.name}
+            </span>
+            . Tous droits réservés.
           </p>
           <div className="flex gap-5">
             <a
               href="#"
-              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors"
+              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors duration-200"
             >
               Politique de confidentialité
             </a>
             <a
               href="#"
-              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors"
+              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors duration-200"
             >
               Conditions d&apos;utilisation
             </a>
             <a
               href="#"
-              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors"
+              className="text-xs text-[#64748b] hover:text-[#94a3b8] transition-colors duration-200"
             >
               Politique des cookies
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

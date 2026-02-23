@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,20 +14,52 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 }, // Réduit les délais
+    transition: { staggerChildren: 0.12, delayChildren: 0.15 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 }, // Réduit le déplacement
+  hidden: { opacity: 0, y: 28, filter: "blur(4px)" },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }, // Réduit la durée
+    filter: "blur(0px)",
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 };
 
+const imageVariants: Variants = {
+  hidden: { opacity: 0, x: 48, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: { duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+const HEADLINE_HIGHLIGHT = [
+  "RH",
+  "Main",
+  "courante",
+  "digitale",
+  "Gardiennage",
+];
+
+const PARTICLES = [
+  { x: "12%", y: "22%", size: 3, delay: 0 },
+  { x: "88%", y: "18%", size: 2, delay: 0.8 },
+  { x: "6%", y: "68%", size: 2.5, delay: 1.4 },
+  { x: "92%", y: "72%", size: 3, delay: 0.4 },
+  { x: "50%", y: "8%", size: 2, delay: 1.1 },
+  { x: "75%", y: "88%", size: 2.5, delay: 0.6 },
+  { x: "20%", y: "90%", size: 2, delay: 1.7 },
+  { x: "60%", y: "15%", size: 1.5, delay: 2.0 },
+];
+
 export default function Hero() {
+  const shouldReduce = useReducedMotion();
+
   const handleScroll = (href: string) => {
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -38,23 +70,23 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0f172a]"
     >
-      {/* Beams background - optimisé pour les performances */}
+      {/* Animated beam background */}
       <BeamsBackground className="absolute inset-0" intensity="subtle" />
 
-      {/* Radial gradient center glow */}
+      {/* Radial center glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-150"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px]"
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(34,211,238,0.07) 0%, transparent 70%)",
+              "radial-gradient(ellipse at center, rgba(34,211,238,0.09) 0%, transparent 68%)",
           }}
         />
       </div>
 
       {/* Grid overlay */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        className="absolute inset-0 pointer-events-none opacity-[0.025]"
         style={{
           backgroundImage:
             "linear-gradient(#22d3ee 1px, transparent 1px), linear-gradient(to right, #22d3ee 1px, transparent 1px)",
@@ -62,9 +94,35 @@ export default function Hero() {
         }}
       />
 
+      {/* Floating particles */}
+      {!shouldReduce &&
+        PARTICLES.map((p, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-[#22d3ee] pointer-events-none"
+            style={{
+              left: p.x,
+              top: p.y,
+              width: p.size,
+              height: p.size,
+            }}
+            animate={{
+              opacity: [0, 0.6, 0],
+              scale: [0.8, 1.4, 0.8],
+              y: [0, -12, 0],
+            }}
+            transition={{
+              duration: 4 + i * 0.5,
+              delay: p.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left column - Content */}
+          {/* Left column */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -79,7 +137,7 @@ export default function Hero() {
               </Badge>
             </motion.div>
 
-            {/* Headline */}
+            {/* Headline with shimmer highlight */}
             <motion.h1
               variants={itemVariants}
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f1f5f9] leading-[1.1]"
@@ -87,19 +145,40 @@ export default function Hero() {
               {siteConfig.hero.headline
                 .split(" ")
                 .reduce<React.ReactNode[]>((acc, word, i, arr) => {
-                  // Highlight "RH" and "Main courante digitale"
-                  const highlighted = [
-                    "RH",
-                    "Main",
-                    "courante",
-                    "digitale",
-                    "Gardiennage",
-                  ];
-                  const el =
-                    highlighted.includes(word) ||
-                    highlighted.some((h) => word.startsWith(h)) ? (
-                      <span key={i} className="text-[#22d3ee]">
+                  const isHighlighted =
+                    HEADLINE_HIGHLIGHT.includes(word) ||
+                    HEADLINE_HIGHLIGHT.some((h) => word.startsWith(h));
+                  acc.push(
+                    isHighlighted ? (
+                      <span
+                        key={i}
+                        className="relative inline-block text-[#22d3ee]"
+                        style={{
+                          textShadow: "0 0 32px rgba(34,211,238,0.45)",
+                        }}
+                      >
                         {word}
+                        {/* shimmer sweep */}
+                        {!shouldReduce && (
+                          <motion.span
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                              background:
+                                "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.22) 50%, transparent 60%)",
+                              backgroundSize: "200% 100%",
+                            }}
+                            animate={{
+                              backgroundPosition: ["-100% 0", "200% 0"],
+                            }}
+                            transition={{
+                              duration: 2.4,
+                              delay: 1.2 + i * 0.08,
+                              repeat: Infinity,
+                              repeatDelay: 4,
+                              ease: "linear",
+                            }}
+                          />
+                        )}
                         {i < arr.length - 1 ? " " : ""}
                       </span>
                     ) : (
@@ -107,8 +186,8 @@ export default function Hero() {
                         {word}
                         {i < arr.length - 1 ? " " : ""}
                       </span>
-                    );
-                  acc.push(el);
+                    ),
+                  );
                   return acc;
                 }, [])}
             </motion.h1>
@@ -135,32 +214,36 @@ export default function Hero() {
                 {siteConfig.hero.cta}
                 <ArrowRight
                   size={18}
-                  className="group-hover:translate-x-0.5 transition-transform"
+                  className="group-hover:translate-x-1 transition-transform duration-200"
                 />
               </Button>
               <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => handleScroll(siteConfig.hero.secondaryCtaHref)}
-                className="group"
+                className="group border border-[#2d4160] hover:border-[#22d3ee]/40 bg-transparent text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#22d3ee]/5 transition-all"
               >
-                <Play size={16} className="fill-current" />
+                <ChevronDown
+                  size={16}
+                  className="group-hover:translate-y-0.5 transition-transform duration-200"
+                />
                 {siteConfig.hero.secondaryCta}
               </Button>
             </motion.div>
 
-            {/* Social proof count */}
+            {/* Social proof */}
             <motion.div
               variants={itemVariants}
-              className="flex items-center gap-3 mt-4"
+              className="flex items-center gap-3 mt-2"
             >
               <div className="flex -space-x-2.5">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 rounded-full border-2 border-[#1e293b] bg-linear-to-br from-[#22d3ee]/30 to-[#0f172a] flex items-center justify-center text-xs text-[#94a3b8] font-medium"
+                    className="w-8 h-8 rounded-full border-2 border-[#0f172a] bg-[#1e293b]"
                     style={{
                       backgroundImage: `url(https://i.pravatar.cc/32?img=${10 + i})`,
+                      backgroundSize: "cover",
                     }}
                   />
                 ))}
@@ -168,39 +251,135 @@ export default function Hero() {
               <p className="text-sm text-[#94a3b8]">
                 Approuvé par{" "}
                 <span className="text-[#f1f5f9] font-semibold">
-                  plus de 200 sociétés de gardiennage
+                  plus de 200 sociétés
                 </span>{" "}
-                en France
+                de gardiennage en France
               </p>
+            </motion.div>
+
+            {/* Trust indicators */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-1"
+            >
+              {[
+                "SOC 2 Type II",
+                "Données hébergées en France",
+                "Support 24/7",
+              ].map((label) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-1.5 text-xs text-[#64748b]"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22d3ee]/60 shrink-0" />
+                  {label}
+                </span>
+              ))}
             </motion.div>
           </motion.div>
 
-          {/* Right column - Hero Image */}
+          {/* Right column — hero image */}
           <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.95 }} // Réduit les valeurs
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }} // Animation plus rapide
+            variants={imageVariants}
+            initial="hidden"
+            animate="visible"
             className="relative flex justify-center lg:justify-end"
           >
             <div className="relative w-full max-w-lg">
+              {/* Glow behind image */}
+              <div
+                className="absolute inset-0 rounded-2xl pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at 50% 60%, rgba(34,211,238,0.12) 0%, transparent 65%)",
+                  filter: "blur(24px)",
+                  transform: "scale(1.1)",
+                }}
+              />
+
               <Image
                 src="https://res.cloudinary.com/dpo7sqgyg/image/upload/v1771874865/hero_s0w0ue.png"
                 alt="Safyr Plateforme"
                 width={800}
                 height={600}
-                className="w-full h-auto object-contain"
+                className="relative w-full h-auto object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.6)]"
                 priority
                 loading="eager"
                 quality={85}
               />
-              {/* Gradient en bas de l'image */}
-              <div className="absolute bottom-0 inset-x-0 h-32 bg-linear-to-t from-[#0f172a] to-transparent pointer-events-none" />
+
+              {/* Floating stat chip — top right */}
+              {!shouldReduce && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.92 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 1.0, duration: 0.5, ease: "easeOut" }}
+                  className="absolute -top-4 -right-4 lg:-right-8 bg-[#0f172a]/90 backdrop-blur-md border border-[#2d4160] rounded-xl px-4 py-3 shadow-xl hidden sm:flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#22d3ee]/10 flex items-center justify-center shrink-0">
+                    <span className="text-[#22d3ee] text-sm font-bold">3×</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-[#f1f5f9] leading-tight">
+                      Traitement RH
+                    </p>
+                    <p className="text-[10px] text-[#64748b]">plus rapide</p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Floating stat chip — bottom left */}
+              {!shouldReduce && (
+                <motion.div
+                  initial={{ opacity: 0, y: -12, scale: 0.92 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5, ease: "easeOut" }}
+                  className="absolute -bottom-4 -left-4 lg:-left-8 bg-[#0f172a]/90 backdrop-blur-md border border-[#2d4160] rounded-xl px-4 py-3 shadow-xl hidden sm:flex items-center gap-3"
+                >
+                  <div className="relative w-2 h-2">
+                    <span className="absolute inset-0 rounded-full bg-[#10b981] animate-ping opacity-75" />
+                    <span className="absolute inset-0 rounded-full bg-[#10b981]" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-[#f1f5f9] leading-tight">
+                      99.9% uptime
+                    </p>
+                    <p className="text-[10px] text-[#64748b]">
+                      Disponibilité garantie
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Bottom gradient fade */}
+              <div className="absolute bottom-0 inset-x-0 h-24 bg-linear-to-t from-[#0f172a] to-transparent pointer-events-none" />
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom gradient fade */}
+      {/* Scroll indicator */}
+      {!shouldReduce && (
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.5 }}
+          onClick={() => handleScroll("#about")}
+        >
+          <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d5170]">
+            Découvrir
+          </span>
+          <motion.div
+            animate={{ y: [0, 5, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronDown size={16} className="text-[#3d5170]" />
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Bottom section fade */}
       <div className="absolute bottom-0 inset-x-0 h-32 bg-linear-to-t from-[#0f172a] to-transparent pointer-events-none" />
     </section>
   );

@@ -5,9 +5,9 @@
 
 export const siteConfig = {
   name: "Safyr",
-  tagline: "Plateforme RH & Main courante digitale pour Gardiennage",
+  tagline: "La plateforme de gestion tout-en-un pour sociétés de gardiennage",
   description:
-    "Safyr unifie la gestion RH, les registres numériques, la paie et la main courante digitale en une plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
+    "Safyr unifie la gestion RH, la paie, la comptabilité, la facturation, la banque, la planification, la géolocalisation, la gestion de stock, l'OCR et la main courante digitale en une plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
   url: "https://safyr.com",
 
   nav: [
@@ -20,9 +20,10 @@ export const siteConfig = {
 
   hero: {
     badge: "Approuvé par plus de 200 sociétés de gardiennage",
-    headline: "Plateforme RH & Main courante digitale pour Gardiennage",
+    headline:
+      "La plateforme de gestion tout-en-un pour sociétés de gardiennage",
     subheadline:
-      "Safyr unifie la gestion RH, les registres numériques, la paie et la main courante digitale en une plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
+      "Safyr unifie RH, paie, comptabilité, facturation, banque, planification, géolocalisation, stock, OCR et main courante digitale en une seule plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
     cta: "Nous contacter",
     ctaHref: "#contact",
     secondaryCta: "Voir comment ça marche",
@@ -57,60 +58,78 @@ export const siteConfig = {
     },
     {
       icon: "BookOpen",
-      title: "Registre numérique de gardiennage",
+      title: "Main courante digitale",
       description:
         "Suivez les présences, les quarts de travail, les rondes et les journaux d'activité quotidienne avec une synchronisation en temps réel et des enregistrements prêts pour l'audit.",
     },
     {
       icon: "DollarSign",
-      title: "Automatisation de la paie",
+      title: "Paie",
       description:
         "Automatisez les calculs de salaire, les heures supplémentaires, les primes de garde, les déductions et la génération de bulletins de paie sans erreur.",
     },
     {
-      icon: "ShieldCheck",
-      title: "Conformité et rapports",
-      description:
-        "Restez prêt pour l'audit avec des contrôles de conformité intégrés, des rapports réglementaires spécifiques au gardiennage et l'application des politiques.",
-    },
-    {
-      icon: "Settings2",
-      title: "Gestion des opérations",
-      description:
-        "Coordonnez les affectations de sites, les plannings de garde, les rondes de sécurité et les flux de travail d'équipe depuis un tableau de bord unifié.",
-    },
-    {
       icon: "BarChart3",
-      title: "Analyses et tableaux de bord",
+      title: "Comptabilité",
       description:
-        "Découvrez des insights sur vos équipes de gardiennage avec des tableaux de bord en temps réel, des analyses de tendances et des rapports exportables.",
+        "Gérez la comptabilité de votre société de gardiennage avec un suivi des dépenses, des journaux comptables et des rapports financiers intégrés.",
     },
     {
-      icon: "FolderOpen",
-      title: "Gestion de documents",
+      icon: "Receipt",
+      title: "Facturation",
       description:
-        "Stockez, signez et gérez les contrats d'agents, les certifications, les habilitations et les documents réglementaires en toute sécurité dans le cloud.",
+        "Créez et envoyez des factures clients, suivez les paiements et gérez vos cycles de facturation directement depuis la plateforme.",
+    },
+    {
+      icon: "Landmark",
+      title: "Banque",
+      description:
+        "Connectez vos comptes bancaires, réconciliez vos transactions et gardez une vue consolidée de votre trésorerie en temps réel.",
+    },
+    {
+      icon: "CalendarDays",
+      title: "Planification",
+      description:
+        "Planifiez les gardes, gérez les rotations d'agents et coordonnez les affectations de sites depuis un calendrier centralisé et interactif.",
+    },
+    {
+      icon: "MapPin",
+      title: "Géolocalisation",
+      description:
+        "Suivez en temps réel la position de vos agents sur le terrain, contrôlez les rondes et vérifiez les présences sur site par géofencing.",
+    },
+    {
+      icon: "Package",
+      title: "Gestion de stock",
+      description:
+        "Gérez les équipements, uniformes et matériels de vos agents avec un suivi des stocks, des attributions et des alertes de réapprovisionnement.",
+    },
+    {
+      icon: "ScanLine",
+      title: "OCR & Documents",
+      description:
+        "Numérisez et extrayez automatiquement les données des documents papier — contrats, pièces d'identité, certifications — grâce à la reconnaissance optique de caractères.",
     },
   ],
 
   howItWorks: [
     {
       step: "01",
-      title: "Module RH",
+      title: "Gestion RH & Paie",
       description:
-        "Gérez vos agents de sécurité avec le module RH : dossiers complets, certifications, habilitations, formations, évaluations de performance et gestion de la paie, le tout centralisé en un seul endroit.",
+        "Gérez vos agents avec le module RH : dossiers complets, certifications, habilitations, formations et évaluations. La paie est automatisée — calculs de salaires, heures supplémentaires, primes et bulletins générés sans erreur.",
     },
     {
       step: "02",
-      title: "Module Main courante digitale",
+      title: "Opérations terrain & Main courante",
       description:
-        "Utilisez la main courante digitale pour suivre les présences, les rondes de sécurité, les incidents et générer des rapports conformes aux exigences réglementaires en temps réel. Tous vos enregistrements sont traçables et auditable pour une conformité totale.",
+        "Planifiez les gardes, suivez les agents en temps réel par géolocalisation et enregistrez chaque activité dans la main courante digitale. Tous les enregistrements sont traçables et prêts pour l'audit réglementaire.",
     },
     {
       step: "03",
-      title: "Application mobile pour les agents",
+      title: "Finances & Administration",
       description:
-        "Vos agents utilisent l'application mobile pour enregistrer leurs présences, effectuer leurs rondes, signaler des incidents et consulter leurs plannings directement depuis leur smartphone.",
+        "Gérez la comptabilité, la facturation client et la trésorerie depuis un tableau de bord unifié. L'OCR automatise la numérisation de vos documents, et la gestion de stock suit équipements et matériels de vos équipes.",
     },
   ],
 
@@ -196,8 +215,10 @@ export const siteConfig = {
         items: [
           { title: "Gestion RH", href: "#services" },
           { title: "Paie", href: "#services" },
-          { title: "Registre de gardiennage", href: "#services" },
-          { title: "Analyses", href: "#services" },
+          { title: "Main courante digitale", href: "#services" },
+          { title: "Comptabilité & Facturation", href: "#services" },
+          { title: "Planification & Géolocalisation", href: "#services" },
+          { title: "Stock & OCR", href: "#services" },
         ],
       },
       {

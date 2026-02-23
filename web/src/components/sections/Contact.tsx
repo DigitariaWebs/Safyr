@@ -1,16 +1,166 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Send,
+  CheckCircle2,
+  Clock,
+  Zap,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { useUiStore } from "@/lib/stores/uiStore";
+import { cn } from "@/lib/utils";
+
+import type { Variants } from "framer-motion";
+
+const EASE = [0.25, 0.46, 0.45, 0.94] as const;
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 24, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.6, ease: EASE },
+  },
+};
+
+function FormField({
+  id,
+  name,
+  label,
+  type = "text",
+  required = false,
+  placeholder,
+  value,
+  onChange,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  placeholder: string;
+  value: string;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-xs font-medium text-[#94a3b8]">
+        {label} {required && <span className="text-[#22d3ee]">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          name={name}
+          type={type}
+          required={required}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={placeholder}
+          className="w-full h-10 px-3 rounded-lg bg-[#0f172a] border text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none transition-all duration-200"
+          style={{
+            borderColor: focused ? "rgba(34,211,238,0.55)" : "rgba(45,65,96,1)",
+            boxShadow: focused
+              ? "0 0 0 3px rgba(34,211,238,0.08), inset 0 1px 2px rgba(0,0,0,0.2)"
+              : "inset 0 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        {/* Animated bottom highlight */}
+        <motion.div
+          className="absolute bottom-0 left-3 right-3 h-px bg-linear-to-r from-transparent via-[#22d3ee] to-transparent rounded-full"
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={
+            focused ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 }
+          }
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TextAreaField({
+  id,
+  name,
+  label,
+  required = false,
+  placeholder,
+  value,
+  rows = 4,
+  onChange,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  required?: boolean;
+  placeholder: string;
+  value: string;
+  rows?: number;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+}) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-xs font-medium text-[#94a3b8]">
+        {label} {required && <span className="text-[#22d3ee]">*</span>}
+      </label>
+      <div className="relative">
+        <textarea
+          id={id}
+          name={name}
+          required={required}
+          rows={rows}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder={placeholder}
+          className="w-full px-3 py-2.5 rounded-lg bg-[#0f172a] border text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none transition-all duration-200 resize-none"
+          style={{
+            borderColor: focused ? "rgba(34,211,238,0.55)" : "rgba(45,65,96,1)",
+            boxShadow: focused
+              ? "0 0 0 3px rgba(34,211,238,0.08), inset 0 1px 2px rgba(0,0,0,0.2)"
+              : "inset 0 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-3 right-3 h-px bg-linear-to-r from-transparent via-[#22d3ee] to-transparent rounded-full"
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={
+            focused ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 }
+          }
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Contact() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const shouldReduce = useReducedMotion();
   const { contactFormSubmitted: submitted, setContactFormSubmitted } =
     useUiStore();
 
@@ -57,19 +207,30 @@ export default function Contact() {
     },
   ];
 
+  const perks = [
+    { icon: Zap, text: "Réponse sous 24h" },
+    { icon: Clock, text: "Démo en 30 minutes" },
+  ];
+
   return (
     <section
       id="contact"
-      ref={ref}
       className="relative py-28 bg-[#0f172a] overflow-hidden"
     >
       {/* Glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-100"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-[450px]"
           style={{
             background:
-              "radial-gradient(ellipse at top, rgba(34,211,238,0.06) 0%, transparent 70%)",
+              "radial-gradient(ellipse at top, rgba(34,211,238,0.07) 0%, transparent 68%)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-100 h-100"
+          style={{
+            background:
+              "radial-gradient(circle at 90% 90%, rgba(34,211,238,0.03) 0%, transparent 60%)",
           }}
         />
       </div>
@@ -77,198 +238,265 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
+          initial={{ opacity: 0, y: 24, filter: "blur(4px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
           className="text-center mb-16 flex flex-col items-center gap-4"
         >
           <Badge variant="cyan">Contact</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9]">
+          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight">
             {siteConfig.contact.headline}
           </h2>
           <p className="text-lg text-[#94a3b8] max-w-xl">
             {siteConfig.contact.subheadline}
           </p>
+
+          {/* Perks row */}
+          <div className="flex flex-wrap justify-center gap-4 mt-1">
+            {perks.map(({ icon: Icon, text }) => (
+              <span
+                key={text}
+                className="flex items-center gap-1.5 text-sm text-[#64748b]"
+              >
+                <Icon size={14} className="text-[#22d3ee]/70 shrink-0" />
+                {text}
+              </span>
+            ))}
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-5 gap-10 items-start">
           {/* Left — contact info */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="lg:col-span-2 flex flex-col gap-5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="lg:col-span-2 flex flex-col gap-4"
           >
             {contactDetails.map((detail) => (
-              <a
+              <motion.a
                 key={detail.label}
+                variants={itemVariants}
                 href={detail.href}
-                className="flex items-start gap-4 p-5 rounded-xl border border-[#2d4160]/60 bg-[#1a2d45]/40 hover:border-[#22d3ee]/40 hover:bg-[#1a2d45]/70 transition-all group"
+                whileHover={
+                  shouldReduce ? {} : { x: 4, transition: { duration: 0.2 } }
+                }
+                className="flex items-start gap-4 p-5 rounded-xl border border-[#2d4160]/60 bg-[#1a2d45]/40 hover:border-[#22d3ee]/40 hover:bg-[#1a2d45]/70 transition-colors duration-200 group"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#22d3ee]/10 flex items-center justify-center shrink-0 group-hover:bg-[#22d3ee]/20 transition-colors mt-0.5">
+                <div className="w-10 h-10 rounded-lg bg-[#22d3ee]/10 flex items-center justify-center shrink-0 group-hover:bg-[#22d3ee]/20 transition-colors duration-200 mt-0.5">
                   <detail.icon size={18} className="text-[#22d3ee]" />
                 </div>
                 <div>
                   <p className="text-xs text-[#64748b] mb-0.5">
                     {detail.label}
                   </p>
-                  <p className="text-sm text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors leading-relaxed">
+                  <p className="text-sm text-[#94a3b8] group-hover:text-[#f1f5f9] transition-colors duration-200 leading-relaxed">
                     {detail.value}
                   </p>
                 </div>
-              </a>
+              </motion.a>
             ))}
+
+            {/* Trust note */}
+            <motion.div
+              variants={itemVariants}
+              className="mt-2 p-5 rounded-xl border border-[#22d3ee]/15 bg-[#22d3ee]/3"
+            >
+              <p className="text-xs text-[#64748b] leading-relaxed">
+                🔒{" "}
+                <span className="text-[#94a3b8] font-medium">
+                  Vos données sont protégées.
+                </span>{" "}
+                Nous ne partageons jamais vos informations avec des tiers et ne
+                vous enverrons jamais de spam.
+              </p>
+            </motion.div>
           </motion.div>
 
           {/* Right — form */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.25 }}
+            initial={{ opacity: 0, x: 36, filter: "blur(6px)" }}
+            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.75, delay: 0.2, ease: EASE }}
             className="lg:col-span-3"
           >
-            <div className="p-8 rounded-2xl border border-[#2d4160]/60 bg-[#1a2d45]/40">
-              {submitted ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                  <CheckCircle2 size={48} className="text-[#10b981]" />
-                  <h3 className="text-xl font-semibold text-[#f1f5f9]">
-                    Message envoyé !
-                  </h3>
-                  <p className="text-[#94a3b8] text-sm max-w-sm">
-                    Merci de nous avoir contactés. Notre équipe vous répondra
-                    dans un délai d&apos;un jour ouvrable.
-                  </p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setContactFormSubmitted(false)}
-                  >
-                    Envoyer un autre message
-                  </Button>
+            {/* CTA highlight banner */}
+            {!submitted && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+                className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl border border-[#22d3ee]/25 bg-[#22d3ee]/5"
+              >
+                <div className="relative shrink-0">
+                  <span className="absolute inset-0 rounded-full bg-[#10b981] animate-ping opacity-60" />
+                  <span className="relative flex w-2.5 h-2.5 rounded-full bg-[#10b981]" />
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="name"
-                        className="text-xs font-medium text-[#94a3b8]"
-                      >
-                        Nom complet <span className="text-[#22d3ee]">*</span>
-                      </label>
-                      <input
+                <p className="text-sm text-[#94a3b8]">
+                  <span className="text-[#22d3ee] font-medium">
+                    Nous répondons en moins de 24h
+                  </span>{" "}
+                  — réservez votre démo personnalisée dès maintenant.
+                </p>
+              </motion.div>
+            )}
+
+            <div className="p-8 rounded-2xl border border-[#2d4160]/60 bg-[#1a2d45]/40 relative overflow-hidden">
+              {/* Subtle top glow inside card */}
+              <div
+                className="absolute top-0 inset-x-0 h-px"
+                style={{
+                  background:
+                    "linear-gradient(to right, transparent, rgba(34,211,238,0.3), transparent)",
+                }}
+              />
+
+              <AnimatePresence mode="wait">
+                {submitted ? (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -12 }}
+                    transition={{
+                      duration: 0.4,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    }}
+                    className="flex flex-col items-center justify-center gap-5 py-12 text-center"
+                  >
+                    <motion.div
+                      initial={{ scale: 0, rotate: -20 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{
+                        delay: 0.1,
+                        duration: 0.5,
+                        ease: [0.34, 1.56, 0.64, 1],
+                      }}
+                    >
+                      <CheckCircle2 size={52} className="text-[#10b981]" />
+                    </motion.div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#f1f5f9] mb-2">
+                        Message envoyé !
+                      </h3>
+                      <p className="text-[#94a3b8] text-sm max-w-sm">
+                        Merci de nous avoir contactés. Notre équipe vous
+                        répondra dans un délai d&apos;un jour ouvrable.
+                      </p>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setContactFormSubmitted(false)}
+                      className="border border-[#2d4160] bg-transparent text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#3d5170]"
+                    >
+                      Envoyer un autre message
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.form
+                    key="form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <FormField
                         id="name"
                         name="name"
-                        type="text"
+                        label="Nom complet"
                         required
+                        placeholder="Jean Dupont"
                         value={form.name}
                         onChange={handleChange}
-                        placeholder="Jean Dupont"
-                        className="h-10 px-3 rounded-lg bg-[#0f172a] border border-[#2d4160] text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40 focus:border-[#22d3ee]/60 transition-all"
                       />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="email"
-                        className="text-xs font-medium text-[#94a3b8]"
-                      >
-                        E-mail professionnel{" "}
-                        <span className="text-[#22d3ee]">*</span>
-                      </label>
-                      <input
+                      <FormField
                         id="email"
                         name="email"
+                        label="E-mail professionnel"
                         type="email"
                         required
+                        placeholder="jean@entreprise.com"
                         value={form.email}
                         onChange={handleChange}
-                        placeholder="jean@entreprise.com"
-                        className="h-10 px-3 rounded-lg bg-[#0f172a] border border-[#2d4160] text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40 focus:border-[#22d3ee]/60 transition-all"
                       />
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="company"
-                      className="text-xs font-medium text-[#94a3b8]"
-                    >
-                      Nom de l&apos;entreprise
-                    </label>
-                    <input
+                    <FormField
                       id="company"
                       name="company"
-                      type="text"
+                      label="Nom de l'entreprise"
+                      placeholder="Acme Corp"
                       value={form.company}
                       onChange={handleChange}
-                      placeholder="Acme Corp"
-                      className="h-10 px-3 rounded-lg bg-[#0f172a] border border-[#2d4160] text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40 focus:border-[#22d3ee]/60 transition-all"
                     />
-                  </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="message"
-                      className="text-xs font-medium text-[#94a3b8]"
-                    >
-                      Message <span className="text-[#22d3ee]">*</span>
-                    </label>
-                    <textarea
+                    <TextAreaField
                       id="message"
                       name="message"
+                      label="Message"
                       required
                       rows={4}
+                      placeholder="Parlez-nous de la taille de votre équipe et de ce que vous souhaitez résoudre..."
                       value={form.message}
                       onChange={handleChange}
-                      placeholder="Parlez-nous de la taille de votre équipe et de ce que vous souhaitez résoudre..."
-                      className="px-3 py-2.5 rounded-lg bg-[#0f172a] border border-[#2d4160] text-[#f1f5f9] text-sm placeholder:text-[#3d5170] focus:outline-none focus:ring-2 focus:ring-[#22d3ee]/40 focus:border-[#22d3ee]/60 transition-all resize-none"
                     />
-                  </div>
 
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    disabled={loading}
-                    className="mt-2 w-full justify-center"
-                  >
-                    {loading ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                          />
-                        </svg>
-                        Envoi en cours...
-                      </span>
-                    ) : (
-                      <>
-                        <Send size={16} />
-                        Envoyer le message
-                      </>
-                    )}
-                  </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      disabled={loading}
+                      className={cn(
+                        "mt-2 w-full justify-center transition-all duration-200",
+                        loading && "opacity-70 cursor-not-allowed",
+                      )}
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="animate-spin w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                          Envoi en cours...
+                        </span>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          Envoyer le message
+                        </>
+                      )}
+                    </Button>
 
-                  <p className="text-xs text-[#64748b] text-center">
-                    Nous répondons dans un délai d&apos;un jour ouvrable. Jamais
-                    de spam.
-                  </p>
-                </form>
-              )}
+                    <p className="text-xs text-[#64748b] text-center">
+                      Nous répondons dans un délai d&apos;un jour ouvrable.
+                      Jamais de spam.
+                    </p>
+                  </motion.form>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>
