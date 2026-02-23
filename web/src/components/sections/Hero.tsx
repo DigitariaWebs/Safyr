@@ -76,7 +76,7 @@ export default function Hero() {
       {/* Radial center glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-225 h-150"
           style={{
             background:
               "radial-gradient(ellipse at center, rgba(34,211,238,0.09) 0%, transparent 68%)",

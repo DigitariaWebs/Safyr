@@ -115,21 +115,63 @@ export const siteConfig = {
   howItWorks: [
     {
       step: "01",
-      title: "Gestion RH & Paie",
+      title: "Ressources Humaines",
       description:
-        "Gérez vos agents avec le module RH : dossiers complets, certifications, habilitations, formations et évaluations. La paie est automatisée — calculs de salaires, heures supplémentaires, primes et bulletins générés sans erreur.",
+        "Centralisez l'intégralité de la vie RH de vos agents : dossiers complets, contrats, certifications, habilitations, médecine du travail, formations, entretiens, discipline et offboarding. Un tableau de bord customisable avec des widgets glissables vous donne une vue instantanée sur les effectifs, l'absentéisme, le turnover et la conformité réglementaire.",
     },
     {
       step: "02",
-      title: "Opérations terrain & Main courante",
+      title: "Paie",
       description:
-        "Planifiez les gardes, suivez les agents en temps réel par géolocalisation et enregistrez chaque activité dans la main courante digitale. Tous les enregistrements sont traçables et prêts pour l'audit réglementaire.",
+        "Automatisez entièrement le cycle de paie : saisie des variables, calcul des bulletins, contrôle des charges sociales, gestion des acomptes et archivage légal. Le module intègre le bilan social, les déclarations DSN et un comparatif N/N-1 pour piloter la masse salariale sans risque d'erreur.",
     },
     {
       step: "03",
-      title: "Finances & Administration",
+      title: "Main Courante Digitale",
       description:
-        "Gérez la comptabilité, la facturation client et la trésorerie depuis un tableau de bord unifié. L'OCR automatise la numérisation de vos documents, et la gestion de stock suit équipements et matériels de vos équipes.",
+        "Enregistrez en temps réel chaque événement de sécurité : incidents, rondes, alertes critiques et validations. Le journal est horodaté, géolocalisé et enrichi de photos, vidéos ou notes vocales. Tous les enregistrements sont traçables et exportables pour répondre aux exigences réglementaires du CNAPS.",
+    },
+    {
+      step: "04",
+      title: "Planning",
+      description:
+        "Construisez et diffusez les plannings de gardes en quelques clics : gestion des agents, des postes, des sites et des vacations. Le moteur détecte automatiquement les conflits de qualifications, les heures supplémentaires et les absences pour vous garantir une couverture opérationnelle sans faille.",
+    },
+    {
+      step: "05",
+      title: "Géolocalisation",
+      description:
+        "Suivez en direct la position de chaque agent sur une carte interactive. Contrôlez l'autonomie des batteries, le statut de connexion et les déplacements. Le géofencing déclenche des alertes automatiques en cas de sortie de zone ou de ronde manquée.",
+    },
+    {
+      step: "06",
+      title: "Facturation",
+      description:
+        "Gérez l'intégralité du cycle de facturation client : devis, bons de commande, factures, avoirs et ajustements. Le module calcule automatiquement les heures facturables à partir du planning validé, suit les paiements et génère des rapports KPI de chiffre d'affaires par client et par site.",
+    },
+    {
+      step: "07",
+      title: "Comptabilité",
+      description:
+        "Pilotez la santé financière de votre société en temps réel : trésorerie disponible, chiffre d'affaires mensuel et annuel, résultat estimé instantané et factures en retard. La préparation de la TVA, la génération du FEC et les rapports comptables sont intégrés directement dans la plateforme.",
+    },
+    {
+      step: "08",
+      title: "Banque",
+      description:
+        "Connectez vos comptes bancaires et consultez un tableau de bord unifié de votre trésorerie. Visualisez les dernières transactions, distinguez crédits et débits et réconciliez vos flux financiers avec les factures émises pour une vision comptable complète et à jour.",
+    },
+    {
+      step: "09",
+      title: "Gestion de Stock",
+      description:
+        "Inventoriez les équipements, uniformes et matériels de vos agents. Suivez les quantités disponibles, la valeur totale du stock et les références à réapprovisionner. Les attributions par agent sont tracées pour éviter les pertes et optimiser les dotations.",
+    },
+    {
+      step: "10",
+      title: "OCR & Documents",
+      description:
+        "Importez n'importe quel document papier — carte d'identité, certificat de qualification, contrat, facture — et laissez l'OCR en extraire automatiquement les données structurées. Plus de ressaisie manuelle : les informations sont directement intégrées aux dossiers agents ou aux workflows administratifs.",
     },
   ],
 

@@ -1,28 +1,237 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useReducedMotion, motion, AnimatePresence } from "framer-motion";
-import { X, Maximize2 } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useInView,
+  type Transition,
+} from "framer-motion";
+import {
+  X,
+  Maximize2,
+  Users,
+  BookOpen,
+  DollarSign,
+  BarChart3,
+  Receipt,
+  Landmark,
+  CalendarDays,
+  MapPin,
+  Package,
+  ScanLine,
+  Play,
+  ChevronRight,
+  Clock,
+  Film,
+  CheckCircle2,
+  Smartphone,
+  Bell,
+  Navigation,
+  Camera,
+  Shield,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/config/site";
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
+const SPRING: Transition = { type: "spring", stiffness: 380, damping: 30 };
 
-const VIDEOS = [
-  "https://res.cloudinary.com/dpo7sqgyg/video/upload/rh_f6xn0n.mp4",
-  "https://res.cloudinary.com/dpo7sqgyg/video/upload/maincourante_hhghmi.mp4",
-  "https://res.cloudinary.com/dpo7sqgyg/video/upload/demo_mg9dxg.mp4",
-];
+/* ─── Per-step metadata ─────────────────────────────────────────────────── */
+const STEP_META = [
+  {
+    icon: Users,
+    color: "#22d3ee",
+    glow: "rgba(34,211,238,0.18)",
+    video: "https://res.cloudinary.com/dpo7sqgyg/video/upload/rh_f6xn0n.mp4" as
+      | string
+      | null,
+    kpis: [
+      { value: "70%", label: "moins de temps RH" },
+      { value: "0 erreur", label: "de calcul de paie" },
+    ],
+    features: [
+      "Dossiers agents complets avec pièces jointes",
+      "Suivi des certifications & habilitations",
+      "Médecine du travail & formations",
+      "Entretiens, discipline & offboarding",
+      "Tableau de bord widgets personnalisables",
+      "Bilan social & indicateurs de conformité",
+    ],
+  },
+  {
+    icon: DollarSign,
+    color: "#a78bfa",
+    glow: "rgba(167,139,250,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "100%", label: "DSN automatisée" },
+      { value: "0 ressaisie", label: "des variables" },
+    ],
+    features: [
+      "Saisie et import des variables de paie",
+      "Calcul automatique des bulletins",
+      "Contrôle des charges sociales patronales",
+      "Gestion des acomptes et soldes de tout compte",
+      "Bilan social et rapport de masse salariale",
+      "Archivage légal & comparatif N/N-1",
+    ],
+  },
+  {
+    icon: BookOpen,
+    color: "#818cf8",
+    glow: "rgba(129,140,248,0.18)",
+    video:
+      "https://res.cloudinary.com/dpo7sqgyg/video/upload/maincourante_hhghmi.mp4" as
+        | string
+        | null,
+    kpis: [
+      { value: "100%", label: "traçabilité CNAPS" },
+      { value: "Temps réel", label: "alertes critiques" },
+    ],
+    features: [
+      "Journal horodaté et géolocalisé",
+      "Incidents enrichis : photos, vidéos, notes vocales",
+      "Alertes critiques et workflow de validation",
+      "Rondes de sécurité et statuts en direct",
+      "Portail agents & portail clients",
+      "Exports réglementaires prêts pour l'audit",
+    ],
+  },
+  {
+    icon: CalendarDays,
+    color: "#38bdf8",
+    glow: "rgba(56,189,248,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Auto", label: "détection conflits" },
+      { value: "0 trou", label: "de couverture" },
+    ],
+    features: [
+      "Planification agents, postes et sites",
+      "Gestion des vacations et rotations",
+      "Détection automatique des conflits de qualifications",
+      "Alertes heures supplémentaires et absences",
+      "Vue calendrier interactive par semaine / mois",
+      "Diffusion automatique aux agents",
+    ],
+  },
+  {
+    icon: MapPin,
+    color: "#fb923c",
+    glow: "rgba(251,146,60,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Live", label: "position des agents" },
+      { value: "Géofencing", label: "alertes de zone" },
+    ],
+    features: [
+      "Carte interactive en temps réel",
+      "Statut de connexion et niveau de batterie",
+      "Géofencing avec alertes de sortie de zone",
+      "Historique des déplacements et rondes",
+      "Alertes rondes manquées automatiques",
+      "Vue filtrée par site ou équipe",
+    ],
+  },
+  {
+    icon: Receipt,
+    color: "#34d399",
+    glow: "rgba(52,211,153,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Auto", label: "heures facturables" },
+      { value: "KPI", label: "CA par client" },
+    ],
+    features: [
+      "Devis, bons de commande et factures clients",
+      "Avoirs, ajustements et remises",
+      "Calcul automatique des heures depuis le planning",
+      "Suivi des paiements et relances",
+      "Rapports KPI chiffre d'affaires par site",
+      "Gestion TVA et services récurrents",
+    ],
+  },
+  {
+    icon: BarChart3,
+    color: "#2dd4bf",
+    glow: "rgba(45,212,191,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Instantané", label: "résultat estimé" },
+      { value: "FEC", label: "généré en 1 clic" },
+    ],
+    features: [
+      "Trésorerie et chiffre d'affaires en temps réel",
+      "Résultat estimé instantané",
+      "Préparation et déclaration de TVA",
+      "Génération du FEC pour l'expert-comptable",
+      "Suivi des factures en retard",
+      "Rapports financiers mensuels et annuels",
+    ],
+  },
+  {
+    icon: Landmark,
+    color: "#60a5fa",
+    glow: "rgba(96,165,250,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Multi", label: "comptes bancaires" },
+      { value: "Auto", label: "réconciliation" },
+    ],
+    features: [
+      "Vue consolidée de tous les comptes bancaires",
+      "Historique des transactions crédit / débit",
+      "Réconciliation avec les factures émises",
+      "Suivi des recettes et dépenses mensuelles",
+      "Alertes solde bas et anomalies",
+      "Export des relevés pour la comptabilité",
+    ],
+  },
+  {
+    icon: Package,
+    color: "#f472b6",
+    glow: "rgba(244,114,182,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Tracé", label: "par agent" },
+      { value: "Alertes", label: "réapprovisionnement" },
+    ],
+    features: [
+      "Catalogue équipements, uniformes et matériels",
+      "Suivi des quantités et valeur totale du stock",
+      "Attributions par agent tracées",
+      "Alertes de seuil de réapprovisionnement",
+      "Historique des mouvements de stock",
+      "Rapports de dotation par site",
+    ],
+  },
+  {
+    icon: ScanLine,
+    color: "#e879f9",
+    glow: "rgba(232,121,249,0.18)",
+    video: null as string | null,
+    kpis: [
+      { value: "Auto", label: "extraction de données" },
+      { value: "0", label: "ressaisie manuelle" },
+    ],
+    features: [
+      "Import de documents papier par photo ou scan",
+      "Extraction automatique des données structurées",
+      "Reconnaissance cartes d'identité et certificats",
+      "Intégration directe aux dossiers agents",
+      "Suivi du statut de traitement par document",
+      "Archivage sécurisé cloud avec recherche plein texte",
+    ],
+  },
+] as const;
 
-const MOBILE_VIDEO_MAX_W = "max-w-[240px]";
-
+/* ─── Lightbox ───────────────────────────────────────────────────────────── */
 function VideoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const fn = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
 
   return (
@@ -30,45 +239,33 @@ function VideoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
+      transition={{ duration: 0.22 }}
+      className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-10"
       onClick={onClose}
     >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-[#0f172a]/90 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-[#030912]/92 backdrop-blur-xl" />
 
-      {/* Video container */}
       <motion.div
-        initial={{ scale: 0.88, opacity: 0, y: 24 }}
+        initial={{ scale: 0.86, opacity: 0, y: 32 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.88, opacity: 0, y: 24 }}
-        transition={{ duration: 0.3, ease: EASE }}
-        className="relative z-10 w-full max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-[#2d4160]/60 shadow-[0_32px_80px_rgba(0,0,0,0.7)] flex flex-col"
+        exit={{ scale: 0.86, opacity: 0, y: 32 }}
+        transition={{ duration: 0.35, ease: EASE }}
+        className="relative z-10 w-full max-w-5xl rounded-2xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] border border-white/[0.07]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top glow line */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#22d3ee]/50 to-transparent z-10" />
-
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-auto max-h-[90vh] object-contain block"
-        >
+        <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/60 to-transparent z-10" />
+        <video autoPlay loop muted playsInline className="w-full h-auto block">
           <source src={src} type="video/mp4" />
         </video>
       </motion.div>
 
-      {/* Close button */}
       <motion.button
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.2, delay: 0.1 }}
+        exit={{ opacity: 0 }}
+        transition={{ delay: 0.12 }}
         onClick={onClose}
-        className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-[#1e293b]/90 border border-[#2d4160] flex items-center justify-center text-[#94a3b8] hover:text-[#f1f5f9] hover:border-[#22d3ee]/40 hover:bg-[#22d3ee]/10 transition-all duration-200 cursor-pointer"
-        aria-label="Fermer"
+        className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-[#0f172a]/90 border border-white/10 flex items-center justify-center text-[#94a3b8] hover:text-white hover:border-[#22d3ee]/50 transition-all duration-200 cursor-pointer"
       >
         <X size={16} />
       </motion.button>
@@ -76,228 +273,745 @@ function VideoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
   );
 }
 
-function StepCard({
-  step,
-  index,
-  isMobile = false,
-  onVideoClick,
+/* ─── Animated progress rail ─────────────────────────────────────────────── */
+function ProgressRail({
+  active,
+  total,
+  color,
 }: {
-  step: (typeof siteConfig.howItWorks)[number];
-  index: number;
-  isMobile?: boolean;
-  onVideoClick: (src: string) => void;
+  active: number;
+  total: number;
+  color: string;
 }) {
-  const shouldReduce = useReducedMotion();
-  const videoSrc = VIDEOS[index];
+  return (
+    <div className="absolute left-0 top-0 bottom-0 w-px hidden lg:block">
+      <div className="absolute inset-0 bg-[#2d4160]/50" />
+      <motion.div
+        className="absolute top-0 left-0 right-0 origin-top"
+        style={{ backgroundColor: color }}
+        animate={{ scaleY: (active + 1) / total }}
+        transition={{ duration: 0.6, ease: EASE }}
+      />
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute left-1/2 -translate-x-1/2 w-2 h-2 rounded-full border transition-colors duration-400"
+          style={{
+            top: `calc(${(i / (total - 1)) * 100}% - 4px)`,
+            backgroundColor: i <= active ? color : "#0f172a",
+            borderColor: i <= active ? color : "#2d4160",
+            boxShadow: i === active ? `0 0 7px ${color}` : "none",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
+/* ─── KPI chip ───────────────────────────────────────────────────────────── */
+function KpiChip({
+  value,
+  label,
+  color,
+  delay,
+}: {
+  value: string;
+  label: string;
+  color: string;
+  delay: number;
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 36, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{
-        duration: 0.65,
-        delay: index * 0.14,
-        ease: EASE,
-      }}
-      className="flex flex-col items-center text-center group"
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 12 }}
+      transition={{ duration: 0.4, delay, ease: EASE }}
+      className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/6 bg-white/3"
     >
-      {/* Step number circle */}
-      <div className="relative mb-6">
-        {!shouldReduce && (
-          <motion.div
-            className="absolute inset-0 rounded-full border border-[#22d3ee]/25"
-            animate={{
-              scale: [1, 1.55, 1],
-              opacity: [0.5, 0, 0.5],
-            }}
-            transition={{
-              duration: 2.8,
-              delay: 0.6 + index * 0.2,
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
-          />
-        )}
-
-        <motion.div
-          initial={shouldReduce ? {} : { scale: 0.7, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{
-            duration: 0.5,
-            delay: 0.2 + index * 0.14,
-            ease: [0.34, 1.56, 0.64, 1],
-          }}
-          className="w-16 h-16 rounded-full border-2 border-[#22d3ee]/40 bg-[#0f172a] flex items-center justify-center
-                     group-hover:border-[#22d3ee] group-hover:shadow-[0_0_28px_rgba(34,211,238,0.25)]
-                     transition-all duration-300"
-          style={{ boxShadow: "0 0 20px rgba(34,211,238,0.08)" }}
+      <div
+        className="w-1 self-stretch rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
+      <div>
+        <p
+          className="text-lg font-bold leading-none tracking-tight"
+          style={{ color }}
         >
-          <span className="text-xl font-bold text-[#22d3ee]">{step.step}</span>
-        </motion.div>
+          {value}
+        </p>
+        <p className="text-[11px] text-[#64748b] mt-0.5">{label}</p>
       </div>
-
-      <h3 className="text-lg font-semibold text-[#f1f5f9] mb-3">
-        {step.title}
-      </h3>
-      <p className="text-sm text-[#64748b] group-hover:text-[#94a3b8] transition-colors duration-200 leading-relaxed mb-5 max-w-sm">
-        {step.description}
-      </p>
-
-      {/* Video preview */}
-      {videoSrc && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 12 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{
-            duration: 0.6,
-            delay: 0.2 + index * 0.14,
-            ease: EASE,
-          }}
-          onClick={() => onVideoClick(videoSrc)}
-          className={`relative w-full ${isMobile ? MOBILE_VIDEO_MAX_W : "max-w-lg"} rounded-xl overflow-hidden border border-[#2d4160]/60 shadow-[0_8px_32px_rgba(0,0,0,0.4)] group-hover:border-[#22d3ee]/30 group-hover:shadow-[0_8px_40px_rgba(34,211,238,0.08)] transition-all duration-300 cursor-zoom-in`}
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-auto pointer-events-none block"
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
-
-          {/* Expand hint overlay */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 bg-[#0f172a]/30">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0f172a]/80 border border-[#2d4160] backdrop-blur-sm">
-              <Maximize2 size={13} className="text-[#22d3ee]" />
-              <span className="text-xs text-[#94a3b8] font-medium">
-                Agrandir
-              </span>
-            </div>
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   );
 }
 
-export default function HowItWorks() {
-  const shouldReduce = useReducedMotion();
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+/* ─── Video placeholder ──────────────────────────────────────────────────── */
+function VideoPlaceholder({ color }: { color: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.97 }}
+      transition={{ duration: 0.5, ease: EASE }}
+      className="relative rounded-2xl overflow-hidden border border-white/8 group"
+      style={{ minHeight: "200px" }}
+    >
+      {/* Top accent line */}
+      <div
+        className="absolute top-0 inset-x-0 h-0.5 z-10"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${color}60, transparent)`,
+        }}
+      />
+      {/* Subtle grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(to right, #fff 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse at center, ${color}08 0%, transparent 70%)`,
+        }}
+      />
+      <div className="relative flex flex-col items-center justify-center gap-3 py-14">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center border"
+          style={{
+            backgroundColor: `${color}10`,
+            borderColor: `${color}25`,
+          }}
+        >
+          <Film size={20} style={{ color: `${color}80` }} />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold" style={{ color: `${color}90` }}>
+            Démo vidéo à venir
+          </p>
+          <p className="text-xs text-[#3d5170] mt-1">Bientôt disponible</p>
+        </div>
+        <div
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-medium mt-1"
+          style={{
+            backgroundColor: `${color}08`,
+            borderColor: `${color}20`,
+            color: `${color}70`,
+          }}
+        >
+          <Clock size={10} />
+          Prochainement
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Video preview card ─────────────────────────────────────────────────── */
+function VideoCard({
+  src,
+  color,
+  onExpand,
+  portrait = false,
+}: {
+  src: string;
+  color: string;
+  onExpand: () => void;
+  portrait?: boolean;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   return (
-    <section
-      id="how-it-works"
-      className="relative py-28 bg-[#1e293b] overflow-hidden"
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.97 }}
+      transition={{ duration: 0.5, ease: EASE }}
+      className={`relative rounded-2xl overflow-hidden border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.5)] group cursor-pointer ${portrait ? "mx-auto w-fit" : ""}`}
+      style={{ boxShadow: `0 0 60px ${color}18, 0 20px 60px rgba(0,0,0,0.5)` }}
+      onClick={onExpand}
     >
-      {/* Top/bottom decorative lines */}
-      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/25 to-transparent" />
-      <div className="absolute bottom-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/15 to-transparent" />
-
-      {/* Background glow */}
+      {/* Top accent line */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] pointer-events-none"
+        className="absolute top-0 inset-x-0 h-0.5 z-10"
         style={{
-          background:
-            "radial-gradient(ellipse at center, rgba(34,211,238,0.04) 0%, transparent 65%)",
+          background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Header */}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="block"
+        style={
+          portrait
+            ? { width: "220px", height: "auto" }
+            : { width: "100%", maxHeight: "360px", objectFit: "cover" }
+        }
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-[#030912]/0 group-hover:bg-[#030912]/40 transition-colors duration-300 flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, y: 24, filter: "blur(4px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: EASE }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileHover={{ opacity: 1, scale: 1 }}
+          className="opacity-0 group-hover:opacity-100 transition-all duration-200"
+        >
+          <div
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-full border backdrop-blur-sm"
+            style={{
+              backgroundColor: `${color}20`,
+              borderColor: `${color}50`,
+            }}
+          >
+            <Maximize2 size={14} style={{ color }} />
+            <span className="text-xs font-semibold text-white">
+              Plein écran
+            </span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Corner badge */}
+      <div className="absolute bottom-3 right-3 z-10">
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border backdrop-blur-md text-[10px] font-medium"
+          style={{
+            backgroundColor: `${color}15`,
+            borderColor: `${color}30`,
+            color,
+          }}
+        >
+          <Play size={9} className="fill-current" />
+          Aperçu en direct
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Step tab button ────────────────────────────────────────────────────── */
+function StepTab({
+  step,
+  meta,
+  index,
+  isActive,
+  onClick,
+}: {
+  step: (typeof siteConfig.howItWorks)[number];
+  meta: (typeof STEP_META)[number];
+  index: number;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  const Icon = meta.icon;
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, x: -24 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: EASE }}
+      onClick={onClick}
+      className={`
+        relative w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 group
+        ${
+          isActive
+            ? "border-white/12 bg-white/5"
+            : "border-transparent bg-transparent hover:border-white/6 hover:bg-white/2.5"
+        }
+      `}
+    >
+      {/* Active indicator */}
+      {isActive && (
+        <motion.div
+          layoutId="activeTabGlow"
+          className="absolute inset-0 rounded-xl pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse at left center, ${meta.glow} 0%, transparent 70%)`,
+          }}
+          transition={SPRING}
+        />
+      )}
+
+      <div className="relative flex items-center gap-4">
+        {/* Icon circle */}
+        <div
+          className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300"
+          style={{
+            backgroundColor: isActive ? `${meta.color}18` : "transparent",
+            border: `1px solid ${isActive ? `${meta.color}40` : "#2d4160"}`,
+          }}
+        >
+          <Icon
+            size={18}
+            style={{ color: isActive ? meta.color : "#475569" }}
+            className="transition-colors duration-300"
+          />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span
+              className="text-[10px] font-bold tracking-[0.12em] uppercase transition-colors duration-300"
+              style={{ color: isActive ? meta.color : "#3d5170" }}
+            >
+              {step.step}
+            </span>
+          </div>
+          <p
+            className={`text-sm font-semibold leading-snug transition-colors duration-300 ${
+              isActive
+                ? "text-[#f1f5f9]"
+                : "text-[#64748b] group-hover:text-[#94a3b8]"
+            }`}
+          >
+            {step.title}
+          </p>
+        </div>
+
+        <ChevronRight
+          size={14}
+          className="shrink-0 transition-all duration-300"
+          style={{
+            color: isActive ? meta.color : "#2d4160",
+            transform: isActive ? "translateX(2px)" : "none",
+          }}
+        />
+      </div>
+    </motion.button>
+  );
+}
+
+/* ─── Main component ─────────────────────────────────────────────────────── */
+export default function HowItWorks() {
+  const [active, setActive] = useState(0);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const MOBILE_VIDEO =
+    "https://res.cloudinary.com/dpo7sqgyg/video/upload/demo_mg9dxg.mp4";
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-120px" });
+
+  const step = siteConfig.howItWorks[active];
+  const meta = STEP_META[active];
+
+  /* auto-advance */
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActive((p) => (p + 1) % siteConfig.howItWorks.length);
+    }, 7000);
+    return () => clearInterval(id);
+  }, [active]);
+
+  const handleTabClick = useCallback((i: number) => {
+    setActive(i);
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="how-it-works"
+      className="relative py-32 bg-[#080f1a] overflow-hidden"
+    >
+      {/* ── Atmospheric background ── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Deep radial */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%]"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(15,23,42,0) 0%, #080f1a 70%)",
+          }}
+        />
+        {/* Active step ambient glow — follows color */}
+        <motion.div
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-[60%] h-[80%] rounded-full"
+          animate={{ backgroundColor: meta.glow.replace("0.18", "0.06") }}
+          transition={{ duration: 0.8, ease: EASE }}
+          style={{ filter: "blur(80px)" }}
+        />
+        {/* Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.018]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#22d3ee 1px, transparent 1px), linear-gradient(to right, #22d3ee 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+          }}
+        />
+        {/* Top / bottom lines */}
+        <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/20 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/10 to-transparent" />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+        {/* ── Section header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
+          animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+          transition={{ duration: 0.75, ease: EASE }}
           className="text-center mb-20 flex flex-col items-center gap-4"
         >
           <Badge variant="cyan">Comment ça marche</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight">
-            Opérationnel en quelques jours,{" "}
-            <span className="text-[#22d3ee]">pas des mois</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight max-w-2xl">
+            10 modules,{" "}
+            <span className="text-[#22d3ee]">une seule plateforme</span>
           </h2>
-          <p className="text-lg text-[#94a3b8] max-w-xl">
-            Notre configuration guidée met votre société de gardiennage en ligne
-            rapidement sans perturber vos opérations de sécurité existantes.
+          <p className="text-lg text-[#64748b] max-w-xl leading-relaxed">
+            Chaque module couvre un pilier de vos opérations de gardiennage — du
+            recrutement à la trésorerie, tout est connecté.
           </p>
         </motion.div>
 
-        {/* Steps layout */}
-        <div className="flex flex-col gap-20">
-          {/* Row 1 — steps 01 & 02 with animated connector */}
-          <div className="relative">
-            {/* Connector line between step 01 and 02 */}
-            <div className="hidden lg:block absolute top-8 left-[calc(25%+2rem)] right-[calc(25%+2rem)] h-px overflow-hidden">
-              <div className="absolute inset-0 bg-[#2d4160]/60" />
-              {!shouldReduce && (
+        {/* ── Two-column layout ── */}
+        <div className="grid lg:grid-cols-[380px_1fr] gap-8 xl:gap-14 items-start">
+          {/* ── LEFT: Tab list + progress rail ── */}
+          <div className="relative pl-6 lg:pl-8 flex flex-col gap-1">
+            <ProgressRail
+              active={active}
+              total={siteConfig.howItWorks.length}
+              color={meta.color}
+            />
+
+            {siteConfig.howItWorks.map((s, i) => (
+              <StepTab
+                key={s.step}
+                step={s}
+                meta={STEP_META[i]}
+                index={i}
+                isActive={i === active}
+                onClick={() => handleTabClick(i)}
+              />
+            ))}
+
+            {/* Auto-advance progress bar */}
+            <div className="mt-4 pl-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] text-[#3d5170] uppercase tracking-wider">
+                  Défilement auto
+                </span>
+              </div>
+              <div className="h-0.5 w-full rounded-full bg-[#1e293b] overflow-hidden">
                 <motion.div
-                  className="absolute inset-y-0 left-0 bg-linear-to-r from-[#22d3ee]/50 via-[#22d3ee] to-[#22d3ee]/50"
-                  initial={{ scaleX: 0, originX: "left" }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
+                  key={active}
+                  className="h-full rounded-full origin-left"
+                  style={{ backgroundColor: meta.color }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 7, ease: "linear" }}
                 />
-              )}
-              {!shouldReduce && (
-                <motion.div
-                  className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#22d3ee]"
-                  style={{ boxShadow: "0 0 8px rgba(34,211,238,0.8)" }}
-                  initial={{ left: "0%" }}
-                  whileInView={{ left: ["0%", "100%"] }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{
-                    duration: 1.4,
-                    delay: 0.5,
-                    ease: "easeInOut",
-                    repeat: Infinity,
-                    repeatDelay: 3,
-                  }}
-                />
-              )}
+              </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-12 items-start">
-              {siteConfig.howItWorks.slice(0, 2).map((step, i) => (
-                <StepCard
-                  key={step.step}
-                  step={step}
-                  index={i}
-                  onVideoClick={setLightboxSrc}
+            {/* Step dots — mobile only */}
+            <div className="flex flex-wrap items-center gap-2 mt-4 lg:hidden">
+              {siteConfig.howItWorks.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleTabClick(i)}
+                  className="transition-all duration-300 rounded-full"
+                  style={{
+                    width: i === active ? 20 : 6,
+                    height: 6,
+                    backgroundColor: i === active ? meta.color : "#2d4160",
+                  }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Row 2 — step 03 centred (mobile app) */}
-          <div className="flex flex-col items-center">
-            <div className="relative h-12 w-px mb-2 overflow-hidden">
-              <div className="absolute inset-0 bg-[#2d4160]/60" />
-              {!shouldReduce && (
-                <motion.div
-                  className="absolute inset-x-0 top-0 bg-linear-to-b from-[#22d3ee]/70 to-[#22d3ee]/20"
-                  initial={{ scaleY: 0, originY: "top" }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true, margin: "-60px" }}
-                  transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
-                />
-              )}
-            </div>
+          {/* ── RIGHT: Content panel ── */}
+          <div className="min-h-130">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, x: 24, filter: "blur(4px)" }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, x: -24, filter: "blur(4px)" }}
+                transition={{ duration: 0.45, ease: EASE }}
+                className="flex flex-col gap-6"
+              >
+                {/* Step label + title */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="text-[10px] font-bold tracking-[0.18em] uppercase"
+                      style={{ color: meta.color }}
+                    >
+                      Étape {step.step}
+                    </span>
+                    <div
+                      className="h-px flex-1"
+                      style={{
+                        background: `linear-gradient(90deg, ${meta.color}40, transparent)`,
+                      }}
+                    />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-[#f1f5f9] leading-snug">
+                    {step.title}
+                  </h3>
+                </div>
 
-            <StepCard
-              step={siteConfig.howItWorks[2]}
-              index={2}
-              isMobile
-              onVideoClick={setLightboxSrc}
-            />
+                {/* Description */}
+                <p className="text-[#94a3b8] leading-relaxed text-base max-w-lg">
+                  {step.description}
+                </p>
+
+                {/* KPI chips */}
+                <div className="grid grid-cols-2 gap-3 max-w-sm">
+                  <AnimatePresence mode="wait">
+                    {meta.kpis.map((kpi, i) => (
+                      <KpiChip
+                        key={`${active}-kpi-${i}`}
+                        value={kpi.value}
+                        label={kpi.label}
+                        color={meta.color}
+                        delay={0.15 + i * 0.07}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Features list */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`features-${active}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2"
+                  >
+                    {meta.features.map((feat, i) => (
+                      <motion.div
+                        key={`${active}-feat-${i}`}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: 0.1 + i * 0.04,
+                          ease: EASE,
+                        }}
+                        className="flex items-start gap-2.5 text-sm text-[#94a3b8]"
+                      >
+                        <CheckCircle2
+                          size={14}
+                          className="shrink-0 mt-0.5"
+                          style={{ color: meta.color }}
+                        />
+                        {feat}
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Video */}
+                <AnimatePresence mode="wait">
+                  {meta.video ? (
+                    <VideoCard
+                      key={`video-${active}`}
+                      src={meta.video}
+                      color={meta.color}
+                      onExpand={() => setLightboxSrc(meta.video)}
+                    />
+                  ) : (
+                    <VideoPlaceholder
+                      key={`placeholder-${active}`}
+                      color={meta.color}
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
+
+        {/* ── Mobile app feature banner ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 32, filter: "blur(6px)" }}
+          animate={isInView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+          transition={{ delay: 0.5, duration: 0.75, ease: EASE }}
+          className="mt-20 relative rounded-2xl overflow-hidden border border-white/[0.07]"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(129,140,248,0.06) 50%, rgba(52,211,153,0.06) 100%)",
+          }}
+        >
+          {/* Top accent */}
+          <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/40 to-transparent" />
+          {/* Subtle grid */}
+          <div
+            className="absolute inset-0 opacity-[0.025] pointer-events-none"
+            style={{
+              backgroundImage:
+                "linear-gradient(#22d3ee 1px, transparent 1px), linear-gradient(to right, #22d3ee 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+            }}
+          />
+          {/* Glow blob */}
+          <div
+            className="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-48 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(34,211,238,0.08) 0%, transparent 70%)",
+              filter: "blur(24px)",
+            }}
+          />
+
+          <div className="relative px-8 py-10 sm:px-12 sm:py-12 grid lg:grid-cols-[1fr_auto] gap-10 items-start">
+            {/* Left: text + features */}
+            <div className="flex flex-col gap-6">
+              {/* Header */}
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
+                  style={{
+                    backgroundColor: "rgba(34,211,238,0.1)",
+                    borderColor: "rgba(34,211,238,0.25)",
+                  }}
+                >
+                  <Smartphone size={22} className="text-[#22d3ee]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-[#22d3ee]">
+                      Inclus dans Safyr
+                    </span>
+                    <span
+                      className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full border"
+                      style={{
+                        backgroundColor: "rgba(34,211,238,0.08)",
+                        borderColor: "rgba(34,211,238,0.2)",
+                        color: "rgba(34,211,238,0.7)",
+                      }}
+                    >
+                      Bientôt disponible
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#f1f5f9] leading-snug">
+                    Application mobile pour vos agents
+                  </h3>
+                </div>
+              </div>
+
+              <p className="text-[#94a3b8] text-sm leading-relaxed max-w-xl">
+                Vos agents de sécurité disposent de leur propre application
+                mobile pour pointer leurs présences, effectuer leurs rondes,
+                signaler des incidents avec photos et notes vocales, et
+                consulter leur planning — directement depuis leur smartphone,
+                même hors connexion.
+              </p>
+
+              {/* Feature list */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+                {[
+                  {
+                    icon: CheckCircle2,
+                    text: "Pointage de présence géolocalisé",
+                  },
+                  { icon: Navigation, text: "Rondes et patrouilles guidées" },
+                  { icon: Bell, text: "Réception des alertes en temps réel" },
+                  { icon: Camera, text: "Signalement d'incidents avec médias" },
+                  {
+                    icon: CheckCircle2,
+                    text: "Consultation du planning et des gardes",
+                  },
+                  {
+                    icon: Shield,
+                    text: "Accès sécurisé par agent avec droits",
+                  },
+                ].map(({ icon: Icon, text }, i) => (
+                  <motion.div
+                    key={text}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{
+                      delay: 0.7 + i * 0.05,
+                      duration: 0.3,
+                      ease: EASE,
+                    }}
+                    className="flex items-center gap-2.5 text-sm text-[#94a3b8]"
+                  >
+                    <Icon size={14} className="shrink-0 text-[#22d3ee]" />
+                    {text}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: portrait video + app store pills */}
+            <div className="flex flex-col items-center gap-4">
+              <VideoCard
+                src={MOBILE_VIDEO}
+                color="#22d3ee"
+                onExpand={() => setLightboxSrc(MOBILE_VIDEO)}
+                portrait
+              />
+              <div className="flex flex-row lg:flex-col gap-3">
+                {[
+                  { label: "App Store", sub: "iOS — Bientôt" },
+                  { label: "Google Play", sub: "Android — Bientôt" },
+                ].map(({ label, sub }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl border cursor-not-allowed select-none"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.03)",
+                      borderColor: "rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <Smartphone size={18} className="text-[#475569] shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-[#64748b]">
+                        {label}
+                      </p>
+                      <p className="text-[10px] text-[#3d5170]">{sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Bottom connector to next section ── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="flex flex-col items-center mt-16 gap-3"
+        >
+          <span className="text-xs text-[#3d5170] uppercase tracking-[0.2em]">
+            Ils nous font confiance
+          </span>
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-1 rounded-full"
+                style={{ backgroundColor: "#2d4160" }}
+                animate={{ height: [4, 10, 4], opacity: [0.4, 1, 0.4] }}
+                transition={{
+                  duration: 1.4,
+                  delay: i * 0.2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
 
-      {/* Lightbox */}
+      {/* ── Lightbox ── */}
       <AnimatePresence>
         {lightboxSrc && (
           <VideoLightbox

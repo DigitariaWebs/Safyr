@@ -45,7 +45,7 @@ export default function Footer() {
 
       {/* Background glow */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-75 pointer-events-none"
         style={{
           background:
             "radial-gradient(ellipse at top, rgba(34,211,238,0.03) 0%, transparent 65%)",

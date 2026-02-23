@@ -220,7 +220,7 @@ export default function Contact() {
       {/* Glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-[450px]"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-112.5"
           style={{
             background:
               "radial-gradient(ellipse at top, rgba(34,211,238,0.07) 0%, transparent 68%)",

@@ -71,7 +71,7 @@ export default function FAQ() {
               >
                 {/* Left border accent — slides in when open */}
                 <motion.div
-                  className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-linear-to-b from-[#22d3ee]/80 via-[#22d3ee] to-[#22d3ee]/40"
+                  className="absolute left-0 top-0 bottom-0 w-0.75 rounded-l-xl bg-linear-to-b from-[#22d3ee]/80 via-[#22d3ee] to-[#22d3ee]/40"
                   initial={false}
                   animate={
                     shouldReduce
