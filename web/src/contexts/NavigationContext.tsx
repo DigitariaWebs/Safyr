@@ -8,11 +8,15 @@ interface NavigationContextType {
   toggleNavExpanded: () => void;
 }
 
-const NavigationContext = React.createContext<NavigationContextType | undefined>(
-  undefined
-);
+const NavigationContext = React.createContext<
+  NavigationContextType | undefined
+>(undefined);
 
-export function NavigationProvider({ children }: { children: React.ReactNode }) {
+export function NavigationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isNavExpanded, setIsNavExpanded] = React.useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("globalNavExpanded");
