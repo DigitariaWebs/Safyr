@@ -45,7 +45,6 @@ const navItems: NavItem[] = [
 ];
 
 interface AccountingNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

@@ -12,17 +12,6 @@ export default function BillingLayout({
   children: React.ReactNode;
 }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("billingNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("billingNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -35,7 +24,7 @@ export default function BillingLayout({
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        <BillingNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <BillingNavigationBar showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

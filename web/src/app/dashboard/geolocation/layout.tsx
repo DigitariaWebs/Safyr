@@ -12,17 +12,6 @@ export default function GeolocationLayout({
   children: React.ReactNode;
 }) {
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("geolocationNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("geolocationNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -35,7 +24,7 @@ export default function GeolocationLayout({
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        <GeolocationNavigationBar isCollapsed={isCollapsed} showNav={true} />
+        <GeolocationNavigationBar showNav={true} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

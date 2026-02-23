@@ -269,7 +269,7 @@ export const mockScheduleTemplates: ScheduleTemplate[] = (() => {
         createdBy: "admin",
       },
     ];
-  } catch (error) {
+  } catch {
     return [];
   }
 })();

@@ -45,7 +45,6 @@ const navItems: NavItem[] = [
 ];
 
 interface GeolocationNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

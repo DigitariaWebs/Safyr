@@ -4,15 +4,7 @@ import {
   ModuleNavigationBar,
   NavItem,
 } from "@/components/ui/module-navigation-bar";
-import {
-  Users,
-  Calendar,
-  CheckCircle,
-  AlertCircle,
-  MapPin,
-  Briefcase,
-  RotateCcw,
-} from "lucide-react";
+import { Users, Calendar, MapPin, Briefcase, RotateCcw } from "lucide-react";
 
 const navItems: NavItem[] = [
   {

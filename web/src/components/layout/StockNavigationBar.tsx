@@ -39,7 +39,6 @@ const navItems: NavItem[] = [
 ];
 
 interface StockNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

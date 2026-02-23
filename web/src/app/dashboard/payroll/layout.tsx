@@ -14,13 +14,6 @@ export default function PayrollLayout({
 }) {
   const pathname = usePathname();
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("payrollNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
 
   // Hide navigation when viewing specific employee calculation
   const isEmployeeCalculation = React.useMemo(() => {
@@ -28,10 +21,6 @@ export default function PayrollLayout({
       /^\/dashboard\/payroll\/calculation\/[^/]+\/\d+\/\d+$/;
     return calculationRegex.test(pathname);
   }, [pathname]);
-
-  React.useEffect(() => {
-    localStorage.setItem("payrollNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   return (
     <>
@@ -44,10 +33,7 @@ export default function PayrollLayout({
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        <PayrollNavigationBar
-          isCollapsed={isCollapsed}
-          showNav={!isEmployeeCalculation}
-        />
+        <PayrollNavigationBar showNav={!isEmployeeCalculation} />
         <main className="flex-1 overflow-auto relative p-6">{children}</main>
       </div>
 

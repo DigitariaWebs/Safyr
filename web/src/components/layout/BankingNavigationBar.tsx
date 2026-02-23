@@ -45,7 +45,6 @@ const navItems: NavItem[] = [
 ];
 
 interface BankingNavigationBarProps {
-  isCollapsed: boolean;
   showNav?: boolean;
 }
 

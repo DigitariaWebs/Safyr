@@ -13,13 +13,7 @@ import { Users } from "lucide-react";
 export default function HRLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [profileModalOpen, setProfileModalOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("moduleNavCollapsed");
-      return saved === "true";
-    }
-    return false;
-  });
+
   const { isOpen, selectedEmployees, closeEmailModal, handleSendSuccess } =
     useSendEmail();
 
@@ -29,10 +23,6 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
     !pathname.endsWith("akto-opco") &&
     !pathname.endsWith("employees") &&
     !pathname.endsWith("archives");
-
-  React.useEffect(() => {
-    localStorage.setItem("moduleNavCollapsed", String(isCollapsed));
-  }, [isCollapsed]);
 
   const handleSendEmail = (emailData: { subject: string; body: string }) => {
     console.log("Sending email to:", selectedEmployees);
@@ -51,12 +41,7 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
-        {!isEmployeeDetails && (
-          <HRNavigationBar
-            isCollapsed={isCollapsed}
-            showNav={!isEmployeeDetails}
-          />
-        )}
+        {!isEmployeeDetails && <HRNavigationBar showNav={!isEmployeeDetails} />}
         <main
           className={`flex-1 overflow-auto relative ${isEmployeeDetails ? "p-0" : "p-6"}`}
         >
