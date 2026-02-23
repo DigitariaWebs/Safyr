@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { usePlanningSettingsStore } from "@/lib/stores/planningSettingsStore";
+import type { PlanningSettings } from "@/lib/stores/planningSettingsStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +61,8 @@ import {
   CheckCircle,
   XCircle,
   Timer,
+  Lock,
+  CalendarOff,
 } from "lucide-react";
 
 import type {
@@ -105,6 +109,7 @@ declare global {
 }
 
 export default function SchedulePage() {
+  const { settings } = usePlanningSettingsStore();
   const idCounterRef = React.useRef(0);
   const generateShiftId = () => {
     idCounterRef.current += 1;
@@ -294,6 +299,78 @@ export default function SchedulePage() {
     return checkDate < today;
   };
 
+  const isClosedDay = (date: Date | string): boolean => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    const dayIndex = d.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const dayMap: (keyof PlanningSettings["openDays"])[] = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    return !settings.openDays[dayMap[dayIndex]];
+  };
+
+  const isPublicHoliday = (date: Date | string): boolean => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    const month = d.getMonth() + 1; // 1-indexed
+    const day = d.getDate();
+    const ph = settings.publicHolidays;
+
+    if (ph.newYear && month === 1 && day === 1) return true;
+    if (ph.laborDay && month === 5 && day === 1) return true;
+    if (ph.victoryDay && month === 5 && day === 8) return true;
+    if (ph.nationalDay && month === 7 && day === 14) return true;
+    if (ph.assumption && month === 8 && day === 15) return true;
+    if (ph.allSaints && month === 11 && day === 1) return true;
+    if (ph.armistice && month === 11 && day === 11) return true;
+    if (ph.christmas && month === 12 && day === 25) return true;
+
+    // Variable dates — approximate via year
+    const year = d.getFullYear();
+    if (ph.easterMonday) {
+      const easter = getEasterDate(year);
+      const easterMonday = new Date(easter);
+      easterMonday.setDate(easter.getDate() + 1);
+      if (
+        month === easterMonday.getMonth() + 1 &&
+        day === easterMonday.getDate()
+      )
+        return true;
+    }
+    if (ph.ascension) {
+      const easter = getEasterDate(year);
+      const ascension = new Date(easter);
+      ascension.setDate(easter.getDate() + 39);
+      if (month === ascension.getMonth() + 1 && day === ascension.getDate())
+        return true;
+    }
+
+    return false;
+  };
+
+  // Anonymous Gregorian algorithm for Easter
+  const getEasterDate = (year: number): Date => {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  };
+
   const isShiftInPast = (shift: AgentShift): boolean => {
     return isDateInPast(shift.date);
   };
@@ -373,6 +450,14 @@ export default function SchedulePage() {
     agentId: string,
     date: string,
   ): DateConflict | null => {
+    if (isPublicHoliday(date)) {
+      return {
+        type: "time_off",
+        severity: "medium",
+        message: "Jour férié",
+        details: undefined,
+      };
+    }
     if (hasTimeOff(agentId, date)) {
       const timeOff = mockTimeOffRequests.find((req) => {
         if (req.employeeId !== agentId || req.status !== "approved")
@@ -1304,6 +1389,8 @@ export default function SchedulePage() {
               calculateAgentHours={calculateAgentHours}
               onRemoveAgent={handleRemoveAgent}
               onAssignAgent={() => setShowAgentCommand(true)}
+              isClosedDay={isClosedDay}
+              maxDailyWorkHours={settings.maxDailyWorkHours}
             />
           )}
 
@@ -1327,6 +1414,8 @@ export default function SchedulePage() {
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
               onAssignAgent={() => setShowAgentCommand(true)}
+              isClosedDay={isClosedDay}
+              maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
             />
           )}
 
@@ -1350,6 +1439,8 @@ export default function SchedulePage() {
               onConflictClick={handleConflictClick}
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
+              isClosedDay={isClosedDay}
+              maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
             />
           )}
         </CardContent>
@@ -2203,6 +2294,8 @@ function DailyView({
   calculateAgentHours,
   onRemoveAgent,
   onAssignAgent,
+  isClosedDay,
+  maxDailyWorkHours,
 }: {
   date: Date;
   agents: { agentId: string; agentName: string }[];
@@ -2219,6 +2312,8 @@ function DailyView({
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onRemoveAgent: (agentId: string) => void;
   onAssignAgent: () => void;
+  isClosedDay: (date: Date | string) => boolean;
+  maxDailyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const dateStr = formatDate(date);
@@ -2280,9 +2375,15 @@ function DailyView({
                   <X className="h-3.5 w-3.5" />
                 </Button>
                 <div className="font-medium text-sm mb-2">{agentName}</div>
-                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-bold text-base text-primary">
+                <div
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${agentHours > maxDailyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
+                >
+                  <Clock
+                    className={`h-4 w-4 ${agentHours > maxDailyWorkHours ? "text-destructive" : "text-primary"}`}
+                  />
+                  <span
+                    className={`font-bold text-base ${agentHours > maxDailyWorkHours ? "text-destructive" : "text-primary"}`}
+                  >
                     {agentHours.toFixed(1)}h
                   </span>
                   <span className="text-xs text-muted-foreground ml-auto">
@@ -2349,6 +2450,7 @@ function DailyView({
                   <ShiftBlock
                     shift={shift}
                     conflict={conflict}
+                    isClosed={isClosedDay(dateStr)}
                     onEdit={onEditShift}
                     onDelete={onDeleteShift}
                     onCopy={onCopyShift}
@@ -2372,6 +2474,22 @@ function DailyView({
                       <AlertTriangle className="h-4 w-4" />
                       <span className="text-sm font-medium">
                         Double affectation
+                      </span>
+                    </button>
+                  ) : isClosedDay(dateStr) ? (
+                    <button
+                      onClick={() =>
+                        copiedShift
+                          ? onPasteShift(agentId, dateStr)
+                          : onCreateShift(agentId, dateStr)
+                      }
+                      className="absolute inset-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                      title="Jour fermé — cliquer pour forcer l'ajout"
+                    >
+                      <CalendarOff className="h-4 w-4" />
+                      <span className="text-xs">Fermé</span>
+                      <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                        Forcer
                       </span>
                     </button>
                   ) : (
@@ -2430,6 +2548,7 @@ function DailyView({
 function ShiftBlock({
   shift,
   conflict,
+  isClosed,
   onEdit,
   onDelete,
   onCopy,
@@ -2437,6 +2556,7 @@ function ShiftBlock({
 }: {
   shift: AgentShift;
   conflict: DateConflict | null;
+  isClosed?: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
@@ -2550,6 +2670,15 @@ function ShiftBlock({
           )}
         </button>
       )}
+      {/* Closed-day override indicator */}
+      {isClosed && !conflict && (
+        <div
+          className="absolute -top-1 -right-1 z-10 p-1 bg-white rounded-full shadow-md"
+          title="Service planifié un jour fermé"
+        >
+          <Lock className="h-3.5 w-3.5 text-orange-500" />
+        </div>
+      )}
 
       {/* Header with time and actions */}
       <div className="flex items-start justify-between gap-2 relative z-10">
@@ -2659,6 +2788,8 @@ function WeeklyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
+  isClosedDay,
+  maxWeeklyWorkHours,
 }: {
   dates: Date[];
   agents: { agentId: string; agentName: string }[];
@@ -2678,6 +2809,8 @@ function WeeklyView({
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onAssignAgent: () => void;
+  isClosedDay: (date: Date | string) => boolean;
+  maxWeeklyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -2764,9 +2897,15 @@ function WeeklyView({
             <div key={agentId} className="flex items-stretch gap-2">
               <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center">
                 <div className="font-medium text-sm mb-2">{agentName}</div>
-                <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-bold text-base text-primary">
+                <div
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${agentHours > maxWeeklyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
+                >
+                  <Clock
+                    className={`h-4 w-4 ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                  />
+                  <span
+                    className={`font-bold text-base ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                  >
                     {agentHours.toFixed(1)}h
                   </span>
                   <span className="text-xs text-muted-foreground ml-auto">
@@ -2783,13 +2922,13 @@ function WeeklyView({
                   );
                   const conflict = getDateConflict(agentId, dateStr);
                   const isPast = isDateInPast(dateStr);
-                  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                  const isClosed = isClosedDay(date);
 
                   return (
                     <div
                       key={idx}
                       className={`flex-1 border rounded-lg relative overflow-hidden ${
-                        isWeekend ? "bg-muted/30" : "bg-background"
+                        isClosed ? "bg-muted/30" : "bg-background"
                       } ${showWeekPasteBlock ? "invisible" : ""}`}
                       style={{
                         minWidth: `${MIN_COL_WIDTH}px`,
@@ -2799,6 +2938,7 @@ function WeeklyView({
                       {shift ? (
                         <ShiftCard
                           shift={shift}
+                          isClosed={isClosed}
                           onEdit={onEditShift}
                           onDelete={onDeleteShift}
                           onCopy={onCopyShift}
@@ -2821,6 +2961,21 @@ function WeeklyView({
                             <AlertTriangle className="h-4 w-4" />
                             <span className="text-sm font-medium">
                               Double affectation
+                            </span>
+                          </button>
+                        ) : isClosed ? (
+                          <button
+                            onClick={() =>
+                              copiedShift
+                                ? onPasteShift(agentId, dateStr)
+                                : onCreateShift(agentId, dateStr)
+                            }
+                            className="absolute inset-2 flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                            title="Jour fermé — cliquer pour forcer l'ajout"
+                          >
+                            <CalendarOff className="h-4 w-4" />
+                            <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                              Forcer
                             </span>
                           </button>
                         ) : (
@@ -2940,6 +3095,8 @@ function MonthlyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
+  isClosedDay,
+  maxWeeklyWorkHours,
 }: {
   dates: Date[];
   weekGroups: { dates: Date[]; startIdx: number }[];
@@ -2959,6 +3116,8 @@ function MonthlyView({
   onConflictClick: (agentId: string, date: string) => void;
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
+  isClosedDay: (date: Date | string) => boolean;
+  maxWeeklyWorkHours: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -3005,8 +3164,7 @@ function MonthlyView({
                   )}
                   <div className="flex gap-0">
                     {week.dates.map((date: Date, idx: number) => {
-                      const isWeekend =
-                        date.getDay() === 0 || date.getDay() === 6;
+                      const isClosed = isClosedDay(date);
                       return (
                         <div
                           key={idx}
@@ -3015,9 +3173,7 @@ function MonthlyView({
                         >
                           <div
                             className={`text-sm ${
-                              isWeekend
-                                ? "text-muted-foreground"
-                                : "font-medium"
+                              isClosed ? "text-muted-foreground" : "font-medium"
                             }`}
                           >
                             {date.toLocaleDateString("fr-FR", {
@@ -3047,22 +3203,33 @@ function MonthlyView({
               <div key={agentId} className="flex items-stretch">
                 <div className="w-56 shrink-0 p-3 bg-muted rounded-lg sticky left-0 z-10 mr-2 flex flex-col justify-center">
                   <div className="font-medium text-sm mb-2">{agentName}</div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-md">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="font-bold text-base text-primary">
-                      {weekGroups
-                        .reduce(
-                          (total, week) =>
-                            total + calculateAgentHours(agentId, week.dates),
-                          0,
-                        )
-                        .toFixed(1)}
-                      h
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      ce mois
-                    </span>
-                  </div>
+                  {(() => {
+                    const monthHours = weekGroups.reduce(
+                      (total, week) =>
+                        total + calculateAgentHours(agentId, week.dates),
+                      0,
+                    );
+                    const monthMaxHours =
+                      maxWeeklyWorkHours * (weekGroups.length || 1);
+                    const isOver = monthHours > monthMaxHours;
+                    return (
+                      <div
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${isOver ? "bg-destructive/10" : "bg-primary/10"}`}
+                      >
+                        <Clock
+                          className={`h-4 w-4 ${isOver ? "text-destructive" : "text-primary"}`}
+                        />
+                        <span
+                          className={`font-bold text-base ${isOver ? "text-destructive" : "text-primary"}`}
+                        >
+                          {monthHours.toFixed(1)}h
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          ce mois
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="flex gap-2">
@@ -3099,20 +3266,20 @@ function MonthlyView({
                                 dateStr,
                               );
                               const isPast = isDateInPast(dateStr);
-                              const isWeekend =
-                                date.getDay() === 0 || date.getDay() === 6;
+                              const isClosed = isClosedDay(date);
 
                               return (
                                 <div
                                   key={idx}
                                   className={`border rounded-lg relative overflow-hidden ${
-                                    isWeekend ? "bg-muted/30" : "bg-background"
+                                    isClosed ? "bg-muted/30" : "bg-background"
                                   } ${showWeekPasteBlock ? "invisible" : ""}`}
                                   style={{ width: "120px", height: "100px" }}
                                 >
                                   {shift ? (
                                     <ShiftCard
                                       shift={shift}
+                                      isClosed={isClosed}
                                       onEdit={onEditShift}
                                       onDelete={onDeleteShift}
                                       onCopy={onCopyShift}
@@ -3136,6 +3303,21 @@ function MonthlyView({
                                         className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
                                       >
                                         <AlertTriangle className="h-3 w-3" />
+                                      </button>
+                                    ) : isClosed ? (
+                                      <button
+                                        onClick={() =>
+                                          copiedShift
+                                            ? onPasteShift(agentId, dateStr)
+                                            : onCreateShift(agentId, dateStr)
+                                        }
+                                        className="absolute inset-1 flex flex-col items-center justify-center gap-0.5 rounded border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
+                                        title="Jour fermé — cliquer pour forcer l'ajout"
+                                      >
+                                        <CalendarOff className="h-3 w-3" />
+                                        <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity leading-none">
+                                          Forcer
+                                        </span>
                                       </button>
                                     ) : (
                                       <button
@@ -3265,11 +3447,13 @@ function MonthlyView({
 // Shift Card Component (for weekly/monthly)
 function ShiftCard({
   shift,
+  isClosed,
   onEdit,
   onDelete,
   onCopy,
 }: {
   shift: AgentShift;
+  isClosed?: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
@@ -3343,6 +3527,14 @@ function ShiftCard({
       }}
       onClick={() => !isPast && onEdit(shift)}
     >
+      {isClosed && (
+        <div
+          className="absolute top-1 right-1 z-10"
+          title="Service planifié un jour fermé"
+        >
+          <Lock className="h-3 w-3 text-white/80" />
+        </div>
+      )}
       {completionStatus && (
         <div
           className="absolute left-0 top-0 bottom-0 w-1"

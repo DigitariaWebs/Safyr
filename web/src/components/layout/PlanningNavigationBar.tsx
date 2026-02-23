@@ -4,7 +4,14 @@ import {
   ModuleNavigationBar,
   NavItem,
 } from "@/components/ui/module-navigation-bar";
-import { Users, Calendar, MapPin, Briefcase, RotateCcw } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  MapPin,
+  Briefcase,
+  RotateCcw,
+  Settings,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
@@ -31,6 +38,11 @@ const navItems: NavItem[] = [
     label: "Planning",
     href: "/dashboard/planning/schedule",
     icon: Calendar,
+  },
+  {
+    label: "Paramètres",
+    href: "/dashboard/planning/settings",
+    icon: Settings,
   },
 ];
 
