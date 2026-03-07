@@ -14,8 +14,20 @@ import {
   Package,
   ScanLine,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/config/site";
+
+const SERVICE_COLORS = [
+  { color: "#22d3ee", glow: "rgba(34,211,238,0.18)" },
+  { color: "#a78bfa", glow: "rgba(167,139,250,0.18)" },
+  { color: "#818cf8", glow: "rgba(129,140,248,0.18)" },
+  { color: "#38bdf8", glow: "rgba(56,189,248,0.18)" },
+  { color: "#fb923c", glow: "rgba(251,146,60,0.18)" },
+  { color: "#34d399", glow: "rgba(52,211,153,0.18)" },
+  { color: "#2dd4bf", glow: "rgba(45,212,191,0.18)" },
+  { color: "#60a5fa", glow: "rgba(96,165,250,0.18)" },
+  { color: "#f472b6", glow: "rgba(244,114,182,0.18)" },
+  { color: "#e879f9", glow: "rgba(232,121,249,0.18)" },
+] as const;
 
 const iconMap: Record<string, React.ElementType> = {
   Users,
@@ -58,6 +70,7 @@ function ServiceCard({
 }) {
   const shouldReduce = useReducedMotion();
   const Icon = iconMap[service.icon] || Users;
+  const { color } = SERVICE_COLORS[index % SERVICE_COLORS.length];
 
   return (
     <motion.div
@@ -70,21 +83,29 @@ function ServiceCard({
               transition: { duration: 0.22, ease: "easeOut" },
             }
       }
-      className="group relative p-6 rounded-2xl border border-[#2d4160]/60 bg-[#1a2d45]/40 hover:border-[#22d3ee]/40 hover:bg-[#1a2d45]/80 transition-colors duration-300 overflow-hidden flex flex-col gap-4 cursor-default"
+      className="group relative p-6 rounded-2xl border border-[#2d4160]/60 bg-[#1a2d45]/40 hover:border-[#2d4160] hover:bg-[#1a2d45]/80 transition-colors duration-300 overflow-hidden flex flex-col gap-4 cursor-default"
+      style={
+        {
+          "--tw-border-color": "transparent",
+        } as React.CSSProperties
+      }
     >
       {/* Corner glow on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle at top left, rgba(34,211,238,0.07) 0%, transparent 55%)",
+          background: `radial-gradient(circle at top left, ${color}10 0%, transparent 55%)`,
         }}
       />
 
       {/* Icon with animated pulse ring */}
       <div className="relative w-11 h-11 shrink-0">
         <motion.div
-          className="absolute inset-0 rounded-xl border border-[#22d3ee]/0 group-hover:border-[#22d3ee]/30"
+          className="absolute inset-0 rounded-xl border border-[#2d4160] group-hover:border-opacity-30"
+          style={{
+            borderColor: color,
+            opacity: 0.3,
+          }}
           animate={
             shouldReduce
               ? {}
@@ -101,10 +122,14 @@ function ServiceCard({
             ease: "easeOut",
           }}
         />
-        <div className="w-11 h-11 rounded-xl bg-[#22d3ee]/10 flex items-center justify-center group-hover:bg-[#22d3ee]/20 transition-colors duration-300">
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
+          style={{ backgroundColor: `${color}15` }}
+        >
           <Icon
             size={20}
-            className="text-[#22d3ee] group-hover:scale-110 transition-transform duration-200"
+            className="transition-transform duration-200"
+            style={{ color }}
           />
         </div>
       </div>
@@ -120,7 +145,12 @@ function ServiceCard({
       </div>
 
       {/* Bottom sliding accent */}
-      <div className="absolute bottom-0 inset-x-0 h-0.5 bg-linear-to-r from-transparent via-[#22d3ee]/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-center" />
+      <div
+        className="absolute bottom-0 inset-x-0 h-0.5 bg-linear-to-r from-transparent to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-center"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${color}70, transparent)`,
+        }}
+      />
     </motion.div>
   );
 }
@@ -151,13 +181,12 @@ export default function Services() {
           transition={{ duration: 0.7, ease: EASE }}
           className="text-center mb-16 flex flex-col items-center gap-4"
         >
-          <Badge variant="cyan">Fonctionnalités de la plateforme</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] max-w-2xl leading-tight">
-            Tout ce dont votre société de gardiennage a besoin
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] max-w-2xl leading-tight font-display">
+            Tout ce dont votre société de sécurité privée a besoin pour piloter
           </h2>
-          <p className="text-lg text-[#94a3b8] max-w-2xl">
-            De la gestion RH à la comptabilité, en passant par la planification,
-            la géolocalisation, la facturation, le stock et la main courante
+          <p className="text-base text-[#94a3b8] max-w-2xl">
+            De la gestion RH à la comptabilité, en passant par le pilotage, la
+            géolocalisation, la facturation, le stock et la main courante
             digitale, Safyr couvre chaque flux de travail dans une plateforme
             unique et unifiée.
           </p>

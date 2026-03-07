@@ -62,7 +62,7 @@ export default function Footer() {
                 alt={assets.logo.alt}
                 width={assets.logo.footerWidth}
                 height={assets.logo.footerHeight}
-                className="h-13 w-auto object-contain drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+                className="h-52 w-auto object-contain"
               />
             </div>
             <p className="text-sm text-[#64748b] leading-relaxed mb-6 max-w-xs">

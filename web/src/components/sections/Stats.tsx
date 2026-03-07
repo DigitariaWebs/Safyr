@@ -93,7 +93,7 @@ function StatCard({
       <div className="absolute top-0 left-4 right-4 h-px bg-linear-to-r from-transparent via-[#22d3ee]/60 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-400 rounded-full" />
 
       <span
-        className="relative text-4xl sm:text-5xl font-bold text-[#22d3ee] tabular-nums tracking-tight transition-all duration-300"
+        className="relative text-3xl sm:text-4xl font-bold text-[#22d3ee] tabular-nums tracking-tight transition-all duration-300"
         style={{
           textShadow: "0 0 28px rgba(34,211,238,0.3)",
         }}

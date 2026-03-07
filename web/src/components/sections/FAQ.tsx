@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -37,11 +36,10 @@ export default function FAQ() {
           transition={{ duration: 0.7, ease: EASE }}
           className="text-center mb-14 flex flex-col items-center gap-4"
         >
-          <Badge variant="cyan">FAQ</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] leading-tight font-display">
             Questions <span className="text-[#22d3ee]">fréquemment posées</span>
           </h2>
-          <p className="text-[#94a3b8] text-lg max-w-md">
+          <p className="text-[#94a3b8] text-base max-w-md">
             Tout ce que vous devez savoir avant de prendre une décision.
           </p>
         </motion.div>

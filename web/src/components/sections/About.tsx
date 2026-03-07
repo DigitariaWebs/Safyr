@@ -10,7 +10,6 @@ import {
 import type { Variants } from "framer-motion";
 import Image from "next/image";
 import { Shield, Zap, Users, BarChart3 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/config/site";
 import { assets } from "@/config/assets";
 
@@ -105,7 +104,7 @@ export default function About() {
             >
               <Image
                 src={assets.images.team}
-                alt="Équipe de gardiennage au travail"
+                alt="Équipe de sécurité privée au travail"
                 width={800}
                 height={420}
                 className="w-full h-105 object-cover"
@@ -174,20 +173,16 @@ export default function About() {
             viewport={{ once: true, margin: "-80px" }}
             className="flex flex-col gap-6"
           >
-            <motion.div variants={itemVariants}>
-              <Badge variant="cyan">{siteConfig.about.badge}</Badge>
-            </motion.div>
-
             <motion.h2
               variants={itemVariants}
-              className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] leading-tight font-display"
             >
               {siteConfig.about.headline}
             </motion.h2>
 
             <motion.p
               variants={itemVariants}
-              className="text-lg text-[#94a3b8] leading-relaxed"
+              className="text-base text-[#94a3b8] leading-relaxed"
             >
               {siteConfig.about.body}
             </motion.p>

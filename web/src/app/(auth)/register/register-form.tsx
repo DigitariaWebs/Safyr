@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Eye, 
-  EyeOff, 
-  Loader2, 
-  Check, 
-  ChevronRight, 
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Check,
+  ChevronRight,
   ChevronLeft,
   ChevronDown,
   Users,
@@ -22,7 +22,7 @@ import {
   Package,
   ScanLine,
   Star,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -36,8 +36,16 @@ import {
 
 const steps = [
   { id: 1, title: "Vos identifiants", description: "Créez votre compte" },
-  { id: 2, title: "Votre entreprise", description: "Informations sur votre société" },
-  { id: 3, title: "Modules souhaités", description: "Sélectionnez vos besoins" },
+  {
+    id: 2,
+    title: "Votre entreprise",
+    description: "Informations sur votre société",
+  },
+  {
+    id: 3,
+    title: "Modules souhaités",
+    description: "Sélectionnez vos besoins",
+  },
   { id: 4, title: "Finalisation", description: "Dernière étape" },
 ];
 
@@ -46,7 +54,11 @@ const companySizes = [
   { value: "11-50", label: "11 à 50 agents", description: "Petite entreprise" },
   { value: "51-200", label: "51 à 200 agents", description: "PME" },
   { value: "201-500", label: "201 à 500 agents", description: "ETI" },
-  { value: "500+", label: "Plus de 500 agents", description: "Grande entreprise" },
+  {
+    value: "500+",
+    label: "Plus de 500 agents",
+    description: "Grande entreprise",
+  },
 ];
 
 const companyTypes = [
@@ -59,86 +71,130 @@ const companyTypes = [
 ];
 
 const modules = [
-  { 
-    id: "rh", 
-    label: "Gestion RH", 
-    description: "Gestion complète des ressources humaines pour votre société de sécurité",
-    features: ["Dossiers agents complets", "Contrats de travail", "Gestion des certifications", "Suivi des postes"],
+  {
+    id: "rh",
+    label: "Gestion RH",
+    description:
+      "Gestion complète des ressources humaines pour votre société de sécurité",
+    features: [
+      "Dossiers agents complets",
+      "Contrats de travail",
+      "Gestion des certifications",
+      "Suivi des postes",
+    ],
     icon: Users,
     color: "#22d3ee",
-    core: true
+    core: true,
   },
-  { 
-    id: "main_courante", 
-    label: "Main courante digitale", 
-    description: "Digitalisation complète de la main courante pour une meilleure traçabilité",
-    features: ["Journaux d'activité", "Rapports d'incidents", "Suivi des rondes", "Archivage automatique"],
+  {
+    id: "main_courante",
+    label: "Main courante digitale",
+    description:
+      "Digitalisation complète de la main courante pour une meilleure traçabilité",
+    features: [
+      "Journaux d'activité",
+      "Rapports d'incidents",
+      "Suivi des rondes",
+      "Archivage automatique",
+    ],
     icon: ClipboardList,
     color: "#a78bfa",
-    core: true
+    core: true,
   },
-  { 
-    id: "paie", 
-    label: "Paie & Bulletins", 
-    description: "Calcul automatique des bulletins de paie avec intégration DSN",
-    features: ["Calcul automatique", "Export DSN", "Gestion des primes", "Bulletins dématérialisés"],
+  {
+    id: "paie",
+    label: "Paie & Bulletins",
+    description:
+      "Calcul automatique des bulletins de paie avec intégration DSN",
+    features: [
+      "Calcul automatique",
+      "Export DSN",
+      "Gestion des primes",
+      "Bulletins dématérialisés",
+    ],
     icon: Receipt,
     color: "#34d399",
-    core: true
+    core: true,
   },
-  { 
-    id: "planning", 
-    label: "Planning & Affectations", 
-    description: "Planification intelligente des agents et gestion des vacations",
-    features: ["Gestion des vacations", "Affectation par site", "Planning récurrents", "Contrôle des heures"],
+  {
+    id: "planning",
+    label: "Planning & Affectations",
+    description:
+      "Planification intelligente des agents et gestion des vacations",
+    features: [
+      "Gestion des vacations",
+      "Affectation par site",
+      "Planning récurrents",
+      "Contrôle des heures",
+    ],
     icon: Calendar,
     color: "#fb923c",
-    core: true
+    core: true,
   },
-  { 
-    id: "geolocation", 
-    label: "Géolocalisation", 
+  {
+    id: "geolocation",
+    label: "Géolocalisation",
     description: "Suivi en temps réel des agents sur le terrain",
-    features: ["Suivi temps réel", "Géofencing", "Historique des positions", "Alertes de zone"],
+    features: [
+      "Suivi temps réel",
+      "Géofencing",
+      "Historique des positions",
+      "Alertes de zone",
+    ],
     icon: MapPin,
     color: "#f472b6",
-    core: false
+    core: false,
   },
-  { 
-    id: "facturation", 
-    label: "Facturation & Devis", 
+  {
+    id: "facturation",
+    label: "Facturation & Devis",
     description: "Gestion complète de la relation commerciale",
-    features: ["Devis dynamiques", "Suivi des paiements", "Facturation automatique", "Relances"],
+    features: [
+      "Devis dynamiques",
+      "Suivi des paiements",
+      "Facturation automatique",
+      "Relances",
+    ],
     icon: BarChart3,
     color: "#818cf8",
-    core: false
+    core: false,
   },
-  { 
-    id: "comptabilite", 
-    label: "Comptabilité", 
+  {
+    id: "comptabilite",
+    label: "Comptabilité",
     description: "Suivi financier et déclaratif pour votre société",
-    features: ["Trésorerie", "Export FEC", "Déclarations", "Suivi des dépenses"],
+    features: [
+      "Trésorerie",
+      "Export FEC",
+      "Déclarations",
+      "Suivi des dépenses",
+    ],
     icon: Building2,
     color: "#60a5fa",
-    core: false
+    core: false,
   },
-  { 
-    id: "stock", 
-    label: "Gestion de stock", 
+  {
+    id: "stock",
+    label: "Gestion de stock",
     description: "Gestion des équipements et dotations agents",
     features: ["Inventaire", "Équipements", "Uniformes", "Alertes stock"],
     icon: Package,
     color: "#2dd4bf",
-    core: false
+    core: false,
   },
-  { 
-    id: "ocr", 
-    label: "OCR & Documents", 
+  {
+    id: "ocr",
+    label: "OCR & Documents",
     description: "Numérisation et extraction automatique de documents",
-    features: ["Numérisation", "Extraction automatique", "Classement intelligent", "Recherche"],
+    features: [
+      "Numérisation",
+      "Extraction automatique",
+      "Classement intelligent",
+      "Recherche",
+    ],
     icon: ScanLine,
     color: "#e879f9",
-    core: false
+    core: false,
   },
 ];
 
@@ -223,26 +279,39 @@ export function RegisterForm() {
   };
 
   const toggleModule = (moduleId: string) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       selectedModules: prev.selectedModules.includes(moduleId)
-        ? prev.selectedModules.filter(id => id !== moduleId)
-        : [...prev.selectedModules, moduleId]
+        ? prev.selectedModules.filter((id) => id !== moduleId)
+        : [...prev.selectedModules, moduleId],
     }));
   };
 
   const toggleExpand = (moduleId: string) => {
-    setExpandedModule(prev => prev === moduleId ? null : moduleId);
+    setExpandedModule((prev) => (prev === moduleId ? null : moduleId));
   };
 
   const strength = passwordStrength();
   const strengthLabels = ["Faible", "Moyen", "Bon", "Fort"];
-  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+  const strengthColors = [
+    "bg-red-500",
+    "bg-orange-500",
+    "bg-yellow-500",
+    "bg-green-500",
+  ];
 
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return form.firstName && form.lastName && form.email && form.password && form.confirmPassword && form.password === form.confirmPassword && form.terms;
+        return (
+          form.firstName &&
+          form.lastName &&
+          form.email &&
+          form.password &&
+          form.confirmPassword &&
+          form.password === form.confirmPassword &&
+          form.terms
+        );
       case 2:
         return form.companyName && form.companySize && form.companyType;
       case 3:
@@ -266,7 +335,10 @@ export function RegisterForm() {
           >
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label htmlFor="firstName" className="block text-xs font-medium text-[#94a3b8]">
+                <label
+                  htmlFor="firstName"
+                  className="block text-xs font-medium text-[#94a3b8]"
+                >
                   Prénom *
                 </label>
                 <input
@@ -274,13 +346,18 @@ export function RegisterForm() {
                   type="text"
                   required
                   value={form.firstName}
-                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, firstName: e.target.value })
+                  }
                   placeholder="Jean"
                   className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
                 />
               </div>
               <div className="space-y-1">
-                <label htmlFor="lastName" className="block text-xs font-medium text-[#94a3b8]">
+                <label
+                  htmlFor="lastName"
+                  className="block text-xs font-medium text-[#94a3b8]"
+                >
                   Nom *
                 </label>
                 <input
@@ -288,7 +365,9 @@ export function RegisterForm() {
                   type="text"
                   required
                   value={form.lastName}
-                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, lastName: e.target.value })
+                  }
                   placeholder="Dupont"
                   className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
                 />
@@ -296,7 +375,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="email" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 E-mail professionnel *
               </label>
               <input
@@ -311,7 +393,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="password" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Mot de passe *
               </label>
               <div className="relative">
@@ -321,7 +406,9 @@ export function RegisterForm() {
                   required
                   minLength={8}
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
                   placeholder="Créer un mot de passe"
                   className="w-full h-9 px-3 pr-10 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
                 />
@@ -340,20 +427,36 @@ export function RegisterForm() {
                       <div
                         key={i}
                         className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                          i <= strength ? strengthColors[strength - 1] : "bg-[#2d4160]"
+                          i <= strength
+                            ? strengthColors[strength - 1]
+                            : "bg-[#2d4160]"
                         }`}
                       />
                     ))}
                   </div>
                   <p className="text-[10px] text-[#64748b]">
-                    Force: <span className={strength >= 3 ? "text-green-400" : strength >= 2 ? "text-yellow-400" : "text-red-400"}>{strengthLabels[strength] || "Trop court"}</span>
+                    Force:{" "}
+                    <span
+                      className={
+                        strength >= 3
+                          ? "text-green-400"
+                          : strength >= 2
+                            ? "text-yellow-400"
+                            : "text-red-400"
+                      }
+                    >
+                      {strengthLabels[strength] || "Trop court"}
+                    </span>
                   </p>
                 </div>
               )}
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="confirmPassword" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Confirmer le mot de passe *
               </label>
               <div className="relative">
@@ -362,7 +465,9 @@ export function RegisterForm() {
                   type={showPassword ? "text" : "password"}
                   required
                   value={form.confirmPassword}
-                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, confirmPassword: e.target.value })
+                  }
                   placeholder="Confirmer le mot de passe"
                   className="w-full h-9 px-3 pr-10 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
                 />
@@ -374,9 +479,12 @@ export function RegisterForm() {
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
-              {form.confirmPassword && form.password !== form.confirmPassword && (
-                <p className="text-[10px] text-red-400">Les mots de passe ne correspondent pas</p>
-              )}
+              {form.confirmPassword &&
+                form.password !== form.confirmPassword && (
+                  <p className="text-[10px] text-red-400">
+                    Les mots de passe ne correspondent pas
+                  </p>
+                )}
             </div>
 
             <label className="flex items-start gap-2 cursor-pointer group">
@@ -385,7 +493,9 @@ export function RegisterForm() {
                   type="checkbox"
                   required
                   checked={form.terms}
-                  onChange={(e) => setForm({ ...form, terms: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({ ...form, terms: e.target.checked })
+                  }
                   className="sr-only"
                 />
                 <div
@@ -400,9 +510,13 @@ export function RegisterForm() {
               </div>
               <span className="text-xs text-[#64748b] group-hover:text-[#94a3b8] transition-colors">
                 J&apos;accepte les{" "}
-                <Link href="#" className="text-[#a78bfa] hover:underline">Conditions</Link>
-                {" "}et la{" "}
-                <Link href="#" className="text-[#a78bfa] hover:underline">Politique</Link>
+                <Link href="#" className="text-[#a78bfa] hover:underline">
+                  Conditions
+                </Link>{" "}
+                et la{" "}
+                <Link href="#" className="text-[#a78bfa] hover:underline">
+                  Politique
+                </Link>
               </span>
             </label>
           </motion.div>
@@ -417,7 +531,10 @@ export function RegisterForm() {
             className="space-y-3"
           >
             <div className="space-y-1">
-              <label htmlFor="companyName" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="companyName"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Nom de l&apos;entreprise *
               </label>
               <input
@@ -425,7 +542,9 @@ export function RegisterForm() {
                 type="text"
                 required
                 value={form.companyName}
-                onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, companyName: e.target.value })
+                }
                 placeholder="Sécurité Gardiennage Pro"
                 className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
               />
@@ -441,13 +560,18 @@ export function RegisterForm() {
                     type="button"
                     className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs flex items-center justify-between hover:border-[#a78bfa]/50 focus:outline-none focus:border-[#a78bfa]/50 transition-all duration-200"
                   >
-                    <span className={form.companySize ? "text-white" : "text-[#475569]"}>
-                      {companySizes.find(s => s.value === form.companySize)?.label || "Sélectionnez..."}
+                    <span
+                      className={
+                        form.companySize ? "text-white" : "text-[#475569]"
+                      }
+                    >
+                      {companySizes.find((s) => s.value === form.companySize)
+                        ?.label || "Sélectionnez..."}
                     </span>
                     <ChevronDown size={14} className="text-[#64748b]" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
+                <DropdownMenuContent
                   className="bg-[#1e293b] border-[#2d4160]"
                   style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
                   align="start"
@@ -455,12 +579,18 @@ export function RegisterForm() {
                   {companySizes.map((size) => (
                     <DropdownMenuItem
                       key={size.value}
-                      onClick={() => setForm({ ...form, companySize: size.value })}
+                      onClick={() =>
+                        setForm({ ...form, companySize: size.value })
+                      }
                       className="text-xs text-[#94a3b8] focus:bg-[#2d4160] focus:text-white cursor-pointer"
                     >
                       <span className="flex-1">{size.label}</span>
-                      <span className="text-[10px] text-[#64748b] mr-2">{size.description}</span>
-                      {form.companySize === size.value && <Check size={12} className="text-[#a78bfa]" />}
+                      <span className="text-[10px] text-[#64748b] mr-2">
+                        {size.description}
+                      </span>
+                      {form.companySize === size.value && (
+                        <Check size={12} className="text-[#a78bfa]" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -477,13 +607,18 @@ export function RegisterForm() {
                     type="button"
                     className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs flex items-center justify-between hover:border-[#a78bfa]/50 focus:outline-none focus:border-[#a78bfa]/50 transition-all duration-200"
                   >
-                    <span className={form.companyType ? "text-white" : "text-[#475569]"}>
-                      {companyTypes.find(t => t.value === form.companyType)?.label || "Sélectionnez..."}
+                    <span
+                      className={
+                        form.companyType ? "text-white" : "text-[#475569]"
+                      }
+                    >
+                      {companyTypes.find((t) => t.value === form.companyType)
+                        ?.label || "Sélectionnez..."}
                     </span>
                     <ChevronDown size={14} className="text-[#64748b]" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
+                <DropdownMenuContent
                   className="bg-[#1e293b] border-[#2d4160]"
                   style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
                   align="start"
@@ -491,11 +626,15 @@ export function RegisterForm() {
                   {companyTypes.map((type) => (
                     <DropdownMenuItem
                       key={type.value}
-                      onClick={() => setForm({ ...form, companyType: type.value })}
+                      onClick={() =>
+                        setForm({ ...form, companyType: type.value })
+                      }
                       className="text-xs text-[#94a3b8] focus:bg-[#2d4160] focus:text-white cursor-pointer"
                     >
                       <span className="flex-1">{type.label}</span>
-                      {form.companyType === type.value && <Check size={12} className="text-[#a78bfa]" />}
+                      {form.companyType === type.value && (
+                        <Check size={12} className="text-[#a78bfa]" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -503,7 +642,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="address" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="address"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Adresse
               </label>
               <input
@@ -518,20 +660,28 @@ export function RegisterForm() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label htmlFor="postalCode" className="block text-xs font-medium text-[#94a3b8]">
+                <label
+                  htmlFor="postalCode"
+                  className="block text-xs font-medium text-[#94a3b8]"
+                >
                   Code postal
                 </label>
                 <input
                   id="postalCode"
                   type="text"
                   value={form.postalCode}
-                  onChange={(e) => setForm({ ...form, postalCode: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, postalCode: e.target.value })
+                  }
                   placeholder="75001"
                   className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs placeholder:text-[#475569] focus:outline-none focus:border-[#a78bfa]/50 focus:ring-1 focus:ring-[#a78bfa]/20 transition-all duration-200"
                 />
               </div>
               <div className="space-y-1">
-                <label htmlFor="city" className="block text-xs font-medium text-[#94a3b8]">
+                <label
+                  htmlFor="city"
+                  className="block text-xs font-medium text-[#94a3b8]"
+                >
                   Ville
                 </label>
                 <input
@@ -546,7 +696,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="siret" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="siret"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Numéro SIRET
               </label>
               <input
@@ -562,14 +715,17 @@ export function RegisterForm() {
         );
 
       case 3:
-        const coreModules = modules.filter(m => m.core);
-        const optionalModules = modules.filter(m => !m.core);
-        
-        const renderModuleCard = (module: typeof modules[0], isCore: boolean) => {
+        const coreModules = modules.filter((m) => m.core);
+        const optionalModules = modules.filter((m) => !m.core);
+
+        const renderModuleCard = (
+          module: (typeof modules)[0],
+          isCore: boolean,
+        ) => {
           const isSelected = form.selectedModules.includes(module.id);
           const isExpanded = expandedModule === module.id;
           const Icon = module.icon;
-          
+
           return (
             <motion.div
               key={module.id}
@@ -578,26 +734,30 @@ export function RegisterForm() {
               animate={{ opacity: 1, y: 0 }}
               className="overflow-hidden"
             >
-              <div className={`rounded-lg border transition-all duration-200 ${
+              <div
+                className={`rounded-lg border transition-all duration-200 ${
                   isCore
                     ? "bg-[#22d3ee]/5 border-[#22d3ee]/30"
                     : isSelected
-                    ? "bg-[#a78bfa]/10 border-[#a78bfa]/50"
-                    : "bg-[#1e293b]/50 border-[#2d4160]/60"
-                }`}>
+                      ? "bg-[#a78bfa]/10 border-[#a78bfa]/50"
+                      : "bg-[#1e293b]/50 border-[#2d4160]/60"
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => toggleExpand(module.id)}
                   className="w-full p-2.5 text-left flex items-center gap-3"
                 >
-                  <div 
+                  <div
                     className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
                     style={{ backgroundColor: `${module.color}15` }}
                   >
                     <Icon size={14} style={{ color: module.color }} />
                   </div>
                   <div className="flex-1 min-w-0 flex items-center justify-between">
-                    <span className="text-xs font-medium text-white">{module.label}</span>
+                    <span className="text-xs font-medium text-white">
+                      {module.label}
+                    </span>
                     <motion.div
                       animate={{ rotate: isExpanded ? 90 : 0 }}
                       transition={{ duration: 0.2 }}
@@ -607,7 +767,7 @@ export function RegisterForm() {
                     </motion.div>
                   </div>
                 </button>
-                
+
                 {/* Selection checkbox for optional modules */}
                 {!isCore && (
                   <button
@@ -618,7 +778,7 @@ export function RegisterForm() {
                     }}
                     className="w-full px-2.5 pb-2.5 text-left flex items-center gap-2"
                   >
-                    <div 
+                    <div
                       className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                         isSelected
                           ? "bg-[#a78bfa] border-[#a78bfa]"
@@ -633,7 +793,7 @@ export function RegisterForm() {
                   </button>
                 )}
               </div>
-              
+
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
@@ -650,7 +810,10 @@ export function RegisterForm() {
                       {module.features && (
                         <ul className="mt-2 space-y-1">
                           {module.features.map((feature, i) => (
-                            <li key={i} className="text-xs text-[#94a3b8] flex items-center gap-2">
+                            <li
+                              key={i}
+                              className="text-xs text-[#94a3b8] flex items-center gap-2"
+                            >
                               <Check size={10} className="text-[#22d3ee]" />
                               {feature}
                             </li>
@@ -664,7 +827,7 @@ export function RegisterForm() {
             </motion.div>
           );
         };
-        
+
         return (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -674,7 +837,8 @@ export function RegisterForm() {
           >
             <div className="text-center">
               <p className="text-xs text-[#64748b]">
-                Les modules essentiels sont inclus. Cliquez pour découvrir. Ajoutez des modules optionnels.
+                Les modules essentiels sont inclus. Cliquez pour découvrir.
+                Ajoutez des modules optionnels.
               </p>
             </div>
 
@@ -696,7 +860,9 @@ export function RegisterForm() {
                 Optionnels
               </div>
               <div className="flex flex-col gap-2">
-                {optionalModules.map((module) => renderModuleCard(module, false))}
+                {optionalModules.map((module) =>
+                  renderModuleCard(module, false),
+                )}
               </div>
             </div>
           </motion.div>
@@ -731,13 +897,16 @@ export function RegisterForm() {
                     type="button"
                     className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs flex items-center justify-between hover:border-[#a78bfa]/50 focus:outline-none focus:border-[#a78bfa]/50 transition-all duration-200"
                   >
-                    <span className={form.role ? "text-white" : "text-[#475569]"}>
-                      {roleOptions.find(r => r.value === form.role)?.label || "Sélectionnez..."}
+                    <span
+                      className={form.role ? "text-white" : "text-[#475569]"}
+                    >
+                      {roleOptions.find((r) => r.value === form.role)?.label ||
+                        "Sélectionnez..."}
                     </span>
                     <ChevronDown size={14} className="text-[#64748b]" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
+                <DropdownMenuContent
                   className="bg-[#1e293b] border-[#2d4160]"
                   style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
                   align="start"
@@ -749,7 +918,9 @@ export function RegisterForm() {
                       className="text-xs text-[#94a3b8] focus:bg-[#2d4160] focus:text-white cursor-pointer"
                     >
                       <span className="flex-1">{option.label}</span>
-                      {form.role === option.value && <Check size={12} className="text-[#a78bfa]" />}
+                      {form.role === option.value && (
+                        <Check size={12} className="text-[#a78bfa]" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -766,13 +937,18 @@ export function RegisterForm() {
                     type="button"
                     className="w-full h-9 px-3 rounded-lg bg-[#1e293b]/80 border border-[#2d4160]/60 text-white text-xs flex items-center justify-between hover:border-[#a78bfa]/50 focus:outline-none focus:border-[#a78bfa]/50 transition-all duration-200"
                   >
-                    <span className={form.howHeard ? "text-white" : "text-[#475569]"}>
-                      {howHeardOptions.find(h => h.value === form.howHeard)?.label || "Sélectionnez..."}
+                    <span
+                      className={
+                        form.howHeard ? "text-white" : "text-[#475569]"
+                      }
+                    >
+                      {howHeardOptions.find((h) => h.value === form.howHeard)
+                        ?.label || "Sélectionnez..."}
                     </span>
                     <ChevronDown size={14} className="text-[#64748b]" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
+                <DropdownMenuContent
                   className="bg-[#1e293b] border-[#2d4160]"
                   style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
                   align="start"
@@ -780,11 +956,15 @@ export function RegisterForm() {
                   {howHeardOptions.map((option) => (
                     <DropdownMenuItem
                       key={option.value}
-                      onClick={() => setForm({ ...form, howHeard: option.value })}
+                      onClick={() =>
+                        setForm({ ...form, howHeard: option.value })
+                      }
                       className="text-xs text-[#94a3b8] focus:bg-[#2d4160] focus:text-white cursor-pointer"
                     >
                       <span className="flex-1">{option.label}</span>
-                      {form.howHeard === option.value && <Check size={12} className="text-[#a78bfa]" />}
+                      {form.howHeard === option.value && (
+                        <Check size={12} className="text-[#a78bfa]" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -792,7 +972,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="notes" className="block text-xs font-medium text-[#94a3b8]">
+              <label
+                htmlFor="notes"
+                className="block text-xs font-medium text-[#94a3b8]"
+              >
                 Commentaires ou besoins spécifiques
               </label>
               <textarea
@@ -809,38 +992,57 @@ export function RegisterForm() {
             <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl p-4 border border-[#2d4160]/60">
               <div className="flex items-center gap-2 mb-3">
                 <Check size={14} className="text-[#a78bfa]" />
-                <h4 className="text-xs font-medium text-white">Récapitulatif</h4>
+                <h4 className="text-xs font-medium text-white">
+                  Récapitulatif
+                </h4>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                 <div>
                   <span className="text-[#64748b] block">Entreprise</span>
-                  <span className="text-white font-medium">{form.companyName || "-"}</span>
+                  <span className="text-white font-medium">
+                    {form.companyName || "-"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[#64748b] block">Taille</span>
-                  <span className="text-white font-medium">{companySizes.find(s => s.value === form.companySize)?.label || "-"}</span>
+                  <span className="text-white font-medium">
+                    {companySizes.find((s) => s.value === form.companySize)
+                      ?.label || "-"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[#64748b] block">Type</span>
-                  <span className="text-white font-medium">{companyTypes.find(t => t.value === form.companyType)?.label || "-"}</span>
+                  <span className="text-white font-medium">
+                    {companyTypes.find((t) => t.value === form.companyType)
+                      ?.label || "-"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[#64748b] block">Contact</span>
-                  <span className="text-white font-medium">{form.email || "-"}</span>
+                  <span className="text-white font-medium">
+                    {form.email || "-"}
+                  </span>
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-[#2d4160]/60">
-                <span className="text-[#64748b] text-xs block mb-1">Modules sélectionnés</span>
+                <span className="text-[#64748b] text-xs block mb-1">
+                  Modules sélectionnés
+                </span>
                 <div className="flex flex-wrap gap-1">
-                  {modules.filter(m => form.selectedModules.includes(m.id)).map(m => (
-                    <span 
-                      key={m.id} 
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                      style={{ backgroundColor: `${m.color}15`, color: m.color }}
-                    >
-                      {m.label}
-                    </span>
-                  ))}
+                  {modules
+                    .filter((m) => form.selectedModules.includes(m.id))
+                    .map((m) => (
+                      <span
+                        key={m.id}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                        style={{
+                          backgroundColor: `${m.color}15`,
+                          color: m.color,
+                        }}
+                      >
+                        {m.label}
+                      </span>
+                    ))}
                 </div>
               </div>
             </div>
@@ -859,19 +1061,19 @@ export function RegisterForm() {
         <div className="flex items-center justify-between mb-3">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <div 
+              <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
                   currentStep > step.id
                     ? "bg-[#a78bfa] text-white"
                     : currentStep === step.id
-                    ? "bg-[#a78bfa]/20 border-2 border-[#a78bfa] text-[#a78bfa]"
-                    : "bg-[#1e293b] border border-[#2d4160] text-[#64748b]"
+                      ? "bg-[#a78bfa]/20 border-2 border-[#a78bfa] text-[#a78bfa]"
+                      : "bg-[#1e293b] border border-[#2d4160] text-[#64748b]"
                 }`}
               >
                 {currentStep > step.id ? <Check size={14} /> : step.id}
               </div>
               {index < steps.length - 1 && (
-                <div 
+                <div
                   className={`w-8 sm:w-12 h-0.5 mx-1 transition-all duration-300 ${
                     currentStep > step.id ? "bg-[#a78bfa]" : "bg-[#2d4160]"
                   }`}
@@ -881,16 +1083,18 @@ export function RegisterForm() {
           ))}
         </div>
         <div className="text-center">
-          <h3 className="text-white font-medium">{steps[currentStep - 1].title}</h3>
-          <p className="text-xs text-[#64748b]">{steps[currentStep - 1].description}</p>
+          <h3 className="text-white font-medium">
+            {steps[currentStep - 1].title}
+          </h3>
+          <p className="text-xs text-[#64748b]">
+            {steps[currentStep - 1].description}
+          </p>
         </div>
       </div>
 
       {/* Form fields */}
       <AnimatePresence mode="wait">
-        <div className="flex-1 overflow-y-auto">
-          {renderStep()}
-        </div>
+        <div className="flex-1 overflow-y-auto">{renderStep()}</div>
       </AnimatePresence>
 
       {/* Navigation buttons */}

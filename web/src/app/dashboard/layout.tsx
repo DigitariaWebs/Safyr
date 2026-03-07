@@ -117,7 +117,7 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
   const isExpandedDisplay = sidebarMode === "expanded";
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background font-display">
       {/* Floating Show Sidebar Button */}
       {isHidden && (
         <button

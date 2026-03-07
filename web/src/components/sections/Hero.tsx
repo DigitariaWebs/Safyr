@@ -1,10 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, ChevronDown } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { BeamsBackground } from "@/components/ui/beams-background";
 import { siteConfig } from "@/config/site";
 
@@ -68,7 +67,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0f172a]"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-b from-[#0f172a] via-[#0f172a] to-[#1e293b]"
     >
       {/* Animated beam background */}
       <BeamsBackground className="absolute inset-0" intensity="subtle" />
@@ -129,18 +128,10 @@ export default function Hero() {
             animate="visible"
             className="flex flex-col gap-6 text-left"
           >
-            {/* Badge */}
-            <motion.div variants={itemVariants}>
-              <Badge variant="cyan" className="gap-1.5">
-                <Sparkles size={11} className="text-[#22d3ee]" />
-                {siteConfig.hero.badge}
-              </Badge>
-            </motion.div>
-
             {/* Headline with shimmer highlight */}
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f1f5f9] leading-[1.1]"
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#f1f5f9] leading-[1.15] font-display"
             >
               {siteConfig.hero.headline
                 .split(" ")
@@ -195,7 +186,7 @@ export default function Hero() {
             {/* Subheadline */}
             <motion.p
               variants={itemVariants}
-              className="text-lg sm:text-xl text-[#94a3b8] leading-relaxed"
+              className="text-base sm:text-lg text-[#94a3b8] leading-relaxed max-w-xl"
             >
               {siteConfig.hero.subheadline}
             </motion.p>
@@ -253,7 +244,7 @@ export default function Hero() {
                 <span className="text-[#f1f5f9] font-semibold">
                   plus de 200 sociétés
                 </span>{" "}
-                de gardiennage en France
+                de sécurité privée en France
               </p>
             </motion.div>
 
@@ -278,78 +269,61 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* Right column — hero image */}
+          {/* Right column — dashboard + mobile app */}
           <motion.div
             variants={imageVariants}
             initial="hidden"
             animate="visible"
             className="relative flex justify-center lg:justify-end"
           >
-            <div className="relative w-full max-w-lg">
-              {/* Glow behind image */}
+            <div className="relative w-full max-w-4xl">
+              {/* Glow behind the entire composition */}
               <div
                 className="absolute inset-0 rounded-2xl pointer-events-none"
                 style={{
                   background:
-                    "radial-gradient(ellipse at 50% 60%, rgba(34,211,238,0.12) 0%, transparent 65%)",
-                  filter: "blur(24px)",
+                    "radial-gradient(ellipse at 50% 50%, rgba(34,211,238,0.15) 0%, transparent 65%)",
+                  filter: "blur(32px)",
                   transform: "scale(1.1)",
                 }}
               />
 
-              <Image
-                src="https://res.cloudinary.com/dpo7sqgyg/image/upload/v1771874865/hero_s0w0ue.png"
-                alt="Safyr Plateforme"
-                width={800}
-                height={600}
-                className="relative w-full h-auto object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.6)]"
-                priority
-                loading="eager"
-                quality={85}
-              />
+              {/* Dashboard preview — RH module video */}
+              <div className="relative rounded-xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/10">
+                {/* Top accent line */}
+                <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-[#22d3ee]/60 to-transparent z-10" />
+                <video
+                  src="https://res.cloudinary.com/dpo7sqgyg/video/upload/rh_f6xn0n.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-auto object-cover"
+                />
+              </div>
 
-              {/* Floating stat chip — top right */}
-              {!shouldReduce && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 1.0, duration: 0.5, ease: "easeOut" }}
-                  className="absolute -top-4 -right-4 lg:-right-8 bg-[#0f172a]/90 backdrop-blur-md border border-[#2d4160] rounded-xl px-4 py-3 shadow-xl hidden sm:flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-[#22d3ee]/10 flex items-center justify-center shrink-0">
-                    <span className="text-[#22d3ee] text-sm font-bold">3×</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[#f1f5f9] leading-tight">
-                      Traitement RH
-                    </p>
-                    <p className="text-[10px] text-[#64748b]">plus rapide</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Floating stat chip — bottom left */}
-              {!shouldReduce && (
-                <motion.div
-                  initial={{ opacity: 0, y: -12, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 1.2, duration: 0.5, ease: "easeOut" }}
-                  className="absolute -bottom-4 -left-4 lg:-left-8 bg-[#0f172a]/90 backdrop-blur-md border border-[#2d4160] rounded-xl px-4 py-3 shadow-xl hidden sm:flex items-center gap-3"
-                >
-                  <div className="relative w-2 h-2">
-                    <span className="absolute inset-0 rounded-full bg-[#10b981] animate-ping opacity-75" />
-                    <span className="absolute inset-0 rounded-full bg-[#10b981]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[#f1f5f9] leading-tight">
-                      99.9% uptime
-                    </p>
-                    <p className="text-[10px] text-[#64748b]">
-                      Disponibilité garantie
-                    </p>
-                  </div>
-                </motion.div>
-              )}
+              {/* Mobile phone mockup — real app video */}
+              <motion.div
+                initial={{ opacity: 0, x: 32, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
+                className="absolute -right-10 sm:-right-16 bottom-16 w-40 sm:w-52"
+              >
+                {/* Phone frame */}
+                <div className="relative rounded-[2rem] overflow-hidden border-4 border-[#1e293b] shadow-[0_20px_50px_rgba(0,0,0,0.6)] bg-[#0f172a]">
+                  {/* Phone notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-[#1e293b] rounded-b-2xl z-10" />
+                  {/* Video screen */}
+                  <video
+                    src="https://res.cloudinary.com/dpo7sqgyg/video/upload/demo_mg9dxg.mp4"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </motion.div>
 
               {/* Bottom gradient fade */}
               <div className="absolute bottom-0 inset-x-0 h-24 bg-linear-to-t from-[#0f172a] to-transparent pointer-events-none" />

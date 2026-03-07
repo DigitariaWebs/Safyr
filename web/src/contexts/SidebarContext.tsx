@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 type SidebarMode = "expanded" | "collapsed";
 
@@ -20,29 +14,23 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("collapsed");
-  const [isHidden, setIsHidden] = useState(false);
-  const mountedRef = useRef(false);
+  const getInitialMode = (): SidebarMode => {
+    if (typeof window === "undefined") return "collapsed";
+    const saved = localStorage.getItem("dashboardSidebarMode");
+    return saved === "expanded" || saved === "collapsed" ? saved : "collapsed";
+  };
+
+  const getInitialHidden = (): boolean => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("dashboardSidebarHidden") === "true";
+  };
+
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(getInitialMode);
+  const [isHidden, setIsHidden] = useState(getInitialHidden);
 
   useEffect(() => {
-    mountedRef.current = true;
-    const savedMode = localStorage.getItem("dashboardSidebarMode");
-    const savedHidden = localStorage.getItem("dashboardSidebarHidden");
-
-    if (savedMode === "expanded" || savedMode === "collapsed") {
-      setSidebarMode(savedMode);
-    }
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    if (savedHidden === "true") {
-      setIsHidden(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mountedRef.current) {
-      localStorage.setItem("dashboardSidebarMode", sidebarMode);
-      localStorage.setItem("dashboardSidebarHidden", String(isHidden));
-    }
+    localStorage.setItem("dashboardSidebarMode", sidebarMode);
+    localStorage.setItem("dashboardSidebarHidden", String(isHidden));
   }, [sidebarMode, isHidden]);
 
   return (

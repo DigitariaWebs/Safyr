@@ -135,9 +135,10 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-primary);
+  --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-display: var(--font-space-grotesk);
 
   /* Animations */
   --animate-accordion-down: accordion-down 0.2s ease-out;
@@ -186,8 +187,13 @@
 }
 
 body {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  font-weight: 300;
+  font-family: var(--font-primary), Arial, Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+/* Font display utility */
+.font-display {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
 }
 
 /* Sidebar collapsed state - hide text when both collapsed and icon mode */

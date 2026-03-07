@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import Image from "next/image";
 import { Quote, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { siteConfig } from "@/config/site";
 import { assets } from "@/config/assets";
 
@@ -72,13 +71,12 @@ export default function Testimonials() {
           transition={{ duration: 0.7, ease: EASE }}
           className="text-center mb-16 flex flex-col items-center gap-4"
         >
-          <Badge variant="cyan">Témoignages</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] leading-tight font-display">
             Ce que disent nos <span className="text-[#22d3ee]">clients</span>
           </h2>
-          <p className="text-lg text-[#94a3b8] max-w-xl">
-            Des centaines de sociétés de gardiennage font confiance à Safyr pour
-            gérer leurs équipes d&apos;agents de sécurité au quotidien.
+          <p className="text-base text-[#94a3b8] max-w-xl">
+            Des centaines de sociétés de sécurité privée font confiance à Safyr
+            pour gérer leurs équipes d&apos;agents de sécurité au quotidien.
           </p>
 
           {/* Aggregate rating */}

@@ -4,18 +4,22 @@
  */
 
 export const assets = {
+  video: {
+    mobilePreview: "/videos/mobile-preview.mp4",
+  },
+
   logo: {
     src: "/logo.png",
     alt: "Safyr — Management & Security Platform",
-    width: 120, // intrinsic display width in navbar
+    width: 240, // intrinsic display width in navbar
     height: 56, // intrinsic display height in navbar
-    footerWidth: 140,
-    footerHeight: 65,
+    footerWidth: 360,
+    footerHeight: 100,
   },
 
   // Hero & about section images (Pexels/Unsplash)
   images: {
-    hero: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1400&auto=format&fit=crop&q=80",
+    hero: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=1400&auto=format&fit=crop&q=80",
     about:
       "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&auto=format&fit=crop&q=80",
     dashboard:

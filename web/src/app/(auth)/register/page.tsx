@@ -31,8 +31,8 @@ export default function RegisterPage() {
               Rejoignez les leaders du secteur
             </h1>
             <p className="text-lg text-[#94a3b8] max-w-md leading-relaxed">
-              Simplifiez votre pilotage RH, comptabilité et opérations avec une solution
-              adaptée aux sociétés de sécurité privée.
+              Simplifiez votre pilotage RH, comptabilité et opérations avec une
+              solution adaptée aux sociétés de sécurité privée.
             </p>
           </div>
 
@@ -63,7 +63,10 @@ export default function RegisterPage() {
               {/* Glow effect */}
               <div className="absolute -inset-1 bg-linear-to-r from-[#a78bfa]/20 via-[#22d3ee]/20 to-[#a78bfa]/20 rounded-2xl blur-xl opacity-50" />
 
-              <div className="relative bg-[#0f172a]/90 backdrop-blur-xl border border-[#2d4160]/60 rounded-2xl p-5 sm:p-6 xl:p-8 overflow-y-auto" style={{ maxHeight: "calc(100vh - 180px)" }}>
+              <div
+                className="relative bg-[#0f172a]/90 backdrop-blur-xl border border-[#2d4160]/60 rounded-2xl p-5 sm:p-6 xl:p-8 overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 180px)" }}
+              >
                 {/* Header */}
                 <div className="text-center mb-5">
                   <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">

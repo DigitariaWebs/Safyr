@@ -5,25 +5,107 @@
 
 export const siteConfig = {
   name: "Safyr",
-  tagline: "La plateforme de gestion tout-en-un pour sociétés de gardiennage",
+  tagline:
+    "Le logiciel de pilotage tout-en-un pour sociétés de sécurité privée",
   description:
-    "Safyr unifie la gestion RH, la paie, la comptabilité, la facturation, la banque, la planification, la géolocalisation, la gestion de stock, l'OCR et la main courante digitale en une plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
+    "Safyr unifie la gestion RH, la paie, la comptabilité, la facturation, la banque, la planification, la géolocalisation, la gestion de stock, l'OCR et la main courante digitale en une plateforme puissante conçue pour piloter les sociétés de sécurité privée.",
   url: "https://safyr.com",
 
   nav: [
-    { label: "Fonctionnalités", href: "#services" },
-    { label: "Comment ça marche", href: "#how-it-works" },
-    { label: "Témoignages", href: "#testimonials" },
-    { label: "FAQ", href: "#faq" },
-    { label: "Contact", href: "#contact" },
+    { label: "Solutions", href: "/solutions", isDropdown: true },
+    { label: "Comment ça marche", href: "/#how-it-works" },
+    { label: "Contact", href: "/contact" },
+  ],
+
+  solutions: [
+    {
+      group: "RH & Paie",
+      items: [
+        {
+          title: "RH",
+          slug: "hr",
+          description: "Dossiers agents, certifications, formations",
+          disabled: false,
+        },
+        {
+          title: "Paie",
+          slug: "paie",
+          description: "Bullettes, heures supplémentaires, primes",
+          disabled: true,
+        },
+      ],
+    },
+    {
+      group: "Opérations",
+      items: [
+        {
+          title: "Main courante digitale",
+          slug: "main-courante",
+          description: "Rondes, présences, journal d'activité",
+          disabled: true,
+        },
+        {
+          title: "Planification",
+          slug: "planification",
+          description: "Calendrier, rotations, affectations sites",
+          disabled: true,
+        },
+        {
+          title: "Géolocalisation",
+          slug: "geolocalisation",
+          description: "Suivi agents, géofencing, rondes",
+          disabled: true,
+        },
+      ],
+    },
+    {
+      group: "Finance",
+      items: [
+        {
+          title: "Comptabilité",
+          slug: "comptabilite",
+          description: "Suivi dépenses, journaux, rapports financiers",
+          disabled: true,
+        },
+        {
+          title: "Facturation",
+          slug: "facturation",
+          description: "Devis, factures, suivi paiements",
+          disabled: true,
+        },
+        {
+          title: "Banque",
+          slug: "banque",
+          description: "Connexion bancaire, trésorerie en temps réel",
+          disabled: true,
+        },
+      ],
+    },
+    {
+      group: "Outils",
+      items: [
+        {
+          title: "Gestion de stock",
+          slug: "stock",
+          description: "Équipements, uniformes, alertes stock",
+          disabled: true,
+        },
+        {
+          title: "OCR & Documents",
+          slug: "ocr",
+          description: "Numérisation, extraction automatique données",
+          disabled: true,
+        },
+      ],
+    },
   ],
 
   hero: {
-    badge: "Approuvé par plus de 200 sociétés de gardiennage",
+    badge: "Approuvé par plus de 200 sociétés de sécurité privée",
     headline:
-      "La plateforme de gestion tout-en-un pour sociétés de gardiennage",
+      "Le logiciel de pilotage tout-en-un pour sociétés de sécurité privée",
     subheadline:
-      "Safyr unifie RH, paie, comptabilité, facturation, banque, planification, géolocalisation, stock, OCR et main courante digitale en une seule plateforme puissante spécialement conçue pour les sociétés de gardiennage.",
+      "Pilotez l'ensemble de votre société de sécurité privée depuis une plateforme unique : RH, paie, comptabilité, facturation, planning, géolocalistion, stock, main courante digitale et plus encore.",
     cta: "Nous contacter",
     ctaHref: "#contact",
     secondaryCta: "Voir comment ça marche",
@@ -31,7 +113,7 @@ export const siteConfig = {
   },
 
   stats: [
-    { value: "200+", label: "Sociétés de gardiennage" },
+    { value: "200+", label: "Sociétés de sécurité privée" },
     { value: "15k+", label: "Agents de sécurité gérés" },
     { value: "99.9%", label: "Disponibilité de la plateforme" },
     { value: "3x", label: "Traitement RH plus rapide" },
@@ -39,8 +121,8 @@ export const siteConfig = {
 
   about: {
     badge: "À propos de Safyr",
-    headline: "Conçu pour les sociétés de gardiennage",
-    body: "Safyr a été créé pour alléger la charge opérationnelle des équipes RH et de gestion des sociétés de gardiennage. Nous avons construit une plateforme qui intègre chaque flux de travail — de l'embauche à la retraite — dans un système unique, auditable et intelligent. Que vous gériez 10 ou 10 000 agents de sécurité, Safyr s'adapte à vos ambitions.",
+    headline: "Pilotez votre société de sécurité privée en toute confiance",
+    body: "Safyr a été créé pour simplifier le pilotage opérationnel des sociétés de sécurité privée. Nous avons construit une plateforme qui intègre chaque flux de travail — de l'embauche à la facturation — dans un système unique, auditable et intelligent. Que vous gériez 10 ou 10 000 agents de sécurité, Safyr s'adapte à vos ambitions et vous donne une vision claire de votre activité.",
     values: [
       { icon: "Shield", label: "Conception axée sur la conformité" },
       { icon: "Zap", label: "Opérations en temps réel" },
@@ -72,7 +154,7 @@ export const siteConfig = {
       icon: "BarChart3",
       title: "Comptabilité",
       description:
-        "Gérez la comptabilité de votre société de gardiennage avec un suivi des dépenses, des journaux comptables et des rapports financiers intégrés.",
+        "Gérez la comptabilité de votre société de sécurité privée avec un suivi des dépenses, des journaux comptables et des rapports financiers intégrés.",
     },
     {
       icon: "Receipt",
@@ -236,7 +318,7 @@ export const siteConfig = {
     {
       question: "Puis-je essayer Safyr avant de m'engager ?",
       answer:
-        "Oui — réservez un appel de démonstration personnalisé et nous vous guiderons à travers la plateforme en utilisant votre propre structure de société de gardiennage comme environnement de démonstration.",
+        "Oui — réservez un appel de démonstration personnalisé et nous vous guiderons à travers la plateforme en utilisant votre propre structure de société de sécurité privée comme environnement de démonstration.",
     },
   ],
 

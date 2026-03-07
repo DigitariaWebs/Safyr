@@ -27,7 +27,10 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Email field */}
       <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-[#94a3b8]">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-[#94a3b8]"
+        >
           Adresse e-mail
         </label>
         <div className="relative">
@@ -46,10 +49,16 @@ export function LoginForm() {
       {/* Password field */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label htmlFor="password" className="block text-sm font-medium text-[#94a3b8]">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-[#94a3b8]"
+          >
             Mot de passe
           </label>
-          <Link href="/forgot-password" className="text-xs text-[#22d3ee] hover:text-[#06b6d4] transition-colors">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-[#22d3ee] hover:text-[#06b6d4] transition-colors"
+          >
             Mot de passe oublié ?
           </Link>
         </div>

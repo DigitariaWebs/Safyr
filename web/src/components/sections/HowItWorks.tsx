@@ -31,8 +31,9 @@ import {
   Camera,
   Shield,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
 import { siteConfig } from "@/config/site";
+import Link from "next/link";
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 const SPRING: Transition = { type: "spring", stiffness: 380, damping: 30 };
@@ -660,14 +661,13 @@ export default function HowItWorks() {
           transition={{ duration: 0.75, ease: EASE }}
           className="text-center mb-20 flex flex-col items-center gap-4"
         >
-          <Badge variant="cyan">Comment ça marche</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight max-w-2xl">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] leading-tight max-w-2xl font-display">
             10 modules,{" "}
             <span className="text-[#22d3ee]">une seule plateforme</span>
           </h2>
-          <p className="text-lg text-[#64748b] max-w-xl leading-relaxed">
-            Chaque module couvre un pilier de vos opérations de gardiennage — du
-            recrutement à la trésorerie, tout est connecté.
+          <p className="text-base text-[#64748b] max-w-xl leading-relaxed">
+            Chaque module couvre un pilier de vos opérations de sécurité privée
+            — du recrutement à la trésorerie, tout est connecté.
           </p>
         </motion.div>
 
@@ -829,6 +829,28 @@ export default function HowItWorks() {
                     />
                   )}
                 </AnimatePresence>
+
+                {/* CTA for HR step */}
+                {active === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.4, ease: EASE }}
+                  >
+                    <Link
+                      href="/solutions/hr"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                      style={{
+                        backgroundColor: `${meta.color}15`,
+                        border: `1px solid ${meta.color}30`,
+                        color: meta.color,
+                      }}
+                    >
+                      Découvrir le module RH complet
+                      <ChevronRight size={14} />
+                    </Link>
+                  </motion.div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>

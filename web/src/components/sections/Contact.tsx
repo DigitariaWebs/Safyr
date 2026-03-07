@@ -11,7 +11,6 @@ import {
   Clock,
   Zap,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { useUiStore } from "@/lib/stores/uiStore";
@@ -244,11 +243,10 @@ export default function Contact() {
           transition={{ duration: 0.7, ease: EASE }}
           className="text-center mb-16 flex flex-col items-center gap-4"
         >
-          <Badge variant="cyan">Contact</Badge>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#f1f5f9] leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#f1f5f9] leading-tight font-display">
             {siteConfig.contact.headline}
           </h2>
-          <p className="text-lg text-[#94a3b8] max-w-xl">
+          <p className="text-base text-[#94a3b8] max-w-xl">
             {siteConfig.contact.subheadline}
           </p>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface BeamsBackgroundProps {
@@ -48,7 +48,10 @@ export function BeamsBackground({
   const animationFrameRef = useRef<number>(0);
   const MINIMUM_BEAMS = 8; // Réduit de 20 à 8 pour améliorer les performances
 
-  const opacityMap = { subtle: 0.7, medium: 0.85, strong: 1 };
+  const opacityMap = useMemo(
+    () => ({ subtle: 0.7, medium: 0.85, strong: 1 }),
+    [],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,7 +142,7 @@ export function BeamsBackground({
       if (animationFrameRef.current)
         cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [intensity]);
+  }, [intensity, opacityMap]);
 
   return (
     <div className={cn("relative overflow-hidden", className)}>
