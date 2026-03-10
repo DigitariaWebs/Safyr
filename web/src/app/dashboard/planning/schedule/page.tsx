@@ -63,6 +63,8 @@ import {
   Timer,
   Lock,
   CalendarOff,
+  Download,
+  FileText,
 } from "lucide-react";
 
 import type {
@@ -72,7 +74,7 @@ import type {
   TimeOffRequest,
 } from "@/lib/types";
 
-import { mockClients, mockSites } from "@/data/sites";
+import { mockClients, mockSites, mockPostes } from "@/data/sites";
 import {
   mockStandardShifts,
   mockSiteAgentAssignments,
@@ -1227,17 +1229,20 @@ export default function SchedulePage() {
               variant="outline"
               size="sm"
               onClick={() => setShowAgentCommand(true)}
-              className="shrink-0"
+              className="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500"
             >
               <Plus className="h-4 w-4 mr-2" />
               Assigner un agent
             </Button>
 
             {copiedShift && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="gap-2">
+              <div className="flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 py-1.5">
+                <Badge
+                  variant="secondary"
+                  className="gap-2 bg-cyan-500/20 text-cyan-700 border-cyan-500/30"
+                >
                   <Clipboard className="h-3 w-3" />
-                  Service copié: {copiedShift.startTime} - {copiedShift.endTime}
+                  Mode copie — {copiedShift.startTime} - {copiedShift.endTime}
                 </Badge>
                 <Button
                   size="sm"
@@ -1274,10 +1279,13 @@ export default function SchedulePage() {
             )}
 
             {copiedWeekDates && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="gap-2">
+              <div className="flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-3 py-1.5">
+                <Badge
+                  variant="secondary"
+                  className="gap-2 bg-cyan-500/20 text-cyan-700 border-cyan-500/30"
+                >
                   <Clipboard className="h-3 w-3" />
-                  Semaine copiée
+                  Mode copie — Semaine copiée
                 </Badge>
                 <Button
                   size="sm"
@@ -1364,6 +1372,34 @@ export default function SchedulePage() {
               >
                 Mois
               </Button>
+
+              <div className="h-6 w-px bg-border shrink-0" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1">
+                    <Download className="h-4 w-4" />
+                    Export PDF
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => window.print()}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Planning global
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.print()}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Par agent
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.print()}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Par site
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.print()}>
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Par client
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardContent>
@@ -1416,6 +1452,7 @@ export default function SchedulePage() {
               onAssignAgent={() => setShowAgentCommand(true)}
               isClosedDay={isClosedDay}
               maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
+              selectedSiteId={selectedSiteId}
             />
           )}
 
@@ -1450,18 +1487,18 @@ export default function SchedulePage() {
       <Dialog open={showTemplatePopover} onOpenChange={setShowTemplatePopover}>
         <DialogContent className="max-w-xs p-0 overflow-hidden">
           <DialogHeader className="sr-only">
-            <DialogTitle>Ajouter un service</DialogTitle>
+            <DialogTitle>Ajouter un Shift</DialogTitle>
           </DialogHeader>
           <div className="bg-primary text-primary-foreground p-3 flex items-center justify-between">
-            <span className="text-sm font-medium">Ajouter un service</span>
+            <span className="text-sm font-medium">Ajouter un Shift</span>
           </div>
           <Tabs defaultValue="standard" className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-none border-b h-9">
               <TabsTrigger value="standard" className="text-xs rounded-none">
-                Standard
+                Modèle
               </TabsTrigger>
               <TabsTrigger value="on_demand" className="text-xs rounded-none">
-                Sur mesure
+                Personnalisé
               </TabsTrigger>
             </TabsList>
 
@@ -1550,7 +1587,7 @@ export default function SchedulePage() {
                 })()
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Sélectionnez un modèle dans l&apos;onglet Standard pour
+                  Sélectionnez un modèle dans l&apos;onglet Modèle pour
                   l&apos;utiliser comme base, ou créez depuis zéro.
                 </p>
               )}
@@ -1643,7 +1680,7 @@ export default function SchedulePage() {
             }
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="standard">Standard</TabsTrigger>
+              <TabsTrigger value="standard">Modèle</TabsTrigger>
               <TabsTrigger value="on_demand">Personnalisé</TabsTrigger>
             </TabsList>
 
@@ -2512,7 +2549,7 @@ function DailyView({
                         <>
                           <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                           <span className="text-sm text-muted-foreground group-hover:text-primary">
-                            Ajouter un créneau
+                            Ajouter un Shift
                           </span>
                         </>
                       )}
@@ -2532,7 +2569,7 @@ function DailyView({
         <div className="flex items-center gap-3 mt-2">
           <Button
             variant="outline"
-            className="w-56 shrink-0 border-dashed"
+            className="w-56 shrink-0 border-dashed bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500"
             onClick={onAssignAgent}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -2790,6 +2827,7 @@ function WeeklyView({
   calculateAgentHours,
   isClosedDay,
   maxWeeklyWorkHours,
+  selectedSiteId,
 }: {
   dates: Date[];
   agents: { agentId: string; agentName: string }[];
@@ -2811,6 +2849,7 @@ function WeeklyView({
   onAssignAgent: () => void;
   isClosedDay: (date: Date | string) => boolean;
   maxWeeklyWorkHours: number;
+  selectedSiteId: string | null;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -2823,6 +2862,13 @@ function WeeklyView({
 
   const weekDates = dates.map(formatDate);
   const showActions = true;
+  const sitePostes = useMemo(
+    () =>
+      selectedSiteId
+        ? mockPostes.filter((p) => p.siteId === selectedSiteId)
+        : [],
+    [selectedSiteId],
+  );
 
   const getWeekNumber = (d: Date) => {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -2872,6 +2918,53 @@ function WeeklyView({
           <div className="w-10 shrink-0" />
         </div>
       </div>
+
+      {/* Needs row */}
+      {sitePostes.length > 0 && (
+        <div
+          className="flex items-stretch mb-2 gap-2"
+          style={{ minWidth: `${MIN_TOTAL}px` }}
+        >
+          <div className="w-56 shrink-0 p-2 bg-amber-500/10 rounded-lg flex items-center">
+            <span className="text-xs font-semibold text-amber-600">
+              📋 Besoins
+            </span>
+          </div>
+          <div className="flex-1 flex gap-2">
+            {dates.map((date) => {
+              const dateStr = formatDate(date);
+              const isClosed = isClosedDay(date);
+              const assignedShifts = shifts.filter((s) => s.date === dateStr);
+              const totalAssigned = assignedShifts.length;
+              const totalNeeded = sitePostes.reduce(
+                (sum, p) => sum + (p.capacity?.minAgents ?? 0),
+                0,
+              );
+              const remaining = totalNeeded - totalAssigned;
+              return (
+                <div
+                  key={dateStr}
+                  className="flex-1 flex items-center justify-center rounded-lg bg-amber-500/5 border border-amber-200/50"
+                  style={{ minWidth: `${MIN_COL_WIDTH}px` }}
+                >
+                  {isClosed ? (
+                    <span className="text-[10px] text-muted-foreground">—</span>
+                  ) : totalNeeded > 0 ? (
+                    <span
+                      className={`text-xs font-medium ${remaining > 0 ? "text-amber-600" : "text-green-600"}`}
+                    >
+                      {remaining > 0
+                        ? `${totalAssigned}/${totalNeeded}`
+                        : "✓ Complet"}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          {dates.length >= 7 && <div className="w-12 shrink-0" />}
+        </div>
+      )}
 
       {/* Agent rows */}
       <div className="space-y-3" style={{ minWidth: `${MIN_TOTAL}px` }}>

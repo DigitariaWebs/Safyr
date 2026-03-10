@@ -48,25 +48,24 @@ import {
 import type { Poste, PosteType, PosteFormData } from "@/lib/types";
 import { mockPostes, mockSites } from "@/data/sites";
 
-const POSTE_TYPE_LABELS: Record<PosteType, string> = {
-  rondier: "Rondier",
-  pc_securite: "PC Sécurité",
-  controle_acces: "Contrôle d'accès",
-  surveillance: "Surveillance",
-  agent_cynophile: "Agent cynophile",
-  agent_ssiap: "Agent SSIAP",
-  chef_equipe: "Chef d'équipe",
-  other: "Autre",
+const POSTE_TYPE_LABELS: Record<string, string> = {
+  agent_securite: "Agent de Sécurité",
+  ssiap1: "SSIAP 1",
+  ssiap2: "SSIAP 2",
+  ssiap3: "SSIAP 3",
+  operateur_video: "Opérateur Vidéo",
+  accueil: "Accueil",
+  manager: "Manager",
+  rh: "RH",
+  comptable: "Comptable",
 };
 
 const DEFAULT_FORM: PosteFormData = {
   name: "",
-  type: "surveillance",
+  type: "agent_securite" as PosteType,
   description: "",
-  minimumExperience: 0,
   requiredCertifications: [],
   requiredQualifications: [],
-  physicalRequirements: "",
   defaultShiftDuration: 8,
   breakDuration: 30,
   nightShift: false,
@@ -80,6 +79,8 @@ const DEFAULT_FORM: PosteFormData = {
   emergencyContact: "",
   status: "active",
   priority: "medium",
+  vacationStart: "08:00",
+  vacationEnd: "16:00",
 };
 
 export default function PostesPage() {
@@ -247,10 +248,8 @@ export default function PostesPage() {
       name: p.name,
       type: p.type,
       description: p.description ?? "",
-      minimumExperience: p.requirements.minimumExperience ?? 0,
       requiredCertifications: p.requirements.requiredCertifications,
       requiredQualifications: p.requirements.requiredQualifications ?? [],
-      physicalRequirements: p.requirements.physicalRequirements ?? "",
       defaultShiftDuration: p.schedule.defaultShiftDuration,
       breakDuration: p.schedule.breakDuration ?? 30,
       nightShift: p.schedule.nightShift,
@@ -264,6 +263,12 @@ export default function PostesPage() {
       emergencyContact: p.instructions?.emergencyContact ?? "",
       status: p.status,
       priority: p.priority,
+      vacationStart:
+        ((p.schedule as Record<string, unknown>).vacationStart as string) ??
+        "08:00",
+      vacationEnd:
+        ((p.schedule as Record<string, unknown>).vacationEnd as string) ??
+        "16:00",
     });
     setIsEditModalOpen(true);
   };
@@ -299,10 +304,8 @@ export default function PostesPage() {
                 type: formData.type,
                 description: formData.description,
                 requirements: {
-                  minimumExperience: formData.minimumExperience,
                   requiredCertifications: formData.requiredCertifications,
                   requiredQualifications: formData.requiredQualifications,
-                  physicalRequirements: formData.physicalRequirements,
                 },
                 schedule: {
                   defaultShiftDuration: formData.defaultShiftDuration,
@@ -310,6 +313,8 @@ export default function PostesPage() {
                   nightShift: formData.nightShift,
                   weekendWork: formData.weekendWork,
                   rotatingShift: formData.rotatingShift,
+                  vacationStart: formData.vacationStart,
+                  vacationEnd: formData.vacationEnd,
                 },
                 capacity: {
                   minAgents: formData.minAgents,
@@ -345,10 +350,8 @@ export default function PostesPage() {
         type: formData.type,
         description: formData.description,
         requirements: {
-          minimumExperience: formData.minimumExperience,
           requiredCertifications: formData.requiredCertifications,
           requiredQualifications: formData.requiredQualifications,
-          physicalRequirements: formData.physicalRequirements,
         },
         schedule: {
           defaultShiftDuration: formData.defaultShiftDuration,
@@ -356,6 +359,8 @@ export default function PostesPage() {
           nightShift: formData.nightShift,
           weekendWork: formData.weekendWork,
           rotatingShift: formData.rotatingShift,
+          vacationStart: formData.vacationStart,
+          vacationEnd: formData.vacationEnd,
         },
         capacity: {
           minAgents: formData.minAgents,
@@ -429,9 +434,9 @@ export default function PostesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(POSTE_TYPE_LABELS) as PosteType[]).map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {POSTE_TYPE_LABELS[t]}
+                {Object.entries(POSTE_TYPE_LABELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -508,27 +513,6 @@ export default function PostesPage() {
               ))}
             </div>
           </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-base font-semibold">Expérience min.</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={0}
-                value={formData.minimumExperience}
-                onChange={(e) =>
-                  setFormData((f) => ({
-                    ...f,
-                    minimumExperience: Number(e.target.value),
-                  }))
-                }
-                className="text-base"
-              />
-              <span className="text-sm text-muted-foreground shrink-0">
-                mois
-              </span>
-            </div>
-          </div>
         </div>
 
         <Separator />
@@ -572,16 +556,6 @@ export default function PostesPage() {
               }))
             }
             placeholder="Qualifications — Ex: Permis B, Habilitation électrique"
-          />
-          <Input
-            value={formData.physicalRequirements ?? ""}
-            onChange={(e) =>
-              setFormData((f) => ({
-                ...f,
-                physicalRequirements: e.target.value,
-              }))
-            }
-            placeholder="Exigences physiques — Ex: Port de charges lourdes"
           />
         </div>
       </TabsContent>
@@ -645,6 +619,29 @@ export default function PostesPage() {
                 {min === 0 ? "Aucune" : `${min} min`}
               </Button>
             ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-sm">Début de vacation</Label>
+            <Input
+              type="time"
+              value={formData.vacationStart}
+              onChange={(e) =>
+                setFormData({ ...formData, vacationStart: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <Label className="text-sm">Fin de vacation</Label>
+            <Input
+              type="time"
+              value={formData.vacationEnd}
+              onChange={(e) =>
+                setFormData({ ...formData, vacationEnd: e.target.value })
+              }
+            />
           </div>
         </div>
 

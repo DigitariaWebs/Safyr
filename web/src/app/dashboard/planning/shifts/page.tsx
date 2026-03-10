@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,14 @@ import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +85,16 @@ const SHIFT_COLORS = [
   "#f97316",
 ];
 
+const SITE_COLORS = [
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#8b5cf6",
+  "#ef4444",
+  "#ec4899",
+  "#06b6d4",
+];
+
 type ShiftFormData = {
   siteId: string;
   name: string;
@@ -84,6 +102,9 @@ type ShiftFormData = {
   endTime: string;
   breakDuration: number;
   color: string;
+  isSplitShift: boolean;
+  startTime2: string;
+  endTime2: string;
 };
 
 const DEFAULT_FORM: ShiftFormData = {
@@ -93,6 +114,9 @@ const DEFAULT_FORM: ShiftFormData = {
   endTime: "16:00",
   breakDuration: 30,
   color: "#3b82f6",
+  isSplitShift: false,
+  startTime2: "14:00",
+  endTime2: "17:00",
 };
 
 // ─── page ────────────────────────────────────────────────────────────────────
@@ -128,8 +152,22 @@ export default function ShiftsPage() {
     return h >= 20 || h < 5;
   }).length;
 
-  const getSiteName = (siteId: string) =>
-    mockSites.find((s) => s.id === siteId)?.name ?? siteId;
+  // Create lookup maps for O(1) site access
+  const siteNameMap = useMemo(
+    () => new Map(mockSites.map((s) => [s.id, s.name])),
+    [],
+  );
+  const siteColorMap = useMemo(
+    () =>
+      new Map(
+        mockSites.map((s, i) => [s.id, SITE_COLORS[i % SITE_COLORS.length]]),
+      ),
+    [],
+  );
+
+  const getSiteName = (siteId: string) => siteNameMap.get(siteId) ?? siteId;
+  const getSiteColor = (siteId: string) =>
+    siteColorMap.get(siteId) ?? SITE_COLORS[0];
 
   // ─── handlers ────────────────────────────────────────────────────────────
 
@@ -151,6 +189,9 @@ export default function ShiftsPage() {
       endTime: shift.endTime,
       breakDuration: shift.breakDuration,
       color: shift.color,
+      isSplitShift: false,
+      startTime2: "14:00",
+      endTime2: "17:00",
     });
     setIsEditModalOpen(true);
   };
@@ -232,9 +273,17 @@ export default function ShiftsPage() {
       key: "siteId",
       label: "Site",
       render: (s) => (
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{getSiteName(s.siteId)}</span>
+        <div className="flex items-center gap-1.5">
+          <MapPin
+            className="h-3.5 w-3.5 shrink-0"
+            style={{ color: getSiteColor(s.siteId) }}
+          />
+          <span
+            className="truncate text-lg font-bold"
+            style={{ color: getSiteColor(s.siteId) }}
+          >
+            {getSiteName(s.siteId)}
+          </span>
         </div>
       ),
     },
@@ -323,35 +372,32 @@ export default function ShiftsPage() {
       formData.endTime,
       formData.breakDuration,
     );
+    const dur2 = formData.isSplitShift
+      ? calcDuration(formData.startTime2, formData.endTime2, 0)
+      : 0;
+    const totalDur = dur + dur2;
     return (
       <div className="space-y-6">
         {showSite && (
           <div>
             <Label className="text-base font-semibold mb-3 block">Site</Label>
-            <div className="grid gap-2">
-              {mockSites.map((site) => (
-                <button
-                  key={site.id}
-                  type="button"
-                  onClick={() =>
-                    setFormData((f) => ({ ...f, siteId: site.id }))
-                  }
-                  className={`flex items-center gap-3 p-3 border-2 rounded-lg text-left transition-all ${
-                    formData.siteId === site.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">{site.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {site.address.city} · {site.clientName}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <Select
+              value={formData.siteId}
+              onValueChange={(value) =>
+                setFormData((f) => ({ ...f, siteId: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un site" />
+              </SelectTrigger>
+              <SelectContent>
+                {mockSites.map((site) => (
+                  <SelectItem key={site.id} value={site.id}>
+                    {site.name} — {site.address.city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
@@ -393,13 +439,19 @@ export default function ShiftsPage() {
                   <Clock className="h-3 w-3" />
                   {formData.startTime} – {formData.endTime}
                 </Badge>
+                {formData.isSplitShift && (
+                  <Badge className="bg-white/20 text-white border-0 text-xs gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formData.startTime2} – {formData.endTime2}
+                  </Badge>
+                )}
                 {formData.breakDuration > 0 && (
                   <span className="text-white/80 text-xs">
                     Pause {formData.breakDuration}min
                   </span>
                 )}
                 <span className="text-white/80 text-xs font-medium">
-                  {formatDuration(dur)} travaillées
+                  {formatDuration(totalDur)} travaillées
                 </span>
               </div>
             </div>
@@ -432,27 +484,75 @@ export default function ShiftsPage() {
               />
             </div>
           </div>
+
+          <div className="flex items-center gap-2 mt-2">
+            <Switch
+              checked={formData.isSplitShift}
+              onCheckedChange={(checked) =>
+                setFormData((f) => ({ ...f, isSplitShift: checked }))
+              }
+            />
+            <Label>Shift coupé (2 plages horaires)</Label>
+          </div>
+
+          {formData.isSplitShift && (
+            <div className="mt-4">
+              <Label className="text-sm font-semibold mb-2 block">
+                Plage horaire 2
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm mb-2 block">Début</Label>
+                  <Input
+                    type="time"
+                    value={formData.startTime2}
+                    onChange={(e) =>
+                      setFormData((f) => ({
+                        ...f,
+                        startTime2: e.target.value,
+                      }))
+                    }
+                    className="text-base"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm mb-2 block">Fin</Label>
+                  <Input
+                    type="time"
+                    value={formData.endTime2}
+                    onChange={(e) =>
+                      setFormData((f) => ({ ...f, endTime2: e.target.value }))
+                    }
+                    className="text-base"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
           <Label className="text-base font-semibold mb-3 block">
             Durée de pause
           </Label>
-          <div className="flex gap-2 flex-wrap">
-            {[0, 15, 30, 45, 60].map((min) => (
-              <Button
-                key={min}
-                type="button"
-                variant={formData.breakDuration === min ? "default" : "outline"}
-                onClick={() =>
-                  setFormData((f) => ({ ...f, breakDuration: min }))
-                }
-                className="flex-1 min-w-16"
-              >
-                {min === 0 ? "Aucune" : `${min} min`}
-              </Button>
-            ))}
-          </div>
+          <Select
+            value={String(formData.breakDuration)}
+            onValueChange={(value) =>
+              setFormData((f) => ({ ...f, breakDuration: Number(value) }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner la durée" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Aucune pause</SelectItem>
+              {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((min) => (
+                <SelectItem key={min} value={String(min)}>
+                  {min} minutes
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -693,6 +793,7 @@ export default function ShiftsPage() {
         type="form"
         title="Nouveau shift"
         description="Définir un modèle de shift pour un site"
+        size="lg"
         actions={{
           primary: {
             label: "Créer",
@@ -720,6 +821,7 @@ export default function ShiftsPage() {
             ? `${selectedShift.name} — ${getSiteName(selectedShift.siteId)}`
             : undefined
         }
+        size="lg"
         actions={{
           primary: {
             label: "Enregistrer",

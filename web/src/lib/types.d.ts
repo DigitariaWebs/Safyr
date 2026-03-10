@@ -2456,14 +2456,15 @@ export interface PayrollCalculationRunWorkflow {
 // ============================================================================
 
 export type PosteType =
-  | "rondier"
-  | "pc_securite"
-  | "controle_acces"
-  | "surveillance"
-  | "agent_cynophile"
-  | "agent_ssiap"
-  | "chef_equipe"
-  | "other";
+  | "agent_securite"
+  | "ssiap1"
+  | "ssiap2"
+  | "ssiap3"
+  | "operateur_video"
+  | "accueil"
+  | "manager"
+  | "rh"
+  | "comptable";
 
 export interface Site {
   id: string;
@@ -2528,6 +2529,8 @@ export interface Poste {
     nightShift: boolean;
     weekendWork: boolean;
     rotatingShift: boolean;
+    vacationStart?: string;
+    vacationEnd?: string;
   };
   // Capacité
   capacity: {
@@ -2580,10 +2583,10 @@ export interface PosteFormData {
   name: string;
   type: PosteType;
   description?: string;
-  minimumExperience?: number;
   requiredCertifications: string[];
   requiredQualifications?: string[];
-  physicalRequirements?: string;
+  vacationStart: string;
+  vacationEnd: string;
   defaultShiftDuration: number;
   breakDuration?: number;
   nightShift: boolean;

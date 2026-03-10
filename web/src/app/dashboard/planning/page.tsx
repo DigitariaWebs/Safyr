@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useReducer, useRef } from "react";
+import { useState, useEffect, useReducer, useRef, useMemo } from "react";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import {
   Users,
@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ChevronDown,
   RotateCcw,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +47,8 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { mockEmployees } from "@/data/employees";
+import { mockAgentShifts } from "@/data/site-shifts";
+import { mockSites } from "@/data/sites";
 
 // Convert Employee to agent stats
 function getAgentStats() {
@@ -523,6 +526,11 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       icon: RotateCcw,
     },
     {
+      label: "Nouveau Poste",
+      href: "/dashboard/planning/postes",
+      icon: Briefcase,
+    },
+    {
       label: "Nouveau Site",
       href: "/dashboard/planning/sites",
       icon: MapPin,
@@ -566,6 +574,122 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
               </Link>
             );
           })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const getDateString = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split("T")[0];
+};
+
+const formatDateFr = (offset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  const days = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  const months = [
+    "Jan",
+    "Fév",
+    "Mar",
+    "Avr",
+    "Mai",
+    "Juin",
+    "Juil",
+    "Août",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Déc",
+  ];
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+};
+
+function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
+  const days = useMemo(() => {
+    return [0, 1, 2].map((offset) => {
+      const dateStr = getDateString(offset);
+      const shiftsForDay = mockAgentShifts.filter(
+        (shift) => shift.date === dateStr,
+      );
+
+      const siteMap = new Map<string, number>();
+      for (const shift of shiftsForDay) {
+        siteMap.set(shift.siteId, (siteMap.get(shift.siteId) || 0) + 1);
+      }
+
+      const sites = Array.from(siteMap.entries()).map(([siteId, count]) => {
+        const site = mockSites.find((s) => s.id === siteId);
+        return { siteId, name: site?.name || siteId, count };
+      });
+
+      return {
+        label: formatDateFr(offset),
+        total: shiftsForDay.length,
+        sites,
+      };
+    });
+  }, []);
+
+  if (isLoading) {
+    return (
+      <Card className="glass-card border-border/40 h-full">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-4 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-cyan-600" />
+          Situation Planning (3 jours)
+        </CardTitle>
+        <Link href="/dashboard/planning/schedule">
+          <Button variant="ghost" size="sm" className="h-7 text-xs">
+            Voir planning
+          </Button>
+        </Link>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-3">
+          {days.map((day, idx) => (
+            <div key={idx} className="space-y-2 p-2 rounded-lg bg-accent/30">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium">{day.label}</p>
+                <span className="text-xs text-muted-foreground">
+                  {day.total} shift{day.total !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {day.sites.length > 0 ? (
+                  day.sites.map((site) => (
+                    <div
+                      key={site.siteId}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <span className="truncate text-muted-foreground">
+                        {site.name}
+                      </span>
+                      <span className="font-medium">{site.count}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Aucun shift
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -728,6 +852,13 @@ const defaultWidgetConfigs: WidgetConfig[] = [
     name: "En Mission",
     component: MissionStatusWidget,
     visible: true,
+  },
+  {
+    id: "planning-overview",
+    name: "Situation Planning 3J",
+    component: PlanningOverviewWidget,
+    visible: true,
+    span: 2,
   },
   {
     id: "qualifications",

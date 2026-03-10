@@ -20,6 +20,7 @@ export interface ModalAction {
   disabled?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
+  className?: string;
 }
 
 export interface ModalProps {
@@ -145,7 +146,7 @@ export function Modal({
                       disabled={
                         actions.tertiary.disabled || actions.tertiary.loading
                       }
-                      className="gap-2"
+                      className={cn("gap-2", actions.tertiary.className)}
                     >
                       {actions.tertiary.icon}
                       {actions.tertiary.label}
@@ -160,7 +161,7 @@ export function Modal({
                       disabled={
                         actions.secondary.disabled || actions.secondary.loading
                       }
-                      className="gap-2"
+                      className={cn("gap-2", actions.secondary.className)}
                     >
                       {actions.secondary.icon}
                       {actions.secondary.label}
@@ -173,7 +174,7 @@ export function Modal({
                       disabled={
                         actions.primary.disabled || actions.primary.loading
                       }
-                      className="gap-2"
+                      className={cn("gap-2", actions.primary.className)}
                     >
                       {actions.primary.icon}
                       {actions.primary.label}

@@ -78,7 +78,7 @@ export const mockPostes: Poste[] = [
     id: "poste-1",
     siteId: "site-1",
     name: "Rondier de nuit",
-    type: "rondier",
+    type: "agent_securite",
     description: "Rondes de sécurité nocturnes dans l'ensemble du site",
     requirements: {
       minimumExperience: 6,
@@ -120,7 +120,7 @@ export const mockPostes: Poste[] = [
     id: "poste-2",
     siteId: "site-1",
     name: "PC Sécurité",
-    type: "pc_securite",
+    type: "operateur_video",
     description: "Surveillance depuis le poste central de sécurité",
     requirements: {
       minimumExperience: 12,
@@ -159,7 +159,7 @@ export const mockPostes: Poste[] = [
     id: "poste-3",
     siteId: "site-2",
     name: "Contrôle d'accès principal",
-    type: "controle_acces",
+    type: "accueil",
     description: "Contrôle des entrées et sorties, accueil visiteurs",
     requirements: {
       minimumExperience: 3,
@@ -198,7 +198,7 @@ export const mockPostes: Poste[] = [
     id: "poste-4",
     siteId: "site-2",
     name: "Surveillance parking",
-    type: "surveillance",
+    type: "agent_securite",
     description: "Surveillance du parking et des zones extérieures",
     requirements: {
       minimumExperience: 3,
@@ -233,7 +233,7 @@ export const mockPostes: Poste[] = [
     id: "poste-5",
     siteId: "site-3",
     name: "Agent SSIAP",
-    type: "agent_ssiap",
+    type: "ssiap1",
     description: "Sécurité incendie et assistance aux personnes",
     requirements: {
       minimumExperience: 12,
@@ -272,7 +272,7 @@ export const mockPostes: Poste[] = [
     id: "poste-6",
     siteId: "site-4",
     name: "Chef d'équipe",
-    type: "chef_equipe",
+    type: "manager",
     description: "Coordination et supervision de l'équipe sur site",
     requirements: {
       minimumExperience: 24,
@@ -312,7 +312,7 @@ export const mockPostes: Poste[] = [
     id: "poste-7",
     siteId: "site-5",
     name: "Agent cynophile",
-    type: "agent_cynophile",
+    type: "agent_securite",
     description: "Surveillance avec chien",
     requirements: {
       minimumExperience: 12,

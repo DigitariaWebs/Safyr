@@ -33,6 +33,7 @@ import {
   Eye,
   Pencil,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { PlanningAgent } from "@/data/planning-agents";
 import { mockEmployees } from "@/data/employees";
@@ -237,6 +238,74 @@ export default function PlanningAgentsPage() {
         email: formData.email || "",
       };
       setAgents([...agents, newAgent]);
+
+      // In production, this agent would be automatically synced to HR module
+      // For now, we add them to the local mockEmployees array
+      const now = new Date();
+      const nameParts = newAgent.name.split(" ");
+      const newEmployee: Employee = {
+        id: newAgent.id,
+        firstName: nameParts[0] || "",
+        lastName: nameParts.slice(1).join(" ") || "",
+        email: newAgent.email,
+        phone: newAgent.phone,
+        dateOfBirth: new Date("1990-01-01"),
+        placeOfBirth: "",
+        nationality: "Française",
+        gender: "male",
+        civilStatus: "single",
+        address: {
+          street: "",
+          city: "",
+          postalCode: "",
+          country: "France",
+        },
+        bankDetails: {
+          iban: "",
+          bic: "",
+          bankName: "",
+        },
+        socialSecurityNumber: "",
+        employeeNumber: `EMP-${newAgent.id}`,
+        hireDate: now,
+        position: "Agent de Sécurité",
+        department: "Sécurité",
+        workSchedule: "full-time",
+        status: "active",
+        documents: {},
+        contracts: [
+          {
+            id: `contract-${newAgent.id}`,
+            employeeId: newAgent.id,
+            type:
+              newAgent.contractType === "CDI"
+                ? "CDI"
+                : newAgent.contractType === "CDD"
+                  ? "CDD"
+                  : "CDI",
+            startDate: now,
+            position: "Agent de Sécurité",
+            department: "Sécurité",
+            salary: { gross: 1800, net: 1404, currency: "EUR" },
+            workingHours: newAgent.contractHours,
+            signedByEmployee: false,
+            signedByEmployer: false,
+            probationRenewed: false,
+            amendments: [],
+            status: "active",
+            createdAt: now,
+            updatedAt: now,
+          },
+        ],
+        assignedEquipment: [],
+        savingsPlans: {
+          pee: { contributions: 0, balance: 0 },
+          pereco: { contributions: 0, balance: 0 },
+        },
+        createdAt: now,
+        updatedAt: now,
+      };
+      mockEmployees.push(newEmployee);
     }
     setIsCreateModalOpen(false);
     setFormData({});
@@ -339,11 +408,23 @@ export default function PlanningAgentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestion des Agents</h1>
-        <p className="text-muted-foreground">
-          Consultation et gestion des fiches agents
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Gestion des Agents</h1>
+          <p className="text-muted-foreground">
+            Consultation et gestion des fiches agents
+          </p>
+        </div>
+        <Button
+          className="bg-cyan-500 hover:bg-cyan-600 text-white"
+          onClick={() => {
+            setFormData({});
+            setIsCreateModalOpen(true);
+          }}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nouvel Agent
+        </Button>
       </div>
 
       <InfoCardContainer className="lg:grid-cols-3">
@@ -408,8 +489,11 @@ export default function PlanningAgentsPage() {
         size="lg"
         actions={{
           primary: {
-            label: formData.id ? "Modifier" : "Créer",
+            label: formData.id ? "Enregistrer" : "Créer",
             onClick: handleSave,
+            className: formData.id
+              ? "bg-cyan-500 hover:bg-cyan-600 text-white"
+              : undefined,
           },
           secondary: {
             label: "Annuler",

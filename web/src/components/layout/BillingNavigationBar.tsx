@@ -19,6 +19,11 @@ import {
 
 const navItems: NavItem[] = [
   {
+    label: "Simulation",
+    href: "/dashboard/billing/simulation",
+    icon: Calculator,
+  },
+  {
     label: "Clients",
     href: "/dashboard/billing/clients",
     icon: Users,

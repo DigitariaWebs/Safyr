@@ -89,12 +89,12 @@ export default function SitesPage() {
 
   const [posteFormData, setPosteFormData] = useState<PosteFormData>({
     name: "",
-    type: "surveillance",
+    type: "agent_securite",
     description: "",
-    minimumExperience: 0,
     requiredCertifications: [],
     requiredQualifications: [],
-    physicalRequirements: "",
+    vacationStart: "08:00",
+    vacationEnd: "16:00",
     defaultShiftDuration: 8,
     breakDuration: 30,
     nightShift: false,
@@ -132,17 +132,18 @@ export default function SitesPage() {
   };
 
   const getPosteTypeLabel = (type: Poste["type"]) => {
-    const labels = {
-      rondier: "Rondier",
-      pc_securite: "PC Sécurité",
-      controle_acces: "Contrôle d'accès",
-      surveillance: "Surveillance",
-      agent_cynophile: "Agent Cynophile",
-      agent_ssiap: "Agent SSIAP",
-      chef_equipe: "Chef d'équipe",
-      other: "Autre",
+    const labels: Record<string, string> = {
+      agent_securite: "Agent de Sécurité",
+      ssiap1: "SSIAP 1",
+      ssiap2: "SSIAP 2",
+      ssiap3: "SSIAP 3",
+      operateur_video: "Opérateur Vidéo",
+      accueil: "Accueil",
+      manager: "Manager",
+      rh: "RH",
+      comptable: "Comptable",
     };
-    return labels[type];
+    return labels[type] || type;
   };
 
   const toggleSiteExpansion = (siteId: string) => {
@@ -317,10 +318,14 @@ export default function SitesPage() {
       name: poste.name,
       type: poste.type,
       description: poste.description || "",
-      minimumExperience: poste.requirements.minimumExperience || 0,
       requiredCertifications: poste.requirements.requiredCertifications,
       requiredQualifications: poste.requirements.requiredQualifications || [],
-      physicalRequirements: poste.requirements.physicalRequirements || "",
+      vacationStart:
+        ((poste.schedule as Record<string, unknown>).vacationStart as string) ||
+        "08:00",
+      vacationEnd:
+        ((poste.schedule as Record<string, unknown>).vacationEnd as string) ||
+        "16:00",
       defaultShiftDuration: poste.schedule.defaultShiftDuration,
       breakDuration: poste.schedule.breakDuration || 30,
       nightShift: poste.schedule.nightShift,
@@ -350,10 +355,8 @@ export default function SitesPage() {
                 type: posteFormData.type,
                 description: posteFormData.description,
                 requirements: {
-                  minimumExperience: posteFormData.minimumExperience,
                   requiredCertifications: posteFormData.requiredCertifications,
                   requiredQualifications: posteFormData.requiredQualifications,
-                  physicalRequirements: posteFormData.physicalRequirements,
                 },
                 schedule: {
                   defaultShiftDuration: posteFormData.defaultShiftDuration,
@@ -361,6 +364,8 @@ export default function SitesPage() {
                   nightShift: posteFormData.nightShift,
                   weekendWork: posteFormData.weekendWork,
                   rotatingShift: posteFormData.rotatingShift,
+                  vacationStart: posteFormData.vacationStart,
+                  vacationEnd: posteFormData.vacationEnd,
                 },
                 capacity: {
                   minAgents: posteFormData.minAgents,
@@ -395,10 +400,8 @@ export default function SitesPage() {
         type: posteFormData.type,
         description: posteFormData.description,
         requirements: {
-          minimumExperience: posteFormData.minimumExperience,
           requiredCertifications: posteFormData.requiredCertifications,
           requiredQualifications: posteFormData.requiredQualifications,
-          physicalRequirements: posteFormData.physicalRequirements,
         },
         schedule: {
           defaultShiftDuration: posteFormData.defaultShiftDuration,
@@ -406,6 +409,8 @@ export default function SitesPage() {
           nightShift: posteFormData.nightShift,
           weekendWork: posteFormData.weekendWork,
           rotatingShift: posteFormData.rotatingShift,
+          vacationStart: posteFormData.vacationStart,
+          vacationEnd: posteFormData.vacationEnd,
         },
         capacity: {
           minAgents: posteFormData.minAgents,
@@ -453,12 +458,12 @@ export default function SitesPage() {
     setSelectedSite(site || null);
     setPosteFormData({
       name: "",
-      type: "surveillance",
+      type: "agent_securite",
       description: "",
-      minimumExperience: 0,
       requiredCertifications: [],
       requiredQualifications: [],
-      physicalRequirements: "",
+      vacationStart: "08:00",
+      vacationEnd: "16:00",
       defaultShiftDuration: 8,
       breakDuration: 30,
       nightShift: false,
@@ -479,12 +484,12 @@ export default function SitesPage() {
   const resetPosteForm = () => {
     setPosteFormData({
       name: "",
-      type: "surveillance",
+      type: "agent_securite",
       description: "",
-      minimumExperience: 0,
       requiredCertifications: [],
       requiredQualifications: [],
-      physicalRequirements: "",
+      vacationStart: "08:00",
+      vacationEnd: "16:00",
       defaultShiftDuration: 8,
       breakDuration: 30,
       nightShift: false,
@@ -2084,20 +2089,19 @@ export default function SitesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="rondier">Rondier</SelectItem>
-                    <SelectItem value="pc_securite">PC Sécurité</SelectItem>
-                    <SelectItem value="controle_acces">
-                      Contrôle d&apos;accès
+                    <SelectItem value="agent_securite">
+                      Agent de Sécurité
                     </SelectItem>
-                    <SelectItem value="surveillance">Surveillance</SelectItem>
-                    <SelectItem value="agent_cynophile">
-                      Agent Cynophile
+                    <SelectItem value="ssiap1">SSIAP 1</SelectItem>
+                    <SelectItem value="ssiap2">SSIAP 2</SelectItem>
+                    <SelectItem value="ssiap3">SSIAP 3</SelectItem>
+                    <SelectItem value="operateur_video">
+                      Opérateur Vidéo
                     </SelectItem>
-                    <SelectItem value="agent_ssiap">Agent SSIAP</SelectItem>
-                    <SelectItem value="chef_equipe">
-                      Chef d&apos;équipe
-                    </SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
+                    <SelectItem value="accueil">Accueil</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="rh">RH</SelectItem>
+                    <SelectItem value="comptable">Comptable</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2167,6 +2171,32 @@ export default function SitesPage() {
                     setPosteFormData({
                       ...posteFormData,
                       breakDuration: parseInt(e.target.value) || 30,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-sm">Début de vacation</Label>
+                <Input
+                  type="time"
+                  value={posteFormData.vacationStart}
+                  onChange={(e) =>
+                    setPosteFormData({
+                      ...posteFormData,
+                      vacationStart: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-sm">Fin de vacation</Label>
+                <Input
+                  type="time"
+                  value={posteFormData.vacationEnd}
+                  onChange={(e) =>
+                    setPosteFormData({
+                      ...posteFormData,
+                      vacationEnd: e.target.value,
                     })
                   }
                 />
@@ -2256,40 +2286,6 @@ export default function SitesPage() {
                       maxAgents: parseInt(e.target.value) || 1,
                     })
                   }
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Exigences</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <Label htmlFor="poste-exp">Expérience minimum (mois)</Label>
-                <Input
-                  id="poste-exp"
-                  type="number"
-                  value={posteFormData.minimumExperience}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      minimumExperience: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="poste-physical">Exigences physiques</Label>
-                <Textarea
-                  id="poste-physical"
-                  value={posteFormData.physicalRequirements}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      physicalRequirements: e.target.value,
-                    })
-                  }
-                  rows={2}
                 />
               </div>
             </div>
@@ -2391,20 +2387,19 @@ export default function SitesPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="rondier">Rondier</SelectItem>
-                      <SelectItem value="pc_securite">PC Sécurité</SelectItem>
-                      <SelectItem value="controle_acces">
-                        Contrôle d&apos;accès
+                      <SelectItem value="agent_securite">
+                        Agent de Sécurité
                       </SelectItem>
-                      <SelectItem value="surveillance">Surveillance</SelectItem>
-                      <SelectItem value="agent_cynophile">
-                        Agent Cynophile
+                      <SelectItem value="ssiap1">SSIAP 1</SelectItem>
+                      <SelectItem value="ssiap2">SSIAP 2</SelectItem>
+                      <SelectItem value="ssiap3">SSIAP 3</SelectItem>
+                      <SelectItem value="operateur_video">
+                        Opérateur Vidéo
                       </SelectItem>
-                      <SelectItem value="agent_ssiap">Agent SSIAP</SelectItem>
-                      <SelectItem value="chef_equipe">
-                        Chef d&apos;équipe
-                      </SelectItem>
-                      <SelectItem value="other">Autre</SelectItem>
+                      <SelectItem value="accueil">Accueil</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="rh">RH</SelectItem>
+                      <SelectItem value="comptable">Comptable</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -2462,6 +2457,32 @@ export default function SitesPage() {
                       setPosteFormData({
                         ...posteFormData,
                         breakDuration: parseInt(e.target.value) || 30,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Début de vacation</Label>
+                  <Input
+                    type="time"
+                    value={posteFormData.vacationStart}
+                    onChange={(e) =>
+                      setPosteFormData({
+                        ...posteFormData,
+                        vacationStart: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm">Fin de vacation</Label>
+                  <Input
+                    type="time"
+                    value={posteFormData.vacationEnd}
+                    onChange={(e) =>
+                      setPosteFormData({
+                        ...posteFormData,
+                        vacationEnd: e.target.value,
                       })
                     }
                   />
