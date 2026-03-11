@@ -9,7 +9,6 @@ import {
   FileText,
   CreditCard,
   Building2,
-  TrendingUp,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -22,25 +21,16 @@ const navItems: NavItem[] = [
     label: "Écritures",
     href: "/dashboard/accounting/entries",
     icon: FileText,
-    disabled: true,
   },
   {
     label: "Journaux",
     href: "/dashboard/accounting/journals",
     icon: CreditCard,
-    disabled: true,
   },
   {
     label: "Banque",
     href: "/dashboard/accounting/bank",
     icon: Building2,
-    disabled: true,
-  },
-  {
-    label: "KPI",
-    href: "/dashboard/accounting/kpi",
-    icon: TrendingUp,
-    disabled: true,
   },
 ];
 
