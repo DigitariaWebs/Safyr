@@ -99,6 +99,15 @@ export const mockPostes: Poste[] = [
       maxAgents: 2,
       currentAgents: 1,
     },
+    dailyRequirements: {
+      monday: 1,
+      tuesday: 1,
+      wednesday: 1,
+      thursday: 1,
+      friday: 1,
+      saturday: 1,
+      sunday: 1,
+    },
     instructions: {
       duties: [
         "Effectuer 3 rondes complètes par vacation",
@@ -138,6 +147,15 @@ export const mockPostes: Poste[] = [
       minAgents: 1,
       maxAgents: 2,
       currentAgents: 1,
+    },
+    dailyRequirements: {
+      monday: 1,
+      tuesday: 1,
+      wednesday: 1,
+      thursday: 1,
+      friday: 1,
+      saturday: 2,
+      sunday: 2,
     },
     instructions: {
       duties: [

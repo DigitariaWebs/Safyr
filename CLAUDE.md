@@ -81,3 +81,11 @@ bun install      # Install all workspaces
 - Uses CSS variables with Tailwind 4
 - Dark theme with slate/cyan accent colors (#0f172a background, #22d3ee accent)
 - Utility function `cn()` from `lib/utils` for className merging
+
+## Project Management
+
+### Vibe Kanban Project ID
+```
+ef2f5d47-2b1b-4881-9367-83303d9506fc
+```
+Use this ID when querying the vibe_kanban MCP for project-specific operations.

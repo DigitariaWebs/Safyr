@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -65,6 +72,7 @@ import {
   CalendarOff,
   Download,
   FileText,
+  Scissors,
 } from "lucide-react";
 
 import type {
@@ -205,6 +213,11 @@ export default function SchedulePage() {
     color: "#3b82f6",
     notes: "",
     isOvernight: false,
+    // Split shift support
+    isSplit: false,
+    splitStartTime2: "14:00",
+    splitEndTime2: "18:00",
+    splitBreakDuration: 60,
   });
 
   // Template form state
@@ -595,6 +608,10 @@ export default function SchedulePage() {
       color: "#3b82f6",
       notes: "",
       isOvernight: false,
+      isSplit: false,
+      splitStartTime2: "14:00",
+      splitEndTime2: "18:00",
+      splitBreakDuration: 60,
     });
 
     // Open compact template popover instead of full modal
@@ -609,6 +626,20 @@ export default function SchedulePage() {
   const handleEditShift = (shift: AgentShift) => {
     if (isShiftInPast(shift)) return;
     setEditingShift(shift);
+
+    // Calculate split start time based on first shift end + break
+    const calcSplitStart = (endTime: string, breakDuration: number) => {
+      const [endH, endM] = endTime.split(':').map(Number);
+      let start2Mins = endH * 60 + endM + breakDuration;
+      if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
+      const start2H = Math.floor(start2Mins / 60);
+      const start2M = start2Mins % 60;
+      return `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+    };
+
+    const isSplit = shift.isSplit || false;
+    const splitBreakDuration = shift.splitBreakDuration || 60;
+
     setShiftForm({
       shiftType: shift.shiftType,
       standardShiftId: shift.standardShiftId || "",
@@ -618,6 +649,10 @@ export default function SchedulePage() {
       color: shift.color || "#3b82f6",
       notes: shift.notes || "",
       isOvernight: isOvernightShift(shift.startTime, shift.endTime),
+      isSplit,
+      splitStartTime2: isSplit ? (shift.splitStartTime2 || calcSplitStart(shift.endTime, splitBreakDuration)) : "14:00",
+      splitEndTime2: shift.splitEndTime2 || "18:00",
+      splitBreakDuration,
     });
     setShowShiftModal(true);
   };
@@ -675,6 +710,10 @@ export default function SchedulePage() {
       color: baseTemplate?.color ?? "#3b82f6",
       notes: "",
       isOvernight: false,
+      isSplit: false,
+      splitStartTime2: "14:00",
+      splitEndTime2: "18:00",
+      splitBreakDuration: 60,
     });
     setShowShiftModal(true);
   };
@@ -694,6 +733,10 @@ export default function SchedulePage() {
         breakDuration: shiftForm.breakDuration,
         color: shiftForm.color,
         notes: shiftForm.notes,
+        isSplit: shiftForm.isSplit,
+        splitStartTime2: shiftForm.isSplit ? shiftForm.splitStartTime2 : undefined,
+        splitEndTime2: shiftForm.isSplit ? shiftForm.splitEndTime2 : undefined,
+        splitBreakDuration: shiftForm.isSplit ? shiftForm.splitBreakDuration : undefined,
         updatedAt: new Date(),
       };
       setAgentShifts(
@@ -734,6 +777,10 @@ export default function SchedulePage() {
         breakDuration: shiftForm.breakDuration,
         color,
         notes: shiftForm.notes,
+        isSplit: shiftForm.isSplit,
+        splitStartTime2: shiftForm.isSplit ? shiftForm.splitStartTime2 : undefined,
+        splitEndTime2: shiftForm.isSplit ? shiftForm.splitEndTime2 : undefined,
+        splitBreakDuration: shiftForm.isSplit ? shiftForm.splitBreakDuration : undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -1261,6 +1308,10 @@ export default function SchedulePage() {
                         copiedShift.startTime,
                         copiedShift.endTime,
                       ),
+                      isSplit: copiedShift.isSplit || false,
+                      splitStartTime2: copiedShift.splitStartTime2 || "14:00",
+                      splitEndTime2: copiedShift.splitEndTime2 || "18:00",
+                      splitBreakDuration: copiedShift.splitBreakDuration || 60,
                     });
                     setShowShiftModal(true);
                   }}
@@ -1647,7 +1698,7 @@ export default function SchedulePage() {
         open={showShiftModal}
         onOpenChange={setShowShiftModal}
         type="form"
-        title={editingShift ? "Modifier le service" : "Créer un service"}
+        title={editingShift ? "Modifier le poste" : "Créer un poste"}
         actions={{
           secondary: {
             label: "Annuler",
@@ -1687,7 +1738,7 @@ export default function SchedulePage() {
             <TabsContent value="standard" className="space-y-4">
               <div>
                 <Label className="text-base font-semibold">
-                  Sélectionner un modèle de service
+                  Sélectionner un modèle de poste
                 </Label>
                 <div className="grid gap-3 mt-3">
                   {siteStandardShifts.map((template) => {
@@ -1775,48 +1826,117 @@ export default function SchedulePage() {
                   Aperçu du créneau
                 </Label>
                 <div
-                  className="relative h-24 rounded-lg border-l-4 p-4 shadow-sm overflow-hidden"
+                  className="relative rounded-lg border-l-4 p-4 shadow-sm overflow-hidden"
                   style={{
                     backgroundColor: shiftForm.color,
                     borderLeftColor: shiftForm.color,
                   }}
                 >
-                  <div className="flex items-start justify-between gap-2 relative z-10">
-                    <div className="flex-1">
-                      <div className="text-sm font-bold text-white flex items-center gap-2 mb-1">
-                        {isOvernightShift(
-                          shiftForm.startTime,
-                          shiftForm.endTime,
-                        ) && <Moon className="h-4 w-4" />}
-                        {shiftForm.startTime || "00:00"} -{" "}
-                        {shiftForm.endTime || "00:00"}
+                  {shiftForm.isSplit ? (
+                    // Split shift preview - show both slots
+                    <div className="space-y-3">
+                      {/* First slot */}
+                      <div className="flex items-start justify-between gap-2 relative z-10">
+                        <div className="flex-1">
+                          <div className="text-xs font-bold text-white/90 flex items-center gap-2 mb-1">
+                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">1</span>
+                            {shiftForm.startTime || "00:00"} - {shiftForm.endTime || "00:00"}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs h-5 bg-white/20 text-white border-0">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {calculateShiftLength(shiftForm.startTime, shiftForm.endTime, shiftForm.breakDuration)}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
+                      {/* Break indicator */}
                       <div className="flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className="text-xs h-5 bg-white/20 text-white border-0"
-                        >
-                          <Clock className="h-3 w-3 mr-1" />
-                          {calculateShiftLength(
+                        <div className="h-px flex-1 bg-white/30"></div>
+                        <span className="text-xs text-white/70 px-2">
+                          Pause: {shiftForm.splitBreakDuration}min
+                        </span>
+                        <div className="h-px flex-1 bg-white/30"></div>
+                      </div>
+                      {/* Second slot */}
+                      <div className="flex items-start justify-between gap-2 relative z-10">
+                        <div className="flex-1">
+                          <div className="text-xs font-bold text-white/90 flex items-center gap-2 mb-1">
+                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">2</span>
+                            {shiftForm.splitStartTime2 || "00:00"} - {shiftForm.splitEndTime2 || "00:00"}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="text-xs h-5 bg-white/20 text-white border-0">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {calculateShiftLength(shiftForm.splitStartTime2, shiftForm.splitEndTime2, 0)}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Total duration */}
+                      <div className="pt-2 border-t border-white/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/80">Total:</span>
+                          <Badge variant="secondary" className="text-xs h-5 bg-white/30 text-white border-0 font-bold">
+                            {(() => {
+                              const calc = (s: string, e: string, b: number) => {
+                                const [sh] = s.split(':').map(Number);
+                                const [eh] = e.split(':').map(Number);
+                                let m = eh * 60 - sh * 60;
+                                if (m < 0) m += 24 * 60;
+                                return m - b;
+                              };
+                              const total =
+                                calc(shiftForm.startTime, shiftForm.endTime, shiftForm.breakDuration) +
+                                calc(shiftForm.splitStartTime2, shiftForm.splitEndTime2, 0);
+                              const h = Math.floor(total / 60);
+                              const min = total % 60;
+                              return `${h}h${min > 0 ? min : ''}`;
+                            })()}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Regular shift preview
+                    <div className="flex items-start justify-between gap-2 relative z-10">
+                      <div className="flex-1">
+                        <div className="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                          {isOvernightShift(
                             shiftForm.startTime,
                             shiftForm.endTime,
-                            shiftForm.breakDuration,
+                          ) && <Moon className="h-4 w-4" />}
+                          {shiftForm.startTime || "00:00"} -{" "}
+                          {shiftForm.endTime || "00:00"}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs h-5 bg-white/20 text-white border-0"
+                          >
+                            <Clock className="h-3 w-3 mr-1" />
+                            {calculateShiftLength(
+                              shiftForm.startTime,
+                              shiftForm.endTime,
+                              shiftForm.breakDuration,
+                            )}
+                          </Badge>
+                          {shiftForm.breakDuration > 0 && (
+                            <span className="text-xs text-white/80">
+                              Pause: {shiftForm.breakDuration}min
+                            </span>
                           )}
-                        </Badge>
-                        {shiftForm.breakDuration > 0 && (
-                          <span className="text-xs text-white/80">
-                            Pause: {shiftForm.breakDuration}min
-                          </span>
+                        </div>
+                        {shiftForm.notes && (
+                          <div className="text-xs text-white/80 mt-1 truncate">
+                            {shiftForm.notes}
+                          </div>
                         )}
                       </div>
-                      {shiftForm.notes && (
-                        <div className="text-xs text-white/80 mt-1 truncate">
-                          {shiftForm.notes}
-                        </div>
-                      )}
                     </div>
-                  </div>
-                  {(() => {
+                  )}
+                  {/* Over 12h warning for non-split shifts */}
+                  {!shiftForm.isSplit && (() => {
                     const [startH] = shiftForm.startTime.split(":").map(Number);
                     const [endH] = shiftForm.endTime.split(":").map(Number);
                     let mins = endH * 60 - startH * 60;
@@ -1890,10 +2010,117 @@ export default function SchedulePage() {
                     className="text-sm cursor-pointer flex items-center gap-2"
                   >
                     <Moon className="h-4 w-4" />
-                    Service de nuit (se termine le jour suivant)
+                    Poste de nuit (se termine le jour suivant)
                   </Label>
                 </div>
               </div>
+
+              {/* Split Shift Toggle */}
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                <input
+                  type="checkbox"
+                  id="splitShift"
+                  checked={shiftForm.isSplit}
+                  onChange={(e) => {
+                    // Auto-calculate split start time when enabling split
+                    const calcSplitStart = (endTime: string, breakDuration: number) => {
+                      const [endH, endM] = endTime.split(':').map(Number);
+                      let start2Mins = endH * 60 + endM + breakDuration;
+                      if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
+                      const start2H = Math.floor(start2Mins / 60);
+                      const start2M = start2Mins % 60;
+                      return `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+                    };
+                    const newIsSplit = e.target.checked;
+                    setShiftForm({
+                      ...shiftForm,
+                      isSplit: newIsSplit,
+                      ...(newIsSplit ? {
+                        splitStartTime2: calcSplitStart(shiftForm.endTime, shiftForm.splitBreakDuration),
+                      } : {}),
+                    });
+                  }}
+                  className="rounded h-4 w-4"
+                />
+                <Label
+                  htmlFor="splitShift"
+                  className="text-sm cursor-pointer flex items-center gap-2"
+                >
+                  <Scissors className="h-4 w-4" />
+                  Poste coupé (deux créneaux)
+                </Label>
+              </div>
+
+              {/* Split Shift Times */}
+              {shiftForm.isSplit && (
+                <div className="p-4 border-2 border-dashed border-primary/30 rounded-lg space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <Clock className="h-4 w-4" />
+                    Deuxième créneau (pause: {shiftForm.splitBreakDuration}min)
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm mb-2 block">Début 2</Label>
+                      <Input
+                        type="time"
+                        value={shiftForm.splitStartTime2}
+                        onChange={(e) =>
+                          setShiftForm({
+                            ...shiftForm,
+                            splitStartTime2: e.target.value,
+                          })
+                        }
+                        className="text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm mb-2 block">Fin 2</Label>
+                      <Input
+                        type="time"
+                        value={shiftForm.splitEndTime2}
+                        onChange={(e) =>
+                          setShiftForm({
+                            ...shiftForm,
+                            splitEndTime2: e.target.value,
+                          })
+                        }
+                        className="text-base"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm mb-2 block">Pause entre les postes</Label>
+                    <Select
+                      value={shiftForm.splitBreakDuration.toString()}
+                      onValueChange={(v: string) => {
+                        const newBreakDuration = parseInt(v);
+                        // Auto-calculate split start time based on first shift end + break
+                        const [endH, endM] = shiftForm.endTime.split(':').map(Number);
+                        let start2Mins = endH * 60 + endM + newBreakDuration;
+                        if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
+                        const start2H = Math.floor(start2Mins / 60);
+                        const start2M = start2Mins % 60;
+                        const newSplitStartTime2 = `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+                        setShiftForm({
+                          ...shiftForm,
+                          splitBreakDuration: newBreakDuration,
+                          splitStartTime2: newSplitStartTime2,
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="60">1 heure</SelectItem>
+                        <SelectItem value="90">1h30</SelectItem>
+                        <SelectItem value="120">2 heures</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
 
               {/* Break Duration */}
               <div>
@@ -2304,12 +2531,82 @@ export default function SchedulePage() {
               <div className="font-medium">Êtes-vous sûr ?</div>
               <div className="text-sm text-muted-foreground mt-1">
                 Cette action retirera l&apos;agent du site et supprimera tous
-                ses services planifiés pour ce site.
+                ses postes planifiés pour ce site.
               </div>
             </div>
           </div>
         </div>
       </Modal>
+
+      {/* Planning Summary Widget */}
+      <Card className="border-border/40 mt-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-light text-muted-foreground flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Résumé du Planning
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-4">
+            {/* Total Hours */}
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <Clock className="h-4 w-4" />
+                Heures totales
+              </div>
+              <div className="text-2xl font-bold">{totalPlannedHours.toFixed(1)}h</div>
+            </div>
+
+            {/* Overtime Hours (estimated) */}
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <AlertCircle className="h-4 w-4" />
+                Heures sup.
+              </div>
+              <div className="text-2xl font-bold">
+                {Math.max(0, totalPlannedHours - assignedAgents.length * 35).toFixed(1)}h
+              </div>
+            </div>
+
+            {/* Meal Vouchers */}
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <FileText className="h-4 w-4" />
+                Repas
+              </div>
+              <div className="text-2xl font-bold">
+                {agentShifts.filter((s) => {
+                  if (s.siteId !== selectedSiteId) return false;
+                  const hoursStr = calculateShiftLength(s.startTime, s.endTime, s.breakDuration);
+                  const hours = parseFloat(hoursStr.replace("h", ".")) || 0;
+                  const hours2Str = s.isSplit
+                    ? calculateShiftLength(
+                        s.splitStartTime2 || "00:00",
+                        s.splitEndTime2 || "00:00",
+                        0,
+                      )
+                    : "0";
+                  const hours2 = parseFloat(hours2Str.replace("h", ".")) || 0;
+                  return hours + hours2 > 6;
+                }).length}
+              </div>
+            </div>
+
+            {/* Absences/Leave */}
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <Ban className="h-4 w-4" />
+                Absences
+              </div>
+              <div className="text-2xl font-bold">
+                {assignedAgents.filter(({ agentId }) =>
+                  displayDates.some((date) => hasTimeOff(agentId, formatDate(date))),
+                ).length}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -2711,7 +3008,7 @@ function ShiftBlock({
       {isClosed && !conflict && (
         <div
           className="absolute -top-1 -right-1 z-10 p-1 bg-white rounded-full shadow-md"
-          title="Service planifié un jour fermé"
+          title="Poste planifié un jour fermé"
         >
           <Lock className="h-3.5 w-3.5 text-orange-500" />
         </div>
@@ -3623,7 +3920,7 @@ function ShiftCard({
       {isClosed && (
         <div
           className="absolute top-1 right-1 z-10"
-          title="Service planifié un jour fermé"
+          title="Poste planifié un jour fermé"
         >
           <Lock className="h-3 w-3 text-white/80" />
         </div>

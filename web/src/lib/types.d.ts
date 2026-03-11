@@ -2538,6 +2538,16 @@ export interface Poste {
     maxAgents: number; // Nombre maximum d'agents
     currentAgents?: number; // Nombre d'agents actuellement affectés
   };
+  // Exigences quotidiennes par jour
+  dailyRequirements?: {
+    monday: number;
+    tuesday: number;
+    wednesday: number;
+    thursday: number;
+    friday: number;
+    saturday: number;
+    sunday: number;
+  };
   // Instructions
   instructions?: {
     duties: string[]; // Tâches à effectuer
@@ -2645,6 +2655,11 @@ export interface AgentShift {
   breakDuration: number; // minutes
   color: string; // hex color
   notes?: string;
+  // Split shift support
+  isSplit?: boolean; // Whether this is a split shift (two parts)
+  splitStartTime2?: string; // HH:mm format - second shift start
+  splitEndTime2?: string; // HH:mm format - second shift end
+  splitBreakDuration?: number; // minutes - break between split parts
   // Completion status (for past shifts)
   completed?: boolean; // Whether the agent completed the shift
   completedAt?: Date; // When the shift was marked as completed
