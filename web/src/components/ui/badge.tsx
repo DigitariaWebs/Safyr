@@ -18,6 +18,16 @@ const badgeVariants = cva(
         cyan: "border-[rgba(34,211,238,0.35)] bg-[rgba(34,211,238,0.08)] text-[#22d3ee] tracking-wide",
         muted:
           "border-[#2d4160] bg-[rgba(255,255,255,0.04)] text-[#94a3b8] tracking-wide",
+        success:
+          "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+        warning:
+          "border-amber-500/30 bg-amber-500/10 text-amber-400",
+        error:
+          "border-red-500/30 bg-red-500/10 text-red-400",
+        info:
+          "border-blue-500/30 bg-blue-500/10 text-blue-400",
+        neutral:
+          "border-slate-500/30 bg-slate-500/10 text-slate-400",
       },
     },
     defaultVariants: {

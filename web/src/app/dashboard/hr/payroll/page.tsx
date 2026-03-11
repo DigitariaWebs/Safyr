@@ -3,15 +3,12 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
+import { InfoCardContainer } from "@/components/ui/info-card";
+import { StatsCard } from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  AlertTriangle,
   CheckCircle,
-  DollarSign,
-  Users,
-  Clock,
   FileText,
   Calculator,
   Download,
@@ -28,7 +25,7 @@ const mockPayrollStats: PayrollStats = {
   averageCostPerEmployee: 3125,
   currency: "EUR",
   lastExportDate: new Date("2024-12-15"),
-  nextPayrollDate: new Date("2024-12-31"),
+  nextPayrollDate: new Date("2026-03-31"),
 };
 
 const mockAnomalies: PayrollAnomaly[] = [
@@ -231,33 +228,31 @@ export default function PayrollPage() {
       </div>
 
       <InfoCardContainer>
-        <InfoCard
-          icon={DollarSign}
+        <StatsCard
           title="Coût total du personnel"
           value={`${mockPayrollStats.totalPersonnelCost.toLocaleString("fr-FR")} €`}
-          subtext="+2.5% par rapport au mois dernier"
-          color="blue"
+          subtext="par rapport au mois dernier"
+          trend={{ value: 2.5, direction: "up" }}
+          variant="default"
         />
-        <InfoCard
-          icon={Users}
+        <StatsCard
           title="Coût moyen par salarié"
           value={`${mockPayrollStats.averageCostPerEmployee.toLocaleString("fr-FR")} €`}
-          subtext="-0.8% par rapport au mois dernier"
-          color="green"
+          subtext="par rapport au mois dernier"
+          trend={{ value: 0.8, direction: "down" }}
+          variant="success"
         />
-        <InfoCard
-          icon={Clock}
+        <StatsCard
           title="Validations en attente"
           value={mockPayrollStats.pendingValidations}
           subtext="Variables de paie à valider"
-          color="orange"
+          variant="warning"
         />
-        <InfoCard
-          icon={AlertTriangle}
+        <StatsCard
           title="Anomalies de paie"
           value={mockPayrollStats.anomaliesCount}
           subtext={`${mockAnomalies.filter((a) => a.severity === "critical").length} critique${mockAnomalies.filter((a) => a.severity === "critical").length !== 1 ? "s" : ""}, ${mockAnomalies.filter((a) => a.severity === "high").length} élevé${mockAnomalies.filter((a) => a.severity === "high").length !== 1 ? "s" : ""}`}
-          color="red"
+          variant="error"
         />
       </InfoCardContainer>
 

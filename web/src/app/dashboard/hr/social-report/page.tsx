@@ -33,7 +33,7 @@ interface SocialReportData {
   year: number;
   employeeDistribution: {
     total: number;
-    byGender: { male: number; female: number };
+    byGender: { male: number; female: number; nonDisclosed: number };
     byAge: { "18-25": number; "26-35": number; "36-50": number; "50+": number };
     bySeniority: { "0-1": number; "1-3": number; "3-5": number; "5+": number };
   };
@@ -102,8 +102,9 @@ const generateMockReport = (year: number): SocialReportData => {
     employeeDistribution: {
       total,
       byGender: {
-        male: Math.floor(total * 0.65),
-        female: Math.floor(total * 0.35),
+        male: Math.floor(total * 0.58),
+        female: Math.floor(total * 0.33),
+        nonDisclosed: Math.max(0, total - Math.floor(total * 0.58) - Math.floor(total * 0.33)),
       },
       byAge: {
         "18-25": Math.floor(total * 0.15),
@@ -208,6 +209,7 @@ export default function SocialReportPage() {
   const genderData = [
     { name: "Hommes", value: report.employeeDistribution.byGender.male },
     { name: "Femmes", value: report.employeeDistribution.byGender.female },
+    { name: "Non communiqué", value: report.employeeDistribution.byGender.nonDisclosed },
   ];
 
   const ageData = Object.entries(report.employeeDistribution.byAge).map(
@@ -345,6 +347,20 @@ export default function SocialReportPage() {
               <p className="text-xs text-muted-foreground">
                 {(
                   (report.employeeDistribution.byGender.female /
+                    report.employeeDistribution.total) *
+                  100
+                ).toFixed(1)}
+                %
+              </p>
+            </div>
+            <div>
+              <Label className="text-sm text-muted-foreground">Non communiqué</Label>
+              <p className="text-2xl font-bold">
+                {report.employeeDistribution.byGender.nonDisclosed}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {(
+                  (report.employeeDistribution.byGender.nonDisclosed /
                     report.employeeDistribution.total) *
                   100
                 ).toFixed(1)}
