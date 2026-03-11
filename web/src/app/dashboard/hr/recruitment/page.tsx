@@ -85,7 +85,7 @@ export default function RecruitmentPage() {
       variant: "outline" as const,
     },
     {
-      title: "Parcours d&apos;intégration",
+      title: "Parcours d'intégration",
       description: "Suivre les intégrations en cours",
       icon: UserCheck,
       href: "/dashboard/hr/recruitment/onboarding",
@@ -181,7 +181,7 @@ export default function RecruitmentPage() {
               <Badge variant="default">Intégration</Badge>
               <div className="flex-1">
                 <p className="text-sm font-medium">
-                  Parcours d&apos;intégration terminé pour Sophie Leroy
+                  Parcours d'intégration terminé pour Sophie Leroy
                 </p>
                 <p className="text-xs text-muted-foreground">Hier</p>
               </div>
