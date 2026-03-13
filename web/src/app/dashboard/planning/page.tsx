@@ -18,6 +18,7 @@ import {
   ChevronDown,
   RotateCcw,
   Briefcase,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -434,6 +435,76 @@ function UpcomingMissionsWidget({ isLoading }: { isLoading: boolean }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function QuickActionsModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const actions = [
+    {
+      label: "Nouvel Agent",
+      href: "/dashboard/planning/agents?create=true",
+      icon: Users,
+    },
+    {
+      label: "Voir Planning",
+      href: "/dashboard/planning/schedule",
+      icon: Clock,
+    },
+    {
+      label: "Nouveau Shift",
+      href: "/dashboard/planning/shifts?create=true",
+      icon: RotateCcw,
+    },
+    {
+      label: "Nouveau Poste",
+      href: "/dashboard/planning/postes?create=true",
+      icon: Briefcase,
+    },
+    {
+      label: "Nouveau Site",
+      href: "/dashboard/planning/sites?create=true",
+      icon: MapPin,
+    },
+  ];
+
+  return (
+    <Modal
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      type="form"
+      title="Actions Rapides"
+      size="md"
+      actions={{
+        secondary: {
+          label: "Fermer",
+          onClick: onClose,
+          variant: "outline",
+        },
+      }}
+    >
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <Link
+              key={action.label}
+              href={action.href}
+              onClick={onClose}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg border border-border hover:bg-accent hover:border-primary/30 transition-all"
+            >
+              <Icon className="h-6 w-6 text-primary" />
+              <span className="text-sm font-medium">{action.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </Modal>
   );
 }
 
@@ -933,6 +1004,7 @@ function widgetReducer(
 
 export default function PlanningDashboard() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [widgetConfigs, dispatch] = useReducer(
     widgetReducer,
     defaultWidgetConfigs,
@@ -1093,6 +1165,19 @@ export default function PlanningDashboard() {
             <Settings className="h-4 w-4 mr-2" />
             Personnaliser
           </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsQuickActionsOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Actions
+          </Button>
+
+          <QuickActionsModal
+            isOpen={isQuickActionsOpen}
+            onClose={() => setIsQuickActionsOpen(false)}
+          />
 
           <Modal
             open={isDialogOpen}
@@ -1215,81 +1300,121 @@ export default function PlanningDashboard() {
           </DragOverlay>
         </DndContext>
       ) : (
-        <div className="space-y-6">
-          {/* Top Row - Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleWidgets
-              .filter((config) =>
-                ["agent-stats", "availability", "mission-status"].includes(
-                  config.id,
-                ),
-              )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div key={config.id} className="h-full">
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
-          </div>
+        // Single grid container for all widgets to enable proper row spanning
+        // Layout: 2 columns
+        // Row 1: agent-stats (col1), Alerts (col2, spans 3 rows)
+        // Row 2: availability (col1), planning-overview (col1-2)
+        // Row 3: mission-status (col1), qualifications (col2)
+        // Row 4: contract-types (col1), weekly-hours (col2)
+        // Row 5: upcoming-missions (spans 2)
+        <div className="grid grid-cols-2 gap-4">
+          {/* Row 1, Col 1: agent-stats */}
+          {visibleWidgets
+            .filter((config) => config.id === "agent-stats")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
 
-          {/* Second Row - Qualifications & Contracts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {visibleWidgets
-              .filter((config) =>
-                ["qualifications", "contract-types", "weekly-hours"].includes(
-                  config.id,
-                ),
-              )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div key={config.id} className="h-full">
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
-          </div>
+          {/* Row 1-3, Col 2: Alerts - spans 3 rows */}
+          {visibleWidgets
+            .filter((config) => config.id === "alerts")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full row-span-3">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
 
-          {/* Third Row - Missions & Alerts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {visibleWidgets
-              .filter((config) =>
-                ["upcoming-missions", "alerts"].includes(config.id),
-              )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div
-                    key={config.id}
-                    className={cn(
-                      config.id === "upcoming-missions" && "md:col-span-2",
-                      "h-full",
-                    )}
-                  >
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
-          </div>
+          {/* Row 2, Col 1: availability */}
+          {visibleWidgets
+            .filter((config) => config.id === "availability")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
 
-          {/* Bottom Row - Quick Actions */}
-          {visibleWidgets.filter((config) => config.id === "quick-actions")
-            .length > 0 && (
-            <div className="grid grid-cols-1 gap-4">
-              {visibleWidgets
-                .filter((config) => config.id === "quick-actions")
-                .map((config: WidgetConfig) => {
-                  const Component = config.component;
-                  return (
-                    <div key={config.id} className="h-full">
-                      <Component isLoading={isLoading} />
-                    </div>
-                  );
-                })}
-            </div>
-          )}
+          {/* Row 3, Col 1: mission-status */}
+          {visibleWidgets
+            .filter((config) => config.id === "mission-status")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
+
+          {/* Row 3, Col 2: qualifications */}
+          {visibleWidgets
+            .filter((config) => config.id === "qualifications")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
+
+          {/* Row 4, Col 1: contract-types */}
+          {visibleWidgets
+            .filter((config) => config.id === "contract-types")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
+
+          {/* Row 4, Col 2: weekly-hours */}
+          {visibleWidgets
+            .filter((config) => config.id === "weekly-hours")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
+
+          {/* Row 2: planning-overview (spans 2 cols) */}
+          {visibleWidgets
+            .filter((config) => config.id === "planning-overview")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full col-span-2">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
+
+          {/* Row 5: upcoming-missions (spans 2 cols) */}
+          {visibleWidgets
+            .filter((config) => config.id === "upcoming-missions")
+            .map((config: WidgetConfig) => {
+              const Component = config.component;
+              return (
+                <div key={config.id} className="h-full col-span-2">
+                  <Component isLoading={isLoading} />
+                </div>
+              );
+            })}
         </div>
       )}
     </div>

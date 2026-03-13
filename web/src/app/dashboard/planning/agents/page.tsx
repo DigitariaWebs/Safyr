@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Modal } from "@/components/ui/modal";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
   CheckCircle,
@@ -34,6 +37,13 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Phone,
+  Mail,
+  Clock,
+  Briefcase,
+  Award,
+  User,
+  ArrowRight,
 } from "lucide-react";
 import { PlanningAgent } from "@/data/planning-agents";
 import { mockEmployees } from "@/data/employees";
@@ -80,10 +90,12 @@ function employeeToPlanningAgent(employee: Employee): PlanningAgent {
 }
 
 export default function PlanningAgentsPage() {
+  const searchParams = useSearchParams();
   const [agents, setAgents] = useState<PlanningAgent[]>(() =>
     mockEmployees.map(employeeToPlanningAgent),
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const showCreateFromUrl = searchParams.get("create") === "true";
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<PlanningAgent | null>(
@@ -182,16 +194,29 @@ export default function PlanningAgentsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleView(agent)}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleView(agent);
+              }}
+            >
               <Eye className="h-4 w-4 mr-2" />
               Voir
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleEditFromDropdown(agent)}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditFromDropdown(agent);
+              }}
+            >
               <Pencil className="h-4 w-4 mr-2" />
               Modifier
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => handleDeleteClick(agent)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(agent);
+              }}
               className="text-red-600"
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -416,7 +441,6 @@ export default function PlanningAgentsPage() {
           </p>
         </div>
         <Button
-          className="bg-cyan-500 hover:bg-cyan-600 text-white"
           onClick={() => {
             setFormData({});
             setIsCreateModalOpen(true);
@@ -482,8 +506,13 @@ export default function PlanningAgentsPage() {
 
       {/* Create/Edit Modal */}
       <Modal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        open={showCreateFromUrl || isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) {
+            window.history.pushState({}, "", window.location.pathname);
+          }
+        }}
         type="form"
         title={formData.id ? "Modifier l'agent" : "Nouvel agent"}
         size="lg"
@@ -505,9 +534,12 @@ export default function PlanningAgentsPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Nom complet</Label>
+              <Label htmlFor="name" className="mb-2">
+                Nom complet
+              </Label>
               <Input
                 id="name"
+                className="w-full"
                 value={formData.name || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -517,7 +549,9 @@ export default function PlanningAgentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="contractType">Type de contrat</Label>
+              <Label htmlFor="contractType" className="mb-2">
+                Type de contrat
+              </Label>
               <Select
                 value={formData.contractType}
                 onValueChange={(value) =>
@@ -527,7 +561,7 @@ export default function PlanningAgentsPage() {
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Sélectionner" />
                 </SelectTrigger>
                 <SelectContent>
@@ -539,10 +573,13 @@ export default function PlanningAgentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="contractHours">Heures contractuelles</Label>
+              <Label htmlFor="contractHours" className="mb-2">
+                Heures contractuelles
+              </Label>
               <Input
                 id="contractHours"
                 type="text"
+                className="w-full"
                 value={formData.contractHours || ""}
                 onChange={(e) => {
                   const value = e.target.value.replace(",", ".");
@@ -557,10 +594,13 @@ export default function PlanningAgentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="weeklyHours">Heures hebdomadaires</Label>
+              <Label htmlFor="weeklyHours" className="mb-2">
+                Heures hebdomadaires
+              </Label>
               <Input
                 id="weeklyHours"
                 type="text"
+                className="w-full"
                 value={formData.weeklyHours || ""}
                 onChange={(e) => {
                   const value = e.target.value.replace(",", ".");
@@ -575,10 +615,13 @@ export default function PlanningAgentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="maxAmplitude">Amplitude maximale (h)</Label>
+              <Label htmlFor="maxAmplitude" className="mb-2">
+                Amplitude maximale (h)
+              </Label>
               <Input
                 id="maxAmplitude"
                 type="text"
+                className="w-full"
                 value={formData.maxAmplitude || ""}
                 onChange={(e) => {
                   const value = e.target.value.replace(",", ".");
@@ -594,7 +637,9 @@ export default function PlanningAgentsPage() {
 
             {formData.id && (
               <div>
-                <Label htmlFor="availabilityStatus">Disponibilité</Label>
+                <Label htmlFor="availabilityStatus" className="mb-2">
+                  Disponibilité
+                </Label>
                 <Select
                   value={formData.availabilityStatus}
                   onValueChange={(value) =>
@@ -605,7 +650,7 @@ export default function PlanningAgentsPage() {
                     })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
@@ -618,8 +663,36 @@ export default function PlanningAgentsPage() {
               </div>
             )}
 
+            <div>
+              <Label htmlFor="phone" className="mb-2">
+                Téléphone
+              </Label>
+              <PhoneInput
+                id="phone"
+                className="w-full"
+                value={formData.phone || ""}
+                onChange={(value) => setFormData({ ...formData, phone: value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email" className="mb-2">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                className="w-full"
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="agent@example.com"
+              />
+            </div>
+
             <div className="col-span-2">
-              <Label>Qualifications</Label>
+              <Label className="mb-2">Qualifications</Label>
               <div className="space-y-4 mt-3 p-4 border rounded-lg">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="cqpAps" className="cursor-pointer">
@@ -658,7 +731,7 @@ export default function PlanningAgentsPage() {
                           })
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Niveau SSIAP" />
                         </SelectTrigger>
                         <SelectContent>
@@ -698,28 +771,6 @@ export default function PlanningAgentsPage() {
                 </div>
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="phone">Téléphone</Label>
-              <PhoneInput
-                id="phone"
-                value={formData.phone || ""}
-                onChange={(value) => setFormData({ ...formData, phone: value })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="agent@example.com"
-              />
-            </div>
           </div>
         </div>
       </Modal>
@@ -743,82 +794,156 @@ export default function PlanningAgentsPage() {
         }}
       >
         {selectedAgent && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Nom</Label>
-                <p className="text-sm font-medium">{selectedAgent.name}</p>
-              </div>
-
-              <div>
-                <Label>Type de contrat</Label>
-                <Badge variant="default">{selectedAgent.contractType}</Badge>
-              </div>
-
-              <div>
-                <Label>Heures contractuelles</Label>
-                <p className="text-sm font-medium">
-                  {selectedAgent.contractHours}h
-                </p>
-              </div>
-
-              <div>
-                <Label>Heures hebdomadaires</Label>
-                <p className="text-sm font-medium">
-                  {selectedAgent.weeklyHours}h
-                </p>
-              </div>
-
-              <div>
-                <Label>Amplitude maximale</Label>
-                <p className="text-sm font-medium">
-                  {selectedAgent.maxAmplitude}h
-                </p>
-              </div>
-
-              <div>
-                <Label>Disponibilité</Label>
-                <Badge
-                  variant={
-                    selectedAgent.availabilityStatus === "Disponible"
-                      ? "default"
-                      : "secondary"
-                  }
-                >
-                  {selectedAgent.availabilityStatus}
-                </Badge>
-              </div>
-
-              <div>
-                <Label>Téléphone</Label>
-                <p className="text-sm font-medium">{selectedAgent.phone}</p>
-              </div>
-
-              <div>
-                <Label>Email</Label>
-                <p className="text-sm font-medium">{selectedAgent.email}</p>
-              </div>
-
-              <div className="col-span-2">
-                <Label>Qualifications</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {selectedAgent.qualifications.map((qual, idx) => (
-                    <Badge key={idx} variant="outline">
-                      {qual}
-                    </Badge>
-                  ))}
+          <div className="space-y-6">
+            {/* Agent Header */}
+            <Link
+              href={`/dashboard/hr/employees/${selectedAgent.id}`}
+              className="block"
+            >
+              <div className="flex items-center space-x-4 p-4 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-primary" />
                 </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">
+                    {selectedAgent.name}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="default" className="text-xs">
+                      {selectedAgent.contractType}
+                    </Badge>
+                    <Badge
+                      variant={
+                        selectedAgent.availabilityStatus === "Disponible"
+                          ? "default"
+                          : selectedAgent.availabilityStatus === "En mission"
+                            ? "secondary"
+                            : "outline"
+                      }
+                      className="text-xs"
+                    >
+                      {selectedAgent.availabilityStatus}
+                    </Badge>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-muted-foreground" />
               </div>
+            </Link>
 
-              <div>
-                <Label>Dernière activité</Label>
-                <p className="text-sm font-medium">
-                  {new Date(selectedAgent.lastActivity).toLocaleDateString(
-                    "fr-FR",
-                  )}
-                </p>
-              </div>
-            </div>
+            {/* Contract Information */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Briefcase className="w-5 h-5" />
+                  Informations contractuelles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">
+                      {selectedAgent.contractHours}h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Heures contractuelles
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">
+                      {selectedAgent.weeklyHours}h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Heures hebdomadaires
+                    </div>
+                  </div>
+                  <div className="text-center p-3 bg-muted/30 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">
+                      {selectedAgent.maxAmplitude}h
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Amplitude maximale
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Phone className="w-5 h-5" />
+                  Coordonnées
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm font-medium">
+                      {selectedAgent.phone}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Téléphone
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm font-medium">
+                      {selectedAgent.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Email</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <div className="text-sm font-medium">
+                      {new Date(selectedAgent.lastActivity).toLocaleDateString(
+                        "fr-FR",
+                        {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Dernière activité
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Qualifications */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Award className="w-5 h-5" />
+                  Qualifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedAgent.qualifications.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedAgent.qualifications.map((qual, idx) => (
+                      <Badge key={idx} variant="outline" className="px-3 py-1">
+                        <Award className="w-3 h-3 mr-1" />
+                        {qual}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground italic">
+                    Aucune qualification enregistrée
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
       </Modal>

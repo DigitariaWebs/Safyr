@@ -17,13 +17,16 @@ export function NavigationProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isNavExpanded, setIsNavExpanded] = React.useState(() => {
+  const [isNavExpanded, setIsNavExpanded] = React.useState(false);
+
+  React.useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("globalNavExpanded");
-      return saved === "true";
+      if (saved === "true") {
+        setIsNavExpanded(true);
+      }
     }
-    return false;
-  });
+  }, []);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {

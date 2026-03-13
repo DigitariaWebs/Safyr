@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { Modal } from "@/components/ui/modal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import {
   Plus,
   MapPin,
@@ -44,6 +45,7 @@ import type { Site, Poste, SiteFormData, PosteFormData } from "@/lib/types";
 import { mockSites, mockSiteStats, mockPostes } from "@/data/sites";
 
 export default function SitesPage() {
+  const searchParams = useSearchParams();
   const [sites, setSites] = useState<Site[]>(mockSites);
   const [postes, setPostes] = useState<Poste[]>(mockPostes);
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
@@ -59,7 +61,7 @@ export default function SitesPage() {
   const [selectedPoste, setSelectedPoste] = useState<Poste | null>(null);
   const [posteToDelete, setPosteToDelete] = useState<Poste | null>(null);
   const [expandedSites, setExpandedSites] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<"sites" | "postes">("sites");
+  const showCreateFromUrl = searchParams.get("create") === "true";
 
   const [siteFormData, setSiteFormData] = useState<SiteFormData>({
     name: "",
@@ -481,31 +483,6 @@ export default function SitesPage() {
     setIsCreatePosteModalOpen(true);
   };
 
-  const resetPosteForm = () => {
-    setPosteFormData({
-      name: "",
-      type: "agent_securite",
-      description: "",
-      requiredCertifications: [],
-      requiredQualifications: [],
-      vacationStart: "08:00",
-      vacationEnd: "16:00",
-      defaultShiftDuration: 8,
-      breakDuration: 30,
-      nightShift: false,
-      weekendWork: false,
-      rotatingShift: false,
-      minAgents: 1,
-      maxAgents: 1,
-      duties: "",
-      procedures: "",
-      equipment: "",
-      emergencyContact: "",
-      status: "active",
-      priority: "medium",
-    });
-  };
-
   const resetSiteForm = () => {
     setSiteFormData({
       name: "",
@@ -635,92 +612,6 @@ export default function SitesPage() {
     },
   ];
 
-  const posteColumns: ColumnDef<Poste>[] = [
-    {
-      key: "name",
-      label: "Nom du poste",
-      render: (poste) => (
-        <div>
-          <div className="font-medium">{poste.name}</div>
-          <div className="text-xs text-muted-foreground">
-            {getPosteTypeLabel(poste.type)}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "siteId",
-      label: "Site",
-      render: (poste) => {
-        const site = sites.find((s) => s.id === poste.siteId);
-        return site?.name || "-";
-      },
-    },
-    {
-      key: "capacity",
-      label: "Capacité",
-      render: (poste) => (
-        <div>
-          {poste.capacity.currentAgents || 0}/{poste.capacity.maxAgents}
-        </div>
-      ),
-    },
-    {
-      key: "schedule",
-      label: "Horaires",
-      render: (poste) => (
-        <div className="flex flex-col gap-1 text-xs">
-          <div>{poste.schedule.defaultShiftDuration}h</div>
-          {poste.schedule.nightShift && (
-            <Badge variant="secondary" className="w-fit">
-              Nuit
-            </Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "priority",
-      label: "Priorité",
-      render: (poste) => getPriorityBadge(poste.priority),
-    },
-    {
-      key: "status",
-      label: "Statut",
-      render: (poste) => getStatusBadge(poste.status),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (poste) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleViewPoste(poste)}>
-              <Eye className="mr-2 h-4 w-4" />
-              Voir détails
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleEditPoste(poste)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleDeletePoste(poste)}
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -751,125 +642,107 @@ export default function SitesPage() {
         />
       </InfoCardContainer>
 
-      {/* Tabs */}
-      <Tabs
-        value={activeTab}
-        onValueChange={(v) => setActiveTab(v as "sites" | "postes")}
-      >
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="sites">Sites clients</TabsTrigger>
-            <TabsTrigger value="postes">Tous les postes</TabsTrigger>
-          </TabsList>
-          <Button
-            onClick={() => {
-              if (activeTab === "sites") {
-                resetSiteForm();
-                setSelectedSite(null);
-                setIsCreateSiteModalOpen(true);
-              } else {
-                resetPosteForm();
-                setSelectedPoste(null);
-                setSelectedSite(null);
-                setIsCreatePosteModalOpen(true);
-              }
-            }}
+      {/* Sites Table */}
+      <div className="flex items-center justify-between mb-4">
+        <div></div>
+        <Button
+          onClick={() => {
+            resetSiteForm();
+            setSelectedSite(null);
+            setIsCreateSiteModalOpen(true);
+          }}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau site
+        </Button>
+      </div>
+
+      <DataTable<Site> columns={siteColumns} data={sites} />
+
+      {/* Expanded site details */}
+      {Array.from(expandedSites).map((siteId) => {
+        const site = sites.find((s) => s.id === siteId);
+        if (!site) return null;
+
+        const sitePostes = postes.filter((p) => p.siteId === siteId);
+
+        return (
+          <div
+            key={siteId}
+            className="ml-8 rounded-lg border bg-muted/50 p-4 space-y-4"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            {activeTab === "sites" ? "Nouveau site" : "Nouveau poste"}
-          </Button>
-        </div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Postes de {site.name}</h3>
+              <Button size="sm" onClick={() => handleCreatePoste(siteId)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter un poste
+              </Button>
+            </div>
 
-        <TabsContent value="sites" className="space-y-4">
-          <DataTable<Site> columns={siteColumns} data={sites} />
-
-          {/* Expanded site details */}
-          {Array.from(expandedSites).map((siteId) => {
-            const site = sites.find((s) => s.id === siteId);
-            if (!site) return null;
-
-            const sitePostes = postes.filter((p) => p.siteId === siteId);
-
-            return (
-              <div
-                key={siteId}
-                className="ml-8 rounded-lg border bg-muted/50 p-4 space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">
-                    Postes de {site.name}
-                  </h3>
-                  <Button size="sm" onClick={() => handleCreatePoste(siteId)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Ajouter un poste
-                  </Button>
-                </div>
-
-                {sitePostes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Aucun poste créé pour ce site
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {sitePostes.map((poste) => (
-                      <div
-                        key={poste.id}
-                        className="flex items-center justify-between rounded-md border bg-background p-3"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <div className="font-medium">{poste.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {getPosteTypeLabel(poste.type)} •{" "}
-                              {poste.schedule.defaultShiftDuration}h
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            {getPriorityBadge(poste.priority)}
-                            {getStatusBadge(poste.status)}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewPoste(poste)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditPoste(poste)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeletePoste(poste)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+            {sitePostes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucun poste créé pour ce site
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {sitePostes.map((poste) => (
+                  <div
+                    key={poste.id}
+                    className="flex items-center justify-between rounded-md border bg-background p-3"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <div className="font-medium">{poste.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {getPosteTypeLabel(poste.type)} •{" "}
+                          {poste.schedule.defaultShiftDuration}h
                         </div>
                       </div>
-                    ))}
+                      <div className="flex gap-2">
+                        {getPriorityBadge(poste.priority)}
+                        {getStatusBadge(poste.status)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewPoste(poste)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditPoste(poste)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePoste(poste)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            );
-          })}
-        </TabsContent>
-
-        <TabsContent value="postes">
-          <DataTable<Poste> columns={posteColumns} data={postes} />
-        </TabsContent>
-      </Tabs>
+            )}
+          </div>
+        );
+      })}
 
       {/* Create Site Modal */}
       <Modal
-        open={isCreateSiteModalOpen}
-        onOpenChange={setIsCreateSiteModalOpen}
+        open={showCreateFromUrl || isCreateSiteModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateSiteModalOpen(open);
+          if (!open) {
+            window.history.pushState({}, "", window.location.pathname);
+          }
+        }}
         title="Créer un nouveau site"
         description="Ajoutez un nouveau site client"
         size="xl"

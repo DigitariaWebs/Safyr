@@ -14,19 +14,22 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const getInitialMode = (): SidebarMode => {
-    if (typeof window === "undefined") return "collapsed";
-    const saved = localStorage.getItem("dashboardSidebarMode");
-    return saved === "expanded" || saved === "collapsed" ? saved : "collapsed";
-  };
+  // Always start collapsed to match server rendering
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("collapsed");
+  const [isHidden, setIsHidden] = useState(false);
 
-  const getInitialHidden = (): boolean => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("dashboardSidebarHidden") === "true";
-  };
+  // Load saved preferences after hydration
+  useEffect(() => {
+    const savedMode = localStorage.getItem("dashboardSidebarMode");
+    const savedHidden = localStorage.getItem("dashboardSidebarHidden");
 
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(getInitialMode);
-  const [isHidden, setIsHidden] = useState(getInitialHidden);
+    if (savedMode === "expanded" || savedMode === "collapsed") {
+      setSidebarMode(savedMode);
+    }
+    if (savedHidden === "true") {
+      setIsHidden(true);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("dashboardSidebarMode", sidebarMode);

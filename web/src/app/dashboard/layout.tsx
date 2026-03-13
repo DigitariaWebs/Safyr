@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";

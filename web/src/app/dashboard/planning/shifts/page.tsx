@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,7 @@ const DEFAULT_FORM: ShiftFormData = {
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function ShiftsPage() {
+  const searchParams = useSearchParams();
   const [shifts, setShifts] = useState<StandardShift[]>(mockStandardShifts);
   const [selectedShift, setSelectedShift] = useState<StandardShift | null>(
     null,
@@ -134,6 +136,9 @@ export default function ShiftsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState<ShiftFormData>(DEFAULT_FORM);
+
+  // Sync with URL on mount
+  const showCreateFromUrl = searchParams.get("create") === "true";
 
   // ─── derived stats ───────────────────────────────────────────────────────
 
@@ -788,8 +793,14 @@ export default function ShiftsPage() {
 
       {/* Create modal */}
       <Modal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        open={showCreateFromUrl || isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) {
+            // Clear the URL param when modal is closed
+            window.history.pushState({}, "", window.location.pathname);
+          }
+        }}
         type="form"
         title="Nouveau shift"
         description="Définir un modèle de shift pour un site"

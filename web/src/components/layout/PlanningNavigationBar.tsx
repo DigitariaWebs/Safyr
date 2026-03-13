@@ -4,13 +4,25 @@ import {
   ModuleNavigationBar,
   NavItem,
 } from "@/components/ui/module-navigation-bar";
-import { Users, Calendar, MapPin, RotateCcw, Settings } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  MapPin,
+  RotateCcw,
+  Settings,
+  Briefcase,
+} from "lucide-react";
 
 const navItems: NavItem[] = [
   {
     label: "Agents",
     href: "/dashboard/planning/agents",
     icon: Users,
+  },
+  {
+    label: "Postes",
+    href: "/dashboard/planning/postes",
+    icon: Briefcase,
   },
   {
     label: "Sites",

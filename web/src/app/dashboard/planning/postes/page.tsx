@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,7 @@ const DEFAULT_FORM: PosteFormData = {
 };
 
 export default function PostesPage() {
+  const searchParams = useSearchParams();
   const [postes, setPostes] = useState<Poste[]>(mockPostes);
   const [selectedPoste, setSelectedPoste] = useState<Poste | null>(null);
   const [posteToDelete, setPosteToDelete] = useState<Poste | null>(null);
@@ -93,6 +95,7 @@ export default function PostesPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [createSiteId, setCreateSiteId] = useState<string>("");
   const [formData, setFormData] = useState<PosteFormData>(DEFAULT_FORM);
+  const showCreateFromUrl = searchParams.get("create") === "true";
 
   const totalPostes = postes.length;
   const activePostes = postes.filter((p) => p.status === "active").length;
@@ -898,8 +901,13 @@ export default function PostesPage() {
 
       {/* Create Modal */}
       <Modal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        open={showCreateFromUrl || isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) {
+            window.history.pushState({}, "", window.location.pathname);
+          }
+        }}
         type="form"
         size="xl"
         title="Nouveau poste"
