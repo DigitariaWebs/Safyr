@@ -2,12 +2,13 @@ export interface GeolocationAgent {
   id: string;
   name: string;
   site: string;
+  zone?: string;
   status: "En poste" | "En déplacement" | "Hors ligne";
   lastUpdate: string;
   latitude: number;
   longitude: number;
   speed: number; // km/h
-  direction: number; // degrees
+  direction: number; // degrees (0 = North, 90 = East, 180 = South, 270 = West)
   battery: number; // percentage
 }
 
@@ -16,6 +17,7 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     id: "1",
     name: "Jean Dupont",
     site: "Centre Commercial Rosny 2",
+    zone: "Zone Nord",
     status: "En poste",
     lastUpdate: new Date().toISOString(),
     latitude: 48.8566,
@@ -28,6 +30,7 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     id: "2",
     name: "Marie Martin",
     site: "Siège Social La Défense",
+    zone: "Zone Ouest",
     status: "En déplacement",
     lastUpdate: new Date(Date.now() - 5 * 60000).toISOString(),
     latitude: 48.8922,
@@ -40,6 +43,7 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     id: "3",
     name: "Pierre Bernard",
     site: "Entrepôt Logistique Gennevilliers",
+    zone: "Zone Nord",
     status: "En poste",
     lastUpdate: new Date(Date.now() - 2 * 60000).toISOString(),
     latitude: 48.9333,
@@ -51,13 +55,41 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
   {
     id: "4",
     name: "Sophie Dubois",
-    site: "Hors ligne",
+    site: "Entrepôt Logistique Gennevilliers",
+    zone: "Zone Sud",
     status: "Hors ligne",
+    // Last known position near 13th arrondissement — NOT (0,0)
     lastUpdate: new Date(Date.now() - 30 * 60000).toISOString(),
-    latitude: 0,
-    longitude: 0,
+    latitude: 48.8355,
+    longitude: 2.3219,
     speed: 0,
     direction: 0,
-    battery: 0,
+    battery: 12,
+  },
+  {
+    id: "5",
+    name: "Lucas Moreau",
+    site: "Centre Commercial Rosny 2",
+    zone: "Zone Nord",
+    status: "En déplacement",
+    lastUpdate: new Date(Date.now() - 1 * 60000).toISOString(),
+    latitude: 48.8615,
+    longitude: 2.3475,
+    speed: 12,
+    direction: 270,
+    battery: 74,
+  },
+  {
+    id: "6",
+    name: "Camille Leroy",
+    site: "Siège Social La Défense",
+    zone: "Zone Ouest",
+    status: "En poste",
+    lastUpdate: new Date(Date.now() - 3 * 60000).toISOString(),
+    latitude: 48.8953,
+    longitude: 2.2312,
+    speed: 0,
+    direction: 180,
+    battery: 48,
   },
 ];
