@@ -50,12 +50,14 @@ function createEmptyLine(): QuoteLine {
   };
 }
 
+type QuoteFormData = Partial<BillingQuote> & { quoteType?: string };
+
 export default function BillingQuotesPage() {
   const [quotes, setQuotes] = useState<BillingQuote[]>(mockBillingQuotes);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<BillingQuote | null>(null);
-  const [formData, setFormData] = useState<Partial<BillingQuote>>({});
+  const [formData, setFormData] = useState<QuoteFormData>({});
 
   const columns: ColumnDef<BillingQuote>[] = [
     { key: "quoteNumber", label: "N° Devis", sortable: true },
@@ -284,6 +286,36 @@ export default function BillingQuotesPage() {
       >
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <Label>Type de devis</Label>
+              <Select
+                value={formData.quoteType || "base"}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, quoteType: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir le type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="base">
+                    Devis de base — Forfait mensuel par type de poste
+                  </SelectItem>
+                  <SelectItem value="complet">
+                    Devis complet — Base + majorations nuit / dimanche / fériés
+                  </SelectItem>
+                  <SelectItem value="detaille">
+                    Devis détaillé — Liste jour par jour sur la période
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                {(formData.quoteType || "base") === "base" && "Une ligne par type de poste (ADS, SSIAP…) avec un forfait mensuel."}
+                {formData.quoteType === "complet" && "Forfait de base + détail des majorations (nuit, dimanche, jours fériés) par poste."}
+                {formData.quoteType === "detaille" && "Listing complet jour par jour de tous les shifts sur la période du devis."}
+              </p>
+            </div>
+
             <div className="col-span-2">
               <Label>Client</Label>
               <Select

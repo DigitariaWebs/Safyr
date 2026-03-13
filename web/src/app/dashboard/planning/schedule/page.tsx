@@ -194,6 +194,13 @@ export default function SchedulePage() {
     conflict: DateConflict;
   } | null>(null);
 
+  // Past date warning state
+  const [showPastDateWarning, setShowPastDateWarning] = useState(false);
+  const [pastDateWarningCtx, setPastDateWarningCtx] = useState<{
+    agentId: string;
+    date: string;
+  } | null>(null);
+
   // Copy/paste state
   const [copiedShift, setCopiedShift] = useState<AgentShift | null>(null);
   const [copiedWeekDates, setCopiedWeekDates] = useState<string[] | null>(null);
@@ -588,7 +595,11 @@ export default function SchedulePage() {
 
   // Shift management
   const handleCreateShift = (agentId: string, date: string) => {
-    if (isDateInPast(date)) return;
+    if (isDateInPast(date)) {
+      setPastDateWarningCtx({ agentId, date });
+      setShowPastDateWarning(true);
+      return;
+    }
     const conflict = getDateConflict(agentId, date);
     if (conflict?.type === "time_off") return;
 
@@ -629,12 +640,12 @@ export default function SchedulePage() {
 
     // Calculate split start time based on first shift end + break
     const calcSplitStart = (endTime: string, breakDuration: number) => {
-      const [endH, endM] = endTime.split(':').map(Number);
+      const [endH, endM] = endTime.split(":").map(Number);
       let start2Mins = endH * 60 + endM + breakDuration;
       if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
       const start2H = Math.floor(start2Mins / 60);
       const start2M = start2Mins % 60;
-      return `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+      return `${start2H.toString().padStart(2, "0")}:${start2M.toString().padStart(2, "0")}`;
     };
 
     const isSplit = shift.isSplit || false;
@@ -650,7 +661,10 @@ export default function SchedulePage() {
       notes: shift.notes || "",
       isOvernight: isOvernightShift(shift.startTime, shift.endTime),
       isSplit,
-      splitStartTime2: isSplit ? (shift.splitStartTime2 || calcSplitStart(shift.endTime, splitBreakDuration)) : "14:00",
+      splitStartTime2: isSplit
+        ? shift.splitStartTime2 ||
+          calcSplitStart(shift.endTime, splitBreakDuration)
+        : "14:00",
       splitEndTime2: shift.splitEndTime2 || "18:00",
       splitBreakDuration,
     });
@@ -734,9 +748,13 @@ export default function SchedulePage() {
         color: shiftForm.color,
         notes: shiftForm.notes,
         isSplit: shiftForm.isSplit,
-        splitStartTime2: shiftForm.isSplit ? shiftForm.splitStartTime2 : undefined,
+        splitStartTime2: shiftForm.isSplit
+          ? shiftForm.splitStartTime2
+          : undefined,
         splitEndTime2: shiftForm.isSplit ? shiftForm.splitEndTime2 : undefined,
-        splitBreakDuration: shiftForm.isSplit ? shiftForm.splitBreakDuration : undefined,
+        splitBreakDuration: shiftForm.isSplit
+          ? shiftForm.splitBreakDuration
+          : undefined,
         updatedAt: new Date(),
       };
       setAgentShifts(
@@ -778,9 +796,13 @@ export default function SchedulePage() {
         color,
         notes: shiftForm.notes,
         isSplit: shiftForm.isSplit,
-        splitStartTime2: shiftForm.isSplit ? shiftForm.splitStartTime2 : undefined,
+        splitStartTime2: shiftForm.isSplit
+          ? shiftForm.splitStartTime2
+          : undefined,
         splitEndTime2: shiftForm.isSplit ? shiftForm.splitEndTime2 : undefined,
-        splitBreakDuration: shiftForm.isSplit ? shiftForm.splitBreakDuration : undefined,
+        splitBreakDuration: shiftForm.isSplit
+          ? shiftForm.splitBreakDuration
+          : undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -989,6 +1011,49 @@ export default function SchedulePage() {
 
     setPendingPasteAction(null);
     setShowOverrideModal(false);
+  };
+
+  // PDF Export
+  const handleExportPDF = async (mode: "global" | "agent" | "site" | "client") => {
+    const { jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+    const siteName = selectedSite?.name || "Site";
+    const clientName = selectedClient?.name || "Client";
+    const periodLabel = viewType === "monthly"
+      ? currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+      : `${displayDates[0]?.toLocaleDateString("fr-FR")} – ${displayDates[displayDates.length - 1]?.toLocaleDateString("fr-FR")}`;
+
+    doc.setFontSize(16);
+    doc.text(`Planning — ${siteName}`, 14, 16);
+    doc.setFontSize(10);
+    doc.text(`${clientName} · ${periodLabel}`, 14, 23);
+
+    const filteredShifts = agentShifts.filter((s) => s.siteId === selectedSiteId);
+    const dateLabels = displayDates.map((d) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }));
+
+    if (mode === "agent" || mode === "global") {
+      const tableData = assignedAgents.map(({ agentId, agentName }) => {
+        const row: (string | number)[] = [agentName];
+        displayDates.forEach((date) => {
+          const ds = date.toISOString().split("T")[0];
+          const s = filteredShifts.find((sh) => sh.agentId === agentId && sh.date === ds);
+          row.push(s ? `${s.startTime}–${s.endTime}` : "");
+        });
+        return row;
+      });
+
+      autoTable(doc, {
+        startY: 30,
+        head: [["Agent", ...dateLabels]],
+        body: tableData,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [15, 23, 42] },
+      });
+    }
+
+    doc.save(`planning-${siteName.replace(/\s+/g, "-").toLowerCase()}-${mode}.pdf`);
   };
 
   // Group dates into weeks for monthly view
@@ -1275,8 +1340,8 @@ export default function SchedulePage() {
             <Button
               variant="outline"
               size="sm"
+              className="bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 border-cyan-500/30"
               onClick={() => setShowAgentCommand(true)}
-              className="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500"
             >
               <Plus className="h-4 w-4 mr-2" />
               Assigner un agent
@@ -1433,19 +1498,19 @@ export default function SchedulePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => window.print()}>
+                  <DropdownMenuItem onClick={() => handleExportPDF("global")}>
                     <FileText className="h-4 w-4 mr-2" />
                     Planning global
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.print()}>
+                  <DropdownMenuItem onClick={() => handleExportPDF("agent")}>
                     <Users className="h-4 w-4 mr-2" />
                     Par agent
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.print()}>
+                  <DropdownMenuItem onClick={() => handleExportPDF("site")}>
                     <MapPin className="h-4 w-4 mr-2" />
                     Par site
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.print()}>
+                  <DropdownMenuItem onClick={() => handleExportPDF("client")}>
                     <Building2 className="h-4 w-4 mr-2" />
                     Par client
                   </DropdownMenuItem>
@@ -1455,6 +1520,31 @@ export default function SchedulePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Copy mode banner */}
+      {(copiedShift || copiedWeekDates) && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-700 dark:text-cyan-400">
+          <Clipboard className="h-4 w-4 shrink-0" />
+          <span className="text-sm font-medium flex-1">
+            {copiedShift
+              ? `Mode copie actif — ${copiedShift.startTime}–${copiedShift.endTime} · cliquez sur une cellule vide pour coller`
+              : "Mode copie actif — Semaine copiée · cliquez sur une ligne vide pour coller"}
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500/20"
+            onClick={() => {
+              setCopiedShift(null);
+              setCopiedWeekDates(null);
+              setCopiedWeekAgentId(null);
+            }}
+          >
+            <X className="h-3.5 w-3.5 mr-1" />
+            Arrêter
+          </Button>
+        </div>
+      )}
 
       {/* Schedule Grid */}
       <Card>
@@ -1839,13 +1929,23 @@ export default function SchedulePage() {
                       <div className="flex items-start justify-between gap-2 relative z-10">
                         <div className="flex-1">
                           <div className="text-xs font-bold text-white/90 flex items-center gap-2 mb-1">
-                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">1</span>
-                            {shiftForm.startTime || "00:00"} - {shiftForm.endTime || "00:00"}
+                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">
+                              1
+                            </span>
+                            {shiftForm.startTime || "00:00"} -{" "}
+                            {shiftForm.endTime || "00:00"}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs h-5 bg-white/20 text-white border-0">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs h-5 bg-white/20 text-white border-0"
+                            >
                               <Clock className="h-3 w-3 mr-1" />
-                              {calculateShiftLength(shiftForm.startTime, shiftForm.endTime, shiftForm.breakDuration)}
+                              {calculateShiftLength(
+                                shiftForm.startTime,
+                                shiftForm.endTime,
+                                shiftForm.breakDuration,
+                              )}
                             </Badge>
                           </div>
                         </div>
@@ -1862,13 +1962,23 @@ export default function SchedulePage() {
                       <div className="flex items-start justify-between gap-2 relative z-10">
                         <div className="flex-1">
                           <div className="text-xs font-bold text-white/90 flex items-center gap-2 mb-1">
-                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">2</span>
-                            {shiftForm.splitStartTime2 || "00:00"} - {shiftForm.splitEndTime2 || "00:00"}
+                            <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">
+                              2
+                            </span>
+                            {shiftForm.splitStartTime2 || "00:00"} -{" "}
+                            {shiftForm.splitEndTime2 || "00:00"}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs h-5 bg-white/20 text-white border-0">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs h-5 bg-white/20 text-white border-0"
+                            >
                               <Clock className="h-3 w-3 mr-1" />
-                              {calculateShiftLength(shiftForm.splitStartTime2, shiftForm.splitEndTime2, 0)}
+                              {calculateShiftLength(
+                                shiftForm.splitStartTime2,
+                                shiftForm.splitEndTime2,
+                                0,
+                              )}
                             </Badge>
                           </div>
                         </div>
@@ -1877,21 +1987,36 @@ export default function SchedulePage() {
                       <div className="pt-2 border-t border-white/20">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-white/80">Total:</span>
-                          <Badge variant="secondary" className="text-xs h-5 bg-white/30 text-white border-0 font-bold">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs h-5 bg-white/30 text-white border-0 font-bold"
+                          >
                             {(() => {
-                              const calc = (s: string, e: string, b: number) => {
-                                const [sh] = s.split(':').map(Number);
-                                const [eh] = e.split(':').map(Number);
+                              const calc = (
+                                s: string,
+                                e: string,
+                                b: number,
+                              ) => {
+                                const [sh] = s.split(":").map(Number);
+                                const [eh] = e.split(":").map(Number);
                                 let m = eh * 60 - sh * 60;
                                 if (m < 0) m += 24 * 60;
                                 return m - b;
                               };
                               const total =
-                                calc(shiftForm.startTime, shiftForm.endTime, shiftForm.breakDuration) +
-                                calc(shiftForm.splitStartTime2, shiftForm.splitEndTime2, 0);
+                                calc(
+                                  shiftForm.startTime,
+                                  shiftForm.endTime,
+                                  shiftForm.breakDuration,
+                                ) +
+                                calc(
+                                  shiftForm.splitStartTime2,
+                                  shiftForm.splitEndTime2,
+                                  0,
+                                );
                               const h = Math.floor(total / 60);
                               const min = total % 60;
-                              return `${h}h${min > 0 ? min : ''}`;
+                              return `${h}h${min > 0 ? min : ""}`;
                             })()}
                           </Badge>
                         </div>
@@ -1936,27 +2061,30 @@ export default function SchedulePage() {
                     </div>
                   )}
                   {/* Over 12h warning for non-split shifts */}
-                  {!shiftForm.isSplit && (() => {
-                    const [startH] = shiftForm.startTime.split(":").map(Number);
-                    const [endH] = shiftForm.endTime.split(":").map(Number);
-                    let mins = endH * 60 - startH * 60;
-                    if (mins < 0) mins += 24 * 60;
-                    mins -= shiftForm.breakDuration;
-                    if (mins > 12 * 60) {
-                      return (
-                        <div className="absolute top-2 right-2 z-10">
-                          <Badge
-                            variant="secondary"
-                            className="bg-orange-500 text-white border-0 gap-1"
-                          >
-                            <AlertTriangle className="h-3 w-3" />
-                            +12h
-                          </Badge>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
+                  {!shiftForm.isSplit &&
+                    (() => {
+                      const [startH] = shiftForm.startTime
+                        .split(":")
+                        .map(Number);
+                      const [endH] = shiftForm.endTime.split(":").map(Number);
+                      let mins = endH * 60 - startH * 60;
+                      if (mins < 0) mins += 24 * 60;
+                      mins -= shiftForm.breakDuration;
+                      if (mins > 12 * 60) {
+                        return (
+                          <div className="absolute top-2 right-2 z-10">
+                            <Badge
+                              variant="secondary"
+                              className="bg-orange-500 text-white border-0 gap-1"
+                            >
+                              <AlertTriangle className="h-3 w-3" />
+                              +12h
+                            </Badge>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                 </div>
               </div>
 
@@ -2023,21 +2151,29 @@ export default function SchedulePage() {
                   checked={shiftForm.isSplit}
                   onChange={(e) => {
                     // Auto-calculate split start time when enabling split
-                    const calcSplitStart = (endTime: string, breakDuration: number) => {
-                      const [endH, endM] = endTime.split(':').map(Number);
+                    const calcSplitStart = (
+                      endTime: string,
+                      breakDuration: number,
+                    ) => {
+                      const [endH, endM] = endTime.split(":").map(Number);
                       let start2Mins = endH * 60 + endM + breakDuration;
                       if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
                       const start2H = Math.floor(start2Mins / 60);
                       const start2M = start2Mins % 60;
-                      return `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+                      return `${start2H.toString().padStart(2, "0")}:${start2M.toString().padStart(2, "0")}`;
                     };
                     const newIsSplit = e.target.checked;
                     setShiftForm({
                       ...shiftForm,
                       isSplit: newIsSplit,
-                      ...(newIsSplit ? {
-                        splitStartTime2: calcSplitStart(shiftForm.endTime, shiftForm.splitBreakDuration),
-                      } : {}),
+                      ...(newIsSplit
+                        ? {
+                            splitStartTime2: calcSplitStart(
+                              shiftForm.endTime,
+                              shiftForm.splitBreakDuration,
+                            ),
+                          }
+                        : {}),
                     });
                   }}
                   className="rounded h-4 w-4"
@@ -2089,18 +2225,22 @@ export default function SchedulePage() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm mb-2 block">Pause entre les postes</Label>
+                    <Label className="text-sm mb-2 block">
+                      Pause entre les postes
+                    </Label>
                     <Select
                       value={shiftForm.splitBreakDuration.toString()}
                       onValueChange={(v: string) => {
                         const newBreakDuration = parseInt(v);
                         // Auto-calculate split start time based on first shift end + break
-                        const [endH, endM] = shiftForm.endTime.split(':').map(Number);
+                        const [endH, endM] = shiftForm.endTime
+                          .split(":")
+                          .map(Number);
                         let start2Mins = endH * 60 + endM + newBreakDuration;
                         if (start2Mins >= 24 * 60) start2Mins -= 24 * 60;
                         const start2H = Math.floor(start2Mins / 60);
                         const start2M = start2Mins % 60;
-                        const newSplitStartTime2 = `${start2H.toString().padStart(2, '0')}:${start2M.toString().padStart(2, '0')}`;
+                        const newSplitStartTime2 = `${start2H.toString().padStart(2, "0")}:${start2M.toString().padStart(2, "0")}`;
                         setShiftForm({
                           ...shiftForm,
                           splitBreakDuration: newBreakDuration,
@@ -2538,6 +2678,73 @@ export default function SchedulePage() {
         </div>
       </Modal>
 
+      {/* Past Date Warning Modal */}
+      <Modal
+        open={showPastDateWarning}
+        onOpenChange={setShowPastDateWarning}
+        type="warning"
+        title="Date passée"
+        description={
+          pastDateWarningCtx
+            ? `Date passée — ${new Date(pastDateWarningCtx.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`
+            : "Date passée"
+        }
+        actions={{
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setShowPastDateWarning(false);
+              setPastDateWarningCtx(null);
+            },
+            variant: "outline",
+          },
+          primary: {
+            label: "Continuer quand même",
+            onClick: () => {
+              if (!pastDateWarningCtx) return;
+              setShowPastDateWarning(false);
+              // Re-run create logic skipping the past date check
+              const { agentId, date } = pastDateWarningCtx;
+              setPastDateWarningCtx(null);
+              const conflict = getDateConflict(agentId, date);
+              if (conflict?.type === "time_off") return;
+              if (conflict?.type === "double_booking") {
+                setPendingPasteAction({ type: "shift", agentId, dates: [date] });
+                setShowOverrideModal(true);
+                return;
+              }
+              setEditingShift(null);
+              setShiftForm({
+                shiftType: "standard",
+                standardShiftId: siteStandardShifts[0]?.id || "",
+                startTime: "08:00",
+                endTime: "16:00",
+                breakDuration: 30,
+                color: "#3b82f6",
+                notes: "",
+                isOvernight: false,
+                isSplit: false,
+                splitStartTime2: "14:00",
+                splitEndTime2: "18:00",
+                splitBreakDuration: 60,
+              });
+              setTemplatePopoverContext({ agentId, date });
+              setSelectedPopoverTemplateId(siteStandardShifts[0]?.id ?? null);
+              setShowTemplatePopover(true);
+              window.__shiftContext = { agentId, date };
+            },
+          },
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-muted-foreground">
+            Vous essayez d&apos;assigner un shift sur une date déjà passée.
+            Cette action peut affecter les rapports et calculs de paie.
+          </p>
+        </div>
+      </Modal>
+
       {/* Planning Summary Widget */}
       <Card className="border-border/40 mt-6">
         <CardHeader className="pb-2">
@@ -2554,7 +2761,9 @@ export default function SchedulePage() {
                 <Clock className="h-4 w-4" />
                 Heures totales
               </div>
-              <div className="text-2xl font-bold">{totalPlannedHours.toFixed(1)}h</div>
+              <div className="text-2xl font-bold">
+                {totalPlannedHours.toFixed(1)}h
+              </div>
             </div>
 
             {/* Overtime Hours (estimated) */}
@@ -2564,7 +2773,11 @@ export default function SchedulePage() {
                 Heures sup.
               </div>
               <div className="text-2xl font-bold">
-                {Math.max(0, totalPlannedHours - assignedAgents.length * 35).toFixed(1)}h
+                {Math.max(
+                  0,
+                  totalPlannedHours - assignedAgents.length * 35,
+                ).toFixed(1)}
+                h
               </div>
             </div>
 
@@ -2575,20 +2788,26 @@ export default function SchedulePage() {
                 Repas
               </div>
               <div className="text-2xl font-bold">
-                {agentShifts.filter((s) => {
-                  if (s.siteId !== selectedSiteId) return false;
-                  const hoursStr = calculateShiftLength(s.startTime, s.endTime, s.breakDuration);
-                  const hours = parseFloat(hoursStr.replace("h", ".")) || 0;
-                  const hours2Str = s.isSplit
-                    ? calculateShiftLength(
-                        s.splitStartTime2 || "00:00",
-                        s.splitEndTime2 || "00:00",
-                        0,
-                      )
-                    : "0";
-                  const hours2 = parseFloat(hours2Str.replace("h", ".")) || 0;
-                  return hours + hours2 > 6;
-                }).length}
+                {
+                  agentShifts.filter((s) => {
+                    if (s.siteId !== selectedSiteId) return false;
+                    const hoursStr = calculateShiftLength(
+                      s.startTime,
+                      s.endTime,
+                      s.breakDuration,
+                    );
+                    const hours = parseFloat(hoursStr.replace("h", ".")) || 0;
+                    const hours2Str = s.isSplit
+                      ? calculateShiftLength(
+                          s.splitStartTime2 || "00:00",
+                          s.splitEndTime2 || "00:00",
+                          0,
+                        )
+                      : "0";
+                    const hours2 = parseFloat(hours2Str.replace("h", ".")) || 0;
+                    return hours + hours2 > 6;
+                  }).length
+                }
               </div>
             </div>
 
@@ -2599,15 +2818,146 @@ export default function SchedulePage() {
                 Absences
               </div>
               <div className="text-2xl font-bold">
-                {assignedAgents.filter(({ agentId }) =>
-                  displayDates.some((date) => hasTimeOff(agentId, formatDate(date))),
-                ).length}
+                {
+                  assignedAgents.filter(({ agentId }) =>
+                    displayDates.some((date) =>
+                      hasTimeOff(agentId, formatDate(date)),
+                    ),
+                  ).length
+                }
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Hour Details Section */}
+      <HourDetailsSection
+        agents={assignedAgents}
+        agentShifts={agentShifts.filter((s) => s.siteId === selectedSiteId)}
+        displayDates={displayDates}
+        isPublicHoliday={isPublicHoliday}
+        timeOffRequests={mockTimeOffRequests}
+      />
     </div>
+  );
+}
+
+function HourDetailsSection({
+  agents,
+  agentShifts,
+  displayDates,
+  isPublicHoliday,
+  timeOffRequests,
+}: {
+  agents: { agentId: string; agentName: string }[];
+  agentShifts: AgentShift[];
+  displayDates: Date[];
+  isPublicHoliday: (date: Date | string) => boolean;
+  timeOffRequests: TimeOffRequest[];
+}) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const rows = React.useMemo(() => {
+    return agents.map(({ agentId, agentName }) => {
+      let normales = 0;
+      let nuit = 0;
+      let dimanche = 0;
+      let feries = 0;
+      let paniers = 0;
+
+      agentShifts
+        .filter((s) => s.agentId === agentId && displayDates.some((d) => d.toISOString().split("T")[0] === s.date))
+        .forEach((s) => {
+          const [sh, sm] = s.startTime.split(":").map(Number);
+          const [eh, em] = s.endTime.split(":").map(Number);
+          let mins = eh * 60 + em - (sh * 60 + sm);
+          if (mins < 0) mins += 24 * 60;
+          mins -= s.breakDuration;
+          const hrs = Math.max(0, mins / 60);
+
+          const date = new Date(s.date + "T00:00:00");
+          const isSunday = date.getDay() === 0;
+          const isHoliday = isPublicHoliday(date);
+          const startH = sh;
+          const isNight = startH >= 21 || startH < 6;
+
+          normales += hrs;
+          if (isNight) nuit += hrs;
+          if (isSunday) dimanche += hrs;
+          if (isHoliday) feries += hrs;
+          if (hrs > 6) paniers += 1;
+        });
+
+      const conges = timeOffRequests.filter(
+        (r) =>
+          r.employeeId === agentId &&
+          r.status === "approved" &&
+          r.type === "vacation" &&
+          displayDates.some((d) => {
+            const ds = d.toISOString().split("T")[0];
+            return ds >= r.startDate.toString().split("T")[0] && ds <= r.endDate.toString().split("T")[0];
+          }),
+      ).length;
+
+      return { agentId, agentName, normales, nuit, dimanche, feries, paniers, conges };
+    });
+  }, [agents, agentShifts, displayDates, isPublicHoliday, timeOffRequests]);
+
+  return (
+    <Card className="border-border/40">
+      <CardHeader
+        className="pb-2 cursor-pointer select-none"
+        onClick={() => setIsOpen((o) => !o)}
+      >
+        <CardTitle className="text-base font-light text-muted-foreground flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Détail des majorations &amp; éléments variables
+          </div>
+          <span className="text-xs">{isOpen ? "▲ Réduire" : "▼ Développer"}</span>
+        </CardTitle>
+      </CardHeader>
+      {isOpen && (
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b text-muted-foreground text-xs">
+                  <th className="text-left py-2 pr-4 font-medium">Agent</th>
+                  <th className="text-right py-2 px-3 font-medium">H. normales</th>
+                  <th className="text-right py-2 px-3 font-medium">H. nuit</th>
+                  <th className="text-right py-2 px-3 font-medium">H. dimanche</th>
+                  <th className="text-right py-2 px-3 font-medium">H. fériés</th>
+                  <th className="text-right py-2 px-3 font-medium">Paniers repas</th>
+                  <th className="text-right py-2 px-3 font-medium">Congés (j)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.agentId} className="border-b hover:bg-muted/30">
+                    <td className="py-2 pr-4 font-medium">{row.agentName}</td>
+                    <td className="text-right py-2 px-3">{row.normales.toFixed(2)}h</td>
+                    <td className="text-right py-2 px-3 text-indigo-600">{row.nuit.toFixed(2)}h</td>
+                    <td className="text-right py-2 px-3 text-blue-600">{row.dimanche.toFixed(2)}h</td>
+                    <td className="text-right py-2 px-3 text-red-600">{row.feries.toFixed(2)}h</td>
+                    <td className="text-right py-2 px-3">{row.paniers}</td>
+                    <td className="text-right py-2 px-3">{row.conges}</td>
+                  </tr>
+                ))}
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4 text-muted-foreground">
+                      Aucun agent assigné à ce site
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      )}
+    </Card>
   );
 }
 
@@ -2920,6 +3270,31 @@ function ShiftBlock({
       : `${hours}h`;
   };
 
+  // Calculate total duration including split shift
+  const calculateTotalDuration = () => {
+    // First part
+    let minutes1 = endHour * 60 + endMin - (startHour * 60 + startMin);
+    if (minutes1 < 0) minutes1 += 24 * 60;
+    minutes1 -= shift.breakDuration;
+
+    // Second part (if split)
+    let minutes2 = 0;
+    if (shift.isSplit && shift.splitStartTime2 && shift.splitEndTime2) {
+      const [s2h, s2m] = shift.splitStartTime2.split(":").map(Number);
+      const [e2h, e2m] = shift.splitEndTime2.split(":").map(Number);
+      minutes2 = e2h * 60 + e2m - (s2h * 60 + s2m);
+      if (minutes2 < 0) minutes2 += 24 * 60;
+      minutes2 -= shift.splitBreakDuration || 0;
+    }
+
+    const totalMinutes = minutes1 + minutes2;
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return mins > 0
+      ? `${hours}h${mins.toString().padStart(2, "0")}`
+      : `${hours}h`;
+  };
+
   const isShiftInPast = (s: AgentShift) => {
     const check = new Date(s.date);
     const today = new Date();
@@ -3020,6 +3395,11 @@ function ShiftBlock({
           <div className="text-sm font-bold text-white truncate flex items-center gap-2">
             {continuesNextDay && <Moon className="h-3.5 w-3.5 shrink-0" />}
             {shift.startTime} - {shift.endTime}
+            {shift.isSplit && (
+              <span className="text-xs font-normal text-white/80">
+                | {shift.splitStartTime2} - {shift.splitEndTime2}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <Badge
@@ -3027,9 +3407,14 @@ function ShiftBlock({
               className="text-xs h-5 bg-white/20 text-white border-0"
             >
               <Clock className="h-3 w-3 mr-1" />
-              {duration}
+              {shift.isSplit ? calculateTotalDuration() : duration}
             </Badge>
-            {shift.breakDuration > 0 && (
+            {shift.isSplit && shift.splitBreakDuration && (
+              <span className="text-xs text-white/80">
+                Pause: {shift.splitBreakDuration}min
+              </span>
+            )}
+            {shift.breakDuration > 0 && !shift.isSplit && (
               <span className="text-xs text-white/80">
                 Pause: {shift.breakDuration}min
               </span>
@@ -3070,6 +3455,15 @@ function ShiftBlock({
               >
                 <Pencil className="h-4 w-4 mr-2" />
                 Modifier
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(shift);
+                }}
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Personnaliser horaires
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -3283,24 +3677,57 @@ function WeeklyView({
             !hasWeekConflicts &&
             weekDates.every((d) => !isDateInPast(d));
 
+          // Contract hours tracking
+          const agentData = mockPlanningAgents.find((a) => a.id === agentId);
+          const contractHours = agentData?.contractHours ?? 151.67;
+          const refMonth = dates.length > 0 ? dates[0].getMonth() : new Date().getMonth();
+          const refYear = dates.length > 0 ? dates[0].getFullYear() : new Date().getFullYear();
+          const monthlyAssignedMinutes = shifts
+            .filter((s) => {
+              if (s.agentId !== agentId) return false;
+              const d = new Date(s.date + "T00:00:00");
+              return d.getMonth() === refMonth && d.getFullYear() === refYear;
+            })
+            .reduce((acc, s) => {
+              const [sh, sm] = s.startTime.split(":").map(Number);
+              const [eh, em] = s.endTime.split(":").map(Number);
+              let mins = eh * 60 + em - (sh * 60 + sm);
+              if (mins < 0) mins += 24 * 60;
+              mins -= s.breakDuration;
+              return acc + Math.max(0, mins);
+            }, 0);
+          const monthlyAssignedHours = monthlyAssignedMinutes / 60;
+          const remainingHours = contractHours - monthlyAssignedHours;
+
           return (
             <div key={agentId} className="flex items-stretch gap-2">
-              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center">
-                <div className="font-medium text-sm mb-2">{agentName}</div>
+              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center gap-1.5">
+                <div className="font-medium text-sm">{agentName}</div>
                 <div
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${agentHours > maxWeeklyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
+                  className={`flex items-center gap-2 px-2 py-1 rounded-md ${agentHours > maxWeeklyWorkHours ? "bg-destructive/10" : "bg-primary/10"}`}
                 >
                   <Clock
-                    className={`h-4 w-4 ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                    className={`h-3.5 w-3.5 ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
                   />
                   <span
-                    className={`font-bold text-base ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
+                    className={`font-bold text-sm ${agentHours > maxWeeklyWorkHours ? "text-destructive" : "text-primary"}`}
                   >
                     {agentHours.toFixed(1)}h
                   </span>
                   <span className="text-xs text-muted-foreground ml-auto">
-                    cette semaine
+                    sem.
                   </span>
+                </div>
+                <div className="text-[10px] space-y-0.5 text-muted-foreground">
+                  <div className="flex justify-between">
+                    <span>{contractHours.toFixed(2)}h contrat</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{monthlyAssignedHours.toFixed(2)}h affectées</span>
+                  </div>
+                  <div className={`flex justify-between font-medium ${remainingHours < 0 ? "text-destructive" : "text-foreground"}`}>
+                    <span>{remainingHours.toFixed(2)}h restantes</span>
+                  </div>
                 </div>
               </div>
 
@@ -3518,316 +3945,139 @@ function MonthlyView({
     return check < today;
   };
 
+  const getShiftsForDate = (dateStr: string) => {
+    return shifts.filter((s) => s.date === dateStr);
+  };
+
+  const getAgentName = (agentId: string) => {
+    const agent = agents.find((a) => a.agentId === agentId);
+    return agent?.agentName || "Inconnu";
+  };
+
+  const calculateTotalHours = (dateStr: string) => {
+    const dayShifts = getShiftsForDate(dateStr);
+    return dayShifts.reduce((total, shift) => {
+      const [startHour, startMin] = shift.startTime.split(":").map(Number);
+      const [endHour, endMin] = shift.endTime.split(":").map(Number);
+      let minutes = endHour * 60 + endMin - (startHour * 60 + startMin);
+      if (minutes < 0) minutes += 24 * 60;
+      minutes -= shift.breakDuration;
+      return total + minutes / 60;
+    }, 0);
+  };
+
+  const DAYS_OF_WEEK = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
   const getWeekNumber = (d: Date) => {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil(
-      ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-    );
+    return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   };
 
   return (
-    <div className="overflow-x-auto">
-      {/* Header row with sticky agent column */}
-      <div className="flex mb-4">
-        <div className="w-56 shrink-0 sticky left-0 bg-background z-20 pr-2">
-          <div className="p-2">
-            <div className="font-medium">Agent</div>
-            <div className="text-xs text-muted-foreground">Heures</div>
+    <div className="w-full h-full flex flex-col">
+      {/* Days of week header */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {DAYS_OF_WEEK.map((day) => (
+          <div
+            key={day}
+            className="text-center text-xs font-semibold text-muted-foreground py-1"
+          >
+            {day}
           </div>
-        </div>
-        <div className="flex gap-2">
-          {weekGroups.map(
-            (week: { dates: Date[]; startIdx: number }, weekIdx: number) => {
-              const isCompleteWeek = week.dates.length === 7;
-              const weekNum =
-                week.dates.length > 0 ? getWeekNumber(week.dates[0]) : null;
-              return (
-                <div key={weekIdx} className="flex flex-col gap-0">
-                  {weekNum !== null && (
-                    <div className="text-center pb-1">
-                      <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
-                        S.{weekNum}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex gap-0">
-                    {week.dates.map((date: Date, idx: number) => {
-                      const isClosed = isClosedDay(date);
-                      return (
-                        <div
-                          key={idx}
-                          className="text-center p-2"
-                          style={{ width: "120px" }}
-                        >
-                          <div
-                            className={`text-sm ${
-                              isClosed ? "text-muted-foreground" : "font-medium"
-                            }`}
-                          >
-                            {date.toLocaleDateString("fr-FR", {
-                              weekday: "short",
-                            })}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {date.getDate()}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {isCompleteWeek && <div className="w-12 shrink-0" />}
-                  </div>
-                </div>
-              );
-            },
-          )}
-        </div>
+        ))}
       </div>
 
-      {/* Agent rows */}
-      <div className="space-y-3">
-        {agents.map(
-          ({ agentId, agentName }: { agentId: string; agentName: string }) => {
+      {/* Calendar grid */}
+      <div className="flex-1 grid grid-cols-7 gap-1 overflow-auto">
+        {weekGroups.flatMap((week: { dates: Date[]; startIdx: number }, weekIdx: number) =>
+          week.dates.map((date: Date, idx: number) => {
+            const dateStr = formatDate(date);
+            const dayShifts = getShiftsForDate(dateStr);
+            const isClosed = isClosedDay(date);
+            const isPast = isDateInPast(dateStr);
+            const totalHours = calculateTotalHours(dateStr);
+            const isThursday = date.getDay() === 4;
+            const weekNum = isThursday ? getWeekNumber(date) : null;
+
             return (
-              <div key={agentId} className="flex items-stretch">
-                <div className="w-56 shrink-0 p-3 bg-muted rounded-lg sticky left-0 z-10 mr-2 flex flex-col justify-center">
-                  <div className="font-medium text-sm mb-2">{agentName}</div>
-                  {(() => {
-                    const monthHours = weekGroups.reduce(
-                      (total, week) =>
-                        total + calculateAgentHours(agentId, week.dates),
-                      0,
-                    );
-                    const monthMaxHours =
-                      maxWeeklyWorkHours * (weekGroups.length || 1);
-                    const isOver = monthHours > monthMaxHours;
-                    return (
-                      <div
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${isOver ? "bg-destructive/10" : "bg-primary/10"}`}
-                      >
-                        <Clock
-                          className={`h-4 w-4 ${isOver ? "text-destructive" : "text-primary"}`}
-                        />
-                        <span
-                          className={`font-bold text-base ${isOver ? "text-destructive" : "text-primary"}`}
-                        >
-                          {monthHours.toFixed(1)}h
-                        </span>
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          ce mois
-                        </span>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                <div className="flex gap-2">
-                  {weekGroups.map(
-                    (
-                      week: { dates: Date[]; startIdx: number },
-                      weekIdx: number,
-                    ) => {
-                      const weekDates = week.dates.map(formatDate);
-                      const isCompleteWeek = week.dates.length === 7;
-                      const hasAnyShift = weekDates.some((date: string) =>
-                        shifts.find(
-                          (s) => s.agentId === agentId && s.date === date,
-                        ),
-                      );
-
-                      const showWeekPasteBlock =
-                        copiedWeekDates &&
-                        copiedWeekAgentId &&
-                        !hasAnyShift &&
-                        weekDates.every((d) => !isDateInPast(d));
-
-                      return (
-                        <div key={weekIdx} className="flex relative">
-                          <div className="flex gap-0">
-                            {week.dates.map((date: Date, idx: number) => {
-                              const dateStr = formatDate(date);
-                              const shift = shifts.find(
-                                (s) =>
-                                  s.agentId === agentId && s.date === dateStr,
-                              );
-                              const conflict = getDateConflict(
-                                agentId,
-                                dateStr,
-                              );
-                              const isPast = isDateInPast(dateStr);
-                              const isClosed = isClosedDay(date);
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className={`border rounded-lg relative overflow-hidden ${
-                                    isClosed ? "bg-muted/30" : "bg-background"
-                                  } ${showWeekPasteBlock ? "invisible" : ""}`}
-                                  style={{ width: "120px", height: "100px" }}
-                                >
-                                  {shift ? (
-                                    <ShiftCard
-                                      shift={shift}
-                                      isClosed={isClosed}
-                                      onEdit={onEditShift}
-                                      onDelete={onDeleteShift}
-                                      onCopy={onCopyShift}
-                                    />
-                                  ) : !isPast ? (
-                                    conflict?.type === "time_off" ? (
-                                      <button
-                                        onClick={() =>
-                                          onConflictClick(agentId, dateStr)
-                                        }
-                                        className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
-                                      >
-                                        <Ban className="h-3 w-3" />
-                                      </button>
-                                    ) : conflict?.type === "double_booking" ? (
-                                      <button
-                                        onClick={() =>
-                                          onConflictClick(agentId, dateStr)
-                                        }
-                                        disabled
-                                        className="absolute inset-1 flex items-center justify-center gap-1 rounded bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-not-allowed opacity-75"
-                                      >
-                                        <AlertTriangle className="h-3 w-3" />
-                                      </button>
-                                    ) : isClosed ? (
-                                      <button
-                                        onClick={() =>
-                                          copiedShift
-                                            ? onPasteShift(agentId, dateStr)
-                                            : onCreateShift(agentId, dateStr)
-                                        }
-                                        className="absolute inset-1 flex flex-col items-center justify-center gap-0.5 rounded border border-dashed border-muted-foreground/20 text-muted-foreground/50 hover:border-orange-400 hover:text-orange-500 hover:bg-orange-50 transition-colors group"
-                                        title="Jour fermé — cliquer pour forcer l'ajout"
-                                      >
-                                        <CalendarOff className="h-3 w-3" />
-                                        <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity leading-none">
-                                          Forcer
-                                        </span>
-                                      </button>
-                                    ) : (
-                                      <button
-                                        onClick={() =>
-                                          copiedShift
-                                            ? onPasteShift(agentId, dateStr)
-                                            : onCreateShift(agentId, dateStr)
-                                        }
-                                        className="absolute inset-1 flex items-center justify-center rounded hover:bg-primary/10 group border border-dashed border-muted-foreground/30"
-                                      >
-                                        {copiedShift ? (
-                                          <Clipboard className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                                        ) : (
-                                          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                                        )}
-                                      </button>
-                                    )
-                                  ) : isPast ? (
-                                    <div className="absolute inset-1 flex items-center justify-center text-xs text-muted-foreground">
-                                      Date passée
-                                    </div>
-                                  ) : null}
-
-                                  {conflict && shift && (
-                                    <button
-                                      onClick={() =>
-                                        onConflictClick(agentId, dateStr)
-                                      }
-                                      className="absolute top-1 right-1 z-10"
-                                    >
-                                      <div
-                                        className={`w-2 h-2 rounded-full ${
-                                          conflict.type === "time_off"
-                                            ? "bg-red-500"
-                                            : "bg-yellow-500"
-                                        }`}
-                                      />
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-
-                          {isCompleteWeek && (
-                            <div className="w-12 shrink-0 flex items-center justify-center ml-0">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  {hasAnyShift && (
-                                    <>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          onCopyWeek(agentId, weekDates)
-                                        }
-                                      >
-                                        <Copy className="h-3 w-3 mr-2" />
-                                        Copier la semaine
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          onDeleteWeek(agentId, weekDates)
-                                        }
-                                        className="text-destructive"
-                                      >
-                                        <Trash2 className="h-3 w-3 mr-2" />
-                                        Vider la semaine
-                                      </DropdownMenuItem>
-                                    </>
-                                  )}
-                                  {showWeekPasteBlock && (
-                                    <>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          onPasteWeek(agentId, weekDates)
-                                        }
-                                      >
-                                        <Clipboard className="h-3 w-3 mr-2" />
-                                        Coller la semaine
-                                      </DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                    </>
-                                  )}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          )}
-
-                          {showWeekPasteBlock && (
-                            <div
-                              className="absolute inset-0 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary rounded cursor-pointer hover:bg-primary/10 transition-colors z-5"
-                              onClick={() => onPasteWeek(agentId, weekDates)}
-                              style={{
-                                right: isCompleteWeek ? "48px" : "0",
-                              }}
-                            >
-                              <div className="flex flex-col items-center gap-1">
-                                <Clipboard className="h-5 w-5 text-primary" />
-                                <span className="text-xs font-medium text-primary">
-                                  Coller
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    },
+              <div
+                key={`${weekIdx}-${idx}`}
+                className={`
+                  border rounded-lg p-1 flex flex-col min-h-[100px]
+                  ${isClosed ? "bg-muted/30" : "bg-background"}
+                  ${isPast ? "opacity-60" : ""}
+                `}
+              >
+                {/* Week number above Thursday */}
+                {weekNum !== null && (
+                  <div className="text-[9px] text-primary font-semibold text-center mb-0.5">
+                    Sem. {weekNum}
+                  </div>
+                )}
+                {/* Date header */}
+                <div className="flex items-center justify-between mb-1">
+                  <span
+                    className={`
+                      text-sm font-semibold
+                      ${isClosed ? "text-muted-foreground" : ""}
+                      ${!isPast && !isClosed ? "text-primary" : ""}
+                    `}
+                  >
+                    {date.getDate()}
+                  </span>
+                  {totalHours > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {totalHours.toFixed(1)}h
+                    </span>
                   )}
                 </div>
+
+                {/* Shifts list */}
+                <div className="flex-1 space-y-1 overflow-y-auto">
+                  {dayShifts.map((shift) => (
+                    <button
+                      key={shift.id}
+                      onClick={() => !isPast && onEditShift(shift)}
+                      className="w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white truncate"
+                      style={{ backgroundColor: shift.color }}
+                      title={`${getAgentName(shift.agentId)}: ${shift.startTime}-${shift.endTime}${shift.isSplit ? ` | ${shift.splitStartTime2}-${shift.splitEndTime2}` : ''}`}
+                    >
+                      <div className="truncate">
+                        {getAgentName(shift.agentId).split(" ")[0]}
+                      </div>
+                      <div className="text-white/80 text-[9px]">
+                        {shift.startTime}-{shift.endTime}
+                        {shift.isSplit && (
+                          <span className="block">{shift.splitStartTime2}-{shift.splitEndTime2}</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Add button */}
+                {!isPast && (
+                  <button
+                    onClick={() => {
+                      if (copiedShift) {
+                        // For simplicity, add to first agent
+                        if (agents.length > 0) {
+                          onPasteShift(agents[0].agentId, dateStr);
+                        }
+                      } else {
+                        onCreateShift(agents[0]?.agentId || "", dateStr);
+                      }
+                    }}
+                    className="mt-1 w-full py-0.5 text-[10px] text-muted-foreground hover:text-primary hover:bg-primary/10 rounded border border-dashed border-muted-foreground/30"
+                  >
+                    + Ajouter
+                  </button>
+                )}
               </div>
             );
-          },
+          }),
         )}
       </div>
     </div>
@@ -3903,12 +4153,39 @@ function ShiftCard({
       : `${hours}h`;
   };
 
+  // Calculate total duration including split shift
+  const calculateTotalDuration = () => {
+    // First part
+    const [startHour, startMin] = shift.startTime.split(":").map(Number);
+    const [endHour, endMin] = shift.endTime.split(":").map(Number);
+    let minutes1 = endHour * 60 + endMin - (startHour * 60 + startMin);
+    if (minutes1 < 0) minutes1 += 24 * 60;
+    minutes1 -= shift.breakDuration;
+
+    // Second part (if split)
+    let minutes2 = 0;
+    if (shift.isSplit && shift.splitStartTime2 && shift.splitEndTime2) {
+      const [s2h, s2m] = shift.splitStartTime2.split(":").map(Number);
+      const [e2h, e2m] = shift.splitEndTime2.split(":").map(Number);
+      minutes2 = e2h * 60 + e2m - (s2h * 60 + s2m);
+      if (minutes2 < 0) minutes2 += 24 * 60;
+      minutes2 -= shift.splitBreakDuration || 0;
+    }
+
+    const totalMinutes = minutes1 + minutes2;
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return mins > 0
+      ? `${hours}h${mins.toString().padStart(2, "0")}`
+      : `${hours}h`;
+  };
+
   const isPast = isShiftInPast(shift);
   const completionStatus = getShiftCompletionStatus(shift);
 
   return (
     <div
-      className={`absolute inset-0 rounded p-2 border-l-4 flex flex-col group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
+      className={`absolute inset-0 rounded p-1 border-l-3 flex flex-col group cursor-pointer shadow-sm hover:shadow-md transition-all overflow-hidden ${
         isPast ? "opacity-80" : ""
       }`}
       style={{
@@ -3919,56 +4196,47 @@ function ShiftCard({
     >
       {isClosed && (
         <div
-          className="absolute top-1 right-1 z-10"
+          className="absolute top-0.5 right-0.5 z-10"
           title="Poste planifié un jour fermé"
         >
-          <Lock className="h-3 w-3 text-white/80" />
+          <Lock className="h-2.5 w-2.5 text-white/80" />
         </div>
       )}
       {completionStatus && (
         <div
-          className="absolute left-0 top-0 bottom-0 w-1"
+          className="absolute left-0 top-0 bottom-0 w-0.5"
           style={{ backgroundColor: completionStatus.color }}
         />
       )}
 
-      <div className="flex items-start justify-between gap-2 relative z-10">
+      <div className="flex items-start justify-between gap-1 relative z-10">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-white truncate flex items-center gap-2">
-            {isOvernightShift(shift.startTime, shift.endTime) && (
-              <Moon className="h-3.5 w-3.5 shrink-0" />
+          <div className="text-[10px] font-bold text-white truncate flex flex-col gap-0.5">
+            <div className="flex items-center gap-1">
+              {isOvernightShift(shift.startTime, shift.endTime) && (
+                <Moon className="h-2.5 w-2.5 shrink-0" />
+              )}
+              {shift.startTime}-{shift.endTime}
+            </div>
+            {shift.isSplit && (
+              <div className="text-[9px] font-normal text-white/80">
+                {shift.splitStartTime2}-{shift.splitEndTime2}
+              </div>
             )}
-            {shift.startTime} - {shift.endTime}
           </div>
-          <div className="flex items-center gap-1 mt-1 flex-wrap">
+          <div className="flex items-center gap-0.5 mt-0.5 flex-wrap">
             <Badge
               variant="secondary"
-              className="text-xs h-5 bg-white/20 text-white border-0"
+              className="text-[9px] h-4 px-1 bg-white/20 text-white border-0"
             >
-              <Clock className="h-3 w-3 mr-1" />
-              {calculateShiftLength(
+              {shift.isSplit ? calculateTotalDuration() : calculateShiftLength(
                 shift.startTime,
                 shift.endTime,
                 shift.breakDuration,
               )}
             </Badge>
-            {shift.breakDuration > 0 && (
-              <span className="text-xs text-white/80">
-                {shift.breakDuration}min
-              </span>
-            )}
             {completionStatus && (
-              <Badge
-                variant="secondary"
-                className="text-xs h-5 font-semibold border-0 gap-1"
-                style={{
-                  backgroundColor: completionStatus.color,
-                  color: "#fff",
-                }}
-              >
-                <completionStatus.icon className="h-3 w-3" />
-                {completionStatus.label}
-              </Badge>
+              <completionStatus.icon className="h-2.5 w-2.5 text-white" />
             )}
           </div>
         </div>
@@ -3977,10 +4245,10 @@ function ShiftCard({
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 w-6 p-0 hover:bg-white/20 bg-white/10 rounded shrink-0"
+              className="h-5 w-5 p-0 hover:bg-white/20 bg-white/10 rounded shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreVertical className="h-3.5 w-3.5 text-white" />
+              <MoreVertical className="h-2.5 w-2.5 text-white" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -3994,6 +4262,15 @@ function ShiftCard({
                 >
                   <Pencil className="h-3 w-3 mr-2" />
                   Modifier
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(shift);
+                  }}
+                >
+                  <Clock className="h-3 w-3 mr-2" />
+                  Personnaliser horaires
                 </DropdownMenuItem>
               </>
             )}

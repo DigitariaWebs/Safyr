@@ -143,19 +143,22 @@ export default function ShiftsPage() {
   // ─── derived stats ───────────────────────────────────────────────────────
 
   const totalShifts = shifts.length;
-  const sitesWithShifts = new Set(shifts.map((s) => s.siteId)).size;
-  const avgDuration =
-    totalShifts > 0
-      ? shifts.reduce(
-          (acc, s) =>
-            acc + calcDuration(s.startTime, s.endTime, s.breakDuration),
-          0,
-        ) / totalShifts
-      : 0;
-  const nightShifts = shifts.filter((s) => {
-    const h = parseInt(s.startTime.split(":")[0], 10);
-    return h >= 20 || h < 5;
-  }).length;
+  const { sitesWithShifts, avgDuration, nightShifts } = useMemo(() => {
+    const sites = new Set(shifts.map((s) => s.siteId)).size;
+    const avg =
+      shifts.length > 0
+        ? shifts.reduce(
+            (acc, s) =>
+              acc + calcDuration(s.startTime, s.endTime, s.breakDuration),
+            0,
+          ) / shifts.length
+        : 0;
+    const night = shifts.filter((s) => {
+      const h = parseInt(s.startTime.split(":")[0], 10);
+      return h >= 20 || h < 5;
+    }).length;
+    return { sitesWithShifts: sites, avgDuration: avg, nightShifts: night };
+  }, [shifts]);
 
   // Create lookup maps for O(1) site access
   const siteNameMap = useMemo(

@@ -55,7 +55,7 @@ import { mockSites } from "@/data/sites";
 function getAgentStats() {
   const activeEmployees = mockEmployees.filter((e) => e.status === "active");
 
-  const available = activeEmployees.filter((e) => e.status === "active").length;
+  const available = activeEmployees.length;
   const cdiCount = activeEmployees.filter(
     (e) => e.contracts.find((c) => c.status === "active")?.type === "CDI",
   ).length;

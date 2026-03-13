@@ -20,18 +20,14 @@ export function NavigationProvider({
   const [isNavExpanded, setIsNavExpanded] = React.useState(false);
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("globalNavExpanded");
-      if (saved === "true") {
-        setIsNavExpanded(true);
-      }
+    const saved = localStorage.getItem("globalNavExpanded");
+    if (saved === "true") {
+      setIsNavExpanded(true);
     }
   }, []);
 
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("globalNavExpanded", String(isNavExpanded));
-    }
+    localStorage.setItem("globalNavExpanded", String(isNavExpanded));
   }, [isNavExpanded]);
 
   const toggleNavExpanded = React.useCallback(() => {

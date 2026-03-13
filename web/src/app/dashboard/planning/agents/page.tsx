@@ -341,66 +341,33 @@ export default function PlanningAgentsPage() {
     setIsViewModalOpen(true);
   };
 
-  const handleRowClick = (agent: PlanningAgent) => {
-    handleView(agent);
-  };
-
-  const handleEditFromDropdown = (agent: PlanningAgent) => {
-    setSelectedAgent(agent);
-    const hasCqpAps = agent.qualifications.some((q) => q.includes("CQP APS"));
+  const openEditModal = (agent: PlanningAgent) => {
     const ssiapQual = agent.qualifications.find((q) => q.includes("SSIAP"));
-    const hasSsiap = !!ssiapQual;
-    const ssiapLevel = ssiapQual
-      ? (ssiapQual.match(/\d+/)?.[0] as "1" | "2" | "3") || "1"
-      : "1";
-    const hasSst = agent.qualifications.some((q) => q.includes("SST"));
-    const hasProCard = agent.qualifications.some((q) =>
-      q.includes("Carte Professionnelle"),
-    );
-
     setFormData({
       ...agent,
       qualifications: agent.qualifications.join(", "),
-      hasCqpAps,
-      hasSsiap,
-      ssiapLevel,
-      hasSst,
-      hasProCard,
+      hasCqpAps: agent.qualifications.some((q) => q.includes("CQP APS")),
+      hasSsiap: !!ssiapQual,
+      ssiapLevel: ssiapQual
+        ? (ssiapQual.match(/\d+/)?.[0] as "1" | "2" | "3") || "1"
+        : "1",
+      hasSst: agent.qualifications.some((q) => q.includes("SST")),
+      hasProCard: agent.qualifications.some((q) =>
+        q.includes("Carte Professionnelle"),
+      ),
     });
     setIsCreateModalOpen(true);
   };
 
+  const handleEditFromDropdown = (agent: PlanningAgent) => {
+    setSelectedAgent(agent);
+    openEditModal(agent);
+  };
+
   const handleEdit = () => {
     if (selectedAgent) {
-      // Parse qualifications back to toggle states
-      const hasCqpAps = selectedAgent.qualifications.some((q) =>
-        q.includes("CQP APS"),
-      );
-      const ssiapQual = selectedAgent.qualifications.find((q) =>
-        q.includes("SSIAP"),
-      );
-      const hasSsiap = !!ssiapQual;
-      const ssiapLevel = ssiapQual
-        ? (ssiapQual.match(/\d+/)?.[0] as "1" | "2" | "3") || "1"
-        : "1";
-      const hasSst = selectedAgent.qualifications.some((q) =>
-        q.includes("SST"),
-      );
-      const hasProCard = selectedAgent.qualifications.some((q) =>
-        q.includes("Carte Professionnelle"),
-      );
-
-      setFormData({
-        ...selectedAgent,
-        qualifications: selectedAgent.qualifications.join(", "),
-        hasCqpAps,
-        hasSsiap,
-        ssiapLevel,
-        hasSst,
-        hasProCard,
-      });
       setIsViewModalOpen(false);
-      setIsCreateModalOpen(true);
+      openEditModal(selectedAgent);
     }
   };
 
@@ -501,7 +468,7 @@ export default function PlanningAgentsPage() {
         columns={columns}
         searchKey="name"
         searchPlaceholder="Rechercher un agent..."
-        onRowClick={handleRowClick}
+        onRowClick={handleView}
       />
 
       {/* Create/Edit Modal */}

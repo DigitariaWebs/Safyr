@@ -6,10 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Safyr is a monorepo containing web and mobile applications for managing private security companies. It unifies HR, payroll, accounting, billing, banking, planning, geolocation, inventory, OCR, and digital activity logs.
 
+**All user-facing content is in French.** The app targets the French private security industry — regulatory references include CNAPS, URSSAF, DSN, Légifrance, SSIAP, and French collective agreements.
+
 - **web/**: Next.js 16 web application (App Router)
 - **mobile/**: Expo React Native mobile application
 
 ## Common Commands
+
+### Root (Turborepo — runs across all workspaces)
+```bash
+bun install      # Install all workspaces
+bun dev          # Start all dev servers concurrently
+bun build        # Build all packages
+bun lint         # Lint all packages
+```
 
 ### Web Application
 ```bash
@@ -19,7 +29,7 @@ bun build        # Production build
 bun start        # Start production server
 bun lint         # Run ESLint
 bun format       # Format code with Prettier
-bun test         # Type check with tsc
+bun test         # Type check with tsc --noEmit
 bun prune        # Remove unused code with knip
 ```
 
@@ -27,25 +37,22 @@ bun prune        # Remove unused code with knip
 ```bash
 cd mobile
 bun start        # Start Expo dev server
-bun android      # Run on Android
-bun ios          # Run on iOS
-bun build        # Build for production
-```
-
-### Root
-```bash
-bun install      # Install all workspaces
+bun android      # Run on Android (expo run:android)
+bun ios          # Run on iOS (expo run:ios)
+bun lint         # Run ESLint via expo lint
 ```
 
 ## Architecture
 
 ### Web App Structure (`web/src/`)
 - **app/**: Next.js App Router pages. Routes under `(public)/` are marketing pages, `dashboard/` contains authenticated app pages, `(auth)/` contains login/register
+- **app/dashboard/**: Module routes — `hr/`, `payroll/`, `billing/`, `accounting/`, `banking/`, `planning/`, `geolocation/`, `logbook/`, `stock/`, `ocr/`
 - **components/**: Reusable UI components organized by feature (layout, sections, ui)
 - **config/**: Site-wide configuration (site.ts, assets.ts)
-- **contexts/**: React contexts (SidebarContext)
+- **contexts/**: `SidebarContext`, `NavigationContext`, `AgendaContext`, `SendEmailContext`, `LiensUtilesContext`
 - **hooks/**: Custom React hooks
-- **lib/**: Utilities including stores (Zustand), utils
+- **lib/stores/**: Zustand stores — `uiStore.ts`, `planningSettingsStore.ts`
+- **lib/**: `utils.ts` (cn helper), `payroll-bulletin-pdf.ts` (jsPDF payslip generation), `types.d.ts`
 - **services/**: API/service integrations
 
 ### State Management
@@ -54,17 +61,25 @@ bun install      # Install all workspaces
 - **React Context** for theme and other global providers
 
 ### UI Stack
-- **Tailwind CSS 4** for styling
+- **Tailwind CSS 4** for styling (web); **NativeWind v4** + Tailwind CSS v3 (mobile)
 - **Radix UI** for accessible component primitives
-- **Framer Motion** and **Motion** for animations
+- **Framer Motion** / **Motion** for animations
 - **Lucide React** for icons
+- **TanStack React Table v8** for data tables
+- **dnd-kit** for drag-and-drop
+- **Recharts v3** for charts/graphs
+- **jsPDF + jspdf-autotable** for PDF generation
+- **Zod v4** for schema validation
+- **cmdk** for the command palette
+- **Mapbox** (`@rnmapbox/maps`) for geolocation maps (mobile)
 
 ### Mobile App Structure (`mobile/src/`)
 - **app/**: Expo Router file-based routing with `(auth)` and `(app)` route groups
 - **components/**: UI components (ui/, geolocation/)
-- **features/**: Feature modules (auth, geolocation, mainCourante, notifications, payroll, profile, schedule, timeoff)
-- **theme/**: Theme configuration (colors, typography, spacing)
+- **features/**: `auth`, `geolocation`, `mainCourante` (digital logbook), `notifications`, `payroll`, `profile`, `schedule`, `timeoff`
+- **theme/**: Theme configuration (colors, typography, spacing); uses Montserrat font
 - **lib/**: Utilities (cn.ts, utils.ts)
+- Storage: `AsyncStorage` for general data, `expo-secure-store` for sensitive tokens
 
 ## Design Patterns
 
