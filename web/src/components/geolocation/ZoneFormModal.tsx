@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Circle, Pentagon } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import { ZonePreviewMap } from "@/components/geolocation/ZonePreviewMap";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
@@ -130,12 +129,14 @@ export function ZoneFormModal({
   const renderShapeSummary = () => {
     if (!shape) return null;
 
-    if (shape.kind === "circle") {
-      return (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Cercle &mdash; rayon: {Math.round(shape.radius)}m
-          </p>
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          {shape.kind === "circle"
+            ? `Cercle — rayon: ${Math.round(shape.radius)}m`
+            : `Polygone — ${shape.vertices.length} sommets`}
+        </p>
+        {shape.kind === "circle" && (
           <div className="space-y-1.5">
             <Label htmlFor="radius">Rayon (m)</Label>
             <Input
@@ -145,35 +146,19 @@ export function ZoneFormModal({
               value={shape.radius}
               onChange={(e) => {
                 const r = Number(e.target.value);
-                if (r > 0) {
-                  setShape({ ...shape, radius: r });
-                }
+                if (r > 0) setShape({ ...shape, radius: r });
               }}
             />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleStartDrawing("circle")}
-          >
-            Redessiner
+        )}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleStartDrawing("circle")}>
+            Redessiner cercle
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleStartDrawing("polygon")}>
+            Redessiner polygone
           </Button>
         </div>
-      );
-    }
-
-    return (
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          Polygone &mdash; {shape.vertices.length} sommets
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleStartDrawing("polygon")}
-        >
-          Redessiner
-        </Button>
       </div>
     );
   };
@@ -199,126 +184,327 @@ export function ZoneFormModal({
         },
       }}
     >
-      <div className="space-y-6">
-        {/* Nom de la zone */}
-        <div className="space-y-1.5">
-          <Label htmlFor="zone-name">Nom de la zone</Label>
-          <Input
-            id="zone-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ex : Zone Nord — Rosny 2"
-          />
-        </div>
+      <ZoneFormContent
+        name={name}
+        setName={setName}
+        type={type}
+        setType={setType}
+        site={site}
+        setSite={setSite}
+        color={color}
+        setColor={setColor}
+        shape={shape}
+        setShape={setShape}
+        alerts={alerts}
+        toggleAlert={toggleAlert}
+        renderShapeSummary={renderShapeSummary}
+        onStartDrawing={handleStartDrawing}
+      />
+    </Modal>
+  );
+}
 
-        {/* Type de zone */}
-        <div className="space-y-1.5">
-          <Label>Type de zone</Label>
-          <Select
-            value={type}
-            onValueChange={(v) => setType(v as ZoneType)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ZONE_TYPES.map((zt) => (
-                <SelectItem key={zt} value={zt}>
-                  {zt}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+// ── Shared form content ─────────────────────────────────────────
 
-        {/* Site / Client associé */}
-        <div className="space-y-1.5">
-          <Label>Site / Client associé</Label>
-          <Select value={site} onValueChange={setSite}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Sélectionner un site" />
-            </SelectTrigger>
-            <SelectContent>
-              {SITES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+interface ZoneFormContentProps {
+  name: string;
+  setName: (v: string) => void;
+  type: ZoneType;
+  setType: (v: ZoneType) => void;
+  site: string;
+  setSite: (v: string) => void;
+  color: string;
+  setColor: (v: string) => void;
+  shape: ZoneShape | null;
+  setShape: (v: ZoneShape | null) => void;
+  alerts: ZoneAlertRules;
+  toggleAlert: (key: keyof ZoneAlertRules) => void;
+  renderShapeSummary: () => React.ReactNode;
+  onStartDrawing?: (mode: "circle" | "polygon") => void;
+}
 
-        {/* Couleur */}
-        <div className="space-y-1.5">
-          <Label>Couleur</Label>
-          <div className="flex items-center gap-2">
-            {PRESET_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={cn(
-                  "h-8 w-8 rounded-full transition-all",
-                  color === c
-                    ? "ring-2 ring-offset-2 ring-offset-background"
-                    : "hover:scale-110",
-                )}
-                style={{
-                  backgroundColor: c,
-                  ...(color === c
-                    ? ({ "--tw-ring-color": c } as React.CSSProperties)
-                    : {}),
-                }}
-                onClick={() => setColor(c)}
-              />
+function ZoneFormContent({
+  name,
+  setName,
+  type,
+  setType,
+  site,
+  setSite,
+  color,
+  setColor,
+  shape,
+  alerts,
+  toggleAlert,
+  renderShapeSummary,
+  onStartDrawing,
+}: ZoneFormContentProps) {
+  return (
+    <div className="space-y-4">
+      {/* Nom de la zone */}
+      <div className="space-y-1.5">
+        <Label htmlFor="zone-name">Nom de la zone</Label>
+        <Input
+          id="zone-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex : Zone Nord — Rosny 2"
+        />
+      </div>
+
+      {/* Type de zone */}
+      <div className="space-y-1.5">
+        <Label>Type de zone</Label>
+        <Select
+          value={type}
+          onValueChange={(v) => setType(v as ZoneType)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ZONE_TYPES.map((zt) => (
+              <SelectItem key={zt} value={zt}>
+                {zt}
+              </SelectItem>
             ))}
-          </div>
-        </div>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* Forme de la zone */}
-        <div className="space-y-2">
-          <Label>Forme de la zone</Label>
-          {shape ? (
-            <>
-              {renderShapeSummary()}
-              <ZonePreviewMap shape={shape} color={color} height={180} />
-            </>
-          ) : (
+      {/* Site / Client associé */}
+      <div className="space-y-1.5">
+        <Label>Site / Client associé</Label>
+        <Select value={site} onValueChange={setSite}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Sélectionner un site" />
+          </SelectTrigger>
+          <SelectContent>
+            {SITES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Couleur */}
+      <div className="space-y-1.5">
+        <Label>Couleur</Label>
+        <div className="flex items-center gap-2">
+          {PRESET_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className={cn(
+                "h-8 w-8 rounded-full transition-all",
+                color === c
+                  ? "ring-2 ring-offset-2 ring-offset-background"
+                  : "hover:scale-110",
+              )}
+              style={{
+                backgroundColor: c,
+                ...(color === c
+                  ? ({ "--tw-ring-color": c } as React.CSSProperties)
+                  : {}),
+              }}
+              onClick={() => setColor(c)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Forme de la zone */}
+      <div className="space-y-2">
+        <Label>Forme de la zone</Label>
+        {shape ? (
+          <>
+            {renderShapeSummary()}
+            <ZonePreviewMap shape={shape} color={color} height={160} />
+          </>
+        ) : onStartDrawing ? (
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => handleStartDrawing("circle")}
+                size="sm"
+                onClick={() => onStartDrawing("circle")}
               >
-                <Circle className="size-4" />
                 Cercle
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleStartDrawing("polygon")}
+                size="sm"
+                onClick={() => onStartDrawing("polygon")}
               >
-                <Pentagon className="size-4" />
                 Polygone
               </Button>
             </div>
-          )}
-        </div>
+            <p className="text-[10px] text-muted-foreground">
+              Dessinez la forme directement sur la carte.
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Aucune forme définie.
+          </p>
+        )}
+      </div>
 
-        {/* Règles d'alerte */}
-        <div className="space-y-3">
-          <Label>Règles d&apos;alerte</Label>
-          {ALERT_LABELS.map(({ key, label }) => (
-            <div
-              key={key}
-              className="flex items-center justify-between"
-            >
-              <Label className="font-normal">{label}</Label>
-              <Switch
-                checked={alerts[key]}
-                onCheckedChange={() => toggleAlert(key)}
-              />
-            </div>
-          ))}
+      {/* Règles d'alerte */}
+      <div className="space-y-3">
+        <Label>Règles d&apos;alerte</Label>
+        {ALERT_LABELS.map(({ key, label }) => (
+          <div
+            key={key}
+            className="flex items-center justify-between"
+          >
+            <Label className="font-normal">{label}</Label>
+            <Switch
+              checked={alerts[key]}
+              onCheckedChange={() => toggleAlert(key)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Panel variant (for inline sidebar use) ──────────────────────
+
+interface ZoneFormPanelProps {
+  zone: GeoZone | null;
+  pendingShape: ZoneShape | null;
+  onSave: (data: Omit<GeoZone, "id" | "createdAt">) => void;
+  onCancel: () => void;
+  onStartDrawing: (mode: "circle" | "polygon") => void;
+}
+
+export function ZoneFormPanel({
+  zone,
+  pendingShape,
+  onSave,
+  onCancel,
+  onStartDrawing,
+}: ZoneFormPanelProps) {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<ZoneType>("Site client");
+  const [site, setSite] = useState("");
+  const [color, setColor] = useState("#22d3ee");
+  const [shape, setShape] = useState<ZoneShape | null>(null);
+  const [alerts, setAlerts] = useState<ZoneAlertRules>({
+    entry: true,
+    exit: true,
+    absence: false,
+    parking: false,
+  });
+
+  // Pre-populate in edit mode
+  useEffect(() => {
+    if (zone) {
+      setName(zone.name);
+      setType(zone.type);
+      setSite(zone.site);
+      setColor(zone.color);
+      setShape(zone.shape);
+      setAlerts(zone.alerts);
+    } else {
+      setName("");
+      setType("Site client");
+      setSite("");
+      setColor("#22d3ee");
+      setShape(null);
+      setAlerts({ entry: true, exit: true, absence: false, parking: false });
+    }
+  }, [zone?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Merge pending shape from map drawing
+  useEffect(() => {
+    if (pendingShape) {
+      setShape(pendingShape);
+    }
+  }, [pendingShape]);
+
+  const handleSave = () => {
+    if (!name || !shape) return;
+    onSave({ name, type, site, color, shape, alerts });
+  };
+
+  const toggleAlert = (key: keyof ZoneAlertRules) => {
+    setAlerts((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const renderShapeSummary = () => {
+    if (!shape) return null;
+
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          {shape.kind === "circle"
+            ? `Cercle — rayon: ${Math.round(shape.radius)}m`
+            : `Polygone — ${shape.vertices.length} sommets`}
+        </p>
+        {shape.kind === "circle" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="radius">Rayon (m)</Label>
+            <Input
+              id="radius"
+              type="number"
+              min={1}
+              value={shape.radius}
+              onChange={(e) => {
+                const r = Number(e.target.value);
+                if (r > 0) setShape({ ...shape, radius: r });
+              }}
+            />
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => onStartDrawing("circle")}>
+            Redessiner cercle
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onStartDrawing("polygon")}>
+            Redessiner polygone
+          </Button>
         </div>
       </div>
-    </Modal>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        <ZoneFormContent
+          name={name}
+          setName={setName}
+          type={type}
+          setType={setType}
+          site={site}
+          setSite={setSite}
+          color={color}
+          setColor={setColor}
+          shape={shape}
+          setShape={setShape}
+          alerts={alerts}
+          toggleAlert={toggleAlert}
+          renderShapeSummary={renderShapeSummary}
+          onStartDrawing={onStartDrawing}
+        />
+      </div>
+      <div className="shrink-0 p-3 border-t border-border/50 flex gap-2">
+        <Button
+          size="sm"
+          className="flex-1"
+          onClick={handleSave}
+          disabled={!name || !shape}
+        >
+          Enregistrer
+        </Button>
+        <Button size="sm" variant="outline" className="flex-1" onClick={onCancel}>
+          Annuler
+        </Button>
+      </div>
+    </div>
   );
 }

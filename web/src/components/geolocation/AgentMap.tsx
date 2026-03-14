@@ -82,7 +82,7 @@ export function AgentMap({
   return (
     // L3: describe map region for screen readers
     <div
-      className={cn("relative rounded-xl overflow-hidden border border-border/50", className)}
+      className={cn("relative overflow-hidden", className)}
       aria-label="Carte de localisation des agents"
       role="region"
     >
@@ -169,32 +169,32 @@ export function AgentMap({
         )}
       </Map>
 
-      {/* Legend overlay */}
-      <div className="absolute bottom-3 left-3 z-10 flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
-        {LEGEND.map(({ label, dot }) => (
-          <div
-            key={label}
-            className={cn(
-              "flex items-center gap-1.5",
-              label === "Hors ligne" && "opacity-40"
-            )}
-          >
-            <span className={cn("h-2 w-2 rounded-full", dot)} />
-            <span className="text-[10px] text-muted-foreground">{label}</span>
-          </div>
-        ))}
+      {/* Bottom-left controls */}
+      <div className="absolute bottom-3 left-3 z-10 flex items-center gap-2">
+        <div className="flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
+          {LEGEND.map(({ label, dot }) => (
+            <div
+              key={label}
+              className={cn(
+                "flex items-center gap-1.5",
+                label === "Hors ligne" && "opacity-40"
+              )}
+            >
+              <span className={cn("h-2 w-2 rounded-full", dot)} />
+              <span className="text-[10px] text-muted-foreground">{label}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={handleGlobalView}
+          className="flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
+          title="Afficher tous les agents"
+          aria-label="Vue globale — afficher tous les agents"
+        >
+          <Maximize2 className="h-3 w-3" />
+          Vue globale
+        </button>
       </div>
-
-      {/* Vue globale */}
-      <button
-        onClick={handleGlobalView}
-        className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
-        title="Afficher tous les agents"
-        aria-label="Vue globale — afficher tous les agents"
-      >
-        <Maximize2 className="h-3 w-3" />
-        Vue globale
-      </button>
     </div>
   );
 }

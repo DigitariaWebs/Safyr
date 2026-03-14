@@ -2,8 +2,13 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +26,10 @@ import {
   Compass,
   BatteryLow,
   MapPin,
+  PanelRight,
+  X,
+  SlidersHorizontal,
+  ArrowLeft,
 } from "lucide-react";
 import {
   mockGeolocationAgents,
@@ -300,15 +309,19 @@ function AgentDetailContent({
   );
 }
 
+type SidebarView = "list" | "detail";
+
 export default function LiveTrackingPage() {
   const agents = mockGeolocationAgents;
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] =
     useState<GeolocationAgent | null>(null);
   const [siteFilter, setSiteFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(() => Date.now());
+  const [showNav, setShowNav] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [sidebarView, setSidebarView] = useState<SidebarView>("list");
 
   // Single clock tick shared by all LastSeen instances
   useEffect(() => {
@@ -357,273 +370,338 @@ export default function LiveTrackingPage() {
 
   const handleAgentDetails = (agent: GeolocationAgent) => {
     setSelectedAgent(agent);
-    setIsViewModalOpen(true);
+    setSidebarView("detail");
+    setShowSidebar(true);
   };
 
-  return (
-    <div className="flex flex-col gap-4 h-full">
-      {/* Header */}
-      <div className="flex items-start gap-3">
-        <div>
-          <div className="flex items-center gap-3 mb-0.5">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Suivi en Temps Réel
-            </h1>
-            <span
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20"
-              aria-label="Flux en direct"
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"
-                aria-hidden="true"
-              />
-              Live
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {filteredAgents.length} agent
-            {filteredAgents.length > 1 ? "s" : ""} · {sites.length} site
-            {sites.length > 1 ? "s" : ""}
-          </p>
-        </div>
-      </div>
-
-      {/* Toolbar */}
-      <div
-        className="flex items-center gap-2 flex-wrap"
-        role="toolbar"
-        aria-label="Filtres"
-      >
-        <label htmlFor="site-filter" className="sr-only">
-          Filtrer par site
-        </label>
-        <select
-          id="site-filter"
-          value={siteFilter}
-          onChange={(e) => setSiteFilter(e.target.value)}
-          className="h-8 text-xs rounded-md border border-input bg-background px-2.5 focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          <option value="all">Tous les sites</option>
-          {sites.map((site) => (
-            <option key={site} value={site}>
-              {site}
-            </option>
-          ))}
-        </select>
-
-        <div className="h-4 w-px bg-border" aria-hidden="true" />
-
-        <div
-          className="flex gap-1"
-          role="group"
-          aria-label="Filtrer par statut"
-        >
-          <button
-            onClick={() => setStatusFilter("all")}
-            aria-pressed={statusFilter === "all"}
-            className={cn(
-              "h-8 px-3 text-xs rounded-md border transition-colors",
-              statusFilter === "all"
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-input text-muted-foreground hover:bg-accent"
-            )}
-          >
-            Tous{" "}
-            <span className="ml-1 opacity-60 tabular-nums" aria-hidden="true">
-              {agents.length}
-            </span>
-          </button>
-          {STATUS_OPTIONS.map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              aria-pressed={statusFilter === status}
-              className={cn(
-                "h-8 px-3 text-xs rounded-md border transition-colors flex items-center gap-1.5",
-                statusFilter === status
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-input text-muted-foreground hover:bg-accent"
-              )}
-            >
-              <span
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full",
-                  STATUS_CONFIG[status].dot
-                )}
-                aria-hidden="true"
-              />
-              {status}
-              <span className="opacity-60 tabular-nums" aria-hidden="true">
-                {statusCounts[status] ?? 0}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Responsive grid — stacked on mobile, 60/40 on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 flex-1 min-h-0">
-        <AgentMap
-          agents={filteredAgents}
-          selectedAgent={selectedAgent}
-          onAgentClick={handleAgentZoom}
-          className="col-span-1 lg:col-span-3 min-h-[40vh] lg:min-h-0"
+  // Shared sidebar content used in both desktop overlay and mobile Sheet
+  const sidebarContent = (
+    <div
+      className="flex flex-col gap-2 h-full min-h-0 overflow-hidden"
+      role="region"
+      aria-label="Liste des agents"
+    >
+      <div className="relative shrink-0 px-3 pt-3">
+        <Search
+          className="absolute left-5.5 top-5.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none"
+          aria-hidden="true"
         />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un agent…"
+          aria-label="Rechercher un agent"
+          className="pl-8 h-8 text-xs"
+        />
+      </div>
 
-        {/* Agent list panel */}
-        <div
-          className="col-span-1 lg:col-span-2 flex flex-col gap-2 min-h-0 overflow-hidden"
-          role="region"
-          aria-label="Liste des agents"
-        >
-          <div className="relative shrink-0">
-            <Search
-              className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none"
-              aria-hidden="true"
-            />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un agent…"
-              aria-label="Rechercher un agent"
-              className="pl-8 h-8 text-xs"
-            />
-          </div>
+      <ul className="flex-1 overflow-y-auto space-y-1 px-3 pb-3 list-none">
+        {listAgents.length === 0 ? (
+          <li className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+            <MapPin className="h-8 w-8 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">
+              Aucun agent trouvé
+            </p>
+          </li>
+        ) : (
+          listAgents.map((agent) => {
+            const isSelected = selectedAgent?.id === agent.id;
+            const isOffline = agent.status === "Hors ligne";
+            const { dot } = STATUS_CONFIG[agent.status];
 
-          <ul className="flex-1 overflow-y-auto space-y-1 pb-1 list-none">
-            {listAgents.length === 0 ? (
-              <li className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-                <MapPin className="h-8 w-8 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
-                  Aucun agent trouvé
-                </p>
-              </li>
-            ) : (
-              listAgents.map((agent) => {
-                const isSelected = selectedAgent?.id === agent.id;
-                const isOffline = agent.status === "Hors ligne";
-                const { dot } = STATUS_CONFIG[agent.status];
+            return (
+              <li key={agent.id} className="relative">
+                <div
+                  className={cn(
+                    "group relative flex items-center gap-0 rounded-lg border transition-all duration-150 overflow-hidden",
+                    isSelected
+                      ? "border-cyan-500/40 bg-cyan-500/5"
+                      : "border-border/60 hover:border-border hover:bg-muted/30"
+                  )}
+                >
+                  {isSelected && (
+                    <span
+                      className="absolute left-0 inset-y-0 w-[2px] rounded-r-full bg-cyan-400"
+                      aria-hidden="true"
+                    />
+                  )}
 
-                return (
-                  <li key={agent.id} className="relative">
-                    <div
-                      className={cn(
-                        "group relative flex items-center gap-0 rounded-lg border transition-all duration-150 overflow-hidden",
-                        isSelected
-                          ? "border-cyan-500/40 bg-cyan-500/5"
-                          : "border-border/60 hover:border-border hover:bg-muted/30"
-                      )}
-                    >
-                      {isSelected && (
-                        <span
-                          className="absolute left-0 inset-y-0 w-[2px] rounded-r-full bg-cyan-400"
-                          aria-hidden="true"
-                        />
-                      )}
+                  <button
+                    onClick={() => handleAgentZoom(agent)}
+                    className="flex-1 flex items-start gap-2.5 p-2.5 text-left min-w-0"
+                    aria-label={`Localiser ${agent.name} sur la carte`}
+                    aria-current={isSelected ? "true" : undefined}
+                  >
+                    <AgentAvatar
+                      name={agent.name}
+                      status={agent.status}
+                      offline={isOffline}
+                    />
 
-                      <button
-                        onClick={() => handleAgentZoom(agent)}
-                        className="flex-1 flex items-start gap-2.5 p-2.5 text-left min-w-0"
-                        aria-label={`Localiser ${agent.name} sur la carte`}
-                        aria-current={isSelected ? "true" : undefined}
-                      >
-                        <AgentAvatar
-                          name={agent.name}
-                          status={agent.status}
-                          offline={isOffline}
-                        />
-
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-baseline justify-between gap-1">
-                            <p
-                              className={cn(
-                                "text-xs font-semibold leading-none truncate",
-                                isOffline && "opacity-50"
-                              )}
-                            >
-                              {agent.name}
-                            </p>
-                            <LastSeen iso={agent.lastUpdate} now={now} />
-                          </div>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            {agent.site}
-                          </p>
-                          <div className="flex items-center justify-between pt-0.5">
-                            <div className="flex items-center gap-1">
-                              <span
-                                className={cn(
-                                  "h-1.5 w-1.5 rounded-full shrink-0",
-                                  dot,
-                                  isOffline && "opacity-40"
-                                )}
-                                aria-hidden="true"
-                              />
-                              <span className="text-[10px] text-muted-foreground">
-                                {agent.status}
-                              </span>
-                            </div>
-                            <BatteryBar value={agent.battery} />
-                          </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-baseline justify-between gap-1">
+                        <p
+                          className={cn(
+                            "text-xs font-semibold leading-none truncate",
+                            isOffline && "opacity-50"
+                          )}
+                        >
+                          {agent.name}
+                        </p>
+                        <LastSeen iso={agent.lastUpdate} now={now} />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {agent.site}
+                      </p>
+                      <div className="flex items-center justify-between pt-0.5">
+                        <div className="flex items-center gap-1">
+                          <span
+                            className={cn(
+                              "h-1.5 w-1.5 rounded-full shrink-0",
+                              dot,
+                              isOffline && "opacity-40"
+                            )}
+                            aria-hidden="true"
+                          />
+                          <span className="text-[10px] text-muted-foreground">
+                            {agent.status}
+                          </span>
                         </div>
-                      </button>
-
-                      <div className="pr-2 shrink-0">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              className="h-8 w-8 flex items-center justify-center rounded opacity-40 hover:opacity-100 focus:opacity-100 hover:bg-accent transition-all"
-                              aria-label={`Actions pour ${agent.name}`}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-36">
-                            <DropdownMenuItem
-                              onClick={() => handleAgentDetails(agent)}
-                            >
-                              <Info className="h-3.5 w-3.5 mr-2 shrink-0" />
-                              Voir détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleAgentZoom(agent)}
-                            >
-                              <Crosshair className="h-3.5 w-3.5 mr-2 shrink-0" />
-                              Localiser
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <BatteryBar value={agent.battery} />
                       </div>
                     </div>
-                  </li>
-                );
-              })
-            )}
-          </ul>
-        </div>
-      </div>
+                  </button>
 
-      {/* Detail modal */}
-      <Modal
-        open={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        type="details"
-        title="Localisation agent"
-        icon={null}
-        size="lg"
-        actions={{
-          secondary: {
-            label: "Fermer",
-            onClick: () => setIsViewModalOpen(false),
-          },
-        }}
-      >
-        {selectedAgent && (
-          <AgentDetailContent
-            agent={selectedAgent}
-            onClose={() => setIsViewModalOpen(false)}
-          />
+                  <div className="pr-2 shrink-0">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="h-8 w-8 flex items-center justify-center rounded opacity-40 hover:opacity-100 focus:opacity-100 hover:bg-accent transition-all"
+                          aria-label={`Actions pour ${agent.name}`}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-36">
+                        <DropdownMenuItem
+                          onClick={() => handleAgentDetails(agent)}
+                        >
+                          <Info className="h-3.5 w-3.5 mr-2 shrink-0" />
+                          Voir détails
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleAgentZoom(agent)}
+                        >
+                          <Crosshair className="h-3.5 w-3.5 mr-2 shrink-0" />
+                          Localiser
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </li>
+            );
+          })
         )}
-      </Modal>
+      </ul>
+    </div>
+  );
+
+  return (
+    <div className="relative h-full">
+      {/* Full-page map */}
+      <AgentMap
+        agents={filteredAgents}
+        selectedAgent={selectedAgent}
+        onAgentClick={handleAgentZoom}
+        className="absolute inset-0"
+      />
+
+      {/* Merged nav overlay (header + toolbar) */}
+      {showNav && (
+        <div className="absolute top-3 left-3 z-10 bg-background/80 backdrop-blur-md border border-border/50 rounded-xl shadow-lg overflow-hidden">
+          {/* Header row */}
+          <div className="flex items-center justify-between px-4 py-2.5">
+            <div>
+              <div className="flex items-center gap-3 mb-0.5">
+                <h1 className="text-lg font-bold tracking-tight">
+                  Suivi en Temps Réel
+                </h1>
+                <span
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/20"
+                  aria-label="Flux en direct"
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"
+                    aria-hidden="true"
+                  />
+                  Live
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {filteredAgents.length} agent
+                {filteredAgents.length > 1 ? "s" : ""} · {sites.length} site
+                {sites.length > 1 ? "s" : ""}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNav(false)}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
+              aria-label="Masquer les filtres"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {/* Filter row */}
+          <div
+            className="px-3 pb-2.5 flex items-center gap-2 flex-wrap"
+            role="toolbar"
+            aria-label="Filtres"
+          >
+            <label htmlFor="site-filter" className="sr-only">
+              Filtrer par site
+            </label>
+            <select
+              id="site-filter"
+              value={siteFilter}
+              onChange={(e) => setSiteFilter(e.target.value)}
+              className="h-8 text-xs rounded-md border border-input bg-background px-2.5 focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="all">Tous les sites</option>
+              {sites.map((site) => (
+                <option key={site} value={site}>
+                  {site}
+                </option>
+              ))}
+            </select>
+
+            <div className="h-4 w-px bg-border" aria-hidden="true" />
+
+            <div
+              className="flex gap-1"
+              role="group"
+              aria-label="Filtrer par statut"
+            >
+              <button
+                onClick={() => setStatusFilter("all")}
+                aria-pressed={statusFilter === "all"}
+                className={cn(
+                  "h-8 px-3 text-xs rounded-md border transition-colors",
+                  statusFilter === "all"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-input text-muted-foreground hover:bg-accent"
+                )}
+              >
+                Tous{" "}
+                <span className="ml-1 opacity-60 tabular-nums" aria-hidden="true">
+                  {agents.length}
+                </span>
+              </button>
+              {STATUS_OPTIONS.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  aria-pressed={statusFilter === status}
+                  className={cn(
+                    "h-8 px-3 text-xs rounded-md border transition-colors flex items-center gap-1.5",
+                    statusFilter === status
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-input text-muted-foreground hover:bg-accent"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      STATUS_CONFIG[status].dot
+                    )}
+                    aria-hidden="true"
+                  />
+                  {status}
+                  <span className="opacity-60 tabular-nums" aria-hidden="true">
+                    {statusCounts[status] ?? 0}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Nav toggle when hidden */}
+      {!showNav && (
+        <button
+          onClick={() => setShowNav(true)}
+          className="absolute top-3 left-3 z-10 bg-background/80 backdrop-blur-md border border-border/50 rounded-xl p-2.5 shadow-lg"
+          aria-label="Afficher les filtres"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Desktop sidebar overlay (right side) */}
+      {showSidebar && (
+        <div className="hidden lg:flex absolute top-3 right-3 bottom-3 z-10 w-96 flex-col bg-background/80 backdrop-blur-md border border-border/50 rounded-xl shadow-lg overflow-hidden">
+          {/* Sidebar header with dismiss */}
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-1 shrink-0">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {sidebarView === "list" ? "Agents" : "Détails"}
+            </span>
+            <button
+              onClick={() => setShowSidebar(false)}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
+              aria-label="Fermer le panneau"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {sidebarView === "list" ? (
+            sidebarContent
+          ) : (
+            selectedAgent && (
+              <div className="flex flex-col h-full">
+                <button
+                  onClick={() => setSidebarView("list")}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-3 pb-0"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Retour
+                </button>
+                <ScrollArea className="flex-1">
+                  <div className="p-3">
+                    <AgentDetailContent
+                      agent={selectedAgent}
+                      onClose={() => setSidebarView("list")}
+                    />
+                  </div>
+                </ScrollArea>
+              </div>
+            )
+          )}
+        </div>
+      )}
+
+      {/* Desktop sidebar toggle when hidden */}
+      {!showSidebar && (
+        <button
+          onClick={() => setShowSidebar(true)}
+          className="hidden lg:flex absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md border border-border/50 rounded-xl p-2.5 shadow-lg"
+          aria-label="Afficher la liste"
+        >
+          <PanelRight className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Mobile sidebar toggle */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <button className="lg:hidden absolute top-3 right-3 z-10 bg-background/80 backdrop-blur-md border border-border/50 rounded-xl p-2.5 shadow-lg">
+            <PanelRight className="h-4 w-4" />
+          </button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-96 p-0">
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -251,6 +251,15 @@ export function ZoneMap({
     onDrawCancel();
   }, [onDrawCancel]);
 
+  // ── Finish polygon drawing ──────────────────────────────────────
+  const handleFinishPolygon = useCallback(() => {
+    if (drawingMode !== "polygon" || drawingPoints.length < 3) return;
+    const vertices = [...drawingPoints];
+    setDrawingPoints([]);
+    setCursorPos(null);
+    onDrawComplete({ kind: "polygon", vertices });
+  }, [drawingMode, drawingPoints, onDrawComplete]);
+
   // ── Render ────────────────────────────────────────────────────────
 
   const isDrawing = drawingMode !== "none";
@@ -258,7 +267,7 @@ export function ZoneMap({
   return (
     <div
       className={cn(
-        "relative rounded-xl overflow-hidden border border-border/50",
+        "relative overflow-hidden",
         className
       )}
       aria-label="Carte des zones géo-fencées"
@@ -353,9 +362,19 @@ export function ZoneMap({
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-lg bg-background/90 backdrop-blur-md border border-cyan-500/30 px-4 py-2 shadow-lg">
           <span className="text-xs text-foreground">
             {drawingMode === "circle"
-              ? "Cliquez pour placer le centre, puis cliquez pour définir le rayon"
-              : "Cliquez pour ajouter des sommets \u00b7 Double-cliquez pour fermer"}
+              ? drawingPoints.length === 0
+                ? "Cliquez pour placer le centre du cercle"
+                : "Cliquez pour définir le rayon"
+              : `Cliquez pour ajouter des sommets${drawingPoints.length > 0 ? ` (${drawingPoints.length})` : ""}`}
           </span>
+          {drawingMode === "polygon" && drawingPoints.length >= 3 && (
+            <button
+              onClick={handleFinishPolygon}
+              className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Valider
+            </button>
+          )}
           <button
             onClick={handleCancelDrawing}
             className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
@@ -366,29 +385,29 @@ export function ZoneMap({
         </div>
       )}
 
-      {/* Legend overlay */}
-      <div className="absolute bottom-3 left-3 z-10 flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
-        {LEGEND.map(({ label, color }) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: color }}
-            />
-            <span className="text-[10px] text-muted-foreground">{label}</span>
-          </div>
-        ))}
+      {/* Bottom-left controls */}
+      <div className="absolute bottom-3 left-3 z-10 flex items-center gap-2">
+        <div className="flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
+          {LEGEND.map(({ label, color }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              <span className="text-[10px] text-muted-foreground">{label}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={handleGlobalView}
+          className="flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
+          title="Afficher toutes les zones"
+          aria-label="Vue globale — afficher toutes les zones"
+        >
+          <Maximize2 className="h-3 w-3" />
+          Vue globale
+        </button>
       </div>
-
-      {/* Vue globale */}
-      <button
-        onClick={handleGlobalView}
-        className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
-        title="Afficher toutes les zones"
-        aria-label="Vue globale — afficher toutes les zones"
-      >
-        <Maximize2 className="h-3 w-3" />
-        Vue globale
-      </button>
     </div>
   );
 }

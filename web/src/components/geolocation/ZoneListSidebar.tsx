@@ -65,7 +65,7 @@ export function ZoneListSidebar({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border/50 bg-card/80 backdrop-blur flex flex-col h-full",
+        "flex flex-col h-full",
         className
       )}
       role="region"
