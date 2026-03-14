@@ -22,7 +22,6 @@ const navItems: NavItem[] = [
     label: "Zones Géo-fencées",
     href: "/dashboard/geolocation/zones",
     icon: Square,
-    disabled: true,
   },
   {
     label: "Contrôle Présence",
