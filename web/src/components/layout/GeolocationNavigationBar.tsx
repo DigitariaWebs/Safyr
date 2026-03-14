@@ -27,7 +27,6 @@ const navItems: NavItem[] = [
     label: "Contrôle Présence",
     href: "/dashboard/geolocation/presence",
     icon: CheckCircle,
-    disabled: true,
   },
   {
     label: "Rondes",

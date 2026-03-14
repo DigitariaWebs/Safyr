@@ -11,6 +11,7 @@ interface AgentMapProps {
   agents: GeolocationAgent[];
   selectedAgent: GeolocationAgent | null;
   onAgentClick: (agent: GeolocationAgent) => void;
+  initialCenter?: { longitude: number; latitude: number; zoom?: number };
   className?: string;
 }
 
@@ -30,6 +31,7 @@ export function AgentMap({
   agents,
   selectedAgent,
   onAgentClick,
+  initialCenter,
   className,
 }: AgentMapProps) {
   const mapRef = useRef<MapRef>(null);
@@ -89,7 +91,7 @@ export function AgentMap({
       <Map
         ref={mapRef}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-        initialViewState={{ longitude: 2.3488, latitude: 48.8534, zoom: 11 }}
+        initialViewState={initialCenter ?? { longitude: 2.3488, latitude: 48.8534, zoom: 11 }}
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
       >
