@@ -150,6 +150,54 @@ export function formatPerimeter(perimeterM: number): string {
   return `${(perimeterM / 1000).toFixed(2)} km`;
 }
 
+// ── Point-in-zone detection ─────────────────────────────────────────
+
+/** Ray-casting algorithm: check if point [lng, lat] is inside a polygon */
+function isPointInPolygon(
+  point: [number, number],
+  vertices: [number, number][],
+): boolean {
+  const [x, y] = point;
+  let inside = false;
+  for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+    const [xi, yi] = vertices[i];
+    const [xj, yj] = vertices[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/** Check if a [lng, lat] point falls inside a zone shape (circle or polygon) */
+export function isPointInZone(
+  point: [number, number],
+  shape: ZoneShape,
+): boolean {
+  if (shape.kind === "circle") {
+    return flatEarthDistance(point, shape.center) <= shape.radius;
+  }
+  return isPointInPolygon(point, shape.vertices);
+}
+
+/** Distance from a point to the nearest edge of a zone, in meters. Returns 0 if inside. */
+export function distanceToZone(
+  point: [number, number],
+  shape: ZoneShape,
+): number {
+  if (isPointInZone(point, shape)) return 0;
+  if (shape.kind === "circle") {
+    return flatEarthDistance(point, shape.center) - shape.radius;
+  }
+  // For polygons, find minimum distance to any edge vertex (approximation)
+  let minDist = Infinity;
+  for (const vertex of shape.vertices) {
+    const d = flatEarthDistance(point, vertex);
+    if (d < minDist) minDist = d;
+  }
+  return minDist;
+}
+
 // ── Mock Data ──────────────────────────────────────────────────────
 
 export const mockGeolocationZones: GeoZone[] = [

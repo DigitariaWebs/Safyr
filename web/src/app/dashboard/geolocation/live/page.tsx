@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,7 +37,7 @@ import {
   GeolocationAgent,
 } from "@/data/geolocation-agents";
 import { AgentMap } from "@/components/geolocation/AgentMap";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 const STATUS_OPTIONS: GeolocationAgent["status"][] = [
   "En poste",
@@ -64,15 +65,6 @@ const STATUS_CONFIG: Record<
     badge: "border-gray-500/30 text-gray-400 bg-gray-500/10",
   },
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function getBatteryClasses(value: number): { fill: string; text: string } {
   if (value < 20) return { fill: "bg-red-500", text: "text-red-400" };
@@ -146,6 +138,7 @@ function LastSeen({ iso, now }: { iso: string; now: number }) {
             ? "text-muted-foreground"
             : "text-amber-400"
       )}
+      suppressHydrationWarning
     >
       {minutes === 0 ? "live" : `${minutes}m`}
     </span>
@@ -232,11 +225,11 @@ function AgentDetailContent({
             <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center gap-1">
               <Clock className="h-3 w-3" /> Dernière position
             </p>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium" suppressHydrationWarning>
               {new Date(agent.lastUpdate).toLocaleTimeString("fr-FR")}
             </p>
             {isOffline ? (
-              <p className="text-xs text-amber-400 mt-0.5">
+              <p className="text-xs text-amber-400 mt-0.5" suppressHydrationWarning>
                 il y a {minutesAgo} min
               </p>
             ) : (
@@ -312,16 +305,27 @@ function AgentDetailContent({
 type SidebarView = "list" | "detail";
 
 export default function LiveTrackingPage() {
+  const searchParams = useSearchParams();
   const agents = mockGeolocationAgents;
+
+  // Auto-select agent from URL search params (e.g. ?agent=1)
+  const initialAgent = useMemo(() => {
+    const agentId = searchParams.get("agent");
+    if (agentId) return agents.find((a) => a.id === agentId) ?? null;
+    return null;
+  }, [searchParams, agents]);
+
   const [selectedAgent, setSelectedAgent] =
-    useState<GeolocationAgent | null>(null);
+    useState<GeolocationAgent | null>(initialAgent);
   const [siteFilter, setSiteFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [showNav, setShowNav] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [sidebarView, setSidebarView] = useState<SidebarView>("list");
+  const [sidebarView, setSidebarView] = useState<SidebarView>(
+    () => (initialAgent ? "detail" : "list"),
+  );
 
   // Single clock tick shared by all LastSeen instances
   useEffect(() => {
@@ -514,6 +518,7 @@ export default function LiveTrackingPage() {
         agents={filteredAgents}
         selectedAgent={selectedAgent}
         onAgentClick={handleAgentZoom}
+        initialCenter={initialAgent ? { longitude: initialAgent.longitude, latitude: initialAgent.latitude, zoom: 15 } : undefined}
         className="absolute inset-0"
       />
 
