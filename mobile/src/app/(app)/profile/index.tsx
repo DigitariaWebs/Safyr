@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft, CheckCircle, Loader, Lock, RefreshCw, X } from "lucide-react-native";
 import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
-import { getSession, setSession, type Session } from "@/features/auth/auth.storage";
+import { getSession, type Session } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
 import {
   clearProfile,
@@ -178,7 +178,7 @@ export default function ProfileScreen() {
         left={<MenuButton />}
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            <Ionicons name="arrow-back-outline" size={18} color={colors.foreground} />
+            <ArrowLeft size={18} color={colors.foreground} />
             <Text className="ml-1" style={{ color: colors.foreground }}>Retour</Text>
           </Button>
         }
@@ -208,7 +208,7 @@ export default function ProfileScreen() {
                     className="opacity-60"
                   />
                   <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le nom complet ne peut pas être modifié depuis l'application mobile
+                    Le nom complet ne peut pas être modifié depuis l&apos;application mobile
                   </Text>
                 </View>
 
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
                     className="opacity-60"
                   />
                   <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le site ne peut pas être modifié depuis l'application mobile
+                    Le site ne peut pas être modifié depuis l&apos;application mobile
                   </Text>
                 </View>
 
@@ -261,14 +261,14 @@ export default function ProfileScreen() {
                     className="opacity-60"
                   />
                   <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le badge ne peut pas être modifié depuis l'application mobile
+                    Le badge ne peut pas être modifié depuis l&apos;application mobile
                   </Text>
                 </View>
               </View>
             </Card>
 
             <Card className="gap-4">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Contact d'urgence</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Contact d&apos;urgence</Text>
               <View>
                 <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom</Text>
                 <Input 
@@ -278,7 +278,7 @@ export default function ProfileScreen() {
                   className="opacity-60"
                 />
                 <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                  Le contact d'urgence ne peut pas être modifié depuis l'application mobile
+                  Le contact d&apos;urgence ne peut pas être modifié depuis l&apos;application mobile
                 </Text>
               </View>
               <View>
@@ -291,7 +291,7 @@ export default function ProfileScreen() {
                   className="opacity-60"
                 />
                 <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                  Le téléphone du contact d'urgence ne peut pas être modifié depuis l'application mobile
+                  Le téléphone du contact d&apos;urgence ne peut pas être modifié depuis l&apos;application mobile
                 </Text>
               </View>
             </Card>
@@ -339,12 +339,12 @@ export default function ProfileScreen() {
                 >
                   {changingPassword ? (
                     <>
-                      <Ionicons name="hourglass-outline" size={18} color={colors.foreground} />
+                      <Loader size={18} color={colors.foreground} />
                       <Text className="ml-2" style={{ color: colors.foreground }}>Modification...</Text>
                     </>
                   ) : (
                     <>
-                      <Ionicons name="lock-closed-outline" size={18} color={colors.foreground} />
+                      <Lock size={18} color={colors.foreground} />
                       <Text className="ml-2" style={{ color: colors.foreground }}>Modifier le mot de passe</Text>
                     </>
                   )}
@@ -366,22 +366,22 @@ export default function ProfileScreen() {
               <Button onPress={handleSave} disabled={saving}>
                 {saving ? (
                   <>
-                    <Ionicons name="hourglass-outline" size={18} color={colors.primaryForeground} />
+                    <Loader size={18} color={colors.primaryForeground} />
                     <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
                   </>
                 ) : (
                   <>
-                    <Ionicons name="checkmark-circle-outline" size={18} color={colors.primaryForeground} />
+                    <CheckCircle size={18} color={colors.primaryForeground} />
                     <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer les modifications</Text>
                   </>
                 )}
               </Button>
               <Button variant="outline" onPress={onReset}>
-                <Ionicons name="refresh-outline" size={18} color={colors.foreground} />
+                <RefreshCw size={18} color={colors.foreground} />
                 <Text className="ml-2" style={{ color: colors.foreground }}>Réinitialiser le profil local</Text>
               </Button>
               <Button variant="outline" onPress={() => router.back()}>
-                <Ionicons name="close-outline" size={18} color={colors.foreground} />
+                <X size={18} color={colors.foreground} />
                 <Text className="ml-2" style={{ color: colors.foreground }}>Annuler</Text>
               </Button>
             </View>

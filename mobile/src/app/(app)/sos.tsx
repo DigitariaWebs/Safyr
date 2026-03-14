@@ -1,6 +1,6 @@
 import { Alert, Text, View, ScrollView } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertTriangle, X } from "lucide-react-native";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useTheme } from "@/theme";
@@ -20,7 +20,7 @@ export default function SOSScreen() {
         left={<MenuButton />}
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            <Ionicons name="close-outline" size={18} color={colors.foreground} />
+            <X size={18} color={colors.foreground} />
             <Text className="ml-1" style={{ color: colors.foreground }}>Fermer</Text>
           </Button>
         }
@@ -52,7 +52,7 @@ export default function SOSScreen() {
               Alert.alert("Alerte envoyée (démo)", "Le poste de contrôle a été notifié.");
             }}
           >
-            <Ionicons name="warning" size={20} color={colors.destructiveForeground} />
+            <AlertTriangle size={20} color={colors.destructiveForeground} />
             <Text className="ml-2" style={{ color: colors.destructiveForeground }}>SOS</Text>
           </Button>
         </Card>

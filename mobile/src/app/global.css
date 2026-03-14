@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aldrich&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -43,60 +43,60 @@
   }
 
   .dark {
-    /* Premium Dark Blue Light Theme */
-    --background: 240 10% 3.9%;        /* Very dark blue, slightly luminous */
-    --foreground: 0 0% 98%;          /* Soft white (not pure white) */
-    --card: 240 10% 3.9%;             /* Slightly lighter dark blue */
-    --card-foreground: 0 0% 98%;      /* Soft white text */
-    --popover: 240 10% 3.9%;           /* Variant surface */
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;           /* Cyan-blue - main accent */
-    --primary-foreground: 240 5.9% 10%;   /* Light text on blue */
-    --secondary: 240 3.7% 15.9%;         /* Light gray/white background for secondary buttons */
-    --secondary-foreground: 0 0% 98%; /* Black text on white secondary buttons */
-    --muted: 240 3.7% 15.9%;             /* Muted background */
-    --muted-foreground: 240 5% 64.9%;  /* Softer secondary text */
-    --accent: 240 3.7% 15.9%;            /* Darker cyan-blue accent */
-    --accent-foreground: 0 0% 98%; /* Light cyan-blue on accent */
-    --destructive: 0 62.8% 30.6%;         /* Soft red */
-    --destructive-foreground: 0 0% 98%;
-    --success: 145 65% 50%;           /* Soft green */
-    --success-foreground: 0 0% 98%;
-    --warning: 38 85% 55%;            /* Soft amber */
+    /* Navy blue dark theme (matching web) */
+    --background: 222 47% 11%;
+    --foreground: 0 0% 94%;
+    --card: 217 33% 17%;
+    --card-foreground: 0 0% 94%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 187 93% 53%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 25% 22%;
+    --secondary-foreground: 0 0% 94%;
+    --muted: 217 25% 18%;
+    --muted-foreground: 215 16% 60%;
+    --accent: 195 50% 20%;
+    --accent-foreground: 187 90% 69%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 94%;
+    --success: 160 64% 51%;
+    --success-foreground: 0 0% 94%;
+    --warning: 43 96% 56%;
     --warning-foreground: 0 0% 10%;
-    --info: 195 85% 65%;              /* Cyan-blue (same as primary) */
-    --info-foreground: 0 0% 98%;
-    --neutral: 220 15% 50%;           /* Neutral gray */
-    --neutral-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;            /* Very subtle border */
-    --input: 240 3.7% 15.9%;             /* Input border */
-    --ring: 240 4.9% 83.9%;              /* Focus ring - cyan-blue */
+    --info: 187 93% 53%;
+    --info-foreground: 0 0% 94%;
+    --neutral: 215 16% 47%;
+    --neutral-foreground: 0 0% 94%;
+    --border: 213 30% 25%;
+    --input: 217 25% 22%;
+    --ring: 187 93% 53%;
     --radius: 0.75rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 187 93% 53%;
+    --chart-2: 170 50% 40%;
+    --chart-3: 25 90% 55%;
+    --chart-4: 160 64% 51%;
+    --chart-5: 280 50% 55%;
   }
 }
 
 @layer base {
   * {
     border-color: hsl(var(--border));
-    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+    font-family: "SpaceGrotesk", system-ui, -apple-system, sans-serif;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+    font-family: "SpaceGrotesk", system-ui, -apple-system, sans-serif;
     transition: background-color 300ms cubic-bezier(0.25, 0.1, 0.25, 1),
                 color 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
-  /* Apply Montserrat to all text elements */
+  /* Apply Space Grotesk to all text elements */
   p, span, div, h1, h2, h3, h4, h5, h6, a, button, input, textarea, select, label {
-    font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+    font-family: "SpaceGrotesk", system-ui, -apple-system, sans-serif;
   }
 
   button {
@@ -141,14 +141,14 @@
 @layer utilities {
   /* Premium glow effects */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.2);
     transition: box-shadow 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   .dark .glow-primary {
     box-shadow:
-      0 0 30px hsl(var(--primary) / 0.4),
-      0 0 60px hsl(var(--primary) / 0.2);
+      0 0 20px hsl(var(--primary) / 0.25),
+      0 0 40px hsl(var(--primary) / 0.1);
   }
 
   .glow-primary-hover:hover {
@@ -210,15 +210,15 @@
 
   /* Glass morphism effect (premium) */
   .glass-card {
-    backdrop-filter: blur(20px);
-    background-color: hsl(var(--card) / 0.7);
-    border: 1px solid hsl(var(--border) / 0.3);
+    backdrop-filter: blur(12px);
+    background-color: hsl(var(--card) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.35);
   }
 
   .dark .glass-card {
-    backdrop-filter: blur(30px);
-    background-color: hsl(var(--card) / 0.5);
-    border-color: hsl(var(--border) / 0.2);
+    backdrop-filter: blur(12px);
+    background-color: hsl(var(--card) / 0.8);
+    border-color: hsl(var(--border) / 0.35);
   }
 
   /* Smooth transitions for all interactive elements */

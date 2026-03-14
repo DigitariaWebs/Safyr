@@ -1,19 +1,19 @@
-import * as React from "react";
-import { View, type ViewProps, Animated } from "react-native";
-import { cn } from "@/lib/cn";
+import React, { useRef, useEffect, useMemo } from "react";
+import { Animated, ViewProps } from "react-native";
 import { useTheme } from "@/theme";
+import { cn } from "@/lib/cn";
 
-export type CardProps = ViewProps & {
+interface CardProps extends ViewProps {
   className?: string;
   animated?: boolean;
-};
+}
 
-export function Card({ className, style, animated = true, ...props }: CardProps) {
-  const { scheme, colors } = useTheme();
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  const scaleAnim = React.useRef(new Animated.Value(0.98)).current;
+export function Card({ className, style, animated = true, children, ...props }: CardProps) {
+  const { colors } = useTheme();
+  const fadeAnim = useRef(new Animated.Value(animated ? 0 : 1)).current;
+  const scaleAnim = useRef(new Animated.Value(animated ? 0.98 : 1)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (animated) {
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -29,46 +29,32 @@ export function Card({ className, style, animated = true, ...props }: CardProps)
         }),
       ]).start();
     }
-  }, [animated]);
+  }, [animated, fadeAnim, scaleAnim]);
 
-  const cardStyle = animated
-    ? {
-        opacity: fadeAnim,
-        transform: [{ scale: scaleAnim }],
-      }
-    : {};
-
-  // Modern card styling with cyan accents
-  const cardBackgroundColor = scheme === "dark" 
-    ? colors.surface  // Modern dark blue-cyan surface
-    : colors.card;
-  
-  const cardBorderColor = scheme === "dark"
-    ? colors.borderPrimary  // Vibrant cyan border
-    : colors.borderPrimary;  // Cyan border for light theme too
+  const cardBackground = useMemo(() => colors.card + "CC", [colors.card]);
 
   return (
     <Animated.View
-      className={cn(
-        "rounded-2xl p-5",
-        className
-      )}
       style={[
         {
-          backgroundColor: cardBackgroundColor,
-          borderWidth: 2,
-          borderColor: cardBorderColor,
-          // Modern glow effect with vibrant cyan
-          shadowColor: scheme === "dark" ? colors.primary : colors.primary,
-          shadowOffset: { width: 0, height: scheme === "dark" ? 4 : 2 },
-          shadowOpacity: scheme === "dark" ? 0.7 : 0.15,
-          shadowRadius: scheme === "dark" ? 24 : 8,
-          elevation: scheme === "dark" ? 12 : 4,
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+          borderWidth: 1,
+          borderColor: colors.borderSubtle,
+          backgroundColor: cardBackground,
+          padding: 20,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 3,
         },
-        cardStyle,
         style,
       ]}
+      className={cn("rounded-2xl overflow-hidden", className)}
       {...props}
-    />
+    >
+      {children}
+    </Animated.View>
   );
 }

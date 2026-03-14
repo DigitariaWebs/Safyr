@@ -10,6 +10,7 @@ export function useWorkZoneMonitor(input: {
   prolongedOutsideMs?: number;
   onProlongedOutside?: (ctx: { outsideMs: number; distanceMeters: number }) => void;
 }) {
+  const { enabled, location, zone, onProlongedOutside } = input;
   const prolongedOutsideMs = input.prolongedOutsideMs ?? 5 * 60 * 1000;
   const [outside, setOutside] = useState(false);
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
@@ -17,23 +18,23 @@ export function useWorkZoneMonitor(input: {
   const notifiedRef = useRef(false);
 
   useEffect(() => {
-    if (!input.enabled) {
+    if (!enabled) {
       setOutside(false);
       setDistanceMeters(null);
       outsideSinceRef.current = null;
       notifiedRef.current = false;
       return;
     }
-    const coords = input.location?.coords;
+    const coords = location?.coords;
     if (!coords) return;
 
     const dist = haversineMeters(
       { latitude: coords.latitude, longitude: coords.longitude },
-      input.zone.center,
+      zone.center,
     );
     setDistanceMeters(dist);
 
-    const isOutside = dist > input.zone.radiusMeters;
+    const isOutside = dist > zone.radiusMeters;
     setOutside(isOutside);
 
     const now = Date.now();
@@ -42,13 +43,13 @@ export function useWorkZoneMonitor(input: {
       const outsideMs = now - outsideSinceRef.current;
       if (!notifiedRef.current && outsideMs >= prolongedOutsideMs) {
         notifiedRef.current = true;
-        input.onProlongedOutside?.({ outsideMs, distanceMeters: dist });
+        onProlongedOutside?.({ outsideMs, distanceMeters: dist });
       }
     } else {
       outsideSinceRef.current = null;
       notifiedRef.current = false;
     }
-  }, [input.enabled, input.location, input.zone.center, input.zone.radiusMeters, prolongedOutsideMs, input.onProlongedOutside]);
+  }, [enabled, location, zone.center, zone.radiusMeters, prolongedOutsideMs, onProlongedOutside]);
 
   return {
     outside,

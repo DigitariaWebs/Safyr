@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { TouchableOpacity, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Menu } from "lucide-react-native";
 import { useTheme } from "@/theme";
 import { MenuDrawer } from "./menu-drawer";
 
@@ -21,7 +21,7 @@ export function MenuButton() {
         useNativeDriver: true,
       }).start();
     }
-  }, [menuVisible]);
+  }, [menuVisible, scaleAnim]);
 
   return (
     <>
@@ -29,20 +29,22 @@ export function MenuButton() {
         <TouchableOpacity
           onPress={() => setMenuVisible(true)}
           activeOpacity={0.8}
+          accessibilityLabel="Ouvrir le menu"
+          accessibilityRole="button"
           style={{
             borderRadius: 12,
             padding: 10,
             backgroundColor: "transparent",
-            borderWidth: 2,
-            borderColor: theme.colors.borderPrimary,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
             shadowColor: theme.colors.primary,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: theme.scheme === "dark" ? 0.3 : 0.1,
-            shadowRadius: 8,
-            elevation: 2,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: theme.scheme === "dark" ? 0.15 : 0.05,
+            shadowRadius: 4,
+            elevation: 1,
           }}
         >
-          <Ionicons name="menu" size={22} color={theme.colors.foreground} />
+          <Menu size={22} color={theme.colors.foreground} />
         </TouchableOpacity>
       </Animated.View>
       <MenuDrawer visible={menuVisible} onClose={() => setMenuVisible(false)} />

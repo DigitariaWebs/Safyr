@@ -7,12 +7,15 @@ module.exports = {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'Montserrat',
+  				'SpaceGrotesk',
   				'system-ui',
   				'sans-serif'
   			],
+  			heading: [
+  				'Aldrich-Regular',
+  			],
   			mono: [
-  				'Montserrat',
+  				'SpaceGrotesk',
   				'monospace'
   			]
   		},

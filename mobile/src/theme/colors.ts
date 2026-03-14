@@ -41,15 +41,14 @@ export interface ThemeColors {
     // Border and divider
     border: string;
     divider: string;
-    borderPrimary: string; // Dark cyan border for cards and primary elements
+    borderSubtle: string;
+
+    // Foreground on status colors
+    destructiveForeground: string;
 
     // Interactive states
     disabled: string;
     placeholder: string;
-
-    // Glow effects (for premium feel)
-    glowPrimary: string;
-    glowPrimarySubtle: string;
 }
 
 // Helper function to convert HSL string to hex for React Native
@@ -114,66 +113,62 @@ const lightColors: ThemeColors = {
 
     border: hslToHex("220 15% 88%"),         // Subtle border
     divider: hslToHex("220 15% 88%"),        // Divider
-    borderPrimary: hslToHex("200 80% 50%"),  // Vibrant cyan border for light theme
+    borderSubtle: "rgba(0, 0, 0, 0.1)",
+
+    destructiveForeground: "#ffffff",
 
     disabled: hslToHex("220 8% 45%"),
     placeholder: hslToHex("220 8% 45%"),
-
-    glowPrimary: hslToHex("210 60% 65%"),
-    glowPrimarySubtle: hslToHex("210 60% 65%"),
 };
 
-// Premium Dark Blue Light Theme
 const darkColors: ThemeColors = {
-    // Background: Black cyan (very dark cyan, almost black)
-    background: hslToHex("180 100% 8%"),       // Black cyan background - very dark with cyan tint
-    surface: hslToHex("180 90% 12%"),        // Elevated surface with cyan tint
-    surfaceVariant: hslToHex("180 95% 10%"),  // Variant surface
-    muted: hslToHex("180 85% 14%"),          // Muted background
-    card: hslToHex("180 90% 12%"),           // Card background with modern depth
+    // Background: Navy blue (matching web dark theme)
+    background: "#0f172a",
+    surface: "#1e293b",
+    surfaceVariant: "#172033",
+    muted: "#1e2a3d",
+    card: "#1e293b",
 
-    // Text: Soft white, optimized for readability
-    text: hslToHex("0 0% 96%"),              // Soft white (not pure white)
-    textSecondary: hslToHex("220 15% 75%"),  // Secondary text (softer)
-    textTertiary: hslToHex("220 15% 60%"),   // Tertiary text
-    foreground: hslToHex("0 0% 96%"),         // Main foreground
-    mutedForeground: hslToHex("220 15% 70%"), // Muted foreground
-    cardForeground: hslToHex("0 0% 96%"),     // Card text
+    // Text: Soft white
+    text: "#f0f0f0",
+    textSecondary: "#94a3b8",
+    textTertiary: "#64748b",
+    foreground: "#f0f0f0",
+    mutedForeground: "#8b95a8",
+    cardForeground: "#f0f0f0",
 
-    // Primary: Vibrant cyan-blue inspired by modern templates
-    primary: hslToHex("200 100% 60%"),        // Bright cyan-blue - modern and vibrant
-    primaryVariant: hslToHex("200 100% 50%"), // Deeper cyan-blue for hover/pressed states
-    onPrimary: hslToHex("0 0% 100%"),         // Pure white text on primary
-    primaryForeground: hslToHex("0 0% 100%"), // White text on primary buttons
+    // Primary: Cyan (matching web)
+    primary: "#22d3ee",
+    primaryVariant: "#06b6d4",
+    onPrimary: "#0f172a",
+    primaryForeground: "#0f172a",
 
-    // Accent: Modern cyan accent with gradient support
-    accent: hslToHex("200 80% 25%"),          // Dark cyan-blue for accents
-    onAccent: hslToHex("200 100% 70%"),       // Light cyan on accent
-    accentForeground: hslToHex("200 100% 70%"),
+    // Accent
+    accent: "#1a3a4a",
+    onAccent: "#67e8f9",
+    accentForeground: "#67e8f9",
 
-    // Secondary: Light surface for secondary buttons (white/light background)
-    secondary: hslToHex("220 10% 96%"),       // Light gray/white background for secondary buttons
-    secondaryForeground: hslToHex("220 15% 10%"), // Black text on white secondary buttons
+    // Secondary
+    secondary: "#293548",
+    secondaryForeground: "#f0f0f0",
 
-    // Status colors (refined for dark theme)
-    success: hslToHex("145 65% 50%"),        // Soft green
-    warning: hslToHex("38 85% 55%"),         // Soft amber
-    error: hslToHex("0 70% 55%"),            // Soft red
-    info: hslToHex("195 85% 65%"),           // Cyan-blue (same as primary)
-    destructive: hslToHex("0 70% 55%"),      // Soft red
+    // Status colors
+    success: "#34d399",
+    warning: "#fbbf24",
+    error: "#ef4444",
+    info: "#22d3ee",
+    destructive: "#ef4444",
 
-    // Border: Modern cyan borders with better visibility
-    border: hslToHex("220 25% 20%"),         // Subtle border with cyan hint
-    divider: hslToHex("220 25% 18%"),        // Divider with cyan tint
-    borderPrimary: hslToHex("200 80% 45%"), // Vibrant cyan border for cards and primary elements
+    // Border: Subtle navy-tinted
+    border: "#2d3f55",
+    divider: "#253347",
+    borderSubtle: "rgba(45, 63, 85, 0.35)",
+
+    destructiveForeground: "#ffffff",
 
     // Interactive states
-    disabled: hslToHex("220 15% 30%"),       // Disabled state
-    placeholder: hslToHex("220 15% 50%"),    // Placeholder text
-
-    // Glow effects for premium modern feel
-    glowPrimary: hslToHex("200 100% 60%"),   // Vibrant cyan glow
-    glowPrimarySubtle: hslToHex("200 80% 50%"), // Subtle cyan glow variant
+    disabled: "#334155",
+    placeholder: "#64748b",
 };
 
 export const colors: Record<ColorSchemeName, ThemeColors> = {

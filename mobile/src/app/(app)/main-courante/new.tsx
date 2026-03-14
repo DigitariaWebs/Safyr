@@ -7,9 +7,9 @@ import { VoiceRecorder } from "@/components/ui/voice-recorder";
 import type { MainCourantePriority } from "@/features/mainCourante/types";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
+import { Camera, CheckCircle, Loader, Trash2, Video, X } from "lucide-react-native";
 import { useTheme } from "@/theme";
-import { getMontserratFont } from "@/utils/text-style";
+import { getBodyFont } from "@/utils/fonts";
 
 function PriorityOption({
   label,
@@ -50,7 +50,7 @@ export default function CreateMainCouranteEventScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [audioUri, setAudioUri] = useState<string | null>(null);
-  const [audioDuration, setAudioDuration] = useState<number>(0);
+  const [, setAudioDuration] = useState<number>(0);
 
   const canSubmit = useMemo(() => title.trim().length > 3 && description.trim().length > 8, [
     title,
@@ -231,7 +231,7 @@ export default function CreateMainCouranteEventScreen() {
         subtitle="Main Courante"
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            <Ionicons name="close-outline" size={18} color={colors.foreground} />
+            <X size={18} color={colors.foreground} />
             <Text className="ml-1" style={{ color: colors.foreground }}>Fermer</Text>
           </Button>
         }
@@ -243,12 +243,12 @@ export default function CreateMainCouranteEventScreen() {
       >
         <Card className="gap-4">
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Titre</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Titre</Text>
             <Input value={title} onChangeText={setTitle} placeholder="Ex: Ronde effectuée" />
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Site</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Site</Text>
             <Input
               value={siteName}
               onChangeText={setSiteName}
@@ -257,7 +257,7 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Priorité</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Priorité</Text>
             <View className="flex-row gap-2">
               <PriorityOption
                 label="Info"
@@ -281,7 +281,7 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Description</Text>
+            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Description</Text>
             <Input
               value={description}
               onChangeText={setDescription}
@@ -294,14 +294,14 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Média (Photo / Vidéo)</Text>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Média (Photo / Vidéo)</Text>
             <View className="flex-row gap-2">
               <Button variant="outline" onPress={onAddMedia} className="flex-1">
-                <Ionicons name="camera-outline" size={18} color={colors.foreground} />
+                <Camera size={18} color={colors.foreground} />
                 <Text className="ml-2" style={{ color: colors.foreground }}>Ajouter un média</Text>
               </Button>
               <Button variant="primary" onPress={onRecordVideo} className="flex-1">
-                <Ionicons name="videocam" size={18} color={colors.primaryForeground} />
+                <Video size={18} color={colors.primaryForeground} />
                 <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer vidéo</Text>
               </Button>
               {(photoUri || videoUri) && (
@@ -312,7 +312,7 @@ export default function CreateMainCouranteEventScreen() {
                     setVideoUri(null);
                   }}
                 >
-                  <Ionicons name="trash-outline" size={18} />
+                  <Trash2 size={18} />
                 </Button>
               )}
             </View>
@@ -334,7 +334,7 @@ export default function CreateMainCouranteEventScreen() {
                   onRemove={() => setVideoUri(null)}
                 />
                 <View className="flex-row items-center gap-2 rounded-lg bg-primary/10 p-2">
-                  <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
+                  <CheckCircle size={16} color={colors.primary} />
                   <Text className="text-xs" style={{ color: colors.foreground }}>
                     Vidéo enregistrée et prête à être envoyée
                   </Text>
@@ -348,7 +348,7 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Message vocal</Text>
+            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Message vocal</Text>
             <VoiceRecorder
               onRecordingComplete={(uri, duration) => {
                 setAudioUri(uri);
@@ -367,12 +367,12 @@ export default function CreateMainCouranteEventScreen() {
           <Button onPress={onSave} disabled={!canSubmit || saving}>
             {saving ? (
               <>
-                <Ionicons name="hourglass-outline" size={18} color={colors.primaryForeground} />
+                <Loader size={18} color={colors.primaryForeground} />
                 <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
               </>
             ) : (
               <>
-                <Ionicons name="checkmark-circle-outline" size={18} color={colors.primaryForeground} />
+                <CheckCircle size={18} color={colors.primaryForeground} />
                 <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer</Text>
               </>
             )}

@@ -3,6 +3,7 @@ import { Text, View, type ViewProps, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
+import { getHeadingFont, getBodyFont } from "@/utils/fonts";
 
 export type HeaderProps = ViewProps & {
   title: string;
@@ -21,7 +22,7 @@ export function Header({
   ...props
 }: HeaderProps) {
   const insets = useSafeAreaInsets();
-  const { colors, scheme } = useTheme();
+  const { colors } = useTheme();
   const paddingTop = Math.max(insets.top + 8, Platform.OS === "ios" ? 12 : 16);
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(-10)).current;
@@ -40,10 +41,11 @@ export function Header({
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   return (
     <Animated.View
+      accessibilityRole="header"
       className={cn(
         "flex-row items-center justify-between px-4 pb-3",
         "border-b",
@@ -58,8 +60,8 @@ export function Header({
         transform: [{ translateY: slideAnim }],
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: scheme === "dark" ? 0.25 : 0.1,
-        shadowRadius: 12,
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
         elevation: 4,
       }}
       {...props}
@@ -67,16 +69,20 @@ export function Header({
       <View className="flex-row items-center gap-3 flex-1">
         {left}
         <View className="flex-1">
-          <Text 
-            className="text-2xl font-bold" 
-            style={{ color: colors.foreground, fontFamily: "Montserrat-Bold" }}
+          <Text
+            className="text-2xl font-bold"
+            style={{ color: colors.foreground, fontFamily: getHeadingFont() }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {title}
           </Text>
           {subtitle ? (
-            <Text 
-              className="mt-0.5 text-sm" 
-              style={{ color: colors.foreground, fontFamily: "Montserrat-Regular" }}
+            <Text
+              className="mt-0.5 text-sm"
+              style={{ color: colors.foreground, fontFamily: getBodyFont("400") }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
               {subtitle}
             </Text>
