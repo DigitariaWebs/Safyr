@@ -1,12 +1,24 @@
-import { Text, View, ScrollView, Platform, StyleSheet } from "react-native";
+import { Text, View, ScrollView } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Bell,
+  ClipboardList,
+  Footprints,
+  MapPin,
+  AlertTriangle,
+  User,
+  FileText,
+  Shield,
+  Clock,
+  TrendingUp,
+  ChevronRight,
+} from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, Header, MenuButton, Screen, Toggle } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
-import { getMontserratFont } from "@/utils/text-style";
+import { getBodyFont, getHeadingFont } from "@/utils/fonts";
 
 export default function HomeDashboardScreen() {
   const { colors } = useTheme();
@@ -18,150 +30,340 @@ export default function HomeDashboardScreen() {
   return (
     <Screen>
       <Header
-        title="Accueil agent"
-        subtitle="Poste & statut"
+        title="Tableau de bord"
+        subtitle="Agent de sécurité"
         left={<MenuButton />}
         right={
-          <Button variant="ghost" size="sm" onPress={() => router.push("/(app)/notifications")}>
-            <View className="flex-row items-center gap-2">
-              <Ionicons name="notifications-outline" size={18} color={colors.foreground} />
-              {unreadCount > 0 ? (
+          <Button variant="ghost" size="sm" accessibilityLabel="Notifications" onPress={() => router.push("/(app)/notifications")}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Bell size={18} color={colors.foreground} />
+              {unreadCount > 0 && (
                 <View
-                  className="px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: colors.primary }}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: 10,
+                    paddingHorizontal: 7,
+                    paddingVertical: 2,
+                    minWidth: 20,
+                    alignItems: "center",
+                  }}
                 >
                   <Text
-                    className="text-xs font-semibold"
-                    style={{ color: colors.primaryForeground }}
+                    style={{
+                      fontSize: 11,
+                      fontFamily: getBodyFont("600"),
+                      color: colors.primaryForeground,
+                    }}
                   >
                     {unreadCount}
                   </Text>
                 </View>
-              ) : null}
+              )}
             </View>
           </Button>
         }
       />
 
-      <ScrollView 
-        className="flex-1 px-4"
-        style={{ backgroundColor: colors.background }}
-        contentContainerStyle={{ paddingBottom: bottomPadding }}
-        showsVerticalScrollIndicator={true}
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: bottomPadding, gap: 12 }}
+        showsVerticalScrollIndicator={false}
       >
-        <View className="gap-4">
-        <Card
-          style={{
-            borderColor: inService ? colors.success : colors.destructive,
-            borderWidth: 2,
-            shadowColor: inService ? colors.success : colors.destructive,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.7,
-            shadowRadius: 24,
-            elevation: 16,
-          }}
-        >
-          <View className="gap-4">
-            <View>
-              <Text className="text-sm font-medium mb-2" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Statut</Text>
+        {/* Status + Shift Card */}
+        <Card>
+          <View style={{ gap: 16 }}>
+            {/* Toggle Row */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: inService ? `${colors.success}15` : `${colors.destructive}15`,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Shield size={18} color={inService ? colors.success : colors.destructive} />
+                </View>
+                <View>
+                  <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                    Statut
+                  </Text>
+                  <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: getBodyFont("600") }}>
+                    {inService ? "En service" : "Hors service"}
+                  </Text>
+                </View>
+              </View>
               <Toggle
                 value={inService}
                 onValueChange={setInService}
-                enabledLabel="En service"
-                disabledLabel="Hors service"
-                enabledIcon="checkmark-circle"
-                disabledIcon="close-circle"
-                size="lg"
-                className="w-full"
+                enabledLabel="Actif"
+                disabledLabel="Inactif"
+                size="sm"
+              />
+            </View>
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: colors.borderSubtle }} />
+
+            {/* Current Shift */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  backgroundColor: `${colors.primary}15`,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Clock size={18} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                  Poste actuel
+                </Text>
+                <Text numberOfLines={1} style={{ fontSize: 15, color: colors.foreground, fontFamily: getBodyFont("600") }}>
+                  Siège • Paris — Accueil
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={{ fontSize: 20, color: colors.foreground, fontFamily: getHeadingFont() }}>
+                  08:00
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                  → 16:00
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Card>
+
+        {/* Stats Row */}
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Card style={{ flex: 1 }}>
+            <View style={{ alignItems: "center", gap: 6 }}>
+              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                Heures ce mois
+              </Text>
+              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+                124
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <TrendingUp size={12} color={colors.success} />
+                <Text style={{ fontSize: 11, color: colors.success, fontFamily: getBodyFont("500") }}>
+                  +8h
+                </Text>
+              </View>
+            </View>
+          </Card>
+          <Card style={{ flex: 1 }}>
+            <View style={{ alignItems: "center", gap: 6 }}>
+              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                Rondes
+              </Text>
+              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+                12
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                ce mois
+              </Text>
+            </View>
+          </Card>
+          <Card style={{ flex: 1 }}>
+            <View style={{ alignItems: "center", gap: 6 }}>
+              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                Incidents
+              </Text>
+              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+                3
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.warning, fontFamily: getBodyFont("500") }}>
+                1 en cours
+              </Text>
+            </View>
+          </Card>
+        </View>
+
+        {/* Quick Actions */}
+        <Card>
+          <View style={{ gap: 12 }}>
+            <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: getBodyFont("500"), textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Actions rapides
+            </Text>
+            <View style={{ gap: 8 }}>
+              <QuickAction
+                icon={<ClipboardList size={18} color={colors.primary} />}
+                label="Main courante"
+                subtitle="Nouveau rapport"
+                colors={colors}
+                onPress={() => router.push("/(app)/(tabs)/main-courante")}
+              />
+              <QuickAction
+                icon={<Footprints size={18} color={colors.primary} />}
+                label="Ronde"
+                subtitle="Démarrer une ronde"
+                colors={colors}
+                onPress={() => router.push("/(app)/(tabs)/ronde")}
+              />
+              <QuickAction
+                icon={<MapPin size={18} color={colors.primary} />}
+                label="Géolocalisation"
+                subtitle="Position & zones"
+                colors={colors}
+                onPress={() => router.push("/(app)/(tabs)/geolocation")}
+              />
+              <QuickAction
+                icon={<AlertTriangle size={18} color={colors.destructive} />}
+                label="SOS"
+                subtitle="Alerte d'urgence"
+                colors={colors}
+                onPress={() => router.push("/(app)/sos")}
+                destructive
               />
             </View>
           </View>
-          <View className="mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: inService ? colors.success : colors.destructive }}>
-            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Poste actuel</Text>
-            <Text className="mt-1 text-base font-semibold" style={{ color: colors.foreground, fontFamily: getMontserratFont("600") }}>
-              Siège • Paris — Poste Accueil
-            </Text>
-            <Text className="mt-1 text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
-              08:00 → 16:00
-            </Text>
-          </View>
         </Card>
 
-        <Card className="gap-4">
-          <Text className="text-base font-bold" style={{ color: colors.foreground, fontFamily: getMontserratFont("700") }}>Actions rapides</Text>
-          <View className="flex-row gap-3">
-            <Button
-              onPress={() => router.push("/(app)/(tabs)/main-courante")}
-              className="flex-1"
-            >
-              <Ionicons name="list-outline" size={18} color={colors.primaryForeground} />
-              <Text className="ml-2" style={{ color: colors.primaryForeground }}>Main courante</Text>
-            </Button>
-            <Button
-              variant="secondary"
-              onPress={() => router.push("/(app)/(tabs)/ronde")}
-              className="flex-1"
-            >
-              <Ionicons name="walk-outline" size={18} />
-              <Text className="ml-2">Ronde</Text>
-            </Button>
-          </View>
-          <View className="flex-row gap-3">
-            <Button
-              variant="outline"
-              onPress={() => router.push("/(app)/(tabs)/geolocation")}
-              className="flex-1"
-            >
-              <Ionicons name="location-outline" size={18} />
-              <Text className="ml-2">Géoloc</Text>
-            </Button>
-            <Button
-              variant="destructive"
-              onPress={() => router.push("/(app)/sos")}
-              className="flex-1"
-            >
-              <Ionicons name="warning-outline" size={18} color={colors.destructiveForeground} />
-              <Text className="ml-2" style={{ color: colors.destructiveForeground }}>SOS</Text>
-            </Button>
-          </View>
-        </Card>
-
+        {/* Rappels */}
         <Card>
-          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Rappels</Text>
-          <Text className="mt-2 text-sm" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
-            - Vérifier le matériel (radio, lampe)\n- Relire les consignes du site
-          </Text>
+          <View style={{ gap: 10 }}>
+            <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: getBodyFont("500"), textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Rappels
+            </Text>
+            <ReminderItem colors={colors} text="Vérifier le matériel (radio, lampe)" />
+            <ReminderItem colors={colors} text="Relire les consignes du site" />
+          </View>
         </Card>
 
-        <Card className="gap-3">
-          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Compte</Text>
-          <Button
-            variant="outline"
-            onPress={() => router.push("/(app)/profile")}
-            className="w-full"
-          >
-            <Ionicons name="person-outline" size={18} />
-            <Text className="ml-2">Mon profil</Text>
-          </Button>
-        </Card>
-
-        <Card className="gap-3">
-          <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getMontserratFont("500") }}>Documents</Text>
-          <Button
-            variant="outline"
-            onPress={() => router.push("/(app)/documents")}
-            className="w-full"
-          >
-            <Ionicons name="document-text-outline" size={18} />
-            <Text className="ml-2">Télécharger PDF</Text>
-          </Button>
-          <Text className="text-xs" style={{ color: colors.foreground, fontFamily: getMontserratFont("400") }}>
-            Emploi du temps et bulletins de salaire
-          </Text>
-        </Card>
+        {/* Account & Docs row */}
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Card style={{ flex: 1 }}>
+            <QuickLink
+              icon={<User size={18} color={colors.primary} />}
+              label="Mon profil"
+              colors={colors}
+              onPress={() => router.push("/(app)/profile")}
+            />
+          </Card>
+          <Card style={{ flex: 1 }}>
+            <QuickLink
+              icon={<FileText size={18} color={colors.primary} />}
+              label="Documents"
+              colors={colors}
+              onPress={() => router.push("/(app)/documents")}
+            />
+          </Card>
         </View>
       </ScrollView>
     </Screen>
   );
 }
 
+/* --- Sub-components --- */
+
+interface QuickActionProps {
+  icon: React.ReactNode;
+  label: string;
+  subtitle: string;
+  colors: ReturnType<typeof useTheme>["colors"];
+  onPress: () => void;
+  destructive?: boolean;
+}
+
+function QuickAction({ icon, label, subtitle, colors, onPress, destructive }: QuickActionProps) {
+  return (
+    <Button
+      variant="ghost"
+      onPress={onPress}
+      className="w-full justify-start px-0"
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, gap: 12 }}>
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            backgroundColor: destructive ? `${colors.destructive}15` : `${colors.primary}15`,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, color: colors.foreground, fontFamily: getBodyFont("500") }}>
+            {label}
+          </Text>
+          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+            {subtitle}
+          </Text>
+        </View>
+        <ChevronRight size={16} color={colors.mutedForeground} />
+      </View>
+    </Button>
+  );
+}
+
+interface ReminderItemProps {
+  colors: ReturnType<typeof useTheme>["colors"];
+  text: string;
+}
+
+function ReminderItem({ colors, text }: ReminderItemProps) {
+  return (
+    <View style={{
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: `${colors.muted}80`,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    }}>
+      <View style={{
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: colors.primary,
+      }} />
+      <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: getBodyFont("400"), flex: 1 }}>
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+interface QuickLinkProps {
+  icon: React.ReactNode;
+  label: string;
+  colors: ReturnType<typeof useTheme>["colors"];
+  onPress: () => void;
+}
+
+function QuickLink({ icon, label, colors, onPress }: QuickLinkProps) {
+  return (
+    <Button variant="ghost" onPress={onPress} className="w-full px-0">
+      <View style={{ alignItems: "center", gap: 8 }}>
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            backgroundColor: `${colors.primary}15`,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {icon}
+        </View>
+        <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: getBodyFont("500") }}>
+          {label}
+        </Text>
+      </View>
+    </Button>
+  );
+}

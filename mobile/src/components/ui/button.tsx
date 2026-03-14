@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Pressable, Text, View, type PressableProps, Animated } from "react-native";
+import { Pressable, Text, View, StyleSheet, type PressableProps, Animated } from "react-native";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
-import { getMontserratFont } from "@/utils/text-style";
+import { getBodyFont } from "@/utils/fonts";
 
 export type ButtonVariant =
   | "default"
@@ -78,53 +78,32 @@ export function Button({
   disabled,
   className,
   textClassName,
+  onPress,
   ...props
 }: ButtonProps) {
+  const lastPressRef = React.useRef(0);
   const v = getVariantClasses(variant);
   const s = getSizeClasses(size);
   const { colors, scheme } = useTheme();
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  const glowAnim = React.useRef(new Animated.Value(0)).current;
 
   const handlePressIn = () => {
-    // Use non-native driver for all animations since shadowOpacity requires it
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 0.96,
-        useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
-        tension: 300,
-        friction: 10,
-      }),
-      Animated.timing(glowAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
   };
 
   const handlePressOut = () => {
-    // Use non-native driver for all animations since shadowOpacity requires it
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
-        tension: 300,
-        friction: 10,
-      }),
-      Animated.timing(glowAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
   };
-
-  // Enhanced glow effect for primary buttons - more vibrant cyan
-  const glowOpacity = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.5 : 0.15, scheme === "dark" ? 0.85 : 0.35],
-  });
 
   const isPrimary = variant === "default" || variant === "primary";
 
@@ -161,12 +140,6 @@ export function Button({
     }
   };
 
-  // Enhanced glow for outline and ghost buttons - modern cyan glow
-  const buttonGlowOpacity = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [scheme === "dark" ? 0.4 : 0.12, scheme === "dark" ? 0.75 : 0.3],
-  });
-
   // Check if children is a simple string
   const isString = typeof children === "string";
 
@@ -176,9 +149,9 @@ export function Button({
         // Shadow/glow animation (non-native driver)
         shadowColor: isPrimary ? colors.primary : (variant === "outline" || variant === "ghost" ? colors.primary : "transparent"),
         shadowOffset: { width: 0, height: isPrimary ? 4 : 2 },
-        shadowOpacity: isPrimary ? glowOpacity : (variant === "outline" || variant === "ghost" ? buttonGlowOpacity : 0),
-        shadowRadius: isPrimary ? 24 : (variant === "outline" || variant === "ghost" ? 18 : 0),
-        elevation: isPrimary ? 16 : (variant === "outline" || variant === "ghost" ? 10 : 0),
+        shadowOpacity: isPrimary ? 0.15 : (variant === "outline" || variant === "ghost" ? 0.12 : 0),
+        shadowRadius: isPrimary ? 8 : (variant === "outline" || variant === "ghost" ? 8 : 0),
+        elevation: isPrimary ? 4 : (variant === "outline" || variant === "ghost" ? 3 : 0),
         transform: [{ scale: scaleAnim }],
       }}
     >
@@ -187,6 +160,12 @@ export function Button({
         disabled={disabled}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        onPress={(e) => {
+          const now = Date.now();
+          if (now - lastPressRef.current < 300) return;
+          lastPressRef.current = now;
+          onPress?.(e);
+        }}
         className={cn(
           "items-center justify-center flex-row",
           v.container,
@@ -208,7 +187,7 @@ export function Button({
           {isString ? (
             <Text 
               className={cn("font-semibold", s.text, textClassName)}
-              style={{ color: getTextColor(), fontFamily: getMontserratFont("600") }}
+              style={{ color: getTextColor(), fontFamily: getBodyFont("600") }}
             >
               {children}
             </Text>
@@ -225,18 +204,18 @@ export function Button({
                     (childType?.displayName && childType.displayName.includes("Text")) ||
                     (typeof childType === "function" && (childType.name === "Text" || childType.displayName === "Text"));
                   
-                  // Check if it's an Ionicons component - Ionicons always have a 'name' prop
-                  const isIonicons = childProps && typeof childProps.name === "string";
+                  // Lucide icons have a strokeWidth prop; use it to distinguish from other components
+                  const isIcon = childProps && typeof childProps.size === "number" && "strokeWidth" in childProps && !isTextComponent;
                   
                   if (isTextComponent) {
                     // Force text color and font family - put it last to override any existing styles
                     const textColor = getTextColor();
-                    // Extract fontWeight from existing style to determine Montserrat variant
-                    const existingStyle = Array.isArray(childProps.style) 
-                      ? childProps.style.reduce((acc, s) => ({ ...acc, ...s }), {})
+                    // Extract fontWeight from existing style to determine font variant
+                    const existingStyle = Array.isArray(childProps.style)
+                      ? StyleSheet.flatten(childProps.style)
                       : childProps.style || {};
                     const fontWeight = existingStyle.fontWeight || "600"; // Default to semibold for buttons
-                    const fontFamily = getMontserratFont(fontWeight);
+                    const fontFamily = getBodyFont(fontWeight);
                     
                     // Merge styles properly - ensure color and fontFamily are always applied
                     const mergedStyle = Array.isArray(childProps.style)
@@ -251,8 +230,8 @@ export function Button({
                     });
                   }
                   
-                  // Apply color to Ionicons - always override color for consistency
-                  if (isIonicons) {
+                  // Apply color to icon components for consistency
+                  if (isIcon) {
                     const iconColor = getTextColor();
                     return React.cloneElement(child as React.ReactElement<any>, {
                       key: `icon-${index}`,

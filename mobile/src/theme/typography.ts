@@ -1,8 +1,9 @@
 export const typography = {
   fontFamily: {
-    // Montserrat font family
-    sans: "Montserrat",
-    mono: "Montserrat",
+    heading: "Aldrich-Regular",
+    body: "SpaceGrotesk",
+    sans: "SpaceGrotesk",
+    mono: "SpaceGrotesk",
   },
   fontSize: {
     xs: 12,

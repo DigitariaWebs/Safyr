@@ -18,7 +18,7 @@ export function Screen({ className, contentClassName, children, ...props }: Scre
   try {
     const theme = useTheme();
     themeColors = theme.colors;
-  } catch (error) {
+  } catch {
     themeColors = defaultColors.dark; // Default to dark theme
   }
 
@@ -28,7 +28,7 @@ export function Screen({ className, contentClassName, children, ...props }: Scre
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   return (
     <Animated.View

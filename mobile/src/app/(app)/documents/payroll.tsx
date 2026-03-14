@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Alert, ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Download, FileText } from "lucide-react-native";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
@@ -11,16 +11,16 @@ let FileSystem: any = null;
 let Sharing: any = null;
 
 try {
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   FileSystem = require("expo-file-system");
-} catch (e) {
+} catch {
   console.warn("expo-file-system not installed");
 }
 
 try {
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Sharing = require("expo-sharing");
-} catch (e) {
+} catch {
   console.warn("expo-sharing not installed");
 }
 
@@ -196,7 +196,7 @@ export default function PayrollScreen() {
         <View className="gap-4">
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="document-text-outline" size={24} color={colors.primary} />
+              <FileText size={24} color={colors.primary} />
               <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Mes bulletins de salaire</Text>
             </View>
             <Text className="text-sm" style={{ color: colors.foreground }}>
@@ -226,7 +226,7 @@ export default function PayrollScreen() {
                         <ActivityIndicator size="small" />
                       ) : (
                         <>
-                          <Ionicons name="download-outline" size={16} />
+                          <Download size={16} />
                           <Text className="ml-1">PDF</Text>
                         </>
                       )}

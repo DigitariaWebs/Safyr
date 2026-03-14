@@ -1,16 +1,17 @@
-import { View, Text, ScrollView, Pressable, Platform } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, ScrollView, Pressable } from "react-native";
+import { Sun, Moon, Smartphone, User, Bell, Calendar, Clock, CreditCard, ChevronRight, Info, Check } from "lucide-react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Screen, Header, Card, MenuButton } from "@/components/ui";
 import { useTheme, useThemeContext } from "@/theme";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
+import type { LucideIcon } from "lucide-react-native";
 
 type ThemeOption = {
     mode: "light" | "dark" | "system";
     label: string;
     description: string;
-    icon: keyof typeof Ionicons.glyphMap;
+    Icon: LucideIcon;
 };
 
 const themeOptions: ThemeOption[] = [
@@ -18,19 +19,19 @@ const themeOptions: ThemeOption[] = [
         mode: "light",
         label: "Clair",
         description: "Thème lumineux",
-        icon: "sunny",
+        Icon: Sun,
     },
     {
         mode: "dark",
         label: "Sombre",
         description: "Thème sombre",
-        icon: "moon",
+        Icon: Moon,
     },
     {
         mode: "system",
         label: "Système",
         description: "Suit les préférences système",
-        icon: "phone-portrait",
+        Icon: Smartphone,
     },
 ];
 
@@ -45,7 +46,7 @@ export default function SettingsScreen() {
         <Screen>
             <Header title="Paramètres" subtitle="Configuration de l'application" left={<MenuButton />} />
 
-            <ScrollView 
+            <ScrollView
                 className="flex-1 px-4"
                 style={{ backgroundColor: colors.background }}
                 contentContainerStyle={{ paddingBottom: bottomPadding }}
@@ -63,6 +64,7 @@ export default function SettingsScreen() {
                         <Card className="p-4">
                             <View className="gap-4">
                                 <Pressable
+                                    accessibilityRole="menuitem"
                                     onPress={() => router.push("/(app)/profile")}
                                     className="flex-row items-center justify-between active:opacity-70"
                                     style={{ minHeight: 56 }}
@@ -72,20 +74,21 @@ export default function SettingsScreen() {
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
                                             style={{ backgroundColor: `${colors.primary}20` }}
                                         >
-                                            <Ionicons
-                                                name="person"
+                                            <User
                                                 size={22}
                                                 color={colors.primary}
                                             />
                                         </View>
                                         <View>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-base font-semibold"
                                                 style={{ color: colors.foreground }}
                                             >
                                                 Profil
                                             </Text>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-sm"
                                                 style={{ color: colors.foreground }}
                                             >
@@ -93,12 +96,13 @@ export default function SettingsScreen() {
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
+                                    <ChevronRight size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
 
                                 <Pressable
+                                    accessibilityRole="menuitem"
                                     onPress={() => router.push("/(app)/notifications")}
                                     className="flex-row items-center justify-between active:opacity-70"
                                     style={{ minHeight: 56 }}
@@ -108,20 +112,21 @@ export default function SettingsScreen() {
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
                                             style={{ backgroundColor: `${colors.primary}20` }}
                                         >
-                                            <Ionicons
-                                                name="notifications"
+                                            <Bell
                                                 size={22}
                                                 color={colors.primary}
                                             />
                                         </View>
                                         <View>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-base font-semibold"
                                                 style={{ color: colors.foreground }}
                                             >
                                                 Notifications
                                             </Text>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-sm"
                                                 style={{ color: colors.foreground }}
                                             >
@@ -129,12 +134,13 @@ export default function SettingsScreen() {
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
+                                    <ChevronRight size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
 
                                 <Pressable
+                                    accessibilityRole="menuitem"
                                     onPress={() => router.push("/(app)/schedule")}
                                     className="flex-row items-center justify-between active:opacity-70"
                                     style={{ minHeight: 56 }}
@@ -144,20 +150,21 @@ export default function SettingsScreen() {
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
                                             style={{ backgroundColor: `${colors.primary}20` }}
                                         >
-                                            <Ionicons
-                                                name="calendar"
+                                            <Calendar
                                                 size={22}
                                                 color={colors.primary}
                                             />
                                         </View>
                                         <View>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-base font-semibold"
                                                 style={{ color: colors.foreground }}
                                             >
                                                 Emploi du temps
                                             </Text>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-sm"
                                                 style={{ color: colors.foreground }}
                                             >
@@ -165,12 +172,13 @@ export default function SettingsScreen() {
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
+                                    <ChevronRight size={18} color={colors.foreground} />
                                 </Pressable>
 
                                 <View className="h-px" style={{ backgroundColor: colors.border }} />
 
                                 <Pressable
+                                    accessibilityRole="menuitem"
                                     onPress={() => router.push("/(app)/time-off")}
                                     className="flex-row items-center justify-between active:opacity-70"
                                     style={{ minHeight: 56 }}
@@ -180,20 +188,21 @@ export default function SettingsScreen() {
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
                                             style={{ backgroundColor: `${colors.primary}20` }}
                                         >
-                                            <Ionicons
-                                                name="time"
+                                            <Clock
                                                 size={22}
                                                 color={colors.primary}
                                             />
                                         </View>
                                         <View>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-base font-semibold"
                                                 style={{ color: colors.foreground }}
                                             >
                                                 Congés
                                             </Text>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-sm"
                                                 style={{ color: colors.foreground }}
                                             >
@@ -201,12 +210,13 @@ export default function SettingsScreen() {
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
+                                    <ChevronRight size={18} color={colors.foreground} />
                                 </Pressable>
 
-                                <View className="h-px" style={{ backgroundColor: colors.primary }} />
+                                <View className="h-px" style={{ backgroundColor: colors.border }} />
 
                                 <Pressable
+                                    accessibilityRole="menuitem"
                                     onPress={() => router.push("/(app)/payroll")}
                                     className="flex-row items-center justify-between active:opacity-70"
                                     style={{ minHeight: 56 }}
@@ -216,20 +226,21 @@ export default function SettingsScreen() {
                                             className="w-12 h-12 rounded-2xl items-center justify-center"
                                             style={{ backgroundColor: `${colors.primary}20` }}
                                         >
-                                            <Ionicons
-                                                name="card"
+                                            <CreditCard
                                                 size={22}
                                                 color={colors.primary}
                                             />
                                         </View>
                                         <View>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-base font-semibold"
                                                 style={{ color: colors.foreground }}
                                             >
                                                 Paie
                                             </Text>
                                             <Text
+                                                numberOfLines={1}
                                                 className="text-sm"
                                                 style={{ color: colors.foreground }}
                                             >
@@ -237,7 +248,7 @@ export default function SettingsScreen() {
                                             </Text>
                                         </View>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.foreground} />
+                                    <ChevronRight size={18} color={colors.foreground} />
                                 </Pressable>
                             </View>
                         </Card>
@@ -256,6 +267,7 @@ export default function SettingsScreen() {
                                 {themeOptions.map((option, index) => {
                                     const isSelected = mode === option.mode;
                                     const isLast = index === themeOptions.length - 1;
+                                    const { Icon } = option;
 
                                     return (
                                         <View key={option.mode}>
@@ -273,8 +285,7 @@ export default function SettingsScreen() {
                                                                 : colors.muted,
                                                         }}
                                                     >
-                                                        <Ionicons
-                                                            name={option.icon}
+                                                        <Icon
                                                             size={24}
                                                             color={
                                                                 isSelected
@@ -305,8 +316,7 @@ export default function SettingsScreen() {
                                                         className="w-6 h-6 rounded-full items-center justify-center"
                                                         style={{ backgroundColor: colors.primary }}
                                                     >
-                                                        <Ionicons
-                                                            name="checkmark"
+                                                        <Check
                                                             size={16}
                                                             color={colors.primaryForeground}
                                                         />
@@ -333,8 +343,7 @@ export default function SettingsScreen() {
                                 className="w-10 h-10 rounded-xl items-center justify-center"
                                 style={{ backgroundColor: `${colors.primary}20` }}
                             >
-                                <Ionicons
-                                    name="information-circle"
+                                <Info
                                     size={20}
                                     color={colors.primary}
                                 />
@@ -384,7 +393,7 @@ export default function SettingsScreen() {
                                 </View>
                                 <View
                                     className="h-px"
-                                    style={{ backgroundColor: colors.primary }}
+                                    style={{ backgroundColor: colors.border }}
                                 />
                                 <View className="flex-row justify-between items-center py-2">
                                     <Text

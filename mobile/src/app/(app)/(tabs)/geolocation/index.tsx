@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Switch, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { ArrowLeft } from "lucide-react-native";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useAgentLocation } from "@/features/geolocation/useAgentLocation";
@@ -21,7 +21,7 @@ export default function GeolocationScreen() {
         left={<MenuButton />}
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
-            <Ionicons name="arrow-back-outline" size={18} color={colors.foreground} />
+            <ArrowLeft size={18} color={colors.foreground} />
             <Text className="ml-1" style={{ color: colors.foreground }}>Retour</Text>
           </Button>
         }
@@ -88,4 +88,3 @@ export default function GeolocationScreen() {
     </Screen>
   );
 }
-

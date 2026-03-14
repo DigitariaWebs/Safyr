@@ -12,14 +12,13 @@ import "./global.css";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Load Montserrat fonts from local assets
+  // Load Aldrich (headings) + Space Grotesk (body) fonts from local assets
   const [fontsLoaded, fontError] = useFonts({
-    "Montserrat-Regular": require("../../assets/fonts/Montserrat-Regular.ttf"),
-    "Montserrat-Medium": require("../../assets/fonts/Montserrat-Medium.ttf"),
-    "Montserrat-SemiBold": require("../../assets/fonts/Montserrat-SemiBold.ttf"),
-    "Montserrat-Bold": require("../../assets/fonts/Montserrat-Bold.ttf"),
-    // Alias for easier use
-    Montserrat: require("../../assets/fonts/Montserrat-Regular.ttf"),
+    "Aldrich-Regular": require("../../assets/fonts/Aldrich-Regular.ttf"),
+    "SpaceGrotesk-Regular": require("../../assets/fonts/SpaceGrotesk-Regular.ttf"),
+    "SpaceGrotesk-Medium": require("../../assets/fonts/SpaceGrotesk-Medium.ttf"),
+    "SpaceGrotesk-SemiBold": require("../../assets/fonts/SpaceGrotesk-SemiBold.ttf"),
+    "SpaceGrotesk-Bold": require("../../assets/fonts/SpaceGrotesk-Bold.ttf"),
   });
 
   useEffect(() => {

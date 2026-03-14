@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Alert, ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Calendar, Download, FileText } from "lucide-react-native";
 import { Button, Card, Header, MenuButton, Screen } from "@/components/ui";
 import { getSession } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
@@ -11,16 +11,16 @@ let FileSystem: any = null;
 let Sharing: any = null;
 
 try {
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   FileSystem = require("expo-file-system");
-} catch (e) {
+} catch {
   console.warn("expo-file-system not installed");
 }
 
 try {
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Sharing = require("expo-sharing");
-} catch (e) {
+} catch {
   console.warn("expo-sharing not installed");
 }
 
@@ -252,7 +252,7 @@ export default function DocumentsScreen() {
           {/* Section Emploi du temps */}
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="calendar-outline" size={24} color={colors.primary} />
+              <Calendar size={24} color={colors.primary} />
               <View className="flex-1">
                 <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Emploi du temps</Text>
                 <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
@@ -271,8 +271,8 @@ export default function DocumentsScreen() {
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <Ionicons name="download-outline" size={20} color={colors.primaryForeground} />
-                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger l'emploi du temps actuel</Text>
+                  <Download size={20} color={colors.primaryForeground} />
+                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger l&apos;emploi du temps actuel</Text>
                 </>
               )}
             </Button>
@@ -287,7 +287,7 @@ export default function DocumentsScreen() {
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
                       style={{ 
-                        borderColor: colors.borderPrimary,
+                        borderColor: colors.primary,
                         backgroundColor: colors.surface,
                       }}
                     >
@@ -309,7 +309,7 @@ export default function DocumentsScreen() {
                         {loading === `schedule-${doc.month || "current"}-${doc.year || "current"}` ? (
                           <ActivityIndicator size="small" color={colors.foreground} />
                         ) : (
-                          <Ionicons name="download-outline" size={16} color={colors.foreground} />
+                          <Download size={16} color={colors.foreground} />
                         )}
                       </Button>
                     </View>
@@ -322,7 +322,7 @@ export default function DocumentsScreen() {
           {/* Section Bulletins de salaire */}
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
-              <Ionicons name="document-text-outline" size={24} color={colors.primary} />
+              <FileText size={24} color={colors.primary} />
               <View className="flex-1">
                 <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Bulletins de salaire</Text>
                 <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
@@ -341,7 +341,7 @@ export default function DocumentsScreen() {
                 <ActivityIndicator size="small" color={colors.primaryForeground} />
               ) : (
                 <>
-                  <Ionicons name="download-outline" size={20} color={colors.primaryForeground} />
+                  <Download size={20} color={colors.primaryForeground} />
                   <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger le bulletin de salaire actuel</Text>
                 </>
               )}
@@ -357,7 +357,7 @@ export default function DocumentsScreen() {
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
                       style={{ 
-                        borderColor: colors.borderPrimary,
+                        borderColor: colors.primary,
                         backgroundColor: colors.surface,
                       }}
                     >
@@ -379,7 +379,7 @@ export default function DocumentsScreen() {
                         {loading === `payroll-${doc.month || "current"}-${doc.year || "current"}` ? (
                           <ActivityIndicator size="small" color={colors.foreground} />
                         ) : (
-                          <Ionicons name="download-outline" size={16} color={colors.foreground} />
+                          <Download size={16} color={colors.foreground} />
                         )}
                       </Button>
                     </View>
@@ -392,7 +392,7 @@ export default function DocumentsScreen() {
           <Card className="gap-2">
             <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
             <Text className="text-xs" style={{ color: colors.foreground }}>
-              Les documents sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil. L'historique conserve les documents que vous avez téléchargés.
+              Les documents sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil. L&apos;historique conserve les documents que vous avez téléchargés.
             </Text>
           </Card>
         </View>

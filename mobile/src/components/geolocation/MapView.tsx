@@ -10,7 +10,9 @@ let MAPBOX_ACCESS_TOKEN: string | undefined;
 let MAPBOX_THEME: { dark: string; streets: string } | undefined;
 
 try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     Mapbox = require("@rnmapbox/maps").default;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mapboxConstants = require("@/constants/mapbox");
     MAPBOX_ACCESS_TOKEN = mapboxConstants.MAPBOX_ACCESS_TOKEN;
     MAPBOX_THEME = mapboxConstants.MAPBOX_THEME;

@@ -1,28 +1,9 @@
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Home, ClipboardList, Footprints, MapPin, Settings } from "lucide-react-native";
 import { useTheme } from "@/theme";
-import { colors as defaultColors } from "@/theme/colors";
-import { Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
-  // Use theme with fallback
-  let theme;
-  try {
-    theme = useTheme();
-  } catch (error) {
-    // Fallback if theme context is not available - default to dark
-    theme = { scheme: "dark" as const, colors: defaultColors.dark };
-  }
-  const { colors, scheme } = theme;
-  
-  // Get safe area insets with fallback
-  let insets;
-  try {
-    insets = useSafeAreaInsets();
-  } catch (error) {
-    insets = { top: 0, bottom: 0, left: 0, right: 0 };
-  }
+  const { colors } = useTheme();
 
   return (
     <Tabs
@@ -47,7 +28,7 @@ export default function TabsLayout() {
         options={{
           title: "Accueil",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" color={color} size={size ?? 24} />
+            <Home color={color} size={size ?? 24} />
           ),
         }}
       />
@@ -56,7 +37,7 @@ export default function TabsLayout() {
         options={{
           title: "Main C.",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" color={color} size={size ?? 24} />
+            <ClipboardList color={color} size={size ?? 24} />
           ),
         }}
       />
@@ -65,7 +46,7 @@ export default function TabsLayout() {
         options={{
           title: "Ronde",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="walk-outline" color={color} size={size ?? 24} />
+            <Footprints color={color} size={size ?? 24} />
           ),
         }}
       />
@@ -74,7 +55,7 @@ export default function TabsLayout() {
         options={{
           title: "Géoloc",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="location-outline" color={color} size={size ?? 24} />
+            <MapPin color={color} size={size ?? 24} />
           ),
         }}
       />
@@ -83,11 +64,10 @@ export default function TabsLayout() {
         options={{
           title: "Réglages",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" color={color} size={size ?? 24} />
+            <Settings color={color} size={size ?? 24} />
           ),
         }}
       />
     </Tabs>
   );
 }
-

@@ -1,7 +1,8 @@
 import * as React from "react";
-import { TextInput, View, type TextInputProps, Animated } from "react-native";
+import { TextInput, type TextInputProps, Animated } from "react-native";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
+import { getBodyFont } from "@/utils/fonts";
 
 export type InputProps = TextInputProps & {
   className?: string;
@@ -15,39 +16,38 @@ export const Input = React.forwardRef<TextInput, InputProps>(
     const glowAnim = React.useRef(new Animated.Value(0)).current;
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
-    const handleFocus = (e: any) => {
+    const handleFocus = (e: Parameters<NonNullable<TextInputProps["onFocus"]>>[0]) => {
       setIsFocused(true);
-      // Use non-native driver for all animations since shadowOpacity requires it
+      // JS driver required — scale and shadow share the same Animated.View
       Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1.01,
+          tension: 200,
+          friction: 3,
+          useNativeDriver: false,
+        }),
         Animated.timing(glowAnim, {
           toValue: 1,
           duration: 250,
           useNativeDriver: false,
         }),
-        Animated.spring(scaleAnim, {
-          toValue: 1.01,
-          tension: 200,
-          friction: 3,
-          useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
-        }),
       ]).start();
       onFocus?.(e);
     };
 
-    const handleBlur = (e: any) => {
+    const handleBlur = (e: Parameters<NonNullable<TextInputProps["onBlur"]>>[0]) => {
       setIsFocused(false);
-      // Use non-native driver for all animations since shadowOpacity requires it
       Animated.parallel([
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }),
         Animated.spring(scaleAnim, {
           toValue: 1,
           tension: 200,
           friction: 3,
-          useNativeDriver: false, // Changed to false to avoid conflict with shadowOpacity
+          useNativeDriver: false,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
         }),
       ]).start();
       onBlur?.(e);
@@ -62,7 +62,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
       inputRange: [0, 1],
       outputRange: [
         scheme === "dark" ? colors.border : colors.border,
-        scheme === "dark" ? colors.borderPrimary : colors.primary,
+        colors.primary,
       ],
     });
 
@@ -73,7 +73,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
           shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: glowOpacity,
-          shadowRadius: 12,
+          shadowRadius: 6,
           elevation: isFocused ? 6 : 0,
         }}
       >
@@ -84,7 +84,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
           )}
           style={{
             borderColor,
-            borderWidth: 1.5,
+            borderWidth: 1,
           }}
         >
                       <TextInput
@@ -96,7 +96,7 @@ export const Input = React.forwardRef<TextInput, InputProps>(
                           className,
                         )}
                         style={[
-                          { fontFamily: "Montserrat-Regular" },
+                          { fontFamily: getBodyFont("400") },
                           props.style,
                         ]}
                         onFocus={handleFocus}

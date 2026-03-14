@@ -1,22 +1,22 @@
 import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react-native";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import type { AgentNotification } from "@/features/notifications/types";
 
-function iconForLevel(level: AgentNotification["level"]): keyof typeof Ionicons.glyphMap {
+function IconForLevel({ level, size, color }: { level: AgentNotification["level"]; size: number; color: string }) {
   switch (level) {
     case "success":
-      return "checkmark-circle";
+      return <CheckCircle size={size} color={color} />;
     case "warning":
-      return "warning";
+      return <AlertTriangle size={size} color={color} />;
     case "destructive":
-      return "alert-circle";
+      return <AlertCircle size={size} color={color} />;
     case "info":
     default:
-      return "information-circle";
+      return <Info size={size} color={color} />;
   }
 }
 
@@ -84,8 +84,8 @@ export default function NotificationsScreen() {
                             : `${colors.accent}66`,
                   }}
                 >
-                  <Ionicons
-                    name={iconForLevel(n.level)}
+                  <IconForLevel
+                    level={n.level}
                     size={20}
                     color={
                       n.level === "destructive"

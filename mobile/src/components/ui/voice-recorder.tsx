@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { Mic, Play, Pause, Trash2 } from "lucide-react-native";
 
 // Import conditionnel pour expo-av
 let Audio: any = null;
 let Recording: any = null;
 
 try {
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const expoAv = require("expo-av");
   Audio = expoAv.Audio;
   Recording = expoAv.Recording;
-} catch (e) {
+} catch {
   console.warn("expo-av not installed. Install with: npx expo install expo-av");
 }
 
@@ -33,8 +33,18 @@ export function VoiceRecorder({
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [sound, setSound] = useState<any>(null);
-  const [playbackStatus, setPlaybackStatus] = useState<any>(null);
-  const durationInterval = useRef<NodeJS.Timeout | null>(null);
+  const [, setPlaybackStatus] = useState<any>(null);
+  const durationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordingRef = useRef<any>(recording);
+  const soundRef = useRef<any>(sound);
+
+  useEffect(() => {
+    recordingRef.current = recording;
+  }, [recording]);
+
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
 
   useEffect(() => {
     // Initialiser le mode audio
@@ -49,11 +59,11 @@ export function VoiceRecorder({
       if (durationInterval.current) {
         clearInterval(durationInterval.current);
       }
-      if (recording) {
-        recording.stopAndUnloadAsync().catch(() => {});
+      if (recordingRef.current) {
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
       }
-      if (sound) {
-        sound.unloadAsync().catch(() => {});
+      if (soundRef.current) {
+        soundRef.current.unloadAsync().catch(() => {});
       }
     };
   }, []);
@@ -65,8 +75,8 @@ export function VoiceRecorder({
 
     async function loadSound() {
       if (!existingUri || !Audio) {
-        if (sound) {
-          sound.unloadAsync().catch(() => {});
+        if (soundRef.current) {
+          soundRef.current.unloadAsync().catch(() => {});
           setSound(null);
         }
         return;
@@ -74,18 +84,18 @@ export function VoiceRecorder({
 
       try {
         // Décharger le son précédent s'il existe
-        if (sound) {
-          await sound.unloadAsync().catch(() => {});
+        if (soundRef.current) {
+          await soundRef.current.unloadAsync().catch(() => {});
         }
 
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: existingUri },
           { shouldPlay: false },
-          (status) => {
+          (status: { isLoaded: boolean; isPlaying?: boolean; didJustFinish?: boolean }) => {
             if (isMounted) {
               setPlaybackStatus(status);
               if (status.isLoaded) {
-                setIsPlaying(status.isPlaying);
+                setIsPlaying(status.isPlaying ?? false);
                 if (status.didJustFinish) {
                   setIsPlaying(false);
                 }
@@ -212,7 +222,7 @@ export function VoiceRecorder({
     return (
       <View className={`rounded-xl border border-border bg-muted p-4 ${className || ""}`}>
         <View className="flex-row items-center gap-3">
-          <Ionicons name="mic-outline" size={24} color="#94a3b8" />
+          <Mic size={24} color="#94a3b8" />
           <View className="flex-1">
             <Text className="text-sm font-medium text-foreground">
               Message vocal non disponible
@@ -236,11 +246,11 @@ export function VoiceRecorder({
               onPress={togglePlayback}
               className="rounded-full bg-primary p-3"
             >
-              <Ionicons
-                name={isPlaying ? "pause" : "play"}
-                size={20}
-                color="#fff"
-              />
+              {isPlaying ? (
+                <Pause size={20} color="#fff" />
+              ) : (
+                <Play size={20} color="#fff" />
+              )}
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-sm font-medium text-foreground">
@@ -256,7 +266,7 @@ export function VoiceRecorder({
               onPress={onRemove}
               className="rounded-full bg-destructive p-2"
             >
-              <Ionicons name="trash-outline" size={16} color="#fff" />
+              <Trash2 size={16} color="#fff" />
             </TouchableOpacity>
           )}
         </View>
@@ -271,7 +281,7 @@ export function VoiceRecorder({
         <View className="items-center gap-3">
           <View className="flex-row items-center gap-3">
             <View className="rounded-full bg-destructive p-3">
-              <Ionicons name="mic" size={24} color="#fff" />
+              <Mic size={24} color="#fff" />
             </View>
             <View className="items-center">
               <Text className="text-lg font-semibold text-foreground">
@@ -292,7 +302,7 @@ export function VoiceRecorder({
           onPress={startRecording}
           className="flex-row items-center justify-center gap-3 rounded-lg bg-primary px-4 py-3"
         >
-          <Ionicons name="mic" size={20} color="#fff" />
+          <Mic size={20} color="#fff" />
           <Text className="font-medium text-white">Enregistrer un message vocal</Text>
         </TouchableOpacity>
       )}
