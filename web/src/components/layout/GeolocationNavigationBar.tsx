@@ -32,7 +32,6 @@ const navItems: NavItem[] = [
     label: "Rondes",
     href: "/dashboard/geolocation/rounds",
     icon: Navigation,
-    disabled: true,
   },
   {
     label: "Rapports",

@@ -32,6 +32,7 @@ import {
   mockGeolocationAgents,
   GeolocationAgent,
 } from "@/data/geolocation-agents";
+import { mockPatrolRoutes } from "@/data/geolocation-patrols";
 import { AgentMap } from "@/components/geolocation/AgentMap";
 import { cn, getInitials } from "@/lib/utils";
 
@@ -326,6 +327,7 @@ export default function LiveTrackingPage() {
   const [now, setNow] = useState(() => Date.now());
   const [showNav, setShowNav] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [showPatrolRoutes, setShowPatrolRoutes] = useState(false);
   const [sidebarView, setSidebarView] = useState<SidebarView>(() =>
     initialAgent ? "detail" : "list",
   );
@@ -526,6 +528,9 @@ export default function LiveTrackingPage() {
               }
             : undefined
         }
+        patrolRoutes={mockPatrolRoutes}
+        showPatrolRoutes={showPatrolRoutes}
+        onTogglePatrolRoutes={() => setShowPatrolRoutes((prev) => !prev)}
         className="absolute inset-0"
       />
 
