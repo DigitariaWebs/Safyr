@@ -2,9 +2,10 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Map, { Marker, Popup, MapRef } from "react-map-gl/mapbox";
-import { Navigation, Maximize2 } from "lucide-react";
+import Map, { Source, Layer, Marker, Popup, MapRef } from "react-map-gl/mapbox";
+import { Navigation, Maximize2, Route } from "lucide-react";
 import { GeolocationAgent } from "@/data/geolocation-agents";
+import type { PatrolRoute } from "@/data/geolocation-patrols";
 import { cn } from "@/lib/utils";
 
 interface AgentMapProps {
@@ -12,6 +13,9 @@ interface AgentMapProps {
   selectedAgent: GeolocationAgent | null;
   onAgentClick: (agent: GeolocationAgent) => void;
   initialCenter?: { longitude: number; latitude: number; zoom?: number };
+  patrolRoutes?: PatrolRoute[];
+  showPatrolRoutes?: boolean;
+  onTogglePatrolRoutes?: () => void;
   className?: string;
 }
 
@@ -32,6 +36,9 @@ export function AgentMap({
   selectedAgent,
   onAgentClick,
   initialCenter,
+  patrolRoutes,
+  showPatrolRoutes,
+  onTogglePatrolRoutes,
   className,
 }: AgentMapProps) {
   const mapRef = useRef<MapRef>(null);
@@ -89,6 +96,27 @@ export function AgentMap({
     [onAgentClick],
   );
 
+  // ── Patrol routes GeoJSON (dashed lines + checkpoint markers) ────
+  const patrolRoutesGeoJson = useMemo(() => {
+    if (!patrolRoutes || !showPatrolRoutes) return null;
+    const features = patrolRoutes.map((route) => ({
+      type: "Feature" as const,
+      properties: { name: route.name },
+      geometry: {
+        type: "LineString" as const,
+        coordinates: route.checkpoints.map((cp) => cp.coords),
+      },
+    }));
+    return { type: "FeatureCollection" as const, features };
+  }, [patrolRoutes, showPatrolRoutes]);
+
+  const patrolCheckpoints = useMemo(() => {
+    if (!patrolRoutes || !showPatrolRoutes) return [];
+    return patrolRoutes.flatMap((route) =>
+      route.checkpoints.map((cp) => ({ ...cp, routeName: route.name })),
+    );
+  }, [patrolRoutes, showPatrolRoutes]);
+
   return (
     // L3: describe map region for screen readers
     <div
@@ -105,6 +133,37 @@ export function AgentMap({
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
       >
+        {/* Patrol route overlays (dashed lines + checkpoint markers) */}
+        {patrolRoutesGeoJson && (
+          <Source id="patrol-routes" type="geojson" data={patrolRoutesGeoJson}>
+            <Layer
+              id="patrol-routes-line"
+              type="line"
+              paint={{
+                "line-color": "#a855f7",
+                "line-width": 2,
+                "line-dasharray": [6, 4],
+                "line-opacity": 0.6,
+              }}
+            />
+          </Source>
+        )}
+        {patrolCheckpoints.map((cp) => (
+          <Marker
+            key={`patrol-cp-${cp.id}`}
+            longitude={cp.coords[0]}
+            latitude={cp.coords[1]}
+            anchor="center"
+          >
+            <div
+              className="flex h-4 w-4 items-center justify-center rounded-full bg-purple-500/80 border border-purple-400 text-[8px] font-bold text-white shadow-sm"
+              title={`${cp.routeName} — ${cp.name}`}
+            >
+              {cp.order}
+            </div>
+          </Marker>
+        ))}
+
         {visibleAgents.map((agent) => {
           const isOffline = agent.status === "Hors ligne";
           const isMoving = agent.status === "En déplacement";
@@ -205,6 +264,27 @@ export function AgentMap({
           <Maximize2 className="h-3 w-3" />
           Vue globale
         </button>
+        {onTogglePatrolRoutes && (
+          <button
+            onClick={onTogglePatrolRoutes}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg backdrop-blur-md border px-2.5 py-1.5 text-[10px] font-medium shadow-sm transition-colors",
+              showPatrolRoutes
+                ? "bg-purple-500/15 border-purple-500/40 text-purple-400"
+                : "bg-background/80 border-border/50 hover:bg-background/95",
+            )}
+            title={
+              showPatrolRoutes ? "Masquer les rondes" : "Afficher les rondes"
+            }
+            aria-label={
+              showPatrolRoutes ? "Masquer les rondes" : "Afficher les rondes"
+            }
+            aria-pressed={showPatrolRoutes}
+          >
+            <Route className="h-3 w-3" />
+            Rondes
+          </button>
+        )}
       </div>
     </div>
   );
