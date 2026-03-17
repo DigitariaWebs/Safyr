@@ -37,7 +37,6 @@ const navItems: NavItem[] = [
     label: "Rapports",
     href: "/dashboard/geolocation/reports",
     icon: FileText,
-    disabled: true,
   },
 ];
 

@@ -39,6 +39,7 @@ export * from "./accounting-plans";
 export * from "./banking-accounts";
 export * from "./planning-agents";
 export * from "./geolocation-agents";
+export * from "./geolocation-reports";
 export {
   mockEquipment as mockStockEquipment,
   type Equipment as StockEquipment,
