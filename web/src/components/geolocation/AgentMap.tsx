@@ -3,7 +3,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Source, Layer, Marker, Popup, MapRef } from "react-map-gl/mapbox";
-import { Navigation, Maximize2, Route } from "lucide-react";
+import { Navigation, Maximize2, Route, Flag } from "lucide-react";
 import { GeolocationAgent } from "@/data/geolocation-agents";
 import type { PatrolRoute } from "@/data/geolocation-patrols";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,14 @@ interface AgentMapProps {
   showPatrolRoutes?: boolean;
   onTogglePatrolRoutes?: () => void;
   className?: string;
+  // History mode overlay
+  historyMode?: boolean;
+  historyTrail?: GeoJSON.FeatureCollection | null;
+  historyMarkerPosition?: [number, number] | null; // [lng, lat]
+  historyStartEnd?: {
+    start: [number, number];
+    end: [number, number];
+  } | null;
 }
 
 const STATUS_DOT: Record<GeolocationAgent["status"], string> = {
@@ -40,6 +48,10 @@ export function AgentMap({
   showPatrolRoutes,
   onTogglePatrolRoutes,
   className,
+  historyMode,
+  historyTrail,
+  historyMarkerPosition,
+  historyStartEnd,
 }: AgentMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [hoveredAgent, setHoveredAgent] = useState<GeolocationAgent | null>(
@@ -66,6 +78,26 @@ export function AgentMap({
       duration: 1200,
     });
   }, [selectedAgent]);
+
+  // Fit bounds to history trail when it changes
+  useEffect(() => {
+    if (!historyMode || !historyTrail || !mapRef.current) return;
+    const coords = historyTrail.features.flatMap((f) =>
+      f.geometry.type === "LineString"
+        ? (f.geometry.coordinates as [number, number][])
+        : [],
+    );
+    if (coords.length === 0) return;
+    const lngs = coords.map((c) => c[0]);
+    const lats = coords.map((c) => c[1]);
+    mapRef.current.fitBounds(
+      [
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+      ],
+      { padding: 80, maxZoom: 16, duration: 1200 },
+    );
+  }, [historyMode, historyTrail]);
 
   const handleGlobalView = useCallback(() => {
     if (!mapRef.current || visibleAgents.length === 0) return;
@@ -164,6 +196,74 @@ export function AgentMap({
           </Marker>
         ))}
 
+        {/* History trail overlay (polyline + markers) */}
+        {historyMode && historyTrail && (
+          <Source id="history-trail" type="geojson" data={historyTrail}>
+            <Layer
+              id="history-trail-solid"
+              type="line"
+              filter={["==", ["get", "dashed"], 0]}
+              paint={{
+                "line-color": ["get", "color"],
+                "line-width": 3,
+                "line-opacity": 0.85,
+              }}
+            />
+            <Layer
+              id="history-trail-dashed"
+              type="line"
+              filter={["==", ["get", "dashed"], 1]}
+              paint={{
+                "line-color": ["get", "color"],
+                "line-width": 2,
+                "line-opacity": 0.5,
+                "line-dasharray": [6, 4],
+              }}
+            />
+          </Source>
+        )}
+        {historyMode && historyStartEnd && (
+          <>
+            <Marker
+              longitude={historyStartEnd.start[0]}
+              latitude={historyStartEnd.start[1]}
+              anchor="bottom"
+            >
+              <div className="flex flex-col items-center">
+                <Flag className="h-5 w-5 text-emerald-400 drop-shadow-lg" />
+                <span className="text-[10px] font-bold text-emerald-400 mt-0.5">
+                  Début
+                </span>
+              </div>
+            </Marker>
+            <Marker
+              longitude={historyStartEnd.end[0]}
+              latitude={historyStartEnd.end[1]}
+              anchor="bottom"
+            >
+              <div className="flex flex-col items-center">
+                <Flag className="h-5 w-5 text-red-400 drop-shadow-lg" />
+                <span className="text-[10px] font-bold text-red-400 mt-0.5">
+                  Fin
+                </span>
+              </div>
+            </Marker>
+          </>
+        )}
+        {historyMode && historyMarkerPosition && (
+          <Marker
+            longitude={historyMarkerPosition[0]}
+            latitude={historyMarkerPosition[1]}
+            anchor="center"
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="absolute h-6 w-6 rounded-full bg-cyan-400/30 animate-ping" />
+              <span className="absolute h-4 w-4 rounded-full bg-cyan-400/20 animate-pulse" />
+              <span className="relative h-3 w-3 rounded-full bg-cyan-400 border-2 border-cyan-200 shadow-lg" />
+            </div>
+          </Marker>
+        )}
+
         {visibleAgents.map((agent) => {
           const isOffline = agent.status === "Hors ligne";
           const isMoving = agent.status === "En déplacement";
@@ -241,49 +341,78 @@ export function AgentMap({
 
       {/* Bottom-left controls */}
       <div className="absolute bottom-3 left-3 z-10 flex items-center gap-2">
-        <div className="flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
-          {LEGEND.map(({ label, dot }) => (
-            <div
-              key={label}
-              className={cn(
-                "flex items-center gap-1.5",
-                label === "Hors ligne" && "opacity-40",
-              )}
-            >
-              <span className={cn("h-2 w-2 rounded-full", dot)} />
-              <span className="text-[10px] text-muted-foreground">{label}</span>
+        {historyMode ? (
+          <div className="flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
+            {[
+              { label: "En poste", color: "bg-green-500" },
+              { label: "En déplacement", color: "bg-blue-500" },
+              { label: "Hors ligne", color: "bg-gray-500", dashed: true },
+            ].map(({ label, color, dashed }) => (
+              <div key={label} className="flex items-center gap-1.5">
+                {dashed ? (
+                  <span className="h-0 w-4 border-t-[2px] border-dashed border-gray-400" />
+                ) : (
+                  <span className={cn("h-[3px] w-4 rounded-full", color)} />
+                )}
+                <span className="text-[10px] text-muted-foreground">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-3 py-1.5 shadow-sm">
+              {LEGEND.map(({ label, dot }) => (
+                <div
+                  key={label}
+                  className={cn(
+                    "flex items-center gap-1.5",
+                    label === "Hors ligne" && "opacity-40",
+                  )}
+                >
+                  <span className={cn("h-2 w-2 rounded-full", dot)} />
+                  <span className="text-[10px] text-muted-foreground">
+                    {label}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <button
-          onClick={handleGlobalView}
-          className="flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
-          title="Afficher tous les agents"
-          aria-label="Vue globale — afficher tous les agents"
-        >
-          <Maximize2 className="h-3 w-3" />
-          Vue globale
-        </button>
-        {onTogglePatrolRoutes && (
-          <button
-            onClick={onTogglePatrolRoutes}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg backdrop-blur-md border px-2.5 py-1.5 text-[10px] font-medium shadow-sm transition-colors",
-              showPatrolRoutes
-                ? "bg-purple-500/15 border-purple-500/40 text-purple-400"
-                : "bg-background/80 border-border/50 hover:bg-background/95",
+            <button
+              onClick={handleGlobalView}
+              className="flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-md border border-border/50 px-2.5 py-1.5 text-[10px] font-medium shadow-sm hover:bg-background/95 transition-colors"
+              title="Afficher tous les agents"
+              aria-label="Vue globale — afficher tous les agents"
+            >
+              <Maximize2 className="h-3 w-3" />
+              Vue globale
+            </button>
+            {onTogglePatrolRoutes && (
+              <button
+                onClick={onTogglePatrolRoutes}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg backdrop-blur-md border px-2.5 py-1.5 text-[10px] font-medium shadow-sm transition-colors",
+                  showPatrolRoutes
+                    ? "bg-purple-500/15 border-purple-500/40 text-purple-400"
+                    : "bg-background/80 border-border/50 hover:bg-background/95",
+                )}
+                title={
+                  showPatrolRoutes
+                    ? "Masquer les rondes"
+                    : "Afficher les rondes"
+                }
+                aria-label={
+                  showPatrolRoutes
+                    ? "Masquer les rondes"
+                    : "Afficher les rondes"
+                }
+                aria-pressed={showPatrolRoutes}
+              >
+                <Route className="h-3 w-3" />
+                Rondes
+              </button>
             )}
-            title={
-              showPatrolRoutes ? "Masquer les rondes" : "Afficher les rondes"
-            }
-            aria-label={
-              showPatrolRoutes ? "Masquer les rondes" : "Afficher les rondes"
-            }
-            aria-pressed={showPatrolRoutes}
-          >
-            <Route className="h-3 w-3" />
-            Rondes
-          </button>
+          </>
         )}
       </div>
     </div>
