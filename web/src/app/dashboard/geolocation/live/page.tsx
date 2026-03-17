@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSOSStore } from "@/lib/stores/sosStore";
+import { SOSAlertBanner } from "@/components/geolocation/SOSAlertBanner";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -28,6 +31,8 @@ import {
   SlidersHorizontal,
   ArrowLeft,
   History,
+  ShieldAlert,
+  AlertTriangle as ImmobilityIcon,
 } from "lucide-react";
 import {
   mockGeolocationAgents,
@@ -219,6 +224,8 @@ function AgentDetailContent({
   onClose: () => void;
   historyPositions?: HistoricalPosition[];
 }) {
+  const discreteAgentIds = useSOSStore((s) => s.discreteAgentIds);
+  const toggleDiscreteMode = useSOSStore((s) => s.toggleDiscreteMode);
   const [activeTab, setActiveTab] = useState<"infos" | "historique">("infos");
   const [prevAgentId, setPrevAgentId] = useState(agent.id);
   if (agent.id !== prevAgentId) {
@@ -374,6 +381,25 @@ function AgentDetailContent({
             </div>
           )}
 
+          {/* Mode discret */}
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground mb-2">
+              Mode discret
+            </p>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
+              <div>
+                <p className="text-sm font-medium">Masquer l&apos;agent</p>
+                <p className="text-xs text-muted-foreground">
+                  Invisible pour les non-superviseurs
+                </p>
+              </div>
+              <Switch
+                checked={discreteAgentIds.includes(agent.id)}
+                onCheckedChange={() => toggleDiscreteMode(agent.id)}
+              />
+            </div>
+          </div>
+
           {/* Battery */}
           <div>
             <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground mb-2">
@@ -439,6 +465,18 @@ export default function LiveTrackingPage() {
   );
 
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+
+  const activeAlerts = useSOSStore((s) => s.activeAlerts);
+  const discreteAgentIds = useSOSStore((s) => s.discreteAgentIds);
+  const immobilityAlerts = useSOSStore((s) => s.immobilityAlerts);
+  const sosAgentIds = useMemo(
+    () => new Set(activeAlerts.map((a) => a.agentId)),
+    [activeAlerts],
+  );
+  const immobilityAgentIds = useMemo(
+    () => new Set(immobilityAlerts.map((a) => a.agentId)),
+    [immobilityAlerts],
+  );
 
   // History mode state
   const [historyMode, setHistoryMode] = useState(false);
@@ -561,12 +599,17 @@ export default function LiveTrackingPage() {
 
   const filteredAgents = useMemo(
     () =>
-      agents.filter((a) => {
-        const siteMatch = siteFilter === "all" || a.site === siteFilter;
-        const statusMatch = statusFilter === "all" || a.status === statusFilter;
-        return siteMatch && statusMatch;
-      }),
-    [agents, siteFilter, statusFilter],
+      agents
+        .filter((a) => {
+          const siteMatch = siteFilter === "all" || a.site === siteFilter;
+          const statusMatch =
+            statusFilter === "all" || a.status === statusFilter;
+          return siteMatch && statusMatch;
+        })
+        .filter(
+          (a) => !discreteAgentIds.includes(a.id) || sosAgentIds.has(a.id),
+        ),
+    [agents, siteFilter, statusFilter, discreteAgentIds, sosAgentIds],
   );
 
   const listAgents = useMemo(
@@ -685,6 +728,12 @@ export default function LiveTrackingPage() {
                           <span className="text-[10px] text-muted-foreground">
                             {agent.status}
                           </span>
+                          {sosAgentIds.has(agent.id) && (
+                            <ShieldAlert className="h-3.5 w-3.5 text-red-400 motion-safe:animate-pulse" />
+                          )}
+                          {immobilityAgentIds.has(agent.id) && (
+                            <ImmobilityIcon className="h-3.5 w-3.5 text-amber-400" />
+                          )}
                         </div>
                         <BatteryBar value={agent.battery} />
                       </div>
@@ -728,6 +777,11 @@ export default function LiveTrackingPage() {
 
   return (
     <div className="relative h-full">
+      {/* SOS alert banner */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <SOSAlertBanner />
+      </div>
+
       {/* Full-page map */}
       <AgentMap
         agents={historyMode ? [] : filteredAgents}
@@ -751,6 +805,7 @@ export default function LiveTrackingPage() {
         historyTrail={historyTrailGeoJson}
         historyMarkerPosition={historyMarkerPos}
         historyStartEnd={historyStartEnd}
+        sosAgentIds={sosAgentIds}
         className="absolute inset-0"
       />
 
