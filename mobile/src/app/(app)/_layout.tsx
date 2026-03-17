@@ -10,7 +10,9 @@ export default function AppLayout() {
         <Stack.Screen name="main-courante/new" />
         <Stack.Screen name="sos" />
         <Stack.Screen name="profile" />
-        <Stack.Screen name="documents" />
+        <Stack.Screen name="documents/index" />
+        <Stack.Screen name="documents/payroll" />
+        <Stack.Screen name="documents/schedule" />
       </Stack>
     </>
   );

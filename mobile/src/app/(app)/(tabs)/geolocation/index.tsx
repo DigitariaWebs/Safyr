@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,10 +12,20 @@ import { BlurView } from "expo-blur";
 import { Crosshair } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapView, type MapViewHandle } from "@/components/geolocation/MapView";
+import {
+  ZoneAlertBanner,
+  type ZoneAlertBannerHandle,
+} from "@/components/geolocation/ZoneAlertBanner";
+import { ZoneListCard } from "@/components/geolocation/ZoneListCard";
 import { Toggle } from "@/components/ui";
 import { useAgentLocation } from "@/features/geolocation/useAgentLocation";
-import { useWorkZoneMonitor } from "@/features/geolocation/useWorkZoneMonitor";
-import { defaultWorkZone } from "@/features/geolocation/workZone";
+import {
+  useMultiZoneMonitor,
+  type ZoneTransition,
+} from "@/features/geolocation/useMultiZoneMonitor";
+import type { WorkZone } from "@/features/geolocation/workZone";
+import { mockWorkZones } from "@/features/geolocation/zones.mock";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useTheme } from "@/theme";
 import { getBodyFont, getHeadingFont } from "@/utils/fonts";
 
@@ -29,11 +40,46 @@ export default function GeolocationScreen() {
   const tabBarHeight = 42 + Math.max(insets.bottom, 8);
 
   const [enabled, setEnabled] = useState(false);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const { permission, location, error } = useAgentLocation(enabled);
-  const { outside, distanceMeters } = useWorkZoneMonitor({
+  const { push } = useNotifications();
+  const bannerRef = useRef<ZoneAlertBannerHandle>(null);
+
+  const handleProlongedOutside = useCallback(
+    ({ zone, outsideMs }: { zone: WorkZone; outsideMs: number }) => {
+      push({
+        title: "Hors zone prolongé",
+        message: `Hors zone depuis ${Math.round(outsideMs / 60000)} min — ${zone.label}`,
+        level: "warning",
+        source: "geolocation",
+      });
+    },
+    [push],
+  );
+
+  const handleTransition = useCallback(
+    ({ zone, type }: ZoneTransition) => {
+      if (type === "exited") {
+        bannerRef.current?.show(
+          `Vous avez quitté la zone : ${zone.label}`,
+          colors.warning,
+        );
+      } else {
+        bannerRef.current?.show(
+          `Zone atteinte : ${zone.label}`,
+          colors.success,
+        );
+      }
+    },
+    [colors.warning, colors.success],
+  );
+
+  const { statuses } = useMultiZoneMonitor({
     enabled,
     location,
-    zone: defaultWorkZone,
+    zones: mockWorkZones,
+    onProlongedOutside: handleProlongedOutside,
+    onTransition: handleTransition,
   });
 
   const coords = location?.coords;
@@ -95,19 +141,32 @@ export default function GeolocationScreen() {
       ? "En service"
       : "Hors service";
 
-  // Zone
-  const zoneColor =
-    !isActive || distanceMeters == null
-      ? colors.mutedForeground
-      : outside
-        ? colors.warning
-        : colors.success;
-  const zoneText =
-    !isActive || distanceMeters == null
-      ? "—"
-      : outside
-        ? `Hors zone · ${Math.round(distanceMeters)}m`
-        : `Dans la zone · ${Math.round(distanceMeters)}m`;
+  // Zone summary
+  const { zonePillColor, zonePillText } = useMemo(() => {
+    const inside = [...statuses.values()].filter((s) => !s.outside).length;
+    const total = statuses.size;
+    const hasOutside = inside < total;
+    return {
+      zonePillColor:
+        !isActive || total === 0
+          ? colors.mutedForeground
+          : hasOutside
+            ? colors.warning
+            : colors.success,
+      zonePillText:
+        !isActive || total === 0
+          ? "—"
+          : hasOutside
+            ? `${total - inside} hors zone`
+            : "Toutes OK",
+    };
+  }, [
+    statuses,
+    isActive,
+    colors.mutedForeground,
+    colors.warning,
+    colors.success,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -115,7 +174,9 @@ export default function GeolocationScreen() {
       <MapView
         ref={mapRef}
         location={location}
-        zone={defaultWorkZone}
+        zones={mockWorkZones}
+        zoneStatuses={statuses}
+        selectedZoneId={selectedZoneId}
         style={StyleSheet.absoluteFillObject}
       />
 
@@ -202,16 +263,16 @@ export default function GeolocationScreen() {
               ]}
             >
               <View
-                style={[styles.statusDot, { backgroundColor: zoneColor }]}
+                style={[styles.statusDot, { backgroundColor: zonePillColor }]}
               />
               <Text
                 style={{
                   fontSize: 11,
-                  color: zoneColor,
+                  color: zonePillColor,
                   fontFamily: getBodyFont("500"),
                 }}
               >
-                {zoneText}
+                {zonePillText}
               </Text>
             </View>
           </BlurView>
@@ -375,22 +436,41 @@ export default function GeolocationScreen() {
                 </View>
               ) : null}
 
-              {/* Zone label */}
+              {/* Zone list */}
               {isActive ? (
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: colors.mutedForeground,
-                    fontFamily: getBodyFont("400"),
-                    textAlign: "center",
-                  }}
-                >
-                  {defaultWorkZone.label} · {defaultWorkZone.radiusMeters}m
-                </Text>
+                <>
+                  <View
+                    style={{
+                      backgroundColor: colors.borderSubtle,
+                      height: StyleSheet.hairlineWidth,
+                    }}
+                  />
+                  <ScrollView
+                    style={{ maxHeight: 160 }}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    <ZoneListCard
+                      statuses={statuses}
+                      onZonePress={(zone) => {
+                        setSelectedZoneId((prev) =>
+                          prev === zone.id ? null : zone.id,
+                        );
+                        mapRef.current?.flyTo([
+                          zone.center.longitude,
+                          zone.center.latitude,
+                        ]);
+                      }}
+                      isActive={isActive}
+                    />
+                  </ScrollView>
+                </>
               ) : null}
             </View>
           </BlurView>
         </View>
+
+        {/* Zone alert banner */}
+        <ZoneAlertBanner ref={bannerRef} />
       </Animated.View>
     </View>
   );

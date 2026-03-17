@@ -3,7 +3,6 @@ import { router } from "expo-router";
 import {
   Bell,
   ClipboardList,
-  Footprints,
   MapPin,
   AlertTriangle,
   Settings,
@@ -329,13 +328,6 @@ export default function HomeDashboardScreen() {
                 subtitle="Nouveau rapport"
                 colors={colors}
                 onPress={() => router.push("/(app)/(tabs)/main-courante")}
-              />
-              <QuickAction
-                icon={<Footprints size={18} color={colors.primary} />}
-                label="Ronde"
-                subtitle="Démarrer une ronde"
-                colors={colors}
-                onPress={() => router.push("/(app)/(tabs)/ronde")}
               />
               <QuickAction
                 icon={<MapPin size={18} color={colors.primary} />}

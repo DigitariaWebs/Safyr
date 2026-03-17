@@ -9,6 +9,7 @@ import {
 import * as Location from "expo-location";
 import { useTheme } from "@/theme";
 import type { WorkZone } from "@/features/geolocation/workZone";
+import type { ZoneStatus } from "@/features/geolocation/useMultiZoneMonitor";
 
 // Conditional import for Mapbox
 let Mapbox: any = null;
@@ -35,6 +36,9 @@ interface MapViewProps {
   className?: string;
   style?: ViewStyle;
   zone?: WorkZone;
+  zones?: WorkZone[];
+  zoneStatuses?: Map<string, ZoneStatus>;
+  selectedZoneId?: string | null;
 }
 
 function circlePolygon(
@@ -71,10 +75,10 @@ function circlePolygon(
   };
 }
 
-/** Compute [sw, ne] bounds that fit the zone circle + user location with padding. */
+/** Compute [sw, ne] bounds that fit the zone circle(s) + user location with padding. */
 function computeBounds(
   location: Location.LocationObject | null,
-  zone?: WorkZone,
+  zones: WorkZone[],
 ): { sw: [number, number]; ne: [number, number] } | null {
   const points: { lat: number; lon: number }[] = [];
 
@@ -85,20 +89,19 @@ function computeBounds(
     });
   }
 
-  if (zone) {
-    // Approximate zone edge offsets in degrees
-    const latOffset = zone.radiusMeters / 111_320;
+  for (const z of zones) {
+    const latOffset = z.radiusMeters / 111_320;
     const lonOffset =
-      zone.radiusMeters /
-      (111_320 * Math.cos((zone.center.latitude * Math.PI) / 180));
+      z.radiusMeters /
+      (111_320 * Math.cos((z.center.latitude * Math.PI) / 180));
     points.push(
       {
-        lat: zone.center.latitude + latOffset,
-        lon: zone.center.longitude + lonOffset,
+        lat: z.center.latitude + latOffset,
+        lon: z.center.longitude + lonOffset,
       },
       {
-        lat: zone.center.latitude - latOffset,
-        lon: zone.center.longitude - lonOffset,
+        lat: z.center.latitude - latOffset,
+        lon: z.center.longitude - lonOffset,
       },
     );
   }
@@ -122,6 +125,34 @@ function computeBounds(
   };
 }
 
+/** Memoized zone shape to avoid recalculating circlePolygon on every render. */
+const ZoneShape = React.memo(function ZoneShape({
+  zone,
+  fillColor,
+  isSelected,
+}: {
+  zone: WorkZone;
+  fillColor: string;
+  isSelected: boolean;
+}) {
+  const shape = useMemo(
+    () => circlePolygon(zone.center, zone.radiusMeters),
+    [zone.center, zone.radiusMeters],
+  );
+  return (
+    <Mapbox.ShapeSource id={`zone-${zone.id}`} shape={shape}>
+      <Mapbox.FillLayer
+        id={`zone-${zone.id}-fill`}
+        style={{ fillColor, fillOpacity: isSelected ? 0.25 : 0.12 }}
+      />
+      <Mapbox.LineLayer
+        id={`zone-${zone.id}-line`}
+        style={{ lineColor: fillColor, lineWidth: isSelected ? 3 : 2 }}
+      />
+    </Mapbox.ShapeSource>
+  );
+});
+
 const BOUNDS_PADDING = {
   paddingTop: 100,
   paddingBottom: 200,
@@ -130,22 +161,32 @@ const BOUNDS_PADDING = {
 };
 
 export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
-  function MapView({ location, className, style, zone }, ref) {
+  function MapView(
+    { location, className, style, zone, zones, zoneStatuses, selectedZoneId },
+    ref,
+  ) {
     const colorScheme = useColorScheme();
     const { colors } = useTheme();
     const cameraRef = useRef<any>(null);
 
+    const allZones = useMemo(
+      () => zones ?? (zone ? [zone] : []),
+      [zones, zone],
+    );
+
     const bounds = useMemo(
-      () => computeBounds(location, zone),
-      [location, zone],
+      () => computeBounds(location, allZones),
+      [location, allZones],
     );
 
     useImperativeHandle(ref, () => ({
-      flyTo(_coords: [number, number], duration = 1500) {
-        const b = computeBounds(location, zone);
-        if (b) {
-          cameraRef.current?.fitBounds(b.ne, b.sw, BOUNDS_PADDING, duration);
-        }
+      flyTo(coords: [number, number], duration = 1500) {
+        cameraRef.current?.setCamera({
+          centerCoordinate: coords,
+          zoomLevel: 15,
+          animationDuration: duration,
+          animationMode: "flyTo",
+        });
       },
     }));
 
@@ -278,22 +319,26 @@ export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
             androidRenderMode="gps"
           />
 
-          {/* Work zone (circle) */}
-          {zone ? (
-            <Mapbox.ShapeSource
-              id="workZone"
-              shape={circlePolygon(zone.center, zone.radiusMeters)}
-            >
-              <Mapbox.FillLayer
-                id="workZoneFill"
-                style={{ fillColor: colors.primary, fillOpacity: 0.12 }}
+          {/* Work zones (circles) */}
+          {allZones.map((z) => {
+            const status = zoneStatuses?.get(z.id);
+            const isInside = status ? !status.outside : undefined;
+            const fillColor =
+              isInside === true
+                ? colors.success
+                : isInside === false
+                  ? colors.error
+                  : colors.primary;
+            const isSelected = selectedZoneId === z.id;
+            return (
+              <ZoneShape
+                key={z.id}
+                zone={z}
+                fillColor={fillColor}
+                isSelected={isSelected}
               />
-              <Mapbox.LineLayer
-                id="workZoneLine"
-                style={{ lineColor: colors.primary, lineWidth: 2 }}
-              />
-            </Mapbox.ShapeSource>
-          ) : null}
+            );
+          })}
         </Mapbox.MapView>
       </View>
     );
