@@ -110,11 +110,3 @@ bun run --filter=@safyr/mobile lint         # Run ESLint via expo lint
 ### React Patterns
 - Prefer setState-during-render over `useEffect` for derived/reset state from props (official React recommendation)
 - Zustand stores use `partialize` to persist only non-transient state
-
-## Project Management
-
-### Vibe Kanban Project ID
-```
-ef2f5d47-2b1b-4881-9367-83303d9506fc
-```
-Use this ID when querying the vibe_kanban MCP for project-specific operations.
