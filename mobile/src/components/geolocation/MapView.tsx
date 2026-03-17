@@ -1,5 +1,11 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, useColorScheme, Text } from "react-native";
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  ViewStyle,
+  useColorScheme,
+  Text,
+} from "react-native";
 import * as Location from "expo-location";
 import { useTheme } from "@/theme";
 import type { WorkZone } from "@/features/geolocation/workZone";
@@ -20,9 +26,14 @@ try {
   console.warn("@rnmapbox/maps not available:", e);
 }
 
+export type MapViewHandle = {
+  flyTo: (coords: [number, number], duration?: number) => void;
+};
+
 interface MapViewProps {
   location: Location.LocationObject | null;
   className?: string;
+  style?: ViewStyle;
   zone?: WorkZone;
 }
 
@@ -60,102 +71,234 @@ function circlePolygon(
   };
 }
 
-export function MapView({ location, className, zone }: MapViewProps) {
-  const colorScheme = useColorScheme();
-  const { colors } = useTheme();
+/** Compute [sw, ne] bounds that fit the zone circle + user location with padding. */
+function computeBounds(
+  location: Location.LocationObject | null,
+  zone?: WorkZone,
+): { sw: [number, number]; ne: [number, number] } | null {
+  const points: { lat: number; lon: number }[] = [];
 
-  // Set the access token when component mounts
-  useEffect(() => {
-    if (Mapbox && MAPBOX_ACCESS_TOKEN) {
-      try {
-        Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
-      } catch (error) {
-        console.error("Failed to set Mapbox access token:", error);
-      }
-    }
-  }, []);
+  if (location) {
+    points.push({
+      lat: location.coords.latitude,
+      lon: location.coords.longitude,
+    });
+  }
 
-  // If Mapbox is not available, show fallback UI
-  if (!Mapbox || !MAPBOX_THEME) {
-    return (
-      <View
-        className={`flex-1 overflow-hidden rounded-xl items-center justify-center bg-muted ${className}`}
-      >
-        <Text className="text-sm text-muted-foreground text-center px-4">
-          Carte non disponible.{"\n"}
-          Rebuild requis pour activer Mapbox.
-        </Text>
-      </View>
+  if (zone) {
+    // Approximate zone edge offsets in degrees
+    const latOffset = zone.radiusMeters / 111_320;
+    const lonOffset =
+      zone.radiusMeters /
+      (111_320 * Math.cos((zone.center.latitude * Math.PI) / 180));
+    points.push(
+      {
+        lat: zone.center.latitude + latOffset,
+        lon: zone.center.longitude + lonOffset,
+      },
+      {
+        lat: zone.center.latitude - latOffset,
+        lon: zone.center.longitude - lonOffset,
+      },
     );
   }
 
-  // Style URL based on theme
-  const styleURL =
-    colorScheme === "dark" ? MAPBOX_THEME.dark : MAPBOX_THEME.streets;
+  if (points.length === 0) return null;
 
-  return (
-    <View className={`flex-1 overflow-hidden rounded-xl ${className}`}>
-      <Mapbox.MapView
-        style={styles.map}
-        styleURL={styleURL}
-        logoEnabled={false}
-        attributionEnabled={false}
-      >
-        <Mapbox.Camera
-          zoomLevel={15}
-          centerCoordinate={
-            location
-              ? [location.coords.longitude, location.coords.latitude]
-              : [2.3522, 48.8566] // Default to Paris
-          }
-          animationMode="flyTo"
-          animationDuration={2000}
-        />
+  let minLat = points[0].lat;
+  let maxLat = points[0].lat;
+  let minLon = points[0].lon;
+  let maxLon = points[0].lon;
+  for (const p of points) {
+    if (p.lat < minLat) minLat = p.lat;
+    if (p.lat > maxLat) maxLat = p.lat;
+    if (p.lon < minLon) minLon = p.lon;
+    if (p.lon > maxLon) maxLon = p.lon;
+  }
 
-        <Mapbox.UserLocation
-          visible={true}
-          showsUserHeadingIndicator={true}
-          androidRenderMode="gps"
-        />
-
-        {/* Work zone (circle) */}
-        {zone ? (
-          <Mapbox.ShapeSource
-            id="workZone"
-            shape={circlePolygon(zone.center, zone.radiusMeters)}
-          >
-            <Mapbox.FillLayer
-              id="workZoneFill"
-              style={{ fillColor: colors.primary, fillOpacity: 0.12 }}
-            />
-            <Mapbox.LineLayer
-              id="workZoneLine"
-              style={{ lineColor: colors.primary, lineWidth: 2 }}
-            />
-          </Mapbox.ShapeSource>
-        ) : null}
-
-        {location && (
-          <Mapbox.PointAnnotation
-            id="userLocation"
-            coordinate={[location.coords.longitude, location.coords.latitude]}
-          >
-            <View
-              style={{
-                height: 20,
-                width: 20,
-                backgroundColor: colors.primary,
-                borderRadius: 10,
-                borderWidth: 2,
-                borderColor: "#fff",
-              }}
-            />
-          </Mapbox.PointAnnotation>
-        )}
-      </Mapbox.MapView>
-    </View>
-  );
+  return {
+    sw: [minLon, minLat],
+    ne: [maxLon, maxLat],
+  };
 }
+
+const BOUNDS_PADDING = {
+  paddingTop: 100,
+  paddingBottom: 200,
+  paddingLeft: 60,
+  paddingRight: 60,
+};
+
+export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
+  function MapView({ location, className, style, zone }, ref) {
+    const colorScheme = useColorScheme();
+    const { colors } = useTheme();
+    const cameraRef = useRef<any>(null);
+
+    const bounds = useMemo(
+      () => computeBounds(location, zone),
+      [location, zone],
+    );
+
+    useImperativeHandle(ref, () => ({
+      flyTo(_coords: [number, number], duration = 1500) {
+        const b = computeBounds(location, zone);
+        if (b) {
+          cameraRef.current?.fitBounds(b.ne, b.sw, BOUNDS_PADDING, duration);
+        }
+      },
+    }));
+
+    // Set the access token when component mounts
+    useEffect(() => {
+      if (Mapbox && MAPBOX_ACCESS_TOKEN) {
+        try {
+          Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
+        } catch (error) {
+          console.error("Failed to set Mapbox access token:", error);
+        }
+      }
+    }, []);
+
+    // If Mapbox is not available, show fallback UI
+    if (!Mapbox || !MAPBOX_THEME) {
+      return (
+        <View
+          style={[
+            style,
+            {
+              flex: 1,
+              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.muted,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              color: colors.mutedForeground,
+              textAlign: "center",
+              paddingHorizontal: 16,
+            }}
+          >
+            Carte non disponible.{"\n"}
+            Rebuild requis pour activer Mapbox.
+          </Text>
+        </View>
+      );
+    }
+
+    // Warn if Mapbox token is missing or placeholder
+    const hasValidToken =
+      MAPBOX_ACCESS_TOKEN &&
+      !MAPBOX_ACCESS_TOKEN.includes("PLACEHOLDER") &&
+      MAPBOX_ACCESS_TOKEN.startsWith("pk.");
+
+    if (!hasValidToken) {
+      return (
+        <View
+          style={[
+            style,
+            {
+              flex: 1,
+              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.muted,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: colors.warning,
+              textAlign: "center",
+              paddingHorizontal: 24,
+              marginBottom: 8,
+            }}
+          >
+            EXPO_PUBLIC_MAPBOX_PUBLIC_TOKEN manquant
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.mutedForeground,
+              textAlign: "center",
+              paddingHorizontal: 24,
+            }}
+          >
+            Ajoutez un token Mapbox valide dans votre fichier .env pour activer
+            la carte.
+          </Text>
+        </View>
+      );
+    }
+
+    // Style URL based on theme
+    const styleURL =
+      colorScheme === "dark" ? MAPBOX_THEME.dark : MAPBOX_THEME.streets;
+
+    return (
+      <View
+        style={style}
+        className={`flex-1 overflow-hidden ${className ?? ""}`}
+      >
+        <Mapbox.MapView
+          style={styles.map}
+          styleURL={styleURL}
+          logoEnabled={false}
+          attributionEnabled={false}
+          scaleBarEnabled={false}
+          compassEnabled={false}
+        >
+          <Mapbox.Camera
+            ref={cameraRef}
+            {...(bounds
+              ? {
+                  bounds: {
+                    ne: bounds.ne,
+                    sw: bounds.sw,
+                    ...BOUNDS_PADDING,
+                  },
+                }
+              : {
+                  zoomLevel: 13,
+                  centerCoordinate: [2.3522, 48.8566], // Default to Paris
+                })}
+            animationMode="flyTo"
+            animationDuration={2000}
+          />
+
+          <Mapbox.UserLocation
+            visible={true}
+            showsUserHeadingIndicator={true}
+            androidRenderMode="gps"
+          />
+
+          {/* Work zone (circle) */}
+          {zone ? (
+            <Mapbox.ShapeSource
+              id="workZone"
+              shape={circlePolygon(zone.center, zone.radiusMeters)}
+            >
+              <Mapbox.FillLayer
+                id="workZoneFill"
+                style={{ fillColor: colors.primary, fillOpacity: 0.12 }}
+              />
+              <Mapbox.LineLayer
+                id="workZoneLine"
+                style={{ lineColor: colors.primary, lineWidth: 2 }}
+              />
+            </Mapbox.ShapeSource>
+          ) : null}
+        </Mapbox.MapView>
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   map: {

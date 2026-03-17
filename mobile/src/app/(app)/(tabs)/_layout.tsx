@@ -1,11 +1,6 @@
 import { Tabs } from "expo-router";
-import {
-  Home,
-  ClipboardList,
-  Footprints,
-  MapPin,
-  Settings,
-} from "lucide-react-native";
+import { Home, ClipboardList, Map, Settings } from "lucide-react-native";
+import { TabBar } from "@/components/ui/tab-bar";
 import { useTheme } from "@/theme";
 
 export default function TabsLayout() {
@@ -13,20 +8,11 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: true,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
-          marginTop: -4,
-          marginBottom: 4,
-        },
-        tabBarStyle: {
-          display: "none",
-        },
       }}
     >
       <Tabs.Screen
@@ -34,7 +20,7 @@ export default function TabsLayout() {
         options={{
           title: "Accueil",
           tabBarIcon: ({ color, size }) => (
-            <Home color={color} size={size ?? 24} />
+            <Home color={color} size={size ?? 20} />
           ),
         }}
       />
@@ -43,25 +29,22 @@ export default function TabsLayout() {
         options={{
           title: "Main C.",
           tabBarIcon: ({ color, size }) => (
-            <ClipboardList color={color} size={size ?? 24} />
+            <ClipboardList color={color} size={size ?? 20} />
           ),
         }}
       />
       <Tabs.Screen
-        name="ronde/index"
+        name="sos"
         options={{
-          title: "Ronde",
-          tabBarIcon: ({ color, size }) => (
-            <Footprints color={color} size={size ?? 24} />
-          ),
+          title: "SOS",
         }}
       />
       <Tabs.Screen
         name="geolocation/index"
         options={{
-          title: "Géoloc",
+          title: "Carte",
           tabBarIcon: ({ color, size }) => (
-            <MapPin color={color} size={size ?? 24} />
+            <Map color={color} size={size ?? 20} />
           ),
         }}
       />
@@ -70,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: "Réglages",
           tabBarIcon: ({ color, size }) => (
-            <Settings color={color} size={size ?? 24} />
+            <Settings color={color} size={size ?? 20} />
           ),
         }}
       />

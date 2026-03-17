@@ -6,22 +6,14 @@ import {
   Footprints,
   MapPin,
   AlertTriangle,
-  User,
-  FileText,
+  Settings,
   Shield,
   Clock,
   TrendingUp,
   ChevronRight,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  Button,
-  Card,
-  Header,
-  MenuButton,
-  Screen,
-  Toggle,
-} from "@/components/ui";
+import { Button, Card, Header, Screen, Toggle } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
@@ -39,7 +31,6 @@ export default function HomeDashboardScreen() {
       <Header
         title="Tableau de bord"
         subtitle="Agent de sécurité"
-        left={<MenuButton />}
         right={
           <Button
             variant="ghost"
@@ -348,7 +339,7 @@ export default function HomeDashboardScreen() {
               />
               <QuickAction
                 icon={<MapPin size={18} color={colors.primary} />}
-                label="Géolocalisation"
+                label="Carte"
                 subtitle="Position & zones"
                 colors={colors}
                 onPress={() => router.push("/(app)/(tabs)/geolocation")}
@@ -387,25 +378,15 @@ export default function HomeDashboardScreen() {
           </View>
         </Card>
 
-        {/* Account & Docs row */}
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Card style={{ flex: 1 }}>
-            <QuickLink
-              icon={<User size={18} color={colors.primary} />}
-              label="Mon profil"
-              colors={colors}
-              onPress={() => router.push("/(app)/profile")}
-            />
-          </Card>
-          <Card style={{ flex: 1 }}>
-            <QuickLink
-              icon={<FileText size={18} color={colors.primary} />}
-              label="Documents"
-              colors={colors}
-              onPress={() => router.push("/(app)/documents")}
-            />
-          </Card>
-        </View>
+        {/* Settings */}
+        <Card>
+          <QuickLink
+            icon={<Settings size={18} color={colors.primary} />}
+            label="Réglages"
+            colors={colors}
+            onPress={() => router.push("/(app)/(tabs)/settings")}
+          />
+        </Card>
       </ScrollView>
     </Screen>
   );

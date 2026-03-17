@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Header,
-  MenuButton,
   Screen,
   VideoPlayer,
   VoiceRecorder,
@@ -56,7 +55,6 @@ export default function MainCouranteListScreen() {
       <Header
         title="Main Courante"
         subtitle="Événements & compte-rendus"
-        left={<MenuButton />}
         right={
           <Button
             size="sm"

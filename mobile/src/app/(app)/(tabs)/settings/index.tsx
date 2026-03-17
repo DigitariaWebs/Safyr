@@ -14,7 +14,7 @@ import {
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Screen, Header, Card, MenuButton } from "@/components/ui";
+import { Screen, Header, Card } from "@/components/ui";
 import { useTheme, useThemeContext } from "@/theme";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import type { LucideIcon } from "lucide-react-native";
@@ -56,11 +56,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen>
-      <Header
-        title="Paramètres"
-        subtitle="Configuration de l'application"
-        left={<MenuButton />}
-      />
+      <Header title="Réglages" subtitle="Configuration de l'application" />
 
       <ScrollView
         className="flex-1 px-4"
