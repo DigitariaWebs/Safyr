@@ -3,7 +3,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Source, Layer, Marker, Popup, MapRef } from "react-map-gl/mapbox";
-import { Navigation, Maximize2, Route, Flag } from "lucide-react";
+import { Navigation, Maximize2, Route, Flag, ShieldAlert } from "lucide-react";
 import { GeolocationAgent } from "@/data/geolocation-agents";
 import type { PatrolRoute } from "@/data/geolocation-patrols";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,8 @@ interface AgentMapProps {
   showPatrolRoutes?: boolean;
   onTogglePatrolRoutes?: () => void;
   className?: string;
+  // SOS overlay
+  sosAgentIds?: Set<string>;
   // History mode overlay
   historyMode?: boolean;
   historyTrail?: GeoJSON.FeatureCollection | null;
@@ -48,6 +50,7 @@ export function AgentMap({
   showPatrolRoutes,
   onTogglePatrolRoutes,
   className,
+  sosAgentIds,
   historyMode,
   historyTrail,
   historyMarkerPosition,
@@ -78,6 +81,27 @@ export function AgentMap({
       duration: 1200,
     });
   }, [selectedAgent]);
+
+  // Auto-fly to SOS agent when a new SOS appears
+  const prevSOSIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!sosAgentIds || sosAgentIds.size === 0 || !mapRef.current) {
+      prevSOSIdsRef.current = sosAgentIds ?? new Set();
+      return;
+    }
+    const newIds = [...sosAgentIds].filter(
+      (id) => !prevSOSIdsRef.current.has(id),
+    );
+    prevSOSIdsRef.current = sosAgentIds;
+    if (newIds.length === 0) return;
+    const sosAgent = agents.find((a) => a.id === newIds[0]);
+    if (!sosAgent) return;
+    mapRef.current.flyTo({
+      center: [sosAgent.longitude, sosAgent.latitude],
+      zoom: 16,
+      duration: 1200,
+    });
+  }, [sosAgentIds, agents]);
 
   // Fit bounds to history trail when it changes
   useEffect(() => {
@@ -264,51 +288,92 @@ export function AgentMap({
           </Marker>
         )}
 
-        {visibleAgents.map((agent) => {
-          const isOffline = agent.status === "Hors ligne";
-          const isMoving = agent.status === "En déplacement";
-          const isSelected = selectedAgent?.id === agent.id;
+        {/* Regular agent markers (non-SOS first) */}
+        {visibleAgents
+          .filter((a) => !sosAgentIds?.has(a.id))
+          .map((agent) => {
+            const isOffline = agent.status === "Hors ligne";
+            const isMoving = agent.status === "En déplacement";
+            const isSelected = selectedAgent?.id === agent.id;
 
-          return (
-            <Marker
-              key={agent.id}
-              longitude={agent.longitude}
-              latitude={agent.latitude}
-              anchor="center"
-            >
-              <div className="relative flex flex-col items-center">
-                {isMoving && (
-                  <Navigation
-                    className="absolute -top-6 h-3 w-3 text-blue-300 drop-shadow"
-                    style={{ transform: `rotate(${agent.direction}deg)` }}
-                  />
-                )}
-
-                <div className="relative flex items-center justify-center">
+            return (
+              <Marker
+                key={agent.id}
+                longitude={agent.longitude}
+                latitude={agent.latitude}
+                anchor="center"
+              >
+                <div className="relative flex flex-col items-center">
                   {isMoving && (
-                    <span className="absolute h-5 w-5 rounded-full bg-blue-500/40 animate-ping" />
+                    <Navigation
+                      className="absolute -top-6 h-3 w-3 text-blue-300 drop-shadow"
+                      style={{ transform: `rotate(${agent.direction}deg)` }}
+                    />
                   )}
-                  {isSelected && (
-                    <span className="absolute h-7 w-7 rounded-full bg-cyan-400/20 animate-pulse" />
-                  )}
-                  <button
-                    onClick={(e) => handleMarkerClick(agent, e)}
-                    onMouseEnter={() => setHoveredAgent(agent)}
-                    onMouseLeave={() => setHoveredAgent(null)}
-                    className={cn(
-                      "relative h-4 w-4 rounded-full border-2 cursor-pointer transition-transform hover:scale-125 shadow-lg",
-                      STATUS_DOT[agent.status],
-                      isOffline && "opacity-40",
-                      isSelected &&
-                        "ring-2 ring-cyan-400 ring-offset-1 ring-offset-black/50 scale-110",
+
+                  <div className="relative flex items-center justify-center">
+                    {isMoving && (
+                      <span className="absolute h-5 w-5 rounded-full bg-blue-500/40 animate-ping" />
                     )}
-                    aria-label={`Agent ${agent.name} — ${agent.status}`}
-                  />
+                    {isSelected && (
+                      <span className="absolute h-7 w-7 rounded-full bg-cyan-400/20 animate-pulse" />
+                    )}
+                    <button
+                      onClick={(e) => handleMarkerClick(agent, e)}
+                      onMouseEnter={() => setHoveredAgent(agent)}
+                      onMouseLeave={() => setHoveredAgent(null)}
+                      className={cn(
+                        "relative h-4 w-4 rounded-full border-2 cursor-pointer transition-transform hover:scale-125 shadow-lg",
+                        STATUS_DOT[agent.status],
+                        isOffline && "opacity-40",
+                        isSelected &&
+                          "ring-2 ring-cyan-400 ring-offset-1 ring-offset-black/50 scale-110",
+                      )}
+                      aria-label={`Agent ${agent.name} — ${agent.status}`}
+                    />
+                  </div>
                 </div>
-              </div>
-            </Marker>
-          );
-        })}
+              </Marker>
+            );
+          })}
+
+        {/* SOS agent markers (rendered last for z-ordering) */}
+        {visibleAgents
+          .filter((a) => sosAgentIds?.has(a.id))
+          .map((agent) => {
+            const isSelected = selectedAgent?.id === agent.id;
+            return (
+              <Marker
+                key={`sos-${agent.id}`}
+                longitude={agent.longitude}
+                latitude={agent.latitude}
+                anchor="center"
+              >
+                <div className="relative flex flex-col items-center">
+                  <ShieldAlert className="absolute -top-7 h-4 w-4 text-red-400 drop-shadow-lg motion-safe:animate-pulse" />
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute h-8 w-8 rounded-full bg-red-500/20 motion-safe:animate-ping" />
+                    <span className="absolute h-6 w-6 rounded-full bg-red-500/30 motion-safe:animate-pulse" />
+                    {isSelected && (
+                      <span className="absolute h-9 w-9 rounded-full bg-red-400/15 animate-pulse" />
+                    )}
+                    <button
+                      onClick={(e) => handleMarkerClick(agent, e)}
+                      onMouseEnter={() => setHoveredAgent(agent)}
+                      onMouseLeave={() => setHoveredAgent(null)}
+                      className={cn(
+                        "relative h-4 w-4 rounded-full border-2 cursor-pointer transition-transform hover:scale-125 shadow-lg",
+                        "bg-red-500 border-red-600",
+                        isSelected &&
+                          "ring-2 ring-red-400 ring-offset-1 ring-offset-black/50 scale-110",
+                      )}
+                      aria-label={`Agent ${agent.name} — SOS actif`}
+                    />
+                  </div>
+                </div>
+              </Marker>
+            );
+          })}
 
         {/* H1: use inline styles inside Popup — CSS variables don't cascade into Mapbox's detached DOM layer */}
         {hoveredAgent && (
@@ -325,6 +390,17 @@ export function AgentMap({
                 {hoveredAgent.name}
               </p>
               <p style={{ color: "#94a3b8", margin: 0 }}>{hoveredAgent.site}</p>
+              {sosAgentIds?.has(hoveredAgent.id) && (
+                <p
+                  style={{
+                    color: "#f87171",
+                    margin: "2px 0 0",
+                    fontWeight: 600,
+                  }}
+                >
+                  SOS Actif
+                </p>
+              )}
               {hoveredAgent.status === "Hors ligne" && (
                 <p style={{ color: "#fbbf24", margin: "2px 0 0" }}>
                   Hors ligne depuis{" "}
@@ -377,6 +453,14 @@ export function AgentMap({
                   </span>
                 </div>
               ))}
+              {sosAgentIds && sosAgentIds.size > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-red-500 motion-safe:animate-pulse" />
+                  <span className="text-[10px] text-red-400 font-medium">
+                    SOS
+                  </span>
+                </div>
+              )}
             </div>
             <button
               onClick={handleGlobalView}

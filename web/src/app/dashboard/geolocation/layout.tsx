@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ProfileModal } from "@/components/layout/ProfileModal";
+import { SOSNotificationEffect } from "@/components/geolocation/SOSNotificationEffect";
 import { ModuleTopBar } from "@/components/ui/module-top-bar";
 import { MapPin } from "lucide-react";
 import { GeolocationNavigationBar } from "@/components/layout/GeolocationNavigationBar";
@@ -27,6 +28,8 @@ export default function GeolocationLayout({
         <GeolocationNavigationBar showNav={true} />
         <main className="flex-1 overflow-hidden relative">{children}</main>
       </div>
+
+      <SOSNotificationEffect />
 
       <ProfileModal
         open={profileModalOpen}

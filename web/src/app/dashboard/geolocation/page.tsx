@@ -1,8 +1,12 @@
 "use client";
 
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
-import { MapPin, Navigation, Battery, Signal } from "lucide-react";
+import { MapPin, Navigation, Battery, Signal, ShieldAlert } from "lucide-react";
 import { mockGeolocationAgents } from "@/data/geolocation-agents";
+import { useSOSStore } from "@/lib/stores/sosStore";
+import { SOSAlertBanner } from "@/components/geolocation/SOSAlertBanner";
+import { SOSHistoryTable } from "@/components/geolocation/SOSHistoryTable";
+import { ImmobilityAlertCard } from "@/components/geolocation/ImmobilityAlertCard";
 
 export default function GeolocationDashboard() {
   const activeAgents = mockGeolocationAgents.filter(
@@ -12,6 +16,7 @@ export default function GeolocationDashboard() {
   const avgBattery =
     mockGeolocationAgents.reduce((acc, a) => acc + a.battery, 0) /
     mockGeolocationAgents.length;
+  const activeAlerts = useSOSStore((s) => s.activeAlerts);
 
   return (
     <div className="space-y-6 p-6">
@@ -22,7 +27,9 @@ export default function GeolocationDashboard() {
         </p>
       </div>
 
-      <InfoCardContainer>
+      <SOSAlertBanner />
+
+      <InfoCardContainer className="lg:grid-cols-5">
         <InfoCard
           icon={MapPin}
           title="Agents Actifs"
@@ -57,7 +64,18 @@ export default function GeolocationDashboard() {
           subtext="Agents connectés"
           color="gray"
         />
+        <InfoCard
+          icon={ShieldAlert}
+          title="Alertes SOS"
+          value={activeAlerts.length}
+          subtext="En cours"
+          color="red"
+        />
       </InfoCardContainer>
+
+      <ImmobilityAlertCard />
+
+      <SOSHistoryTable />
     </div>
   );
 }
