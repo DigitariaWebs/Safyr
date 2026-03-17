@@ -96,9 +96,7 @@ const columns: ColumnDef<PresenceRecord>[] = [
           variant={config.badgeVariant}
           className={cn("gap-1", config.badgeClassName)}
         >
-          <span
-            className={cn("h-1.5 w-1.5 rounded-full", config.dotClass)}
-          />
+          <span className={cn("h-1.5 w-1.5 rounded-full", config.dotClass)} />
           {config.label}
         </Badge>
       );
@@ -206,8 +204,7 @@ export default function PresenceControlPage() {
   const findZone = (zoneId: string) =>
     mockGeolocationZones.find((z) => z.id === zoneId);
 
-  const isToday =
-    selectedDate.toDateString() === new Date().toDateString();
+  const isToday = selectedDate.toDateString() === new Date().toDateString();
 
   return (
     <div className="space-y-6 p-6 overflow-y-auto h-full">
@@ -230,7 +227,10 @@ export default function PresenceControlPage() {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium min-w-[200px] text-center capitalize" aria-live="polite">
+          <span
+            className="text-sm font-medium min-w-[200px] text-center capitalize"
+            aria-live="polite"
+          >
             {formatFrenchDate(selectedDate)}
           </span>
           <Button
@@ -315,7 +315,9 @@ export default function PresenceControlPage() {
           }
           actions={(record) => (
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/dashboard/geolocation/live?agent=${record.agentId}`}>
+              <Link
+                href={`/dashboard/geolocation/live?agent=${record.agentId}`}
+              >
                 <MapPin className="h-3.5 w-3.5 mr-1" />
                 Localiser
               </Link>

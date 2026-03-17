@@ -91,7 +91,11 @@ export function VoiceRecorder({
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: existingUri },
           { shouldPlay: false },
-          (status: { isLoaded: boolean; isPlaying?: boolean; didJustFinish?: boolean }) => {
+          (status: {
+            isLoaded: boolean;
+            isPlaying?: boolean;
+            didJustFinish?: boolean;
+          }) => {
             if (isMounted) {
               setPlaybackStatus(status);
               if (status.isLoaded) {
@@ -101,7 +105,7 @@ export function VoiceRecorder({
                 }
               }
             }
-          }
+          },
         );
         if (isMounted) {
           currentSound = newSound;
@@ -129,7 +133,7 @@ export function VoiceRecorder({
     if (!Recording) {
       Alert.alert(
         "Erreur",
-        "expo-av n'est pas installé. Installez-le avec: npx expo install expo-av"
+        "expo-av n'est pas installé. Installez-le avec: npx expo install expo-av",
       );
       return;
     }
@@ -140,7 +144,7 @@ export function VoiceRecorder({
       if (permissionResponse.status !== "granted") {
         Alert.alert(
           "Permission requise",
-          "Autorisez l'accès au microphone pour enregistrer un message vocal."
+          "Autorisez l'accès au microphone pour enregistrer un message vocal.",
         );
         return;
       }
@@ -152,7 +156,7 @@ export function VoiceRecorder({
       });
 
       const { recording: newRecording } = await Recording.createAsync(
-        Recording.OptionsPresets.HIGH_QUALITY
+        Recording.OptionsPresets.HIGH_QUALITY,
       );
 
       setRecording(newRecording);
@@ -220,7 +224,9 @@ export function VoiceRecorder({
   // Si expo-av n'est pas installé
   if (!Recording || !Audio) {
     return (
-      <View className={`rounded-xl border border-border bg-muted p-4 ${className || ""}`}>
+      <View
+        className={`rounded-xl border border-border bg-muted p-4 ${className || ""}`}
+      >
         <View className="flex-row items-center gap-3">
           <Mic size={24} color="#94a3b8" />
           <View className="flex-1">
@@ -239,7 +245,9 @@ export function VoiceRecorder({
   // Si un enregistrement existe déjà
   if (existingUri) {
     return (
-      <View className={`rounded-xl border border-border bg-card p-4 ${className || ""}`}>
+      <View
+        className={`rounded-xl border border-border bg-card p-4 ${className || ""}`}
+      >
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-3 flex-1">
             <TouchableOpacity
@@ -276,7 +284,9 @@ export function VoiceRecorder({
 
   // Interface d'enregistrement
   return (
-    <View className={`rounded-xl border border-border bg-card p-4 ${className || ""}`}>
+    <View
+      className={`rounded-xl border border-border bg-card p-4 ${className || ""}`}
+    >
       {isRecording ? (
         <View className="items-center gap-3">
           <View className="flex-row items-center gap-3">
@@ -287,7 +297,9 @@ export function VoiceRecorder({
               <Text className="text-lg font-semibold text-foreground">
                 {formatDuration(duration)}
               </Text>
-              <Text className="text-xs text-muted-foreground">Enregistrement...</Text>
+              <Text className="text-xs text-muted-foreground">
+                Enregistrement...
+              </Text>
             </View>
           </View>
           <TouchableOpacity
@@ -303,7 +315,9 @@ export function VoiceRecorder({
           className="flex-row items-center justify-center gap-3 rounded-lg bg-primary px-4 py-3"
         >
           <Mic size={20} color="#fff" />
-          <Text className="font-medium text-white">Enregistrer un message vocal</Text>
+          <Text className="font-medium text-white">
+            Enregistrer un message vocal
+          </Text>
         </TouchableOpacity>
       )}
     </View>

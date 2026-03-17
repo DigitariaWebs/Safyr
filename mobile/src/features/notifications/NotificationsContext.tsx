@@ -21,11 +21,15 @@ type NotificationsContextValue = {
   clearAll: () => Promise<void>;
 };
 
-const NotificationsContext = React.createContext<NotificationsContextValue | undefined>(
-  undefined,
-);
+const NotificationsContext = React.createContext<
+  NotificationsContextValue | undefined
+>(undefined);
 
-export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+export function NotificationsProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [items, setItems] = React.useState<AgentNotification[]>([]);
 
   const refresh = React.useCallback(async () => {
@@ -60,7 +64,10 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     await refresh();
   }, [refresh]);
 
-  const unreadCount = React.useMemo(() => items.filter((n) => !n.read).length, [items]);
+  const unreadCount = React.useMemo(
+    () => items.filter((n) => !n.read).length,
+    [items],
+  );
 
   return (
     <NotificationsContext.Provider
@@ -73,7 +80,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
 export function useNotifications() {
   const ctx = React.useContext(NotificationsContext);
-  if (!ctx) throw new Error("useNotifications must be used within NotificationsProvider");
+  if (!ctx)
+    throw new Error(
+      "useNotifications must be used within NotificationsProvider",
+    );
   return ctx;
 }
-

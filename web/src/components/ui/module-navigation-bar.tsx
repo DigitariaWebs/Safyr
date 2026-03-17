@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNavigation } from "@/contexts/NavigationContext";
+import { useUiStore } from "@/lib/stores/uiStore";
 
 export interface NavItem {
   label: string;
@@ -45,7 +45,7 @@ export function ModuleNavigationBar({
   showNav = true,
 }: ModuleNavigationBarProps) {
   const pathname = usePathname();
-  const { isNavExpanded } = useNavigation();
+  const isNavExpanded = useUiStore((s) => s.isNavExpanded);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<NavItem | null>(null);
   const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);

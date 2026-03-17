@@ -112,7 +112,9 @@ export function ZoneDetailModal({
                 <span
                   className={cn(
                     "h-2 w-2 rounded-full",
-                    zone.alerts[key] ? "bg-emerald-500" : "bg-muted-foreground/40",
+                    zone.alerts[key]
+                      ? "bg-emerald-500"
+                      : "bg-muted-foreground/40",
                   )}
                 />
                 <span className="text-xs">{label}</span>

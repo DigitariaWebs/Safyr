@@ -35,12 +35,20 @@ export function AgentMap({
   className,
 }: AgentMapProps) {
   const mapRef = useRef<MapRef>(null);
-  const [hoveredAgent, setHoveredAgent] = useState<GeolocationAgent | null>(null);
+  const [hoveredAgent, setHoveredAgent] = useState<GeolocationAgent | null>(
+    null,
+  );
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   // M2: memoize to stabilise handleGlobalView's dependency
   const visibleAgents = useMemo(
     () => agents.filter((a) => a.latitude !== 0 || a.longitude !== 0),
-    [agents]
+    [agents],
   );
 
   useEffect(() => {
@@ -50,7 +58,7 @@ export function AgentMap({
       zoom: 15,
       duration: 1200,
     });
-  }, [selectedAgent?.id]);
+  }, [selectedAgent]);
 
   const handleGlobalView = useCallback(() => {
     if (!mapRef.current || visibleAgents.length === 0) return;
@@ -69,7 +77,7 @@ export function AgentMap({
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)],
       ],
-      { padding: 60, maxZoom: 14, duration: 1000 }
+      { padding: 60, maxZoom: 14, duration: 1000 },
     );
   }, [visibleAgents]);
 
@@ -78,7 +86,7 @@ export function AgentMap({
       e.stopPropagation();
       onAgentClick(agent);
     },
-    [onAgentClick]
+    [onAgentClick],
   );
 
   return (
@@ -91,7 +99,9 @@ export function AgentMap({
       <Map
         ref={mapRef}
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-        initialViewState={initialCenter ?? { longitude: 2.3488, latitude: 48.8534, zoom: 11 }}
+        initialViewState={
+          initialCenter ?? { longitude: 2.3488, latitude: 48.8534, zoom: 11 }
+        }
         style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
       >
@@ -130,7 +140,8 @@ export function AgentMap({
                       "relative h-4 w-4 rounded-full border-2 cursor-pointer transition-transform hover:scale-125 shadow-lg",
                       STATUS_DOT[agent.status],
                       isOffline && "opacity-40",
-                      isSelected && "ring-2 ring-cyan-400 ring-offset-1 ring-offset-black/50 scale-110"
+                      isSelected &&
+                        "ring-2 ring-cyan-400 ring-offset-1 ring-offset-black/50 scale-110",
                     )}
                     aria-label={`Agent ${agent.name} — ${agent.status}`}
                   />
@@ -154,14 +165,12 @@ export function AgentMap({
               <p style={{ fontWeight: 600, color: "#f1f5f9", margin: 0 }}>
                 {hoveredAgent.name}
               </p>
-              <p style={{ color: "#94a3b8", margin: 0 }}>
-                {hoveredAgent.site}
-              </p>
+              <p style={{ color: "#94a3b8", margin: 0 }}>{hoveredAgent.site}</p>
               {hoveredAgent.status === "Hors ligne" && (
                 <p style={{ color: "#fbbf24", margin: "2px 0 0" }}>
                   Hors ligne depuis{" "}
                   {Math.round(
-                    (Date.now() - new Date(hoveredAgent.lastUpdate).getTime()) / 60000
+                    (now - new Date(hoveredAgent.lastUpdate).getTime()) / 60000,
                   )}{" "}
                   min
                 </p>
@@ -179,7 +188,7 @@ export function AgentMap({
               key={label}
               className={cn(
                 "flex items-center gap-1.5",
-                label === "Hors ligne" && "opacity-40"
+                label === "Hors ligne" && "opacity-40",
               )}
             >
               <span className={cn("h-2 w-2 rounded-full", dot)} />

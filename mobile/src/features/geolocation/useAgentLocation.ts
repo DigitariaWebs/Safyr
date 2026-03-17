@@ -3,9 +3,9 @@ import type { LocationObject, LocationSubscription } from "expo-location";
 import * as Location from "expo-location";
 
 export function useAgentLocation(enabled: boolean) {
-  const [permission, setPermission] = useState<"unknown" | "granted" | "denied">(
-    "unknown",
-  );
+  const [permission, setPermission] = useState<
+    "unknown" | "granted" | "denied"
+  >("unknown");
   const [location, setLocation] = useState<LocationObject | null>(null);
   const [error, setError] = useState<string | null>(null);
   const subRef = useRef<LocationSubscription | null>(null);
@@ -61,4 +61,3 @@ export function useAgentLocation(enabled: boolean) {
 
   return { permission, location, error };
 }
-

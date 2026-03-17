@@ -5,4 +5,3 @@ export type Shift = {
   endIso: string;
   breakMinutes: number;
 };
-

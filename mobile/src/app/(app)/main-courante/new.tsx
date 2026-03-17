@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, Text, View, ActionSheetIOS, Platform } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  View,
+  ActionSheetIOS,
+  Platform,
+} from "react-native";
 import { router } from "expo-router";
 import { Button, Card, Header, Input, Screen } from "@/components/ui";
 import { VideoPlayer } from "@/components/ui/video-player";
@@ -7,7 +14,14 @@ import { VoiceRecorder } from "@/components/ui/voice-recorder";
 import type { MainCourantePriority } from "@/features/mainCourante/types";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
-import { Camera, CheckCircle, Loader, Trash2, Video, X } from "lucide-react-native";
+import {
+  Camera,
+  CheckCircle,
+  Loader,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react-native";
 import { useTheme } from "@/theme";
 import { getBodyFont } from "@/utils/fonts";
 
@@ -52,10 +66,10 @@ export default function CreateMainCouranteEventScreen() {
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [, setAudioDuration] = useState<number>(0);
 
-  const canSubmit = useMemo(() => title.trim().length > 3 && description.trim().length > 8, [
-    title,
-    description,
-  ]);
+  const canSubmit = useMemo(
+    () => title.trim().length > 3 && description.trim().length > 8,
+    [title, description],
+  );
 
   async function onSave() {
     if (!canSubmit) return;
@@ -64,32 +78,31 @@ export default function CreateMainCouranteEventScreen() {
       // MVP mock — replace with API later.
       // En production, vous enverriez photoUri, videoUri et audioUri au backend
       // await uploadMedia(photoUri, videoUri, audioUri);
-      // await createMainCouranteEvent({ 
-      //   title, 
-      //   description, 
-      //   siteName, 
-      //   priority, 
-      //   photoUri, 
+      // await createMainCouranteEvent({
+      //   title,
+      //   description,
+      //   siteName,
+      //   priority,
+      //   photoUri,
       //   videoUri,  // La vidéo sera incluse dans l'événement
-      //   audioUri, 
-      //   audioDuration 
+      //   audioUri,
+      //   audioDuration
       // });
-      
+
       await new Promise((r) => setTimeout(r, 600));
-      
+
       // Message de confirmation avec indication des médias inclus
       const mediaInfo = [];
       if (photoUri) mediaInfo.push("photo");
       if (videoUri) mediaInfo.push("vidéo");
       if (audioUri) mediaInfo.push("message vocal");
-      
-      const mediaText = mediaInfo.length > 0 
-        ? ` avec ${mediaInfo.join(", ")}` 
-        : "";
-      
+
+      const mediaText =
+        mediaInfo.length > 0 ? ` avec ${mediaInfo.join(", ")}` : "";
+
       Alert.alert(
-        "Enregistré", 
-        `Événement ajouté à la main courante${mediaText} (démo).`
+        "Enregistré",
+        `Événement ajouté à la main courante${mediaText} (démo).`,
       );
       router.back();
     } finally {
@@ -100,7 +113,10 @@ export default function CreateMainCouranteEventScreen() {
   async function onAddPhoto() {
     const res = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!res.granted) {
-      Alert.alert("Permission requise", "Autorisez l'accès à la galerie pour ajouter une photo.");
+      Alert.alert(
+        "Permission requise",
+        "Autorisez l'accès à la galerie pour ajouter une photo.",
+      );
       return;
     }
     const pick = await ImagePicker.launchImageLibraryAsync({
@@ -117,7 +133,10 @@ export default function CreateMainCouranteEventScreen() {
   async function onAddVideo() {
     const res = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!res.granted) {
-      Alert.alert("Permission requise", "Autorisez l'accès à la galerie pour ajouter une vidéo.");
+      Alert.alert(
+        "Permission requise",
+        "Autorisez l'accès à la galerie pour ajouter une vidéo.",
+      );
       return;
     }
     const pick = await ImagePicker.launchImageLibraryAsync({
@@ -139,7 +158,7 @@ export default function CreateMainCouranteEventScreen() {
       if (!cameraRes.granted) {
         Alert.alert(
           "Permission requise",
-          "Autorisez l'accès à la caméra et au microphone pour enregistrer une vidéo."
+          "Autorisez l'accès à la caméra et au microphone pour enregistrer une vidéo.",
         );
         return;
       }
@@ -163,7 +182,10 @@ export default function CreateMainCouranteEventScreen() {
       }
     } catch (error) {
       console.error("Error recording video:", error);
-      Alert.alert("Erreur", "Impossible d'enregistrer la vidéo. Veuillez réessayer.");
+      Alert.alert(
+        "Erreur",
+        "Impossible d'enregistrer la vidéo. Veuillez réessayer.",
+      );
     }
   }
 
@@ -172,7 +194,13 @@ export default function CreateMainCouranteEventScreen() {
       // iOS ActionSheet
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["Annuler", "Prendre une photo", "Choisir une photo", "Enregistrer une vidéo", "Choisir une vidéo"],
+          options: [
+            "Annuler",
+            "Prendre une photo",
+            "Choisir une photo",
+            "Enregistrer une vidéo",
+            "Choisir une vidéo",
+          ],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -189,28 +217,27 @@ export default function CreateMainCouranteEventScreen() {
             // Choose video
             onAddVideo();
           }
-        }
+        },
       );
     } else {
       // Android Alert
-      Alert.alert(
-        "Ajouter un média",
-        "Choisissez une option",
-        [
-          { text: "Annuler", style: "cancel" },
-          { text: "Prendre une photo", onPress: onTakePhoto },
-          { text: "Choisir une photo", onPress: onAddPhoto },
-          { text: "Enregistrer une vidéo", onPress: onRecordVideo },
-          { text: "Choisir une vidéo", onPress: onAddVideo },
-        ]
-      );
+      Alert.alert("Ajouter un média", "Choisissez une option", [
+        { text: "Annuler", style: "cancel" },
+        { text: "Prendre une photo", onPress: onTakePhoto },
+        { text: "Choisir une photo", onPress: onAddPhoto },
+        { text: "Enregistrer une vidéo", onPress: onRecordVideo },
+        { text: "Choisir une vidéo", onPress: onAddVideo },
+      ]);
     }
   }
 
   async function onTakePhoto() {
     const res = await ImagePicker.requestCameraPermissionsAsync();
     if (!res.granted) {
-      Alert.alert("Permission requise", "Autorisez l'accès à la caméra pour prendre une photo.");
+      Alert.alert(
+        "Permission requise",
+        "Autorisez l'accès à la caméra pour prendre une photo.",
+      );
       return;
     }
     const pick = await ImagePicker.launchCameraAsync({
@@ -232,23 +259,45 @@ export default function CreateMainCouranteEventScreen() {
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             <X size={18} color={colors.foreground} />
-            <Text className="ml-1" style={{ color: colors.foreground }}>Fermer</Text>
+            <Text className="ml-1" style={{ color: colors.foreground }}>
+              Fermer
+            </Text>
           </Button>
         }
       />
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         style={{ backgroundColor: colors.background }}
       >
         <Card className="gap-4">
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Titre</Text>
-            <Input value={title} onChangeText={setTitle} placeholder="Ex: Ronde effectuée" />
+            <Text
+              className="mb-2 text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Titre
+            </Text>
+            <Input
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Ex: Ronde effectuée"
+            />
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Site</Text>
+            <Text
+              className="mb-2 text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Site
+            </Text>
             <Input
               value={siteName}
               onChangeText={setSiteName}
@@ -257,7 +306,15 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Priorité</Text>
+            <Text
+              className="mb-2 text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Priorité
+            </Text>
             <View className="flex-row gap-2">
               <PriorityOption
                 label="Info"
@@ -281,7 +338,15 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Description</Text>
+            <Text
+              className="mb-2 text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Description
+            </Text>
             <Input
               value={description}
               onChangeText={setDescription}
@@ -294,15 +359,34 @@ export default function CreateMainCouranteEventScreen() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Média (Photo / Vidéo)</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Média (Photo / Vidéo)
+            </Text>
             <View className="flex-row gap-2">
               <Button variant="outline" onPress={onAddMedia} className="flex-1">
                 <Camera size={18} color={colors.foreground} />
-                <Text className="ml-2" style={{ color: colors.foreground }}>Ajouter un média</Text>
+                <Text className="ml-2" style={{ color: colors.foreground }}>
+                  Ajouter un média
+                </Text>
               </Button>
-              <Button variant="primary" onPress={onRecordVideo} className="flex-1">
+              <Button
+                variant="primary"
+                onPress={onRecordVideo}
+                className="flex-1"
+              >
                 <Video size={18} color={colors.primaryForeground} />
-                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer vidéo</Text>
+                <Text
+                  className="ml-2"
+                  style={{ color: colors.primaryForeground }}
+                >
+                  Enregistrer vidéo
+                </Text>
               </Button>
               {(photoUri || videoUri) && (
                 <Button
@@ -316,7 +400,7 @@ export default function CreateMainCouranteEventScreen() {
                 </Button>
               )}
             </View>
-            
+
             {photoUri ? (
               <View className="overflow-hidden rounded-xl border border-border">
                 <Image
@@ -335,7 +419,10 @@ export default function CreateMainCouranteEventScreen() {
                 />
                 <View className="flex-row items-center gap-2 rounded-lg bg-primary/10 p-2">
                   <CheckCircle size={16} color={colors.primary} />
-                  <Text className="text-xs" style={{ color: colors.foreground }}>
+                  <Text
+                    className="text-xs"
+                    style={{ color: colors.foreground }}
+                  >
                     Vidéo enregistrée et prête à être envoyée
                   </Text>
                 </View>
@@ -343,12 +430,21 @@ export default function CreateMainCouranteEventScreen() {
             ) : null}
 
             <Text className="text-xs" style={{ color: colors.mutedForeground }}>
-              MVP: média stocké localement (démo). Étape suivante: upload backend.
+              MVP: média stocké localement (démo). Étape suivante: upload
+              backend.
             </Text>
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground, fontFamily: getBodyFont("500") }}>Message vocal</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("500"),
+              }}
+            >
+              Message vocal
+            </Text>
             <VoiceRecorder
               onRecordingComplete={(uri, duration) => {
                 setAudioUri(uri);
@@ -368,12 +464,22 @@ export default function CreateMainCouranteEventScreen() {
             {saving ? (
               <>
                 <Loader size={18} color={colors.primaryForeground} />
-                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
+                <Text
+                  className="ml-2"
+                  style={{ color: colors.primaryForeground }}
+                >
+                  Enregistrement...
+                </Text>
               </>
             ) : (
               <>
                 <CheckCircle size={18} color={colors.primaryForeground} />
-                <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer</Text>
+                <Text
+                  className="ml-2"
+                  style={{ color: colors.primaryForeground }}
+                >
+                  Enregistrer
+                </Text>
               </>
             )}
           </Button>
@@ -382,4 +488,3 @@ export default function CreateMainCouranteEventScreen() {
     </Screen>
   );
 }
-

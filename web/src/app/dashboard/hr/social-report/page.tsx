@@ -104,7 +104,10 @@ const generateMockReport = (year: number): SocialReportData => {
       byGender: {
         male: Math.floor(total * 0.58),
         female: Math.floor(total * 0.33),
-        nonDisclosed: Math.max(0, total - Math.floor(total * 0.58) - Math.floor(total * 0.33)),
+        nonDisclosed: Math.max(
+          0,
+          total - Math.floor(total * 0.58) - Math.floor(total * 0.33),
+        ),
       },
       byAge: {
         "18-25": Math.floor(total * 0.15),
@@ -209,7 +212,10 @@ export default function SocialReportPage() {
   const genderData = [
     { name: "Hommes", value: report.employeeDistribution.byGender.male },
     { name: "Femmes", value: report.employeeDistribution.byGender.female },
-    { name: "Non communiqué", value: report.employeeDistribution.byGender.nonDisclosed },
+    {
+      name: "Non communiqué",
+      value: report.employeeDistribution.byGender.nonDisclosed,
+    },
   ];
 
   const ageData = Object.entries(report.employeeDistribution.byAge).map(
@@ -354,7 +360,9 @@ export default function SocialReportPage() {
               </p>
             </div>
             <div>
-              <Label className="text-sm text-muted-foreground">Non communiqué</Label>
+              <Label className="text-sm text-muted-foreground">
+                Non communiqué
+              </Label>
               <p className="text-2xl font-bold">
                 {report.employeeDistribution.byGender.nonDisclosed}
               </p>

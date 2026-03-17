@@ -37,7 +37,9 @@ async function deleteSecureItem(key: string) {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const raw = (await getSecureItem(SESSION_KEY)) ?? (await AsyncStorage.getItem(SESSION_KEY));
+  const raw =
+    (await getSecureItem(SESSION_KEY)) ??
+    (await AsyncStorage.getItem(SESSION_KEY));
   if (!raw) return null;
   try {
     return JSON.parse(raw) as Session;
@@ -65,4 +67,3 @@ export async function clearSession(): Promise<void> {
     await AsyncStorage.removeItem(SESSION_KEY);
   }
 }
-

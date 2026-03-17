@@ -23,7 +23,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { GeoZone } from "@/data/geolocation-zones";
-import { computeZoneArea, computeZonePerimeter, formatArea, formatPerimeter, ZONE_TYPE_BADGE } from "@/data/geolocation-zones";
+import {
+  computeZoneArea,
+  computeZonePerimeter,
+  formatArea,
+  formatPerimeter,
+  ZONE_TYPE_BADGE,
+} from "@/data/geolocation-zones";
 import { cn } from "@/lib/utils";
 
 interface ZoneListSidebarProps {
@@ -42,7 +48,7 @@ interface ZoneListSidebarProps {
 function getActiveAlertCount(zone: GeoZone): number {
   const { alerts } = zone;
   return [alerts.entry, alerts.exit, alerts.absence, alerts.parking].filter(
-    Boolean
+    Boolean,
   ).length;
 }
 
@@ -64,10 +70,7 @@ export function ZoneListSidebar({
 }: ZoneListSidebarProps) {
   return (
     <div
-      className={cn(
-        "flex flex-col h-full",
-        className
-      )}
+      className={cn("flex flex-col h-full", className)}
       role="region"
       aria-label="Liste des zones"
     >
@@ -118,14 +121,14 @@ export function ZoneListSidebar({
                       "group relative flex items-center gap-0 rounded-lg border transition-all duration-150 overflow-hidden",
                       isSelected
                         ? "border-cyan-500/40 bg-cyan-500/5"
-                        : "border-border/60 hover:border-border hover:bg-muted/30"
+                        : "border-border/60 hover:border-border hover:bg-muted/30",
                     )}
                   >
                     {/* Left color bar */}
                     <div
                       className={cn(
                         "absolute left-0 inset-y-0 w-[2px] rounded-r-full",
-                        isSelected ? "bg-cyan-500" : ""
+                        isSelected ? "bg-cyan-500" : "",
                       )}
                       style={
                         !isSelected
@@ -161,17 +164,23 @@ export function ZoneListSidebar({
                           <span className="text-[10px] text-muted-foreground">
                             {getShapeLabel(zone)}
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60">·</span>
+                          <span className="text-[10px] text-muted-foreground/60">
+                            ·
+                          </span>
                           <span className="text-[10px] text-muted-foreground">
                             {formatArea(computeZoneArea(zone.shape))}
                           </span>
-                          <span className="text-[10px] text-muted-foreground/60">·</span>
+                          <span className="text-[10px] text-muted-foreground/60">
+                            ·
+                          </span>
                           <span className="text-[10px] text-muted-foreground">
                             {formatPerimeter(computeZonePerimeter(zone.shape))}
                           </span>
                           {activeAlerts > 0 && (
                             <>
-                              <span className="text-[10px] text-muted-foreground/60">·</span>
+                              <span className="text-[10px] text-muted-foreground/60">
+                                ·
+                              </span>
                               <span className="text-[10px] text-muted-foreground">
                                 {activeAlerts}{" "}
                                 {activeAlerts === 1 ? "alerte" : "alertes"}
@@ -193,10 +202,7 @@ export function ZoneListSidebar({
                             <MoreHorizontal className="h-4 w-4" />
                           </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="min-w-36"
-                        >
+                        <DropdownMenuContent align="end" className="min-w-36">
                           <DropdownMenuItem onClick={() => onZoneDetails(zone)}>
                             <Info className="h-3.5 w-3.5 mr-2 shrink-0" />
                             Voir détails

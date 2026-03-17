@@ -1,12 +1,25 @@
 import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
-import { AlertCircle, AlertTriangle, CheckCircle, Info } from "lucide-react-native";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+} from "lucide-react-native";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import type { AgentNotification } from "@/features/notifications/types";
 
-function IconForLevel({ level, size, color }: { level: AgentNotification["level"]; size: number; color: string }) {
+function IconForLevel({
+  level,
+  size,
+  color,
+}: {
+  level: AgentNotification["level"];
+  size: number;
+  color: string;
+}) {
   switch (level) {
     case "success":
       return <CheckCircle size={size} color={color} />;
@@ -22,7 +35,8 @@ function IconForLevel({ level, size, color }: { level: AgentNotification["level"
 
 export default function NotificationsScreen() {
   const { colors } = useTheme();
-  const { items, unreadCount, markAllRead, clearAll, push } = useNotifications();
+  const { items, unreadCount, markAllRead, clearAll, push } =
+    useNotifications();
 
   return (
     <Screen>
@@ -31,7 +45,11 @@ export default function NotificationsScreen() {
         subtitle={`${unreadCount} non lue(s)`}
         right={
           <View className="flex-row gap-2">
-            <Button variant="ghost" size="sm" onPress={() => void markAllRead()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => void markAllRead()}
+            >
               Tout lire
             </Button>
             <Button variant="outline" size="sm" onPress={() => void clearAll()}>
@@ -44,11 +62,19 @@ export default function NotificationsScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <View className="gap-3">
           {items.length === 0 ? (
             <Card className="gap-2">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Aucune notification</Text>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Aucune notification
+              </Text>
               <Text className="text-sm" style={{ color: colors.foreground }}>
                 Les alertes (géoloc, SOS, congés, etc.) apparaîtront ici.
               </Text>
@@ -100,14 +126,30 @@ export default function NotificationsScreen() {
                 </View>
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between gap-2">
-                    <Text className="text-base font-semibold" style={{ color: colors.foreground }}>{n.title}</Text>
-                    <Text className="text-xs" style={{ color: colors.foreground }}>
+                    <Text
+                      className="text-base font-semibold"
+                      style={{ color: colors.foreground }}
+                    >
+                      {n.title}
+                    </Text>
+                    <Text
+                      className="text-xs"
+                      style={{ color: colors.foreground }}
+                    >
                       {new Date(n.createdAtIso).toLocaleString()}
                     </Text>
                   </View>
-                  <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>{n.message}</Text>
+                  <Text
+                    className="mt-1 text-sm"
+                    style={{ color: colors.foreground }}
+                  >
+                    {n.message}
+                  </Text>
                   {!n.read ? (
-                    <Text className="mt-2 text-xs" style={{ color: colors.primary }}>
+                    <Text
+                      className="mt-2 text-xs"
+                      style={{ color: colors.primary }}
+                    >
                       Nouveau
                     </Text>
                   ) : null}
@@ -120,4 +162,3 @@ export default function NotificationsScreen() {
     </Screen>
   );
 }
-

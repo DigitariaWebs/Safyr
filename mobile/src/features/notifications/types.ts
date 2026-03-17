@@ -7,6 +7,11 @@ export type AgentNotification = {
   level: NotificationLevel;
   createdAtIso: string;
   read: boolean;
-  source?: "system" | "geolocation" | "sos" | "schedule" | "timeoff" | "payroll";
+  source?:
+    | "system"
+    | "geolocation"
+    | "sos"
+    | "schedule"
+    | "timeoff"
+    | "payroll";
 };
-

@@ -8,7 +8,13 @@ interface CardProps extends ViewProps {
   animated?: boolean;
 }
 
-export function Card({ className, style, animated = true, children, ...props }: CardProps) {
+export function Card({
+  className,
+  style,
+  animated = true,
+  children,
+  ...props
+}: CardProps) {
   const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(animated ? 0 : 1)).current;
   const scaleAnim = useRef(new Animated.Value(animated ? 0.98 : 1)).current;

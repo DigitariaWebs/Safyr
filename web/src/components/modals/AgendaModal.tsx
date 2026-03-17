@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useAgenda } from "@/contexts/AgendaContext";
+import { useAgendaStore } from "@/lib/stores/agendaStore";
 import type { Appointment, CalendarScope } from "@/lib/types";
 import {
   Select,
@@ -279,7 +279,7 @@ export function AgendaModal() {
     deleteAppointment,
     getFilteredAppointments,
     currentUserId,
-  } = useAgenda();
+  } = useAgendaStore();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"calendar" | "settings">("calendar");

@@ -16,7 +16,9 @@ export const Input = React.forwardRef<TextInput, InputProps>(
     const glowAnim = React.useRef(new Animated.Value(0)).current;
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
-    const handleFocus = (e: Parameters<NonNullable<TextInputProps["onFocus"]>>[0]) => {
+    const handleFocus = (
+      e: Parameters<NonNullable<TextInputProps["onFocus"]>>[0],
+    ) => {
       setIsFocused(true);
       // JS driver required — scale and shadow share the same Animated.View
       Animated.parallel([
@@ -35,7 +37,9 @@ export const Input = React.forwardRef<TextInput, InputProps>(
       onFocus?.(e);
     };
 
-    const handleBlur = (e: Parameters<NonNullable<TextInputProps["onBlur"]>>[0]) => {
+    const handleBlur = (
+      e: Parameters<NonNullable<TextInputProps["onBlur"]>>[0],
+    ) => {
       setIsFocused(false);
       Animated.parallel([
         Animated.spring(scaleAnim, {
@@ -87,22 +91,19 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             borderWidth: 1,
           }}
         >
-                      <TextInput
-                        ref={ref}
-                        placeholderTextColor={colors.placeholder}
-                        className={cn(
-                          "flex-1 text-base text-foreground",
-                          "leading-5",
-                          className,
-                        )}
-                        style={[
-                          { fontFamily: getBodyFont("400") },
-                          props.style,
-                        ]}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        {...props}
-                      />
+          <TextInput
+            ref={ref}
+            placeholderTextColor={colors.placeholder}
+            className={cn(
+              "flex-1 text-base text-foreground",
+              "leading-5",
+              className,
+            )}
+            style={[{ fontFamily: getBodyFont("400") }, props.style]}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            {...props}
+          />
         </Animated.View>
       </Animated.View>
     );

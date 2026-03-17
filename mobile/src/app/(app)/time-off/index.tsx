@@ -3,7 +3,10 @@ import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Card, Header, Screen } from "@/components/ui";
 import { mockTimeOff } from "@/features/timeoff/mock";
-import { getTimeOffRequests, seedTimeOffIfEmpty } from "@/features/timeoff/timeoff.storage";
+import {
+  getTimeOffRequests,
+  seedTimeOffIfEmpty,
+} from "@/features/timeoff/timeoff.storage";
 import type { TimeOffRequest } from "@/features/timeoff/types";
 
 function labelForType(t: TimeOffRequest["type"]) {
@@ -54,7 +57,10 @@ export default function TimeOffScreen() {
         subtitle="Historique & demandes"
         right={
           <View className="flex-row gap-2">
-            <Button size="sm" onPress={() => router.push("/(app)/time-off/new")}>
+            <Button
+              size="sm"
+              onPress={() => router.push("/(app)/time-off/new")}
+            >
               + Demander
             </Button>
             <Button variant="ghost" size="sm" onPress={() => router.back()}>
@@ -64,7 +70,10 @@ export default function TimeOffScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <View className="gap-3">
           {items.map((r) => {
             const start = new Date(r.startIso);
@@ -83,7 +92,9 @@ export default function TimeOffScreen() {
                   {start.toLocaleDateString()} → {end.toLocaleDateString()}
                 </Text>
                 {r.reason ? (
-                  <Text className="text-sm text-muted-foreground">{r.reason}</Text>
+                  <Text className="text-sm text-muted-foreground">
+                    {r.reason}
+                  </Text>
                 ) : null}
               </Card>
             );
@@ -93,4 +104,3 @@ export default function TimeOffScreen() {
     </Screen>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { ZonePreviewMap } from "@/components/geolocation/ZonePreviewMap";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
@@ -61,43 +61,48 @@ export function ZoneFormModal({
   onSave,
   onStartDrawing,
 }: ZoneFormModalProps) {
-  const [name, setName] = useState("");
-  const [type, setType] = useState<ZoneType>("Site client");
-  const [site, setSite] = useState("");
-  const [color, setColor] = useState("#22d3ee");
-  const [shape, setShape] = useState<ZoneShape | null>(null);
-  const [alerts, setAlerts] = useState<ZoneAlertRules>({
-    entry: true,
-    exit: true,
-    absence: false,
-    parking: false,
-  });
+  const [name, setName] = useState(zone?.name ?? "");
+  const [type, setType] = useState<ZoneType>(zone?.type ?? "Site client");
+  const [site, setSite] = useState(zone?.site ?? "");
+  const [color, setColor] = useState(zone?.color ?? "#22d3ee");
+  const [shape, setShape] = useState<ZoneShape | null>(
+    zone?.shape ?? pendingShape ?? null,
+  );
+  const [alerts, setAlerts] = useState<ZoneAlertRules>(
+    zone?.alerts ?? { entry: true, exit: true, absence: false, parking: false },
+  );
 
-  // Track whether the modal was closed for drawing (to preserve form state)
-  const isDrawingRef = useRef(false);
+  // Track whether the modal was closed for drawing (to preserve form state).
+  // Stored in state rather than a ref so we can read it safely during render.
+  const [closedForDrawing, setClosedForDrawing] = useState(false);
 
-  // Pre-populate in edit mode
-  useEffect(() => {
+  // ── Derived-state resets (React "storing previous props" pattern) ──
+  //
+  // Calling setState during render (before returning JSX) is the idiomatic
+  // way to reset/derive state when props change, without using an effect.
+  // React will re-render immediately with the new state, discarding the
+  // partially-rendered output — no cascading effect renders.
+
+  const [prevZoneId, setPrevZoneId] = useState<string | null | undefined>(
+    zone?.id,
+  );
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevPendingShape, setPrevPendingShape] = useState(pendingShape);
+
+  if (zone?.id !== prevZoneId || open !== prevOpen) {
+    setPrevZoneId(zone?.id);
+    setPrevOpen(open);
+
     if (open && zone) {
+      // Edit mode: pre-populate from zone when modal opens.
       setName(zone.name);
       setType(zone.type);
       setSite(zone.site);
       setColor(zone.color);
       setShape(zone.shape);
       setAlerts(zone.alerts);
-    }
-  }, [zone?.id, open]);
-
-  // Merge pending shape from map drawing
-  useEffect(() => {
-    if (pendingShape) {
-      setShape(pendingShape);
-    }
-  }, [pendingShape]);
-
-  // Reset form on create-mode dismiss (but not when closing for drawing)
-  useEffect(() => {
-    if (!open && !zone && !isDrawingRef.current) {
+    } else if (!open && !zone && !closedForDrawing) {
+      // Create mode: reset when modal closes (but not when closing for drawing).
       setName("");
       setType("Site client");
       setSite("");
@@ -106,12 +111,19 @@ export function ZoneFormModal({
       setAlerts({ entry: true, exit: true, absence: false, parking: false });
     }
     if (open) {
-      isDrawingRef.current = false;
+      setClosedForDrawing(false);
     }
-  }, [open, zone]);
+  }
+
+  if (pendingShape !== prevPendingShape) {
+    setPrevPendingShape(pendingShape);
+    if (pendingShape) {
+      setShape(pendingShape);
+    }
+  }
 
   const handleStartDrawing = (mode: "circle" | "polygon") => {
-    isDrawingRef.current = true;
+    setClosedForDrawing(true);
     onStartDrawing(mode);
   };
 
@@ -152,10 +164,18 @@ export function ZoneFormModal({
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleStartDrawing("circle")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleStartDrawing("circle")}
+          >
             Redessiner cercle
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleStartDrawing("polygon")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleStartDrawing("polygon")}
+          >
             Redessiner polygone
           </Button>
         </div>
@@ -254,10 +274,7 @@ function ZoneFormContent({
       {/* Type de zone */}
       <div className="space-y-1.5">
         <Label>Type de zone</Label>
-        <Select
-          value={type}
-          onValueChange={(v) => setType(v as ZoneType)}
-        >
+        <Select value={type} onValueChange={(v) => setType(v as ZoneType)}>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -345,9 +362,7 @@ function ZoneFormContent({
             </p>
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            Aucune forme définie.
-          </p>
+          <p className="text-xs text-muted-foreground">Aucune forme définie.</p>
         )}
       </div>
 
@@ -355,10 +370,7 @@ function ZoneFormContent({
       <div className="space-y-3">
         <Label>Règles d&apos;alerte</Label>
         {ALERT_LABELS.map(({ key, label }) => (
-          <div
-            key={key}
-            className="flex items-center justify-between"
-          >
+          <div key={key} className="flex items-center justify-between">
             <Label className="font-normal">{label}</Label>
             <Switch
               checked={alerts[key]}
@@ -388,20 +400,25 @@ export function ZoneFormPanel({
   onCancel,
   onStartDrawing,
 }: ZoneFormPanelProps) {
-  const [name, setName] = useState("");
-  const [type, setType] = useState<ZoneType>("Site client");
-  const [site, setSite] = useState("");
-  const [color, setColor] = useState("#22d3ee");
-  const [shape, setShape] = useState<ZoneShape | null>(null);
-  const [alerts, setAlerts] = useState<ZoneAlertRules>({
-    entry: true,
-    exit: true,
-    absence: false,
-    parking: false,
-  });
+  const [name, setName] = useState(zone?.name ?? "");
+  const [type, setType] = useState<ZoneType>(zone?.type ?? "Site client");
+  const [site, setSite] = useState(zone?.site ?? "");
+  const [color, setColor] = useState(zone?.color ?? "#22d3ee");
+  const [shape, setShape] = useState<ZoneShape | null>(
+    zone?.shape ?? pendingShape ?? null,
+  );
+  const [alerts, setAlerts] = useState<ZoneAlertRules>(
+    zone?.alerts ?? { entry: true, exit: true, absence: false, parking: false },
+  );
 
-  // Pre-populate in edit mode
-  useEffect(() => {
+  // ── Derived-state resets (React "storing previous props" pattern) ──
+  const [prevZoneId, setPrevZoneId] = useState<string | null | undefined>(
+    zone?.id,
+  );
+  const [prevPendingShape, setPrevPendingShape] = useState(pendingShape);
+
+  if (zone?.id !== prevZoneId) {
+    setPrevZoneId(zone?.id);
     if (zone) {
       setName(zone.name);
       setType(zone.type);
@@ -417,14 +434,14 @@ export function ZoneFormPanel({
       setShape(null);
       setAlerts({ entry: true, exit: true, absence: false, parking: false });
     }
-  }, [zone?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
-  // Merge pending shape from map drawing
-  useEffect(() => {
+  if (pendingShape !== prevPendingShape) {
+    setPrevPendingShape(pendingShape);
     if (pendingShape) {
       setShape(pendingShape);
     }
-  }, [pendingShape]);
+  }
 
   const handleSave = () => {
     if (!name || !shape) return;
@@ -461,10 +478,18 @@ export function ZoneFormPanel({
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => onStartDrawing("circle")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onStartDrawing("circle")}
+          >
             Redessiner cercle
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onStartDrawing("polygon")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onStartDrawing("polygon")}
+          >
             Redessiner polygone
           </Button>
         </div>
@@ -501,7 +526,12 @@ export function ZoneFormPanel({
         >
           Enregistrer
         </Button>
-        <Button size="sm" variant="outline" className="flex-1" onClick={onCancel}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1"
+          onClick={onCancel}
+        >
           Annuler
         </Button>
       </div>

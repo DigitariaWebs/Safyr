@@ -4,9 +4,9 @@ import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarDays, Link2, LayoutGrid, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAgenda } from "@/contexts/AgendaContext";
-import { useLiensUtiles } from "@/contexts/LiensUtilesContext";
-import { useNavigation } from "@/contexts/NavigationContext";
+import { useUiStore } from "@/lib/stores/uiStore";
+import { useAgendaStore } from "@/lib/stores/agendaStore";
+import { useLiensUtilesStore } from "@/lib/stores/liensUtilesStore";
 
 export interface ModuleTopBarProps {
   moduleTitle: string;
@@ -25,9 +25,9 @@ export function ModuleTopBar({
   userAvatar,
   showConteurs = true,
 }: ModuleTopBarProps) {
-  const { openAgenda } = useAgenda();
-  const { openLiensUtiles } = useLiensUtiles();
-  const { isNavExpanded, toggleNavExpanded } = useNavigation();
+  const openAgenda = useAgendaStore((s) => s.openAgenda);
+  const openLiensUtiles = useLiensUtilesStore((s) => s.openLiensUtiles);
+  const { isNavExpanded, toggleNavExpanded } = useUiStore();
 
   return (
     <header className="sticky top-0 z-10 border-b bg-card">

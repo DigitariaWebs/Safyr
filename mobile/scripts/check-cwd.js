@@ -24,4 +24,3 @@ if (path.resolve(cwd) !== expected) {
   );
   process.exit(1);
 }
-

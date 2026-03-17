@@ -3,18 +3,13 @@
 import { useMemo } from "react";
 import Map, { Source, Layer } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import {
-  circleToPolygon,
-  ensureClosedRing,
-} from "@/data/geolocation-zones";
+import { circleToPolygon, ensureClosedRing } from "@/data/geolocation-zones";
 import type { ZoneShape } from "@/data/geolocation-zones";
 import { cn } from "@/lib/utils";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function getZoneBounds(
-  shape: ZoneShape,
-): [[number, number], [number, number]] {
+function getZoneBounds(shape: ZoneShape): [[number, number], [number, number]] {
   const points: [number, number][] =
     shape.kind === "circle"
       ? circleToPolygon(shape.center, shape.radius, 32)
@@ -70,7 +65,10 @@ export function ZonePreviewMap({
 
   return (
     <div
-      className={cn("rounded-lg border border-border/50 overflow-hidden", className)}
+      className={cn(
+        "rounded-lg border border-border/50 overflow-hidden",
+        className,
+      )}
       style={{ height }}
     >
       <Map

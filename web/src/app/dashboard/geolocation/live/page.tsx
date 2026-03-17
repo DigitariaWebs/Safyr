@@ -5,11 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,15 +84,14 @@ function AgentAvatar({
   offline: boolean;
   size?: "sm" | "lg";
 }) {
-  const sizeClass =
-    size === "lg" ? "h-11 w-11 text-sm" : "h-8 w-8 text-[11px]";
+  const sizeClass = size === "lg" ? "h-11 w-11 text-sm" : "h-8 w-8 text-[11px]";
   return (
     <div
       className={cn(
         "rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground shrink-0 ring-2 transition-opacity",
         sizeClass,
         STATUS_CONFIG[status].ring,
-        offline && "opacity-40"
+        offline && "opacity-40",
       )}
       aria-hidden="true"
     >
@@ -136,7 +131,7 @@ function LastSeen({ iso, now }: { iso: string; now: number }) {
           ? "text-emerald-500"
           : minutes < 10
             ? "text-muted-foreground"
-            : "text-amber-400"
+            : "text-amber-400",
       )}
       suppressHydrationWarning
     >
@@ -147,19 +142,21 @@ function LastSeen({ iso, now }: { iso: string; now: number }) {
 
 function AgentDetailContent({
   agent,
+  now,
   onClose,
 }: {
   agent: GeolocationAgent;
+  now: number;
   onClose: () => void;
 }) {
   const isOffline = agent.status === "Hors ligne";
   const isMoving = agent.status === "En déplacement";
   const { dot, badge } = STATUS_CONFIG[agent.status];
   const { fill: batteryFill, text: batteryColor } = getBatteryClasses(
-    agent.battery
+    agent.battery,
   );
   const minutesAgo = Math.floor(
-    (Date.now() - new Date(agent.lastUpdate).getTime()) / 60000
+    (now - new Date(agent.lastUpdate).getTime()) / 60000,
   );
 
   return (
@@ -190,14 +187,14 @@ function AgentDetailContent({
         <span
           className={cn(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium shrink-0",
-            badge
+            badge,
           )}
         >
           <span
             className={cn(
               "h-1.5 w-1.5 rounded-full",
               dot,
-              isMoving && "animate-pulse"
+              isMoving && "animate-pulse",
             )}
           />
           {agent.status}
@@ -229,7 +226,10 @@ function AgentDetailContent({
               {new Date(agent.lastUpdate).toLocaleTimeString("fr-FR")}
             </p>
             {isOffline ? (
-              <p className="text-xs text-amber-400 mt-0.5" suppressHydrationWarning>
+              <p
+                className="text-xs text-amber-400 mt-0.5"
+                suppressHydrationWarning
+              >
                 il y a {minutesAgo} min
               </p>
             ) : (
@@ -280,7 +280,9 @@ function AgentDetailContent({
         <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-muted-foreground">Batterie</span>
-            <span className={cn("text-sm font-bold tabular-nums", batteryColor)}>
+            <span
+              className={cn("text-sm font-bold tabular-nums", batteryColor)}
+            >
               {agent.battery}%
             </span>
           </div>
@@ -315,16 +317,17 @@ export default function LiveTrackingPage() {
     return null;
   }, [searchParams, agents]);
 
-  const [selectedAgent, setSelectedAgent] =
-    useState<GeolocationAgent | null>(initialAgent);
+  const [selectedAgent, setSelectedAgent] = useState<GeolocationAgent | null>(
+    initialAgent,
+  );
   const [siteFilter, setSiteFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [showNav, setShowNav] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [sidebarView, setSidebarView] = useState<SidebarView>(
-    () => (initialAgent ? "detail" : "list"),
+  const [sidebarView, setSidebarView] = useState<SidebarView>(() =>
+    initialAgent ? "detail" : "list",
   );
 
   // Single clock tick shared by all LastSeen instances
@@ -335,27 +338,26 @@ export default function LiveTrackingPage() {
 
   const sites = useMemo(
     () => Array.from(new Set(agents.map((a) => a.site))),
-    [agents]
+    [agents],
   );
 
   const statusCounts = useMemo(
     () =>
       agents.reduce(
         (acc, a) => ({ ...acc, [a.status]: (acc[a.status] || 0) + 1 }),
-        {} as Record<string, number>
+        {} as Record<string, number>,
       ),
-    [agents]
+    [agents],
   );
 
   const filteredAgents = useMemo(
     () =>
       agents.filter((a) => {
         const siteMatch = siteFilter === "all" || a.site === siteFilter;
-        const statusMatch =
-          statusFilter === "all" || a.status === statusFilter;
+        const statusMatch = statusFilter === "all" || a.status === statusFilter;
         return siteMatch && statusMatch;
       }),
-    [agents, siteFilter, statusFilter]
+    [agents, siteFilter, statusFilter],
   );
 
   const listAgents = useMemo(
@@ -364,13 +366,12 @@ export default function LiveTrackingPage() {
         (a) =>
           search === "" ||
           a.name.toLowerCase().includes(search.toLowerCase()) ||
-          a.site.toLowerCase().includes(search.toLowerCase())
+          a.site.toLowerCase().includes(search.toLowerCase()),
       ),
-    [filteredAgents, search]
+    [filteredAgents, search],
   );
 
-  const handleAgentZoom = (agent: GeolocationAgent) =>
-    setSelectedAgent(agent);
+  const handleAgentZoom = (agent: GeolocationAgent) => setSelectedAgent(agent);
 
   const handleAgentDetails = (agent: GeolocationAgent) => {
     setSelectedAgent(agent);
@@ -403,9 +404,7 @@ export default function LiveTrackingPage() {
         {listAgents.length === 0 ? (
           <li className="flex flex-col items-center justify-center gap-2 py-16 text-center">
             <MapPin className="h-8 w-8 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">
-              Aucun agent trouvé
-            </p>
+            <p className="text-sm text-muted-foreground">Aucun agent trouvé</p>
           </li>
         ) : (
           listAgents.map((agent) => {
@@ -420,7 +419,7 @@ export default function LiveTrackingPage() {
                     "group relative flex items-center gap-0 rounded-lg border transition-all duration-150 overflow-hidden",
                     isSelected
                       ? "border-cyan-500/40 bg-cyan-500/5"
-                      : "border-border/60 hover:border-border hover:bg-muted/30"
+                      : "border-border/60 hover:border-border hover:bg-muted/30",
                   )}
                 >
                   {isSelected && (
@@ -447,7 +446,7 @@ export default function LiveTrackingPage() {
                         <p
                           className={cn(
                             "text-xs font-semibold leading-none truncate",
-                            isOffline && "opacity-50"
+                            isOffline && "opacity-50",
                           )}
                         >
                           {agent.name}
@@ -463,7 +462,7 @@ export default function LiveTrackingPage() {
                             className={cn(
                               "h-1.5 w-1.5 rounded-full shrink-0",
                               dot,
-                              isOffline && "opacity-40"
+                              isOffline && "opacity-40",
                             )}
                             aria-hidden="true"
                           />
@@ -518,7 +517,15 @@ export default function LiveTrackingPage() {
         agents={filteredAgents}
         selectedAgent={selectedAgent}
         onAgentClick={handleAgentZoom}
-        initialCenter={initialAgent ? { longitude: initialAgent.longitude, latitude: initialAgent.latitude, zoom: 15 } : undefined}
+        initialCenter={
+          initialAgent
+            ? {
+                longitude: initialAgent.longitude,
+                latitude: initialAgent.latitude,
+                zoom: 15,
+              }
+            : undefined
+        }
         className="absolute inset-0"
       />
 
@@ -594,11 +601,14 @@ export default function LiveTrackingPage() {
                   "h-8 px-3 text-xs rounded-md border transition-colors",
                   statusFilter === "all"
                     ? "bg-primary text-primary-foreground border-primary"
-                    : "border-input text-muted-foreground hover:bg-accent"
+                    : "border-input text-muted-foreground hover:bg-accent",
                 )}
               >
                 Tous{" "}
-                <span className="ml-1 opacity-60 tabular-nums" aria-hidden="true">
+                <span
+                  className="ml-1 opacity-60 tabular-nums"
+                  aria-hidden="true"
+                >
                   {agents.length}
                 </span>
               </button>
@@ -611,13 +621,13 @@ export default function LiveTrackingPage() {
                     "h-8 px-3 text-xs rounded-md border transition-colors flex items-center gap-1.5",
                     statusFilter === status
                       ? "bg-primary text-primary-foreground border-primary"
-                      : "border-input text-muted-foreground hover:bg-accent"
+                      : "border-input text-muted-foreground hover:bg-accent",
                   )}
                 >
                   <span
                     className={cn(
                       "h-1.5 w-1.5 rounded-full",
-                      STATUS_CONFIG[status].dot
+                      STATUS_CONFIG[status].dot,
                     )}
                     aria-hidden="true"
                   />
@@ -659,29 +669,28 @@ export default function LiveTrackingPage() {
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
-          {sidebarView === "list" ? (
-            sidebarContent
-          ) : (
-            selectedAgent && (
-              <div className="flex flex-col h-full">
-                <button
-                  onClick={() => setSidebarView("list")}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-3 pb-0"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  Retour
-                </button>
-                <ScrollArea className="flex-1">
-                  <div className="p-3">
-                    <AgentDetailContent
-                      agent={selectedAgent}
-                      onClose={() => setSidebarView("list")}
-                    />
-                  </div>
-                </ScrollArea>
-              </div>
-            )
-          )}
+          {sidebarView === "list"
+            ? sidebarContent
+            : selectedAgent && (
+                <div className="flex flex-col h-full">
+                  <button
+                    onClick={() => setSidebarView("list")}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-3 pb-0"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Retour
+                  </button>
+                  <ScrollArea className="flex-1">
+                    <div className="p-3">
+                      <AgentDetailContent
+                        agent={selectedAgent}
+                        now={now}
+                        onClose={() => setSidebarView("list")}
+                      />
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
         </div>
       )}
 

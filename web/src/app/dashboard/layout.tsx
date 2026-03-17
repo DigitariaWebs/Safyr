@@ -18,14 +18,10 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SendEmailProvider } from "@/contexts/SendEmailContext";
-import { AgendaProvider } from "@/contexts/AgendaContext";
-import { LiensUtilesProvider } from "@/contexts/LiensUtilesContext";
-import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
-import { NavigationProvider } from "@/contexts/NavigationContext";
+import { useUiStore } from "@/lib/stores/uiStore";
 import { AgendaModal } from "@/components/modals/AgendaModal";
 import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
 import Image from "next/image";
@@ -113,7 +109,12 @@ const modules: Module[] = [
 
 function DashboardLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { sidebarMode, setSidebarMode, isHidden, setIsHidden } = useSidebar();
+  const {
+    sidebarMode,
+    setSidebarMode,
+    sidebarHidden: isHidden,
+    setIsHidden,
+  } = useUiStore();
 
   const isExpandedDisplay = sidebarMode === "expanded";
 
@@ -271,16 +272,8 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider>
-      <NavigationProvider>
-        <SendEmailProvider>
-          <AgendaProvider>
-            <LiensUtilesProvider>
-              <DashboardLayoutContent>{children}</DashboardLayoutContent>
-            </LiensUtilesProvider>
-          </AgendaProvider>
-        </SendEmailProvider>
-      </NavigationProvider>
-    </SidebarProvider>
+    <SendEmailProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </SendEmailProvider>
   );
 }

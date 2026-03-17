@@ -51,4 +51,3 @@ export const mockShifts: Shift[] = [
     breakMinutes: 30,
   },
 ];
-

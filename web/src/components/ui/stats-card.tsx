@@ -57,7 +57,9 @@ const StatsCard = React.forwardRef<HTMLDivElement, StatsCardProps>(
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className={cn("text-3xl font-light tracking-tight", styles.text)}>
+            <div
+              className={cn("text-3xl font-light tracking-tight", styles.text)}
+            >
               {value}
             </div>
             {trend && (

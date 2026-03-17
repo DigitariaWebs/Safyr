@@ -1,8 +1,29 @@
 import { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { router } from "expo-router";
-import { ArrowLeft, CheckCircle, Loader, Lock, RefreshCw, X } from "lucide-react-native";
-import { Button, Card, Header, Input, MenuButton, Screen } from "@/components/ui";
+import {
+  ArrowLeft,
+  CheckCircle,
+  Loader,
+  Lock,
+  RefreshCw,
+  X,
+} from "lucide-react-native";
+import {
+  Button,
+  Card,
+  Header,
+  Input,
+  MenuButton,
+  Screen,
+} from "@/components/ui";
 import { getSession, type Session } from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
 import {
@@ -41,7 +62,10 @@ export default function ProfileScreen() {
       if (currentSession) {
         setSessionState(currentSession);
         const stored = await getProfile();
-        const base = stored ?? { ...(defaultProfileFromSession(currentSession) as any), updatedAtIso: "" };
+        const base = stored ?? {
+          ...(defaultProfileFromSession(currentSession) as any),
+          updatedAtIso: "",
+        };
         setProfile(stored);
         setFullName(base.fullName ?? currentSession.fullName);
         setEmail(base.email ?? "");
@@ -112,7 +136,10 @@ export default function ProfileScreen() {
     }
 
     if (!newPassword.trim() || newPassword.length < 6) {
-      Alert.alert("Erreur", "Le nouveau mot de passe doit contenir au moins 6 caractères");
+      Alert.alert(
+        "Erreur",
+        "Le nouveau mot de passe doit contenir au moins 6 caractères",
+      );
       return;
     }
 
@@ -141,25 +168,35 @@ export default function ProfileScreen() {
       ]);
     } catch (error) {
       console.error("Error changing password:", error);
-      Alert.alert("Erreur", "Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel.");
+      Alert.alert(
+        "Erreur",
+        "Impossible de modifier le mot de passe. Vérifiez votre mot de passe actuel.",
+      );
     } finally {
       setChangingPassword(false);
     }
   }
 
   async function onReset() {
-    Alert.alert("Réinitialiser", "Supprimer le profil local et repartir du profil par défaut ?", [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Confirmer",
-        style: "destructive",
-        onPress: async () => {
-          await clearProfile();
-          Alert.alert("OK", "Profil local supprimé. Rouvrez l'écran pour recharger le défaut.");
-          router.back();
+    Alert.alert(
+      "Réinitialiser",
+      "Supprimer le profil local et repartir du profil par défaut ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Confirmer",
+          style: "destructive",
+          onPress: async () => {
+            await clearProfile();
+            Alert.alert(
+              "OK",
+              "Profil local supprimé. Rouvrez l'écran pour recharger le défaut.",
+            );
+            router.back();
+          },
         },
-      },
-    ]);
+      ],
+    );
   }
 
   if (loading) {
@@ -179,7 +216,9 @@ export default function ProfileScreen() {
         right={
           <Button variant="ghost" size="sm" onPress={() => router.back()}>
             <ArrowLeft size={18} color={colors.foreground} />
-            <Text className="ml-1" style={{ color: colors.foreground }}>Retour</Text>
+            <Text className="ml-1" style={{ color: colors.foreground }}>
+              Retour
+            </Text>
           </Button>
         }
       />
@@ -188,18 +227,28 @@ export default function ProfileScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView 
-          className="flex-1 px-4" 
+        <ScrollView
+          className="flex-1 px-4"
           style={{ backgroundColor: colors.background }}
           contentContainerStyle={{ paddingBottom: 32 }}
         >
           <View className="gap-4">
             <Card className="gap-4">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations personnelles</Text>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Informations personnelles
+              </Text>
 
               <View className="gap-3">
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom complet</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Nom complet
+                  </Text>
                   <Input
                     value={fullName}
                     editable={false}
@@ -207,13 +256,22 @@ export default function ProfileScreen() {
                     autoCapitalize="words"
                     className="opacity-60"
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le nom complet ne peut pas être modifié depuis l&apos;application mobile
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
+                    Le nom complet ne peut pas être modifié depuis
+                    l&apos;application mobile
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Email *</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Email *
+                  </Text>
                   <Input
                     value={email}
                     onChangeText={setEmail}
@@ -221,68 +279,116 @@ export default function ProfileScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
                     Modifiez votre adresse email
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Téléphone
+                  </Text>
                   <Input
                     value={phone}
                     onChangeText={setPhone}
                     placeholder="+33 6 12 34 56 78"
                     keyboardType="phone-pad"
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
                     Modifiez votre numéro de téléphone
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Site</Text>
-                  <Input 
-                    value={siteName} 
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Site
+                  </Text>
+                  <Input
+                    value={siteName}
                     editable={false}
                     placeholder="Ex: Siège • Paris"
                     className="opacity-60"
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le site ne peut pas être modifié depuis l&apos;application mobile
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
+                    Le site ne peut pas être modifié depuis l&apos;application
+                    mobile
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Badge / matricule</Text>
-                  <Input 
-                    value={badgeId} 
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Badge / matricule
+                  </Text>
+                  <Input
+                    value={badgeId}
                     editable={false}
                     placeholder="agent_001"
                     className="opacity-60"
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                    Le badge ne peut pas être modifié depuis l&apos;application mobile
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
+                    Le badge ne peut pas être modifié depuis l&apos;application
+                    mobile
                   </Text>
                 </View>
               </View>
             </Card>
 
             <Card className="gap-4">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Contact d&apos;urgence</Text>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Contact d&apos;urgence
+              </Text>
               <View>
-                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nom</Text>
-                <Input 
-                  value={emergencyContactName} 
+                <Text
+                  className="mb-2 text-sm font-medium"
+                  style={{ color: colors.foreground }}
+                >
+                  Nom
+                </Text>
+                <Input
+                  value={emergencyContactName}
                   editable={false}
                   placeholder="Nom du contact"
                   className="opacity-60"
                 />
-                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                  Le contact d&apos;urgence ne peut pas être modifié depuis l&apos;application mobile
+                <Text
+                  className="mt-1 text-xs"
+                  style={{ color: colors.foreground }}
+                >
+                  Le contact d&apos;urgence ne peut pas être modifié depuis
+                  l&apos;application mobile
                 </Text>
               </View>
               <View>
-                <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Téléphone</Text>
+                <Text
+                  className="mb-2 text-sm font-medium"
+                  style={{ color: colors.foreground }}
+                >
+                  Téléphone
+                </Text>
                 <Input
                   value={emergencyContactPhone}
                   editable={false}
@@ -290,17 +396,31 @@ export default function ProfileScreen() {
                   placeholder="+33 ..."
                   className="opacity-60"
                 />
-                <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
-                  Le téléphone du contact d&apos;urgence ne peut pas être modifié depuis l&apos;application mobile
+                <Text
+                  className="mt-1 text-xs"
+                  style={{ color: colors.foreground }}
+                >
+                  Le téléphone du contact d&apos;urgence ne peut pas être
+                  modifié depuis l&apos;application mobile
                 </Text>
               </View>
             </Card>
 
             <Card className="gap-4">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Changer le mot de passe</Text>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Changer le mot de passe
+              </Text>
               <View className="gap-3">
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Mot de passe actuel *</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Mot de passe actuel *
+                  </Text>
                   <Input
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
@@ -310,20 +430,33 @@ export default function ProfileScreen() {
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Nouveau mot de passe *</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Nouveau mot de passe *
+                  </Text>
                   <Input
                     value={newPassword}
                     onChangeText={setNewPassword}
                     placeholder="Au moins 6 caractères"
                     secureTextEntry
                   />
-                  <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                  <Text
+                    className="mt-1 text-xs"
+                    style={{ color: colors.foreground }}
+                  >
                     Le mot de passe doit contenir au moins 6 caractères
                   </Text>
                 </View>
 
                 <View>
-                  <Text className="mb-2 text-sm font-medium" style={{ color: colors.foreground }}>Confirmer le mot de passe *</Text>
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    Confirmer le mot de passe *
+                  </Text>
                   <Input
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -334,18 +467,33 @@ export default function ProfileScreen() {
 
                 <Button
                   onPress={handleChangePassword}
-                  disabled={changingPassword || !currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()}
+                  disabled={
+                    changingPassword ||
+                    !currentPassword.trim() ||
+                    !newPassword.trim() ||
+                    !confirmPassword.trim()
+                  }
                   variant="outline"
                 >
                   {changingPassword ? (
                     <>
                       <Loader size={18} color={colors.foreground} />
-                      <Text className="ml-2" style={{ color: colors.foreground }}>Modification...</Text>
+                      <Text
+                        className="ml-2"
+                        style={{ color: colors.foreground }}
+                      >
+                        Modification...
+                      </Text>
                     </>
                   ) : (
                     <>
                       <Lock size={18} color={colors.foreground} />
-                      <Text className="ml-2" style={{ color: colors.foreground }}>Modifier le mot de passe</Text>
+                      <Text
+                        className="ml-2"
+                        style={{ color: colors.foreground }}
+                      >
+                        Modifier le mot de passe
+                      </Text>
                     </>
                   )}
                 </Button>
@@ -353,11 +501,26 @@ export default function ProfileScreen() {
             </Card>
 
             <Card className="gap-2">
-              <Text className="text-base font-semibold" style={{ color: colors.foreground }}>Informations de compte</Text>
+              <Text
+                className="text-base font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Informations de compte
+              </Text>
               <View className="gap-2">
                 <View className="flex-row justify-between">
-                  <Text className="text-sm" style={{ color: colors.foreground }}>Identifiant</Text>
-                  <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{session?.userId}</Text>
+                  <Text
+                    className="text-sm"
+                    style={{ color: colors.foreground }}
+                  >
+                    Identifiant
+                  </Text>
+                  <Text
+                    className="text-sm font-medium"
+                    style={{ color: colors.foreground }}
+                  >
+                    {session?.userId}
+                  </Text>
                 </View>
               </View>
             </Card>
@@ -367,22 +530,36 @@ export default function ProfileScreen() {
                 {saving ? (
                   <>
                     <Loader size={18} color={colors.primaryForeground} />
-                    <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrement...</Text>
+                    <Text
+                      className="ml-2"
+                      style={{ color: colors.primaryForeground }}
+                    >
+                      Enregistrement...
+                    </Text>
                   </>
                 ) : (
                   <>
                     <CheckCircle size={18} color={colors.primaryForeground} />
-                    <Text className="ml-2" style={{ color: colors.primaryForeground }}>Enregistrer les modifications</Text>
+                    <Text
+                      className="ml-2"
+                      style={{ color: colors.primaryForeground }}
+                    >
+                      Enregistrer les modifications
+                    </Text>
                   </>
                 )}
               </Button>
               <Button variant="outline" onPress={onReset}>
                 <RefreshCw size={18} color={colors.foreground} />
-                <Text className="ml-2" style={{ color: colors.foreground }}>Réinitialiser le profil local</Text>
+                <Text className="ml-2" style={{ color: colors.foreground }}>
+                  Réinitialiser le profil local
+                </Text>
               </Button>
               <Button variant="outline" onPress={() => router.back()}>
                 <X size={18} color={colors.foreground} />
-                <Text className="ml-2" style={{ color: colors.foreground }}>Annuler</Text>
+                <Text className="ml-2" style={{ color: colors.foreground }}>
+                  Annuler
+                </Text>
               </Button>
             </View>
           </View>

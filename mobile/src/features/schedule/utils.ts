@@ -16,4 +16,3 @@ export function formatHours(minutes: number) {
   const m = minutes % 60;
   return `${h}h${m.toString().padStart(2, "0")}`;
 }
-

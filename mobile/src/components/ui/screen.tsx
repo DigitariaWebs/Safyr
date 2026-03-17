@@ -10,9 +10,14 @@ export type ScreenProps = ViewProps & {
   contentClassName?: string;
 };
 
-export function Screen({ className, contentClassName, children, ...props }: ScreenProps) {
+export function Screen({
+  className,
+  contentClassName,
+  children,
+  ...props
+}: ScreenProps) {
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
-  
+
   // Get theme colors with fallback
   let themeColors;
   try {
@@ -32,17 +37,14 @@ export function Screen({ className, contentClassName, children, ...props }: Scre
 
   return (
     <Animated.View
-      style={{ 
+      style={{
         flex: 1,
         backgroundColor: themeColors.background,
         opacity: fadeAnim,
       }}
       className={cn(className)}
     >
-      <View
-        className={cn("flex-1", contentClassName)}
-        {...props}
-      >
+      <View className={cn("flex-1", contentClassName)} {...props}>
         {children}
       </View>
     </Animated.View>

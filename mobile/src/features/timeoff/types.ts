@@ -9,4 +9,3 @@ export type TimeOffRequest = {
   status: TimeOffStatus;
   createdAtIso: string;
 };
-

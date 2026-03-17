@@ -83,9 +83,11 @@ export default function AccountingDashboard() {
     pendingRevenue: pendingInvoices.reduce((sum, i) => sum + i.subtotal, 0),
     paidCount: paidInvoices.length,
     pendingCount: pendingInvoices.length,
-    avgInvoiceValue: paidInvoices.length > 0
-      ? paidInvoices.reduce((sum, i) => sum + i.subtotal, 0) / paidInvoices.length
-      : 0,
+    avgInvoiceValue:
+      paidInvoices.length > 0
+        ? paidInvoices.reduce((sum, i) => sum + i.subtotal, 0) /
+          paidInvoices.length
+        : 0,
   };
 
   // VAT by rate breakdown
@@ -121,16 +123,24 @@ export default function AccountingDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Tableau de bord Comptabilité</h1>
-          <p className="text-muted-foreground">Gestion comptable et financière</p>
+          <p className="text-muted-foreground">
+            Gestion comptable et financière
+          </p>
         </div>
         <Select defaultValue={currentYear.toString()}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Période" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={currentYear.toString()}>Année {currentYear}</SelectItem>
-            <SelectItem value={(currentYear - 1).toString()}>Année {currentYear - 1}</SelectItem>
-            <SelectItem value={(currentYear - 2).toString()}>Année {currentYear - 2}</SelectItem>
+            <SelectItem value={currentYear.toString()}>
+              Année {currentYear}
+            </SelectItem>
+            <SelectItem value={(currentYear - 1).toString()}>
+              Année {currentYear - 1}
+            </SelectItem>
+            <SelectItem value={(currentYear - 2).toString()}>
+              Année {currentYear - 2}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -184,19 +194,27 @@ export default function AccountingDashboard() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">CA ce mois</span>
-                <span className="font-medium">{formatCurrency(monthlyTurnover)}</span>
+                <span className="font-medium">
+                  {formatCurrency(monthlyTurnover)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">CA annuel</span>
-                <span className="font-medium">{formatCurrency(billingStats.totalRevenue)}</span>
+                <span className="font-medium">
+                  {formatCurrency(billingStats.totalRevenue)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">En attente</span>
-                <span className="font-medium text-orange-400">{formatCurrency(billingStats.pendingRevenue)}</span>
+                <span className="font-medium text-orange-400">
+                  {formatCurrency(billingStats.pendingRevenue)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Panier moyen</span>
-                <span className="font-medium">{formatCurrency(billingStats.avgInvoiceValue)}</span>
+                <span className="font-medium">
+                  {formatCurrency(billingStats.avgInvoiceValue)}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -214,19 +232,27 @@ export default function AccountingDashboard() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Solde actuel</span>
-                <span className="font-medium text-blue-400">{formatCurrency(currentTreasury)}</span>
+                <span className="font-medium text-blue-400">
+                  {formatCurrency(currentTreasury)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Comptes actifs</span>
-                <span className="font-medium">{mockBankAccounts.filter(a => a.status === "Actif").length}</span>
+                <span className="font-medium">
+                  {mockBankAccounts.filter((a) => a.status === "Actif").length}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Trésorerie J-30</span>
-                <span className="font-medium">{formatCurrency(currentTreasury * 0.95)}</span>
+                <span className="font-medium">
+                  {formatCurrency(currentTreasury * 0.95)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Écart prévision</span>
-                <span className="font-medium text-orange-400">{formatCurrency(currentTreasury * 0.05)}</span>
+                <span className="font-medium text-orange-400">
+                  {formatCurrency(currentTreasury * 0.05)}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -258,7 +284,9 @@ export default function AccountingDashboard() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Déductible</span>
+                <span className="text-sm text-muted-foreground">
+                  Déductible
+                </span>
                 <span className="font-medium text-blue-400">
                   -{vatDeductible.toLocaleString("fr-FR")} €
                 </span>
@@ -291,7 +319,9 @@ export default function AccountingDashboard() {
               {Object.entries(vatByRate).map(([rate, amount]) => (
                 <div key={rate} className="flex items-center justify-between">
                   <span className="text-sm">TVA {rate}%</span>
-                  <span className="font-mono text-sm">{formatCurrency(amount)}</span>
+                  <span className="font-mono text-sm">
+                    {formatCurrency(amount)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -317,10 +347,14 @@ export default function AccountingDashboard() {
                   <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-green-500 rounded-full"
-                      style={{ width: `${profitabilityStats.grossMargin * 100}%` }}
+                      style={{
+                        width: `${profitabilityStats.grossMargin * 100}%`,
+                      }}
                     />
                   </div>
-                  <span className="font-medium">{formatPercent(profitabilityStats.grossMargin)}</span>
+                  <span className="font-medium">
+                    {formatPercent(profitabilityStats.grossMargin)}
+                  </span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -329,15 +363,21 @@ export default function AccountingDashboard() {
                   <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-cyan-500 rounded-full"
-                      style={{ width: `${profitabilityStats.netMargin * 100}%` }}
+                      style={{
+                        width: `${profitabilityStats.netMargin * 100}%`,
+                      }}
                     />
                   </div>
-                  <span className="font-medium">{formatPercent(profitabilityStats.netMargin)}</span>
+                  <span className="font-medium">
+                    {formatPercent(profitabilityStats.netMargin)}
+                  </span>
                 </div>
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-muted-foreground">Résultat estimé</span>
-                <span className="font-bold text-purple-400">{formatCurrency(profitabilityStats.estimatedProfit)}</span>
+                <span className="font-bold text-purple-400">
+                  {formatCurrency(profitabilityStats.estimatedProfit)}
+                </span>
               </div>
             </div>
           </CardContent>

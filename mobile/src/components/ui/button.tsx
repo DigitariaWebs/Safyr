@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Pressable, Text, View, StyleSheet, type PressableProps, Animated } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  type PressableProps,
+  Animated,
+} from "react-native";
 import { cn } from "@/lib/cn";
 import { useTheme } from "@/theme";
 import { getBodyFont } from "@/utils/fonts";
@@ -147,11 +154,27 @@ export function Button({
     <Animated.View
       style={{
         // Shadow/glow animation (non-native driver)
-        shadowColor: isPrimary ? colors.primary : (variant === "outline" || variant === "ghost" ? colors.primary : "transparent"),
+        shadowColor: isPrimary
+          ? colors.primary
+          : variant === "outline" || variant === "ghost"
+            ? colors.primary
+            : "transparent",
         shadowOffset: { width: 0, height: isPrimary ? 4 : 2 },
-        shadowOpacity: isPrimary ? 0.15 : (variant === "outline" || variant === "ghost" ? 0.12 : 0),
-        shadowRadius: isPrimary ? 8 : (variant === "outline" || variant === "ghost" ? 8 : 0),
-        elevation: isPrimary ? 4 : (variant === "outline" || variant === "ghost" ? 3 : 0),
+        shadowOpacity: isPrimary
+          ? 0.15
+          : variant === "outline" || variant === "ghost"
+            ? 0.12
+            : 0,
+        shadowRadius: isPrimary
+          ? 8
+          : variant === "outline" || variant === "ghost"
+            ? 8
+            : 0,
+        elevation: isPrimary
+          ? 4
+          : variant === "outline" || variant === "ghost"
+            ? 3
+            : 0,
         transform: [{ scale: scaleAnim }],
       }}
     >
@@ -177,74 +200,90 @@ export function Button({
           {
             opacity: disabled ? 0.5 : 1,
             // Force background color for secondary buttons to ensure correct text color
-            ...(variant === "secondary" ? { backgroundColor: colors.secondary } : {}),
+            ...(variant === "secondary"
+              ? { backgroundColor: colors.secondary }
+              : {}),
           },
           props.style,
         ]}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         {...(props as any)}
       >
-          {isString ? (
-            <Text 
-              className={cn("font-semibold", s.text, textClassName)}
-              style={{ color: getTextColor(), fontFamily: getBodyFont("600") }}
-            >
-              {children}
-            </Text>
-          ) : (
-            <View className="flex-row items-center justify-center">
-              {React.Children.map(children, (child, index) => {
-                if (React.isValidElement(child)) {
-                  const childType = child.type as any;
-                  const childProps = child.props as any;
-                  
-                  // Check if it's a Text component
-                  const isTextComponent = 
-                    childType === Text ||
-                    (childType?.displayName && childType.displayName.includes("Text")) ||
-                    (typeof childType === "function" && (childType.name === "Text" || childType.displayName === "Text"));
-                  
-                  // Lucide icons have a strokeWidth prop; use it to distinguish from other components
-                  const isIcon = childProps && typeof childProps.size === "number" && "strokeWidth" in childProps && !isTextComponent;
-                  
-                  if (isTextComponent) {
-                    // Force text color and font family - put it last to override any existing styles
-                    const textColor = getTextColor();
-                    // Extract fontWeight from existing style to determine font variant
-                    const existingStyle = Array.isArray(childProps.style)
-                      ? StyleSheet.flatten(childProps.style)
-                      : childProps.style || {};
-                    const fontWeight = existingStyle.fontWeight || "600"; // Default to semibold for buttons
-                    const fontFamily = getBodyFont(fontWeight);
-                    
-                    // Merge styles properly - ensure color and fontFamily are always applied
-                    const mergedStyle = Array.isArray(childProps.style)
-                      ? [...childProps.style, { color: textColor, fontFamily }]
-                      : childProps.style
-                        ? [childProps.style, { color: textColor, fontFamily }]
-                        : { color: textColor, fontFamily };
-                    return React.cloneElement(child as React.ReactElement<any>, {
-                      key: `text-${index}`,
-                      style: mergedStyle,
-                      className: cn("font-semibold", s.text, textClassName, childProps.className),
-                    });
-                  }
-                  
-                  // Apply color to icon components for consistency
-                  if (isIcon) {
-                    const iconColor = getTextColor();
-                    return React.cloneElement(child as React.ReactElement<any>, {
-                      key: `icon-${index}`,
-                      ...childProps,
-                      color: iconColor, // Always override color
-                    });
-                  }
+        {isString ? (
+          <Text
+            className={cn("font-semibold", s.text, textClassName)}
+            style={{ color: getTextColor(), fontFamily: getBodyFont("600") }}
+          >
+            {children}
+          </Text>
+        ) : (
+          <View className="flex-row items-center justify-center">
+            {React.Children.map(children, (child, index) => {
+              if (React.isValidElement(child)) {
+                const childType = child.type as any;
+                const childProps = child.props as any;
+
+                // Check if it's a Text component
+                const isTextComponent =
+                  childType === Text ||
+                  (childType?.displayName &&
+                    childType.displayName.includes("Text")) ||
+                  (typeof childType === "function" &&
+                    (childType.name === "Text" ||
+                      childType.displayName === "Text"));
+
+                // Lucide icons have a strokeWidth prop; use it to distinguish from other components
+                const isIcon =
+                  childProps &&
+                  typeof childProps.size === "number" &&
+                  "strokeWidth" in childProps &&
+                  !isTextComponent;
+
+                if (isTextComponent) {
+                  // Force text color and font family - put it last to override any existing styles
+                  const textColor = getTextColor();
+                  // Extract fontWeight from existing style to determine font variant
+                  const existingStyle = Array.isArray(childProps.style)
+                    ? StyleSheet.flatten(childProps.style)
+                    : childProps.style || {};
+                  const fontWeight = existingStyle.fontWeight || "600"; // Default to semibold for buttons
+                  const fontFamily = getBodyFont(fontWeight);
+
+                  // Merge styles properly - ensure color and fontFamily are always applied
+                  const mergedStyle = Array.isArray(childProps.style)
+                    ? [...childProps.style, { color: textColor, fontFamily }]
+                    : childProps.style
+                      ? [childProps.style, { color: textColor, fontFamily }]
+                      : { color: textColor, fontFamily };
+                  return React.cloneElement(child as React.ReactElement<any>, {
+                    key: `text-${index}`,
+                    style: mergedStyle,
+                    className: cn(
+                      "font-semibold",
+                      s.text,
+                      textClassName,
+                      childProps.className,
+                    ),
+                  });
                 }
-                return <React.Fragment key={`child-${index}`}>{child}</React.Fragment>;
-              })}
-            </View>
-          )}
-        </Pressable>
+
+                // Apply color to icon components for consistency
+                if (isIcon) {
+                  const iconColor = getTextColor();
+                  return React.cloneElement(child as React.ReactElement<any>, {
+                    key: `icon-${index}`,
+                    ...childProps,
+                    color: iconColor, // Always override color
+                  });
+                }
+              }
+              return (
+                <React.Fragment key={`child-${index}`}>{child}</React.Fragment>
+              );
+            })}
+          </View>
+        )}
+      </Pressable>
     </Animated.View>
   );
 }

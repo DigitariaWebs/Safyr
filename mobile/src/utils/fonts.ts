@@ -9,7 +9,8 @@ export function getHeadingFont(): string {
  * Get the body font family (Space Grotesk) based on weight
  */
 export function getBodyFont(fontWeight?: string | number): string {
-  const weight = typeof fontWeight === "string" ? fontWeight : String(fontWeight);
+  const weight =
+    typeof fontWeight === "string" ? fontWeight : String(fontWeight);
 
   if (weight === "700" || weight === "bold") {
     return "SpaceGrotesk-Bold";

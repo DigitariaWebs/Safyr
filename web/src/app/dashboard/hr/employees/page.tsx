@@ -633,7 +633,7 @@ export default function EmployeesPage() {
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
               <li>{employeeToDelete.contracts.length} contrat(s)</li>
               <li>Tous les documents associés</li>
-              <li>L'historique des équipements</li>
+              <li>L&apos;historique des équipements</li>
               <li>Les données de présence et congés</li>
             </ul>
           </div>
@@ -883,7 +883,7 @@ export default function EmployeesPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="children">Nombre d'enfants</Label>
+                    <Label htmlFor="children">Nombre d&apos;enfants</Label>
                     <Input
                       id="children"
                       type="number"
@@ -988,7 +988,7 @@ export default function EmployeesPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="employeeNumber">
-                      Numéro d'employé{" "}
+                      Numéro d&apos;employé{" "}
                       <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -1087,7 +1087,7 @@ export default function EmployeesPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="hireDate">
-                      Date d'embauche{" "}
+                      Date d&apos;embauche{" "}
                       <span className="text-destructive">*</span>
                     </Label>
                     <Input

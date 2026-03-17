@@ -35,7 +35,10 @@ interface PayrollDocument {
 export default function PayrollScreen() {
   const { colors } = useTheme();
   const [loading, setLoading] = useState<string | null>(null);
-  const [session, setSession] = useState<{ userId: string; fullName: string } | null>(null);
+  const [session, setSession] = useState<{
+    userId: string;
+    fullName: string;
+  } | null>(null);
 
   useEffect(() => {
     loadSession();
@@ -57,9 +60,10 @@ export default function PayrollScreen() {
 
     try {
       const currentDate = new Date();
-      const fileName = month && year
-        ? `Bulletin_Salaire_${month}_${year}.pdf`
-        : `Archives_Bulletins_Salaire_${year || currentDate.getFullYear()}.pdf`;
+      const fileName =
+        month && year
+          ? `Bulletin_Salaire_${month}_${year}.pdf`
+          : `Archives_Bulletins_Salaire_${year || currentDate.getFullYear()}.pdf`;
 
       // En production, remplacer par un appel API réel
       /*
@@ -106,7 +110,7 @@ export default function PayrollScreen() {
 
       const modulesAvailable = FileSystem && Sharing;
       let isAvailable = false;
-      
+
       if (modulesAvailable) {
         try {
           if (typeof Sharing.isAvailableAsync === "function") {
@@ -119,31 +123,37 @@ export default function PayrollScreen() {
 
       if (modulesAvailable && isAvailable && FileSystem.documentDirectory) {
         const fileUri = FileSystem.documentDirectory + fileName;
-        
+
         try {
           await Sharing.shareAsync(fileUri, {
             mimeType: "application/pdf",
             dialogTitle: `Télécharger ${fileName}`,
           });
-          
-          Alert.alert("Succès", `Le fichier ${fileName} est prêt à être partagé`);
+
+          Alert.alert(
+            "Succès",
+            `Le fichier ${fileName} est prêt à être partagé`,
+          );
         } catch (shareError) {
           console.error("Share error:", shareError);
           Alert.alert(
             "Information",
-            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`
+            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`,
           );
         }
       } else {
         Alert.alert(
           "Téléchargement",
           `Le fichier ${fileName} sera téléchargé.\n\nPour activer le téléchargement réel, installez:\n\nnpx expo install expo-file-system expo-sharing\n\nPuis configurez l'appel API vers votre backend.`,
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
     } catch (error) {
       console.error("Error downloading payroll:", error);
-      Alert.alert("Erreur", "Impossible de télécharger le bulletin de salaire. Vérifiez votre connexion.");
+      Alert.alert(
+        "Erreur",
+        "Impossible de télécharger le bulletin de salaire. Vérifiez votre connexion.",
+      );
     } finally {
       setLoading(null);
     }
@@ -152,11 +162,15 @@ export default function PayrollScreen() {
   const currentDate = new Date();
   const currentMonth = currentDate.toLocaleString("fr-FR", { month: "long" });
   const currentYear = currentDate.getFullYear().toString();
-  const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    .toLocaleString("fr-FR", { month: "long" });
-  const lastYear = currentDate.getMonth() === 0 
-    ? (currentDate.getFullYear() - 1).toString() 
-    : currentYear;
+  const lastMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() - 1,
+    1,
+  ).toLocaleString("fr-FR", { month: "long" });
+  const lastYear =
+    currentDate.getMonth() === 0
+      ? (currentDate.getFullYear() - 1).toString()
+      : currentYear;
 
   const payrollDocuments: PayrollDocument[] = [
     {
@@ -176,7 +190,8 @@ export default function PayrollScreen() {
     {
       id: "payroll-archives",
       title: "Archives bulletins de salaire",
-      description: "Télécharger tous les bulletins de salaire disponibles (archives BS)",
+      description:
+        "Télécharger tous les bulletins de salaire disponibles (archives BS)",
     },
   ];
 
@@ -192,12 +207,20 @@ export default function PayrollScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <View className="gap-4">
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
               <FileText size={24} color={colors.primary} />
-              <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Mes bulletins de salaire</Text>
+              <Text
+                className="text-lg font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Mes bulletins de salaire
+              </Text>
             </View>
             <Text className="text-sm" style={{ color: colors.foreground }}>
               Téléchargez vos bulletins de salaire (archives BS) au format PDF
@@ -208,10 +231,23 @@ export default function PayrollScreen() {
                 <View key={doc.id} className="gap-2">
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1">
-                      <Text className="text-base font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
-                      <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>{doc.description}</Text>
+                      <Text
+                        className="text-base font-medium"
+                        style={{ color: colors.foreground }}
+                      >
+                        {doc.title}
+                      </Text>
+                      <Text
+                        className="mt-1 text-sm"
+                        style={{ color: colors.foreground }}
+                      >
+                        {doc.description}
+                      </Text>
                       {doc.month && doc.year && (
-                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: colors.foreground }}
+                        >
                           {doc.month} {doc.year}
                         </Text>
                       )}
@@ -222,7 +258,8 @@ export default function PayrollScreen() {
                       onPress={() => downloadPayroll(doc.month, doc.year)}
                       disabled={loading !== null}
                     >
-                      {loading === `payroll-${doc.month || "all"}-${doc.year || "all"}` ? (
+                      {loading ===
+                      `payroll-${doc.month || "all"}-${doc.year || "all"}` ? (
                         <ActivityIndicator size="small" />
                       ) : (
                         <>
@@ -238,9 +275,16 @@ export default function PayrollScreen() {
           </Card>
 
           <Card className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{ color: colors.foreground }}
+            >
+              Information
+            </Text>
             <Text className="text-xs text-muted-foreground">
-              Les bulletins de salaire sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil. Conservez vos archives BS pour vos démarches administratives.
+              Les bulletins de salaire sont générés au format PDF et peuvent
+              être partagés ou sauvegardés sur votre appareil. Conservez vos
+              archives BS pour vos démarches administratives.
             </Text>
           </Card>
         </View>

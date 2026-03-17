@@ -20,4 +20,3 @@ export const mockTimeOff: TimeOffRequest[] = [
     createdAtIso: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
   },
 ];
-

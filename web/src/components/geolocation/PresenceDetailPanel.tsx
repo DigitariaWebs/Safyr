@@ -7,10 +7,7 @@ import Link from "next/link";
 import { AlertTriangle, ExternalLink, MapPinOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  circleToPolygon,
-  ensureClosedRing,
-} from "@/data/geolocation-zones";
+import { circleToPolygon, ensureClosedRing } from "@/data/geolocation-zones";
 import type { GeoZone, ZoneShape } from "@/data/geolocation-zones";
 import type { PresenceRecord } from "@/data/geolocation-presence";
 import { PRESENCE_STATUS_CONFIG } from "@/data/geolocation-presence";
@@ -49,8 +46,7 @@ export function PresenceDetailPanel({
   const statusConfig = PRESENCE_STATUS_CONFIG[record.status];
   const hasGps = record.lastLatitude !== null && record.lastLongitude !== null;
   const agentPoint = useMemo<[number, number] | null>(
-    () =>
-      hasGps ? [record.lastLongitude!, record.lastLatitude!] : null,
+    () => (hasGps ? [record.lastLongitude!, record.lastLatitude!] : null),
     [hasGps, record.lastLongitude, record.lastLatitude],
   );
 

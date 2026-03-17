@@ -41,18 +41,27 @@ export default function AccountingBankPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
-  const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(
+    null,
+  );
+  const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(
+    null,
+  );
   const [formData, setFormData] = useState<Partial<BankAccount>>({});
 
   const totalTreasury = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-  const activeAccounts = accounts.filter((acc) => acc.status === "Actif").length;
+  const activeAccounts = accounts.filter(
+    (acc) => acc.status === "Actif",
+  ).length;
   const connectedAccounts = accounts.filter((acc) => acc.apiConnected).length;
 
   const getLatestSync = () => {
     if (accounts.length === 0) return "N/A";
-    const latest = accounts.reduce((latestDate: string, acc) =>
-      new Date(acc.lastSync) > new Date(latestDate) ? acc.lastSync : latestDate,
+    const latest = accounts.reduce(
+      (latestDate: string, acc) =>
+        new Date(acc.lastSync) > new Date(latestDate)
+          ? acc.lastSync
+          : latestDate,
       accounts[0].lastSync,
     );
     return new Date(latest).toLocaleString("fr-FR", {
@@ -100,7 +109,9 @@ export default function AccountingBankPage() {
       label: "Solde",
       sortable: true,
       render: (account) => (
-        <span className={account.balance >= 0 ? "text-green-500" : "text-red-500"}>
+        <span
+          className={account.balance >= 0 ? "text-green-500" : "text-red-500"}
+        >
           {formatCurrency(account.balance)}
         </span>
       ),
@@ -334,8 +345,12 @@ export default function AccountingBankPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Compte courant">Compte courant</SelectItem>
-                  <SelectItem value="Compte de dépôt">Compte de dépôt</SelectItem>
-                  <SelectItem value="Compte de caution">Compte de caution</SelectItem>
+                  <SelectItem value="Compte de dépôt">
+                    Compte de dépôt
+                  </SelectItem>
+                  <SelectItem value="Compte de caution">
+                    Compte de caution
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -440,17 +455,23 @@ export default function AccountingBankPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Banque</Label>
-                <p className="text-sm font-medium">{selectedAccount.bankName}</p>
+                <p className="text-sm font-medium">
+                  {selectedAccount.bankName}
+                </p>
               </div>
 
               <div>
                 <Label>Type de compte</Label>
-                <p className="text-sm font-medium">{selectedAccount.accountType}</p>
+                <p className="text-sm font-medium">
+                  {selectedAccount.accountType}
+                </p>
               </div>
 
               <div>
                 <Label>Numéro de compte</Label>
-                <p className="text-sm font-medium">{selectedAccount.accountNumber}</p>
+                <p className="text-sm font-medium">
+                  {selectedAccount.accountNumber}
+                </p>
               </div>
 
               <div>
@@ -462,14 +483,18 @@ export default function AccountingBankPage() {
 
               <div>
                 <Label>BIC</Label>
-                <p className="text-sm font-medium font-mono">{selectedAccount.bic}</p>
+                <p className="text-sm font-medium font-mono">
+                  {selectedAccount.bic}
+                </p>
               </div>
 
               <div>
                 <Label>Solde</Label>
                 <p
                   className={`text-sm font-medium ${
-                    selectedAccount.balance >= 0 ? "text-green-500" : "text-red-500"
+                    selectedAccount.balance >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
                   }`}
                 >
                   {formatCurrency(selectedAccount.balance)}
@@ -502,7 +527,9 @@ export default function AccountingBankPage() {
                   ) : (
                     <>
                       <AlertCircle className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm text-orange-500">Non connectée</span>
+                      <span className="text-sm text-orange-500">
+                        Non connectée
+                      </span>
                     </>
                   )}
                 </div>
@@ -541,8 +568,8 @@ export default function AccountingBankPage() {
         closable={false}
       >
         <div className="text-sm text-muted-foreground">
-          Cette action supprimera définitivement toutes les données associées à ce
-          compte bancaire.
+          Cette action supprimera définitivement toutes les données associées à
+          ce compte bancaire.
         </div>
       </Modal>
     </div>

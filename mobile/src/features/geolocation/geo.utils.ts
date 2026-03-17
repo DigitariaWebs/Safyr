@@ -1,4 +1,7 @@
-export function haversineMeters(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
+export function haversineMeters(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+) {
   const R = 6371e3;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(b.latitude - a.latitude);
@@ -9,8 +12,6 @@ export function haversineMeters(a: { latitude: number; longitude: number }, b: {
   const sinDLat = Math.sin(dLat / 2);
   const sinDLon = Math.sin(dLon / 2);
   const h =
-    sinDLat * sinDLat +
-    Math.cos(lat1) * Math.cos(lat2) * (sinDLon * sinDLon);
+    sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * (sinDLon * sinDLon);
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
-

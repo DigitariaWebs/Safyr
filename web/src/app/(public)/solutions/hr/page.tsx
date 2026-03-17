@@ -77,19 +77,21 @@ function SectionDivider({ color = "#22d3ee" }: { color?: string }) {
 }
 
 /* ─── Section Navigation ───────────────────────────────────────────────────── */
+const NAV_SECTIONS = [
+  { id: "employee-journey", label: "Parcours", color: "#22d3ee" },
+  { id: "lifecycle", label: "Cycle de vie", color: "#22d3ee" },
+  { id: "compliance", label: "Conformité", color: "#a78bfa" },
+  { id: "operations", label: "Opérations", color: "#34d399" },
+  { id: "automation", label: "Automatisation", color: "#fb923c" },
+  { id: "workflows", label: "Workflows", color: "#a78bfa" },
+  { id: "integrations", label: "Intégrations", color: "#fb923c" },
+];
+
 function SectionNavigation() {
   const [activeSection, setActiveSection] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const sections = [
-    { id: "employee-journey", label: "Parcours", color: "#22d3ee" },
-    { id: "lifecycle", label: "Cycle de vie", color: "#22d3ee" },
-    { id: "compliance", label: "Conformité", color: "#a78bfa" },
-    { id: "operations", label: "Opérations", color: "#34d399" },
-    { id: "automation", label: "Automatisation", color: "#fb923c" },
-    { id: "workflows", label: "Workflows", color: "#a78bfa" },
-    { id: "integrations", label: "Intégrations", color: "#fb923c" },
-  ];
+  const sections = NAV_SECTIONS;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -109,7 +111,7 @@ function SectionNavigation() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [sections]);
 
   const handleNavClick = (id: string) => {
     setIsMobileMenuOpen(false);
@@ -411,7 +413,7 @@ function StatsMarquee() {
           </div>
         ))}
       </div>
-      <style jsx>{`
+      <style>{`
         @keyframes marquee {
           0% {
             transform: translateX(0);
@@ -758,7 +760,7 @@ function FloatingParticles() {
           }}
         />
       ))}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%,
           100% {

@@ -20,4 +20,3 @@ export const spacing = {
 } as const;
 
 export type SpacingKey = keyof typeof spacing;
-

@@ -28,7 +28,9 @@ export async function seedTimeOffIfEmpty(seed: TimeOffRequest[]) {
   await save(seed);
 }
 
-export async function createTimeOffRequest(input: Omit<TimeOffRequest, "id" | "status" | "createdAtIso">) {
+export async function createTimeOffRequest(
+  input: Omit<TimeOffRequest, "id" | "status" | "createdAtIso">,
+) {
   const current = await getTimeOffRequests();
   const created: TimeOffRequest = {
     id: makeId(),
@@ -39,4 +41,3 @@ export async function createTimeOffRequest(input: Omit<TimeOffRequest, "id" | "s
   await save([created, ...current]);
   return created;
 }
-

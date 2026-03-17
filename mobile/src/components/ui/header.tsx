@@ -49,7 +49,7 @@ export function Header({
       className={cn(
         "flex-row items-center justify-between px-4 pb-3",
         "border-b",
-        className
+        className,
       )}
       style={{
         paddingTop,
@@ -80,7 +80,10 @@ export function Header({
           {subtitle ? (
             <Text
               className="mt-0.5 text-sm"
-              style={{ color: colors.foreground, fontFamily: getBodyFont("400") }}
+              style={{
+                color: colors.foreground,
+                fontFamily: getBodyFont("400"),
+              }}
               numberOfLines={1}
               ellipsizeMode="tail"
             >

@@ -29,7 +29,10 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
-import { AccountingJournal, mockAccountingJournals } from "@/data/accounting-journals";
+import {
+  AccountingJournal,
+  mockAccountingJournals,
+} from "@/data/accounting-journals";
 
 export default function AccountingJournalsPage() {
   const router = useRouter();
@@ -97,7 +100,9 @@ export default function AccountingJournalsPage() {
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardDescription>Total Écritures</CardDescription>
-            <CardTitle className="text-2xl font-light">{totalEntries}</CardTitle>
+            <CardTitle className="text-2xl font-light">
+              {totalEntries}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">
@@ -140,7 +145,8 @@ export default function AccountingJournalsPage() {
         {journals.map((journal) => {
           const Icon = getJournalIcon(journal.type);
           const color = getJournalColor(journal.type);
-          const isBalanced = Math.abs(journal.totalDebit - journal.totalCredit) < 0.01;
+          const isBalanced =
+            Math.abs(journal.totalDebit - journal.totalCredit) < 0.01;
 
           return (
             <Card
@@ -170,7 +176,9 @@ export default function AccountingJournalsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewEntries(journal)}>
+                      <DropdownMenuItem
+                        onClick={() => handleViewEntries(journal)}
+                      >
                         Voir les écritures
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -184,13 +192,19 @@ export default function AccountingJournalsPage() {
                     <Badge variant="outline">{journal.type}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Écritures</span>
+                    <span className="text-sm text-muted-foreground">
+                      Écritures
+                    </span>
                     <span className="font-medium">{journal.entriesCount}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Dernière date</span>
+                    <span className="text-sm text-muted-foreground">
+                      Dernière date
+                    </span>
                     <span className="font-medium">
-                      {new Date(journal.lastEntryDate).toLocaleDateString("fr-FR")}
+                      {new Date(journal.lastEntryDate).toLocaleDateString(
+                        "fr-FR",
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t">
@@ -203,7 +217,9 @@ export default function AccountingJournalsPage() {
                         </span>
                       ) : (
                         <span className="text-red-400">
-                          {formatCurrency(journal.totalDebit - journal.totalCredit)}
+                          {formatCurrency(
+                            journal.totalDebit - journal.totalCredit,
+                          )}
                         </span>
                       )}
                     </div>

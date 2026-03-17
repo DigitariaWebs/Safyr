@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useReducer, useRef } from "react";
+import { useState, useEffect, useReducer } from "react";
 import {
   Users,
   TrendingUp,
@@ -23,6 +23,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useDashboardConfigStore,
+  SavedWidgetConfig,
+} from "@/lib/stores/dashboardConfigStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -509,7 +513,11 @@ function ChargesBreakdownWidget({ isLoading }: { isLoading: boolean }) {
                 border: "1px solid hsl(var(--border))",
               }}
               formatter={(
-                value: number | string | (string | number)[] | undefined,
+                value:
+                  | number
+                  | string
+                  | readonly (string | number)[]
+                  | undefined,
               ) => {
                 const numValue = typeof value === "number" ? value : 0;
                 return `${(numValue / 1000).toFixed(1)}k €`;
@@ -637,8 +645,15 @@ function YearComparisonWidget({ isLoading }: { isLoading: boolean }) {
                 border: "1px solid hsl(var(--border))",
               }}
               formatter={(
-                value: number | string | (string | number)[] | undefined,
-              ) => `${value || 0}k €`}
+                value:
+                  | number
+                  | string
+                  | readonly (string | number)[]
+                  | undefined,
+              ) => {
+                const numValue = typeof value === "number" ? value : 0;
+                return `${numValue}k €`;
+              }}
             />
             <Legend />
             <Line
@@ -936,8 +951,6 @@ type WidgetConfig = {
   span?: number;
 };
 
-type SavedWidgetConfig = Pick<WidgetConfig, "id" | "name" | "visible" | "span">;
-
 // Sortable Widget Component
 function SortableWidget({
   id,
@@ -1113,8 +1126,6 @@ export default function PayrollDashboard() {
     defaultWidgetConfigs,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const hasLoadedRef = useRef(false);
-
   const gridSensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -1132,32 +1143,30 @@ export default function PayrollDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!hasLoadedRef.current) {
-      const saved = localStorage.getItem("payroll-dashboard-config");
-      if (saved) {
-        try {
-          const savedConfigs: SavedWidgetConfig[] = JSON.parse(saved);
-          let loadedConfigs = savedConfigs
-            .map((saved: SavedWidgetConfig) => {
-              const defaultConfig = defaultWidgetConfigs.find(
-                (d: WidgetConfig) => d.id === saved.id,
-              );
-              return defaultConfig ? { ...defaultConfig, ...saved } : null;
-            })
-            .filter(Boolean) as WidgetConfig[];
-          const missingDefaults = defaultWidgetConfigs.filter(
-            (defaultConfig: WidgetConfig) =>
-              savedConfigs.every(
-                (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
-              ),
-          );
-          loadedConfigs = [...loadedConfigs, ...missingDefaults];
-          dispatch({ type: "load", payload: loadedConfigs });
-        } catch (e) {
-          console.error("Error loading dashboard config:", e);
-        }
+    const savedConfigs = useDashboardConfigStore
+      .getState()
+      .getConfig("payroll");
+    if (savedConfigs) {
+      try {
+        let loadedConfigs = savedConfigs
+          .map((saved: SavedWidgetConfig) => {
+            const defaultConfig = defaultWidgetConfigs.find(
+              (d: WidgetConfig) => d.id === saved.id,
+            );
+            return defaultConfig ? { ...defaultConfig, ...saved } : null;
+          })
+          .filter(Boolean) as WidgetConfig[];
+        const missingDefaults = defaultWidgetConfigs.filter(
+          (defaultConfig: WidgetConfig) =>
+            savedConfigs.every(
+              (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
+            ),
+        );
+        loadedConfigs = [...loadedConfigs, ...missingDefaults];
+        dispatch({ type: "load", payload: loadedConfigs });
+      } catch (e) {
+        console.error("Error loading dashboard config:", e);
       }
-      hasLoadedRef.current = true;
     }
   }, []);
 
@@ -1168,7 +1177,7 @@ export default function PayrollDashboard() {
       visible: config.visible,
       span: config.span,
     }));
-    localStorage.setItem("payroll-dashboard-config", JSON.stringify(toSave));
+    useDashboardConfigStore.getState().setConfig("payroll", toSave);
   }, [widgetConfigs]);
 
   const toggleVisibility = (id: string) => {

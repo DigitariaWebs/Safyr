@@ -19,4 +19,3 @@ export const mockPayslip: Payslip = {
     { label: "Retenues", amount: -594.58 },
   ],
 };
-

@@ -181,7 +181,7 @@ export default function RecruitmentPage() {
               <Badge variant="default">Intégration</Badge>
               <div className="flex-1">
                 <p className="text-sm font-medium">
-                  Parcours d'intégration terminé pour Sophie Leroy
+                  Parcours d&apos;intégration terminé pour Sophie Leroy
                 </p>
                 <p className="text-xs text-muted-foreground">Hier</p>
               </div>

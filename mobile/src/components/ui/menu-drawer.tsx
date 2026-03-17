@@ -13,9 +13,24 @@ import {
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
-import { Home, ClipboardList, Footprints, MapPin, FileText, User, AlertTriangle, X, ChevronRight, LogOut } from "lucide-react-native";
+import {
+  Home,
+  ClipboardList,
+  Footprints,
+  MapPin,
+  FileText,
+  User,
+  AlertTriangle,
+  X,
+  ChevronRight,
+  LogOut,
+} from "lucide-react-native";
 import { Image } from "expo-image";
-import { getSession, clearSession, type Session } from "@/features/auth/auth.storage";
+import {
+  getSession,
+  clearSession,
+  type Session,
+} from "@/features/auth/auth.storage";
 import { useTheme } from "@/theme";
 import { getHeadingFont, getBodyFont } from "@/utils/fonts";
 
@@ -87,21 +102,17 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
   }
 
   async function handleLogout() {
-    Alert.alert(
-      "Déconnexion",
-      "Êtes-vous sûr de vouloir vous déconnecter ?",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Déconnexion",
-          style: "destructive",
-          onPress: async () => {
-            await clearSession();
-            router.replace("/");
-          },
+    Alert.alert("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter ?", [
+      { text: "Annuler", style: "cancel" },
+      {
+        text: "Déconnexion",
+        style: "destructive",
+        onPress: async () => {
+          await clearSession();
+          router.replace("/");
         },
-      ]
-    );
+      },
+    ]);
   }
 
   function handleNavigate(route: string) {
@@ -112,13 +123,49 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
   }
 
   const menuItems = [
-    { Icon: Home, label: "Accueil", route: "/(app)/(tabs)/", onPress: () => handleNavigate("/(app)/(tabs)/") },
-    { Icon: ClipboardList, label: "Main courante", route: "/(app)/(tabs)/main-courante", onPress: () => handleNavigate("/(app)/(tabs)/main-courante") },
-    { Icon: Footprints, label: "Ronde", route: "/(app)/(tabs)/ronde", onPress: () => handleNavigate("/(app)/(tabs)/ronde") },
-    { Icon: MapPin, label: "Géolocalisation", route: "/(app)/(tabs)/geolocation", onPress: () => handleNavigate("/(app)/(tabs)/geolocation") },
-    { Icon: FileText, label: "Documents", route: "/(app)/documents", onPress: () => handleNavigate("/(app)/documents") },
-    { Icon: User, label: "Mon profil", route: "/(app)/profile", onPress: () => handleNavigate("/(app)/profile") },
-    { Icon: AlertTriangle, label: "SOS", route: "/(app)/sos", onPress: () => handleNavigate("/(app)/sos"), isDestructive: true },
+    {
+      Icon: Home,
+      label: "Accueil",
+      route: "/(app)/(tabs)/",
+      onPress: () => handleNavigate("/(app)/(tabs)/"),
+    },
+    {
+      Icon: ClipboardList,
+      label: "Main courante",
+      route: "/(app)/(tabs)/main-courante",
+      onPress: () => handleNavigate("/(app)/(tabs)/main-courante"),
+    },
+    {
+      Icon: Footprints,
+      label: "Ronde",
+      route: "/(app)/(tabs)/ronde",
+      onPress: () => handleNavigate("/(app)/(tabs)/ronde"),
+    },
+    {
+      Icon: MapPin,
+      label: "Géolocalisation",
+      route: "/(app)/(tabs)/geolocation",
+      onPress: () => handleNavigate("/(app)/(tabs)/geolocation"),
+    },
+    {
+      Icon: FileText,
+      label: "Documents",
+      route: "/(app)/documents",
+      onPress: () => handleNavigate("/(app)/documents"),
+    },
+    {
+      Icon: User,
+      label: "Mon profil",
+      route: "/(app)/profile",
+      onPress: () => handleNavigate("/(app)/profile"),
+    },
+    {
+      Icon: AlertTriangle,
+      label: "SOS",
+      route: "/(app)/sos",
+      onPress: () => handleNavigate("/(app)/sos"),
+      isDestructive: true,
+    },
   ];
 
   return (
@@ -139,7 +186,7 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
           <Pressable onPress={(e) => e.stopPropagation()}>
             <Animated.View
               style={{
-                width: Math.min(300, Dimensions.get('window').width * 0.8),
+                width: Math.min(300, Dimensions.get("window").width * 0.8),
                 height: "100%",
                 overflow: "hidden",
                 transform: [{ translateX: slideAnim }],
@@ -152,9 +199,13 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
             >
               {/* Glass-morphism background */}
               <BlurView intensity={20} tint="dark" style={{ flex: 1 }}>
-                <View style={{ flex: 1, backgroundColor: `${theme.colors.background}E6` }}>
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: `${theme.colors.background}E6`,
+                  }}
+                >
                   <Animated.View style={{ flex: 1, opacity: contentFadeAnim }}>
-
                     {/* Header */}
                     <View
                       style={{
@@ -165,14 +216,33 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                         borderBottomColor: theme.colors.borderSubtle,
                       }}
                     >
-                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: 16,
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
                           <Image
                             source={require("../../../assets/images/Logo.png")}
                             style={{ width: 36, height: 36 }}
                             contentFit="contain"
                           />
-                          <Text style={{ fontSize: 24, color: "#fff", fontFamily: getHeadingFont() }}>
+                          <Text
+                            style={{
+                              fontSize: 24,
+                              color: "#fff",
+                              fontFamily: getHeadingFont(),
+                            }}
+                          >
                             Safyr
                           </Text>
                         </View>
@@ -189,17 +259,34 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                         </TouchableOpacity>
                       </View>
                       {session && (
-                        <View style={{
-                          backgroundColor: `${theme.colors.card}80`,
-                          borderRadius: 10,
-                          padding: 12,
-                          borderWidth: 1,
-                          borderColor: theme.colors.borderSubtle,
-                        }}>
-                          <Text style={{ fontSize: 11, color: theme.colors.mutedForeground, marginBottom: 2, fontFamily: getBodyFont("400") }}>
+                        <View
+                          style={{
+                            backgroundColor: `${theme.colors.card}80`,
+                            borderRadius: 10,
+                            padding: 12,
+                            borderWidth: 1,
+                            borderColor: theme.colors.borderSubtle,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              color: theme.colors.mutedForeground,
+                              marginBottom: 2,
+                              fontFamily: getBodyFont("400"),
+                            }}
+                          >
                             Connecté en tant que
                           </Text>
-                          <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "600", color: theme.colors.foreground, fontFamily: getBodyFont("600") }}>
+                          <Text
+                            numberOfLines={1}
+                            style={{
+                              fontSize: 14,
+                              fontWeight: "600",
+                              color: theme.colors.foreground,
+                              fontFamily: getBodyFont("600"),
+                            }}
+                          >
                             {session.fullName}
                           </Text>
                         </View>
@@ -243,7 +330,11 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                           >
                             <item.Icon
                               size={20}
-                              color={item.isDestructive ? theme.colors.destructive : theme.colors.primary}
+                              color={
+                                item.isDestructive
+                                  ? theme.colors.destructive
+                                  : theme.colors.primary
+                              }
                             />
                           </View>
                           <Text
@@ -257,7 +348,10 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                           >
                             {item.label}
                           </Text>
-                          <ChevronRight size={16} color={theme.colors.mutedForeground} />
+                          <ChevronRight
+                            size={16}
+                            color={theme.colors.mutedForeground}
+                          />
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -291,12 +385,18 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
                         }}
                       >
                         <LogOut size={18} color="#fff" />
-                        <Text style={{ marginLeft: 8, fontSize: 15, color: "#fff", fontFamily: getBodyFont("600") }}>
+                        <Text
+                          style={{
+                            marginLeft: 8,
+                            fontSize: 15,
+                            color: "#fff",
+                            fontFamily: getBodyFont("600"),
+                          }}
+                        >
                           Déconnexion
                         </Text>
                       </TouchableOpacity>
                     </View>
-
                   </Animated.View>
                 </View>
               </BlurView>

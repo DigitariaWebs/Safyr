@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  PanelRight,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { PanelRight, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,9 +46,9 @@ export default function ZonesPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [editingZone, setEditingZone] = useState<GeoZone | null>(null);
-  const [drawingMode, setDrawingMode] = useState<
-    "none" | "circle" | "polygon"
-  >("none");
+  const [drawingMode, setDrawingMode] = useState<"none" | "circle" | "polygon">(
+    "none",
+  );
   const [pendingShape, setPendingShape] = useState<ZoneShape | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GeoZone | null>(null);
   const [detailZone, setDetailZone] = useState<GeoZone | null>(null);
@@ -137,7 +133,11 @@ export default function ZonesPage() {
     } else {
       setZones((prev) => [
         ...prev,
-        { ...data, id: crypto.randomUUID(), createdAt: new Date().toISOString() },
+        {
+          ...data,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        },
       ]);
     }
     setEditingZone(null);
@@ -419,7 +419,11 @@ export default function ZonesPage() {
           {/* Sidebar header with dismiss */}
           <div className="flex items-center justify-between px-3 pt-2.5 pb-1 shrink-0">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              {sidebarView === "list" ? "Zones" : sidebarView === "detail" ? "Détails" : "Formulaire"}
+              {sidebarView === "list"
+                ? "Zones"
+                : sidebarView === "detail"
+                  ? "Détails"
+                  : "Formulaire"}
             </span>
             <button
               onClick={() => setShowSidebar(false)}

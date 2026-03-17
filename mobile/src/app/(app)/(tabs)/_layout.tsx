@@ -1,5 +1,11 @@
 import { Tabs } from "expo-router";
-import { Home, ClipboardList, Footprints, MapPin, Settings } from "lucide-react-native";
+import {
+  Home,
+  ClipboardList,
+  Footprints,
+  MapPin,
+  Settings,
+} from "lucide-react-native";
 import { useTheme } from "@/theme";
 
 export default function TabsLayout() {

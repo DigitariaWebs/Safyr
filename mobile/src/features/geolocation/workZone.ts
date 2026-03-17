@@ -12,4 +12,3 @@ export const defaultWorkZone: WorkZone = {
   center: { latitude: 48.8566, longitude: 2.3522 },
   radiusMeters: 450,
 };
-

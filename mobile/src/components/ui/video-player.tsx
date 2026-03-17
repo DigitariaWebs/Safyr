@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, Linking } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+} from "react-native";
 import { Video as VideoIcon, Play, Pause, X } from "lucide-react-native";
 
 // Import conditionnel pour expo-av
 let VideoComponent: React.ComponentType<Record<string, unknown>> | null = null;
-let useVideoPlayerHook: ((uri: string, setup: (player: { loop: boolean }) => void) => { playing: boolean; play: () => void; pause: () => void }) | null = null;
+let useVideoPlayerHook:
+  | ((
+      uri: string,
+      setup: (player: { loop: boolean }) => void,
+    ) => { playing: boolean; play: () => void; pause: () => void })
+  | null = null;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -23,7 +34,9 @@ interface VideoPlayerProps {
 
 function VideoPlayerFallback({ uri, onRemove, className }: VideoPlayerProps) {
   return (
-    <View className={`relative overflow-hidden rounded-xl border border-border bg-muted ${className ?? ""}`}>
+    <View
+      className={`relative overflow-hidden rounded-xl border border-border bg-muted ${className ?? ""}`}
+    >
       <TouchableOpacity
         onPress={() => Linking.openURL(uri).catch(() => {})}
         className="aspect-video items-center justify-center"
@@ -68,7 +81,9 @@ function VideoPlayerWithAv({ uri, onRemove, className }: VideoPlayerProps) {
   };
 
   return (
-    <View className={`relative overflow-hidden rounded-xl border border-border bg-black ${className ?? ""}`}>
+    <View
+      className={`relative overflow-hidden rounded-xl border border-border bg-black ${className ?? ""}`}
+    >
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={togglePlayPause}

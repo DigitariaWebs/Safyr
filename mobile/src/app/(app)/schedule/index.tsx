@@ -5,7 +5,10 @@ import { mockShifts } from "@/features/schedule/mock";
 import { formatHours, workedMinutesForShift } from "@/features/schedule/utils";
 
 export default function ScheduleScreen() {
-  const totalMinutes = mockShifts.reduce((acc, s) => acc + workedMinutesForShift(s), 0);
+  const totalMinutes = mockShifts.reduce(
+    (acc, s) => acc + workedMinutesForShift(s),
+    0,
+  );
 
   return (
     <Screen>
@@ -19,7 +22,10 @@ export default function ScheduleScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <View className="gap-3">
           {mockShifts.map((s) => {
             const worked = workedMinutesForShift(s);
@@ -28,12 +34,24 @@ export default function ScheduleScreen() {
             return (
               <Card key={s.id} className="gap-2">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-base font-semibold text-foreground">{s.siteName}</Text>
-                  <Text className="text-sm text-muted-foreground">{formatHours(worked)}</Text>
+                  <Text className="text-base font-semibold text-foreground">
+                    {s.siteName}
+                  </Text>
+                  <Text className="text-sm text-muted-foreground">
+                    {formatHours(worked)}
+                  </Text>
                 </View>
                 <Text className="text-sm text-muted-foreground">
-                  {start.toLocaleDateString()} • {start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} →{" "}
-                  {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {start.toLocaleDateString()} •{" "}
+                  {start.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  →{" "}
+                  {end.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
                 <Text className="text-xs text-muted-foreground">
                   Pause: {s.breakMinutes} min
@@ -46,4 +64,3 @@ export default function ScheduleScreen() {
     </Screen>
   );
 }
-

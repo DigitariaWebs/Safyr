@@ -23,7 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLiensUtiles, UsefulLink } from "@/contexts/LiensUtilesContext";
+import { useLiensUtilesStore } from "@/lib/stores/liensUtilesStore";
+import type { UsefulLink } from "@/lib/stores/liensUtilesStore";
 
 const iconComponents: Record<string, React.ElementType> = {
   Link2,
@@ -151,7 +152,7 @@ function CategorySection({
 
 export function LiensUtilesModal() {
   const { isOpen, closeLiensUtiles, links, addLink, updateLink, deleteLink } =
-    useLiensUtiles();
+    useLiensUtilesStore();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLink, setEditingLink] = useState<UsefulLink | null>(null);

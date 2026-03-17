@@ -24,8 +24,13 @@ export async function getProfile(): Promise<AgentProfile | null> {
   }
 }
 
-export async function upsertProfile(next: Omit<AgentProfile, "updatedAtIso">): Promise<void> {
-  const profile: AgentProfile = { ...next, updatedAtIso: new Date().toISOString() };
+export async function upsertProfile(
+  next: Omit<AgentProfile, "updatedAtIso">,
+): Promise<void> {
+  const profile: AgentProfile = {
+    ...next,
+    updatedAtIso: new Date().toISOString(),
+  };
   await AsyncStorage.setItem(KEY, JSON.stringify(profile));
 }
 
@@ -33,7 +38,9 @@ export async function clearProfile(): Promise<void> {
   await AsyncStorage.removeItem(KEY);
 }
 
-export function defaultProfileFromSession(session: Session): Omit<AgentProfile, "updatedAtIso"> {
+export function defaultProfileFromSession(
+  session: Session,
+): Omit<AgentProfile, "updatedAtIso"> {
   return {
     fullName: session.fullName,
     email: undefined,
@@ -44,4 +51,3 @@ export function defaultProfileFromSession(session: Session): Omit<AgentProfile, 
     emergencyContactPhone: undefined,
   };
 }
-

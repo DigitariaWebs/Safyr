@@ -64,7 +64,7 @@ export function Toggle({
       className={cn(
         "flex-row items-center rounded-full overflow-hidden",
         s.container,
-        className
+        className,
       )}
       style={{
         backgroundColor: value ? colors.success : colors.destructive,

@@ -14,7 +14,14 @@ import {
   ChevronRight,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Card, Header, MenuButton, Screen, Toggle } from "@/components/ui";
+import {
+  Button,
+  Card,
+  Header,
+  MenuButton,
+  Screen,
+  Toggle,
+} from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
@@ -34,8 +41,15 @@ export default function HomeDashboardScreen() {
         subtitle="Agent de sécurité"
         left={<MenuButton />}
         right={
-          <Button variant="ghost" size="sm" accessibilityLabel="Notifications" onPress={() => router.push("/(app)/notifications")}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            accessibilityLabel="Notifications"
+            onPress={() => router.push("/(app)/notifications")}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
               <Bell size={18} color={colors.foreground} />
               {unreadCount > 0 && (
                 <View
@@ -66,32 +80,61 @@ export default function HomeDashboardScreen() {
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: bottomPadding, gap: 12 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: bottomPadding,
+          gap: 12,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Status + Shift Card */}
         <Card>
           <View style={{ gap: 16 }}>
             {/* Toggle Row */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+              >
                 <View
                   style={{
                     width: 36,
                     height: 36,
                     borderRadius: 10,
-                    backgroundColor: inService ? `${colors.success}15` : `${colors.destructive}15`,
+                    backgroundColor: inService
+                      ? `${colors.success}15`
+                      : `${colors.destructive}15`,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Shield size={18} color={inService ? colors.success : colors.destructive} />
+                  <Shield
+                    size={18}
+                    color={inService ? colors.success : colors.destructive}
+                  />
                 </View>
                 <View>
-                  <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: colors.mutedForeground,
+                      fontFamily: getBodyFont("400"),
+                    }}
+                  >
                     Statut
                   </Text>
-                  <Text style={{ fontSize: 15, color: colors.foreground, fontFamily: getBodyFont("600") }}>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      color: colors.foreground,
+                      fontFamily: getBodyFont("600"),
+                    }}
+                  >
                     {inService ? "En service" : "Hors service"}
                   </Text>
                 </View>
@@ -109,7 +152,9 @@ export default function HomeDashboardScreen() {
             <View style={{ height: 1, backgroundColor: colors.borderSubtle }} />
 
             {/* Current Shift */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
               <View
                 style={{
                   width: 36,
@@ -123,18 +168,43 @@ export default function HomeDashboardScreen() {
                 <Clock size={18} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: colors.mutedForeground,
+                    fontFamily: getBodyFont("400"),
+                  }}
+                >
                   Poste actuel
                 </Text>
-                <Text numberOfLines={1} style={{ fontSize: 15, color: colors.foreground, fontFamily: getBodyFont("600") }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 15,
+                    color: colors.foreground,
+                    fontFamily: getBodyFont("600"),
+                  }}
+                >
                   Siège • Paris — Accueil
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={{ fontSize: 20, color: colors.foreground, fontFamily: getHeadingFont() }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    color: colors.foreground,
+                    fontFamily: getHeadingFont(),
+                  }}
+                >
                   08:00
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: colors.mutedForeground,
+                    fontFamily: getBodyFont("400"),
+                  }}
+                >
                   → 16:00
                 </Text>
               </View>
@@ -146,15 +216,36 @@ export default function HomeDashboardScreen() {
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Card style={{ flex: 1 }}>
             <View style={{ alignItems: "center", gap: 6 }}>
-              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 11,
+                  color: colors.mutedForeground,
+                  fontFamily: getBodyFont("400"),
+                }}
+              >
                 Heures ce mois
               </Text>
-              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+              <Text
+                style={{
+                  fontSize: 28,
+                  color: colors.foreground,
+                  fontFamily: getHeadingFont(),
+                }}
+              >
                 124
               </Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
                 <TrendingUp size={12} color={colors.success} />
-                <Text style={{ fontSize: 11, color: colors.success, fontFamily: getBodyFont("500") }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: colors.success,
+                    fontFamily: getBodyFont("500"),
+                  }}
+                >
                   +8h
                 </Text>
               </View>
@@ -162,26 +253,64 @@ export default function HomeDashboardScreen() {
           </Card>
           <Card style={{ flex: 1 }}>
             <View style={{ alignItems: "center", gap: 6 }}>
-              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 11,
+                  color: colors.mutedForeground,
+                  fontFamily: getBodyFont("400"),
+                }}
+              >
                 Rondes
               </Text>
-              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+              <Text
+                style={{
+                  fontSize: 28,
+                  color: colors.foreground,
+                  fontFamily: getHeadingFont(),
+                }}
+              >
                 12
               </Text>
-              <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: colors.mutedForeground,
+                  fontFamily: getBodyFont("400"),
+                }}
+              >
                 ce mois
               </Text>
             </View>
           </Card>
           <Card style={{ flex: 1 }}>
             <View style={{ alignItems: "center", gap: 6 }}>
-              <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 11,
+                  color: colors.mutedForeground,
+                  fontFamily: getBodyFont("400"),
+                }}
+              >
                 Incidents
               </Text>
-              <Text style={{ fontSize: 28, color: colors.foreground, fontFamily: getHeadingFont() }}>
+              <Text
+                style={{
+                  fontSize: 28,
+                  color: colors.foreground,
+                  fontFamily: getHeadingFont(),
+                }}
+              >
                 3
               </Text>
-              <Text style={{ fontSize: 11, color: colors.warning, fontFamily: getBodyFont("500") }}>
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: colors.warning,
+                  fontFamily: getBodyFont("500"),
+                }}
+              >
                 1 en cours
               </Text>
             </View>
@@ -191,7 +320,15 @@ export default function HomeDashboardScreen() {
         {/* Quick Actions */}
         <Card>
           <View style={{ gap: 12 }}>
-            <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: getBodyFont("500"), textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <Text
+              style={{
+                fontSize: 13,
+                color: colors.mutedForeground,
+                fontFamily: getBodyFont("500"),
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
               Actions rapides
             </Text>
             <View style={{ gap: 8 }}>
@@ -231,10 +368,21 @@ export default function HomeDashboardScreen() {
         {/* Rappels */}
         <Card>
           <View style={{ gap: 10 }}>
-            <Text style={{ fontSize: 13, color: colors.mutedForeground, fontFamily: getBodyFont("500"), textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <Text
+              style={{
+                fontSize: 13,
+                color: colors.mutedForeground,
+                fontFamily: getBodyFont("500"),
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
               Rappels
             </Text>
-            <ReminderItem colors={colors} text="Vérifier le matériel (radio, lampe)" />
+            <ReminderItem
+              colors={colors}
+              text="Vérifier le matériel (radio, lampe)"
+            />
             <ReminderItem colors={colors} text="Relire les consignes du site" />
           </View>
         </Card>
@@ -274,20 +422,31 @@ interface QuickActionProps {
   destructive?: boolean;
 }
 
-function QuickAction({ icon, label, subtitle, colors, onPress, destructive }: QuickActionProps) {
+function QuickAction({
+  icon,
+  label,
+  subtitle,
+  colors,
+  onPress,
+  destructive,
+}: QuickActionProps) {
   return (
     <Button
       variant="ghost"
       onPress={onPress}
       className="w-full justify-start px-0"
     >
-      <View style={{ flexDirection: "row", alignItems: "center", flex: 1, gap: 12 }}>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", flex: 1, gap: 12 }}
+      >
         <View
           style={{
             width: 36,
             height: 36,
             borderRadius: 10,
-            backgroundColor: destructive ? `${colors.destructive}15` : `${colors.primary}15`,
+            backgroundColor: destructive
+              ? `${colors.destructive}15`
+              : `${colors.primary}15`,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -295,10 +454,22 @@ function QuickAction({ icon, label, subtitle, colors, onPress, destructive }: Qu
           {icon}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 14, color: colors.foreground, fontFamily: getBodyFont("500") }}>
+          <Text
+            style={{
+              fontSize: 14,
+              color: colors.foreground,
+              fontFamily: getBodyFont("500"),
+            }}
+          >
             {label}
           </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: getBodyFont("400") }}>
+          <Text
+            style={{
+              fontSize: 11,
+              color: colors.mutedForeground,
+              fontFamily: getBodyFont("400"),
+            }}
+          >
             {subtitle}
           </Text>
         </View>
@@ -315,22 +486,33 @@ interface ReminderItemProps {
 
 function ReminderItem({ colors, text }: ReminderItemProps) {
   return (
-    <View style={{
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      backgroundColor: `${colors.muted}80`,
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    }}>
-      <View style={{
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: colors.primary,
-      }} />
-      <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: getBodyFont("400"), flex: 1 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        backgroundColor: `${colors.muted}80`,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+      }}
+    >
+      <View
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: colors.primary,
+        }}
+      />
+      <Text
+        style={{
+          fontSize: 13,
+          color: colors.foreground,
+          fontFamily: getBodyFont("400"),
+          flex: 1,
+        }}
+      >
         {text}
       </Text>
     </View>
@@ -360,7 +542,13 @@ function QuickLink({ icon, label, colors, onPress }: QuickLinkProps) {
         >
           {icon}
         </View>
-        <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: getBodyFont("500") }}>
+        <Text
+          style={{
+            fontSize: 13,
+            color: colors.foreground,
+            fontFamily: getBodyFont("500"),
+          }}
+        >
           {label}
         </Text>
       </View>

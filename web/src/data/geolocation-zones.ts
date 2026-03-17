@@ -95,11 +95,15 @@ export function ensureClosedRing(
 }
 
 /** Flat-earth distance between two [lng, lat] points in meters */
-export function flatEarthDistance(a: [number, number], b: [number, number]): number {
+export function flatEarthDistance(
+  a: [number, number],
+  b: [number, number],
+): number {
   const [lng1, lat1] = a;
   const [lng2, lat2] = b;
   const dLat = (lat2 - lat1) * 111320;
-  const dLng = (lng2 - lng1) * 111320 * Math.cos(((lat1 + lat2) / 2) * (Math.PI / 180));
+  const dLng =
+    (lng2 - lng1) * 111320 * Math.cos(((lat1 + lat2) / 2) * (Math.PI / 180));
   return Math.sqrt(dLat * dLat + dLng * dLng);
 }
 
@@ -224,11 +228,11 @@ export const mockGeolocationZones: GeoZone[] = [
     shape: {
       kind: "polygon",
       vertices: [
-        [2.2330, 48.8900],
-        [2.2400, 48.8940],
-        [2.2420, 48.8910],
-        [2.2380, 48.8880],
-        [2.2340, 48.8885],
+        [2.233, 48.89],
+        [2.24, 48.894],
+        [2.242, 48.891],
+        [2.238, 48.888],
+        [2.234, 48.8885],
       ],
     },
     alerts: { entry: true, exit: true, absence: false, parking: true },
@@ -257,9 +261,9 @@ export const mockGeolocationZones: GeoZone[] = [
     shape: {
       kind: "polygon",
       vertices: [
-        [2.2355, 48.8920],
-        [2.2370, 48.8920],
-        [2.2370, 48.8912],
+        [2.2355, 48.892],
+        [2.237, 48.892],
+        [2.237, 48.8912],
         [2.2355, 48.8912],
       ],
     },
@@ -274,7 +278,7 @@ export const mockGeolocationZones: GeoZone[] = [
     color: "#a855f7",
     shape: {
       kind: "circle",
-      center: [2.3490, 48.8580],
+      center: [2.349, 48.858],
       radius: 50,
     },
     alerts: { entry: true, exit: false, absence: false, parking: false },

@@ -32,7 +32,15 @@ type PresenceBadgeVariant = "success" | "warning" | "error";
 
 export const PRESENCE_STATUS_CONFIG: Record<
   PresenceStatus,
-  { label: string; dotClass: string; badgeVariant: PresenceBadgeVariant; badgeClassName?: string; avatarClass: string; ringClass: string; color: string }
+  {
+    label: string;
+    dotClass: string;
+    badgeVariant: PresenceBadgeVariant;
+    badgeClassName?: string;
+    avatarClass: string;
+    ringClass: string;
+    color: string;
+  }
 > = {
   present: {
     label: "Présent",
@@ -82,7 +90,9 @@ function localDateStr(d: Date = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function getMockShiftAssignments(targetDate?: string): ShiftAssignment[] {
+export function getMockShiftAssignments(
+  targetDate?: string,
+): ShiftAssignment[] {
   const date = targetDate ?? localDateStr();
   return [
     {
@@ -229,9 +239,7 @@ export function computePresenceRecords(
       const offlineMinutes = Math.round(
         (now.getTime() - new Date(agent.lastUpdate).getTime()) / 60000,
       );
-      base.anomalies.push(
-        `Aucun signal GPS depuis ${offlineMinutes} min`,
-      );
+      base.anomalies.push(`Aucun signal GPS depuis ${offlineMinutes} min`);
       return base;
     }
 

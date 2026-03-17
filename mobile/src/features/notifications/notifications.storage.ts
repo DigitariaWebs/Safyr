@@ -55,4 +55,3 @@ export async function markAllNotificationsRead(): Promise<void> {
 export async function clearNotifications(): Promise<void> {
   await AsyncStorage.removeItem(KEY);
 }
-

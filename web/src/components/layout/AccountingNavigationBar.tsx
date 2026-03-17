@@ -4,12 +4,7 @@ import {
   ModuleNavigationBar,
   NavItem,
 } from "@/components/ui/module-navigation-bar";
-import {
-  BookOpen,
-  FileText,
-  CreditCard,
-  Building2,
-} from "lucide-react";
+import { BookOpen, FileText, CreditCard, Building2 } from "lucide-react";
 
 const navItems: NavItem[] = [
   {

@@ -13,4 +13,3 @@ export type MainCouranteEvent = {
   audioUri?: string | null;
   audioDuration?: number; // Durée en secondes
 };
-

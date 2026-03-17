@@ -36,7 +36,10 @@ interface DocumentHistory {
 export default function DocumentsScreen() {
   const { colors } = useTheme();
   const [loading, setLoading] = useState<string | null>(null);
-  const [session, setSession] = useState<{ userId: string; fullName: string } | null>(null);
+  const [session, setSession] = useState<{
+    userId: string;
+    fullName: string;
+  } | null>(null);
   const [scheduleHistory, setScheduleHistory] = useState<DocumentHistory[]>([]);
   const [payrollHistory, setPayrollHistory] = useState<DocumentHistory[]>([]);
 
@@ -54,8 +57,12 @@ export default function DocumentsScreen() {
     // En production, charger l'historique depuis l'API ou le stockage local
     // Pour le MVP, on simule avec des données
     const currentDate = new Date();
-    const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    
+    const lastMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1,
+    );
+
     setScheduleHistory([
       {
         id: "schedule-1",
@@ -95,7 +102,11 @@ export default function DocumentsScreen() {
     ]);
   }
 
-  async function downloadPDF(type: "schedule" | "payroll", month?: string, year?: string) {
+  async function downloadPDF(
+    type: "schedule" | "payroll",
+    month?: string,
+    year?: string,
+  ) {
     if (!session) {
       Alert.alert("Erreur", "Session introuvable");
       return;
@@ -106,9 +117,10 @@ export default function DocumentsScreen() {
 
     try {
       const currentDate = new Date();
-      const fileName = type === "schedule"
-        ? `Emploi_du_temps_${month || currentDate.toLocaleString("fr-FR", { month: "long" })}_${year || currentDate.getFullYear()}.pdf`
-        : `Bulletin_Salaire_${month || "all"}_${year || currentDate.getFullYear()}.pdf`;
+      const fileName =
+        type === "schedule"
+          ? `Emploi_du_temps_${month || currentDate.toLocaleString("fr-FR", { month: "long" })}_${year || currentDate.getFullYear()}.pdf`
+          : `Bulletin_Salaire_${month || "all"}_${year || currentDate.getFullYear()}.pdf`;
 
       // En production, remplacer par un appel API réel
       /*
@@ -171,7 +183,7 @@ export default function DocumentsScreen() {
 
       const modulesAvailable = FileSystem && Sharing;
       let isAvailable = false;
-      
+
       if (modulesAvailable) {
         try {
           if (typeof Sharing.isAvailableAsync === "function") {
@@ -184,26 +196,29 @@ export default function DocumentsScreen() {
 
       if (modulesAvailable && isAvailable && FileSystem.documentDirectory) {
         const fileUri = FileSystem.documentDirectory + fileName;
-        
+
         try {
           await Sharing.shareAsync(fileUri, {
             mimeType: "application/pdf",
             dialogTitle: `Télécharger ${fileName}`,
           });
-          
-          Alert.alert("Succès", `Le fichier ${fileName} est prêt à être partagé`);
+
+          Alert.alert(
+            "Succès",
+            `Le fichier ${fileName} est prêt à être partagé`,
+          );
         } catch (shareError) {
           console.error("Share error:", shareError);
           Alert.alert(
             "Information",
-            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`
+            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`,
           );
         }
       } else {
         Alert.alert(
           "Téléchargement",
           `Le fichier ${fileName} sera téléchargé.\n\nPour activer le téléchargement réel, installez:\n\nnpx expo install expo-file-system expo-sharing\n\nPuis configurez l'appel API vers votre backend.`,
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
 
@@ -216,7 +231,7 @@ export default function DocumentsScreen() {
         year: year || new Date().getFullYear().toString(),
         downloadedAt: new Date().toLocaleDateString("fr-FR"),
       };
-      
+
       if (type === "schedule") {
         setScheduleHistory([newDoc, ...scheduleHistory]);
       } else {
@@ -224,7 +239,10 @@ export default function DocumentsScreen() {
       }
     } catch (error) {
       console.error("Error downloading PDF:", error);
-      Alert.alert("Erreur", "Impossible de télécharger le document. Vérifiez votre connexion.");
+      Alert.alert(
+        "Erreur",
+        "Impossible de télécharger le document. Vérifiez votre connexion.",
+      );
     } finally {
       setLoading(null);
     }
@@ -243,8 +261,8 @@ export default function DocumentsScreen() {
         }
       />
 
-      <ScrollView 
-        className="flex-1 px-4" 
+      <ScrollView
+        className="flex-1 px-4"
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
@@ -254,8 +272,16 @@ export default function DocumentsScreen() {
             <View className="flex-row items-center gap-3">
               <Calendar size={24} color={colors.primary} />
               <View className="flex-1">
-                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Emploi du temps</Text>
-                <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
+                <Text
+                  className="text-lg font-semibold"
+                  style={{ color: colors.foreground }}
+                >
+                  Emploi du temps
+                </Text>
+                <Text
+                  className="mt-1 text-sm"
+                  style={{ color: colors.foreground }}
+                >
                   Téléchargez votre emploi du temps au format PDF
                 </Text>
               </View>
@@ -268,11 +294,19 @@ export default function DocumentsScreen() {
               className="w-full"
             >
               {loading?.startsWith("schedule") ? (
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryForeground}
+                />
               ) : (
                 <>
                   <Download size={20} color={colors.primaryForeground} />
-                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger l&apos;emploi du temps actuel</Text>
+                  <Text
+                    className="ml-2"
+                    style={{ color: colors.primaryForeground }}
+                  >
+                    Télécharger l&apos;emploi du temps actuel
+                  </Text>
                 </>
               )}
             </Button>
@@ -280,34 +314,56 @@ export default function DocumentsScreen() {
             {/* Historique emploi du temps */}
             {scheduleHistory.length > 0 && (
               <View className="mt-4 gap-2">
-                <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Historique</Text>
+                <Text
+                  className="text-sm font-medium"
+                  style={{ color: colors.foreground }}
+                >
+                  Historique
+                </Text>
                 <View className="gap-2">
                   {scheduleHistory.map((doc) => (
                     <View
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
-                      style={{ 
+                      style={{
                         borderColor: colors.primary,
                         backgroundColor: colors.surface,
                       }}
                     >
                       <View className="flex-1">
-                        <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
-                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                        <Text
+                          className="text-sm font-medium"
+                          style={{ color: colors.foreground }}
+                        >
+                          {doc.title}
+                        </Text>
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: colors.foreground }}
+                        >
                           {doc.month} {doc.year}
                         </Text>
-                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: colors.foreground }}
+                        >
                           Téléchargé le {doc.downloadedAt}
                         </Text>
                       </View>
                       <Button
                         variant="outline"
                         size="sm"
-                        onPress={() => downloadPDF("schedule", doc.month, doc.year)}
+                        onPress={() =>
+                          downloadPDF("schedule", doc.month, doc.year)
+                        }
                         disabled={loading !== null}
                       >
-                        {loading === `schedule-${doc.month || "current"}-${doc.year || "current"}` ? (
-                          <ActivityIndicator size="small" color={colors.foreground} />
+                        {loading ===
+                        `schedule-${doc.month || "current"}-${doc.year || "current"}` ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.foreground}
+                          />
                         ) : (
                           <Download size={16} color={colors.foreground} />
                         )}
@@ -324,9 +380,18 @@ export default function DocumentsScreen() {
             <View className="flex-row items-center gap-3">
               <FileText size={24} color={colors.primary} />
               <View className="flex-1">
-                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Bulletins de salaire</Text>
-                <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>
-                  Téléchargez vos bulletins de salaire (archives BS) au format PDF
+                <Text
+                  className="text-lg font-semibold"
+                  style={{ color: colors.foreground }}
+                >
+                  Bulletins de salaire
+                </Text>
+                <Text
+                  className="mt-1 text-sm"
+                  style={{ color: colors.foreground }}
+                >
+                  Téléchargez vos bulletins de salaire (archives BS) au format
+                  PDF
                 </Text>
               </View>
             </View>
@@ -338,11 +403,19 @@ export default function DocumentsScreen() {
               className="w-full"
             >
               {loading?.startsWith("payroll") ? (
-                <ActivityIndicator size="small" color={colors.primaryForeground} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryForeground}
+                />
               ) : (
                 <>
                   <Download size={20} color={colors.primaryForeground} />
-                  <Text className="ml-2" style={{ color: colors.primaryForeground }}>Télécharger le bulletin de salaire actuel</Text>
+                  <Text
+                    className="ml-2"
+                    style={{ color: colors.primaryForeground }}
+                  >
+                    Télécharger le bulletin de salaire actuel
+                  </Text>
                 </>
               )}
             </Button>
@@ -350,34 +423,56 @@ export default function DocumentsScreen() {
             {/* Historique bulletins de salaire */}
             {payrollHistory.length > 0 && (
               <View className="mt-4 gap-2">
-                <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Historique</Text>
+                <Text
+                  className="text-sm font-medium"
+                  style={{ color: colors.foreground }}
+                >
+                  Historique
+                </Text>
                 <View className="gap-2">
                   {payrollHistory.map((doc) => (
                     <View
                       key={doc.id}
                       className="flex-row items-center justify-between rounded-lg border p-3"
-                      style={{ 
+                      style={{
                         borderColor: colors.primary,
                         backgroundColor: colors.surface,
                       }}
                     >
                       <View className="flex-1">
-                        <Text className="text-sm font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
-                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                        <Text
+                          className="text-sm font-medium"
+                          style={{ color: colors.foreground }}
+                        >
+                          {doc.title}
+                        </Text>
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: colors.foreground }}
+                        >
                           {doc.month} {doc.year}
                         </Text>
-                        <Text className="mt-1 text-xs" style={{ color: colors.foreground }}>
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: colors.foreground }}
+                        >
                           Téléchargé le {doc.downloadedAt}
                         </Text>
                       </View>
                       <Button
                         variant="outline"
                         size="sm"
-                        onPress={() => downloadPDF("payroll", doc.month, doc.year)}
+                        onPress={() =>
+                          downloadPDF("payroll", doc.month, doc.year)
+                        }
                         disabled={loading !== null}
                       >
-                        {loading === `payroll-${doc.month || "current"}-${doc.year || "current"}` ? (
-                          <ActivityIndicator size="small" color={colors.foreground} />
+                        {loading ===
+                        `payroll-${doc.month || "current"}-${doc.year || "current"}` ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.foreground}
+                          />
                         ) : (
                           <Download size={16} color={colors.foreground} />
                         )}
@@ -390,9 +485,16 @@ export default function DocumentsScreen() {
           </Card>
 
           <Card className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{ color: colors.foreground }}
+            >
+              Information
+            </Text>
             <Text className="text-xs" style={{ color: colors.foreground }}>
-              Les documents sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil. L&apos;historique conserve les documents que vous avez téléchargés.
+              Les documents sont générés au format PDF et peuvent être partagés
+              ou sauvegardés sur votre appareil. L&apos;historique conserve les
+              documents que vous avez téléchargés.
             </Text>
           </Card>
         </View>

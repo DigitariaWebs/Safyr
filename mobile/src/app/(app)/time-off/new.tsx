@@ -7,16 +7,18 @@ import { useNotifications } from "@/features/notifications/NotificationsContext"
 
 export default function NewTimeOffScreen() {
   const { push } = useNotifications();
-  const [type, setType] = useState<"paid" | "unpaid" | "sick" | "other">("paid");
+  const [type, setType] = useState<"paid" | "unpaid" | "sick" | "other">(
+    "paid",
+  );
   const [startIso, setStartIso] = useState("");
   const [endIso, setEndIso] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const canSubmit = useMemo(() => startIso.trim().length >= 10 && endIso.trim().length >= 10, [
-    startIso,
-    endIso,
-  ]);
+  const canSubmit = useMemo(
+    () => startIso.trim().length >= 10 && endIso.trim().length >= 10,
+    [startIso, endIso],
+  );
 
   async function onSubmit() {
     if (!canSubmit) return;
@@ -55,10 +57,15 @@ export default function NewTimeOffScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <Card className="gap-4">
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Type</Text>
+            <Text className="mb-2 text-sm font-medium text-foreground">
+              Type
+            </Text>
             <View className="flex-row gap-2">
               <Button
                 size="sm"
@@ -98,15 +105,29 @@ export default function NewTimeOffScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Début (YYYY-MM-DD)</Text>
-            <Input value={startIso} onChangeText={setStartIso} placeholder="2026-01-30" />
+            <Text className="mb-2 text-sm font-medium text-foreground">
+              Début (YYYY-MM-DD)
+            </Text>
+            <Input
+              value={startIso}
+              onChangeText={setStartIso}
+              placeholder="2026-01-30"
+            />
           </View>
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Fin (YYYY-MM-DD)</Text>
-            <Input value={endIso} onChangeText={setEndIso} placeholder="2026-02-02" />
+            <Text className="mb-2 text-sm font-medium text-foreground">
+              Fin (YYYY-MM-DD)
+            </Text>
+            <Input
+              value={endIso}
+              onChangeText={setEndIso}
+              placeholder="2026-02-02"
+            />
           </View>
           <View>
-            <Text className="mb-2 text-sm font-medium text-foreground">Motif (optionnel)</Text>
+            <Text className="mb-2 text-sm font-medium text-foreground">
+              Motif (optionnel)
+            </Text>
             <Input
               value={reason}
               onChangeText={setReason}
@@ -123,11 +144,11 @@ export default function NewTimeOffScreen() {
           </Button>
 
           <Text className="text-xs text-muted-foreground">
-            MVP: saisie manuelle des dates. Étape suivante: date picker + validation RH/manager.
+            MVP: saisie manuelle des dates. Étape suivante: date picker +
+            validation RH/manager.
           </Text>
         </Card>
       </ScrollView>
     </Screen>
   );
 }
-

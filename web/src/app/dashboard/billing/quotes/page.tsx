@@ -310,9 +310,12 @@ export default function BillingQuotesPage() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                {(formData.quoteType || "base") === "base" && "Une ligne par type de poste (ADS, SSIAP…) avec un forfait mensuel."}
-                {formData.quoteType === "complet" && "Forfait de base + détail des majorations (nuit, dimanche, jours fériés) par poste."}
-                {formData.quoteType === "detaille" && "Listing complet jour par jour de tous les shifts sur la période du devis."}
+                {(formData.quoteType || "base") === "base" &&
+                  "Une ligne par type de poste (ADS, SSIAP…) avec un forfait mensuel."}
+                {formData.quoteType === "complet" &&
+                  "Forfait de base + détail des majorations (nuit, dimanche, jours fériés) par poste."}
+                {formData.quoteType === "detaille" &&
+                  "Listing complet jour par jour de tous les shifts sur la période du devis."}
               </p>
             </div>
 

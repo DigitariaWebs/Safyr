@@ -49,10 +49,14 @@ export function ZoneMap({
   const [cursorPos, setCursorPos] = useState<[number, number] | null>(null);
 
   // ── Reset drawing state when mode changes ─────────────────────────
-  useEffect(() => {
+  // Track previous mode to detect transitions and reset state during render
+  // (the React-idiomatic alternative to setState-in-effect for derived resets).
+  const [prevDrawingMode, setPrevDrawingMode] = useState(drawingMode);
+  if (drawingMode !== prevDrawingMode) {
+    setPrevDrawingMode(drawingMode);
     setDrawingPoints([]);
     setCursorPos(null);
-  }, [drawingMode]);
+  }
 
   // ── ESC to cancel drawing ─────────────────────────────────────────
   useEffect(() => {
@@ -88,7 +92,7 @@ export function ZoneMap({
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)],
       ],
-      { padding: 80, maxZoom: 17, duration: 1200 }
+      { padding: 80, maxZoom: 17, duration: 1200 },
     );
   }, [selectedZoneId, zones]);
 
@@ -190,7 +194,7 @@ export function ZoneMap({
         if (zone) onZoneClick(zone);
       }
     },
-    [drawingMode, drawingPoints, zones, onZoneClick, onDrawComplete]
+    [drawingMode, drawingPoints, zones, onZoneClick, onDrawComplete],
   );
 
   // ── Map double-click handler (close polygon) ─────────────────────
@@ -203,7 +207,7 @@ export function ZoneMap({
       setCursorPos(null);
       onDrawComplete({ kind: "polygon", vertices });
     },
-    [drawingMode, drawingPoints, onDrawComplete]
+    [drawingMode, drawingPoints, onDrawComplete],
   );
 
   // ── Mouse move ────────────────────────────────────────────────────
@@ -213,7 +217,7 @@ export function ZoneMap({
         setCursorPos([e.lngLat.lng, e.lngLat.lat]);
       }
     },
-    [drawingMode]
+    [drawingMode],
   );
 
   // ── Global view (fit bounds on all zones) ─────────────────────────
@@ -240,7 +244,7 @@ export function ZoneMap({
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)],
       ],
-      { padding: 60, maxZoom: 14, duration: 1000 }
+      { padding: 60, maxZoom: 14, duration: 1000 },
     );
   }, [zones]);
 
@@ -266,10 +270,7 @@ export function ZoneMap({
 
   return (
     <div
-      className={cn(
-        "relative overflow-hidden",
-        className
-      )}
+      className={cn("relative overflow-hidden", className)}
       aria-label="Carte des zones géo-fencées"
       role="region"
     >
@@ -303,12 +304,7 @@ export function ZoneMap({
             type="fill"
             paint={{
               "fill-color": ["get", "color"],
-              "fill-opacity": [
-                "case",
-                ["get", "selected"],
-                0.35,
-                0.15,
-              ],
+              "fill-opacity": ["case", ["get", "selected"], 0.35, 0.15],
             }}
           />
           <Layer
@@ -324,7 +320,11 @@ export function ZoneMap({
 
         {/* Drawing preview */}
         {isDrawing && (
-          <Source id="drawing-preview" type="geojson" data={drawingPreviewGeoJson}>
+          <Source
+            id="drawing-preview"
+            type="geojson"
+            data={drawingPreviewGeoJson}
+          >
             <Layer
               id="drawing-preview-line"
               type="line"

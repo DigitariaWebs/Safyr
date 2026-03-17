@@ -9,4 +9,3 @@ export function useTheme(): { scheme: ColorSchemeName; colors: ThemeColors } {
   const { scheme, colors } = useThemeContext();
   return { scheme, colors };
 }
-

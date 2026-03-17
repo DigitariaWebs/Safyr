@@ -8,7 +8,10 @@ export function useWorkZoneMonitor(input: {
   location: LocationObject | null;
   zone: WorkZone;
   prolongedOutsideMs?: number;
-  onProlongedOutside?: (ctx: { outsideMs: number; distanceMeters: number }) => void;
+  onProlongedOutside?: (ctx: {
+    outsideMs: number;
+    distanceMeters: number;
+  }) => void;
 }) {
   const { enabled, location, zone, onProlongedOutside } = input;
   const prolongedOutsideMs = input.prolongedOutsideMs ?? 5 * 60 * 1000;
@@ -49,7 +52,14 @@ export function useWorkZoneMonitor(input: {
       outsideSinceRef.current = null;
       notifiedRef.current = false;
     }
-  }, [enabled, location, zone.center, zone.radiusMeters, prolongedOutsideMs, onProlongedOutside]);
+  }, [
+    enabled,
+    location,
+    zone.center,
+    zone.radiusMeters,
+    prolongedOutsideMs,
+    onProlongedOutside,
+  ]);
 
   return {
     outside,
@@ -57,4 +67,3 @@ export function useWorkZoneMonitor(input: {
     outsideSinceMs: outsideSinceRef.current,
   };
 }
-

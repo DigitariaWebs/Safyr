@@ -36,13 +36,19 @@ export default function Index() {
   return (
     <Screen contentClassName="items-center justify-center px-6">
       <View className="items-center">
-        <Text className="text-3xl font-semibold text-foreground" style={{ fontFamily: getHeadingFont() }}>Safyr</Text>
-        <Text className="mt-2 text-sm text-muted-foreground" style={{ fontFamily: getBodyFont("400") }}>
+        <Text
+          className="text-3xl font-semibold text-foreground"
+          style={{ fontFamily: getHeadingFont() }}
+        >
+          Safyr
+        </Text>
+        <Text
+          className="mt-2 text-sm text-muted-foreground"
+          style={{ fontFamily: getBodyFont("400") }}
+        >
           Portail Agent • Sécurité • RH
         </Text>
-        <View className="mt-6">
-          {loading ? <ActivityIndicator /> : null}
-        </View>
+        <View className="mt-6">{loading ? <ActivityIndicator /> : null}</View>
       </View>
     </Screen>
   );

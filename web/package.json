@@ -1,5 +1,5 @@
 {
-  "name": "safyr",
+  "name": "@safyr/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "test": "tsc --noEmit",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "prune": "knip"
   },
   "dependencies": {
@@ -64,7 +65,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "baseline-browser-mapping": "^2.9.19",
+    "baseline-browser-mapping": "^2.10.8",
     "eslint": "^9",
     "eslint-config-next": "16.0.8",
     "knip": "^5.73.4",

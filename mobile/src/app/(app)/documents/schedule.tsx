@@ -35,7 +35,10 @@ interface ScheduleDocument {
 export default function ScheduleScreen() {
   const { colors } = useTheme();
   const [loading, setLoading] = useState<string | null>(null);
-  const [session, setSession] = useState<{ userId: string; fullName: string } | null>(null);
+  const [session, setSession] = useState<{
+    userId: string;
+    fullName: string;
+  } | null>(null);
 
   useEffect(() => {
     loadSession();
@@ -104,7 +107,7 @@ export default function ScheduleScreen() {
 
       const modulesAvailable = FileSystem && Sharing;
       let isAvailable = false;
-      
+
       if (modulesAvailable) {
         try {
           if (typeof Sharing.isAvailableAsync === "function") {
@@ -117,31 +120,37 @@ export default function ScheduleScreen() {
 
       if (modulesAvailable && isAvailable && FileSystem.documentDirectory) {
         const fileUri = FileSystem.documentDirectory + fileName;
-        
+
         try {
           await Sharing.shareAsync(fileUri, {
             mimeType: "application/pdf",
             dialogTitle: `Télécharger ${fileName}`,
           });
-          
-          Alert.alert("Succès", `Le fichier ${fileName} est prêt à être partagé`);
+
+          Alert.alert(
+            "Succès",
+            `Le fichier ${fileName} est prêt à être partagé`,
+          );
         } catch (shareError) {
           console.error("Share error:", shareError);
           Alert.alert(
             "Information",
-            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`
+            `En production, le fichier ${fileName} sera téléchargé depuis le serveur.`,
           );
         }
       } else {
         Alert.alert(
           "Téléchargement",
           `Le fichier ${fileName} sera téléchargé.\n\nPour activer le téléchargement réel, installez:\n\nnpx expo install expo-file-system expo-sharing\n\nPuis configurez l'appel API vers votre backend.`,
-          [{ text: "OK" }]
+          [{ text: "OK" }],
         );
       }
     } catch (error) {
       console.error("Error downloading schedule:", error);
-      Alert.alert("Erreur", "Impossible de télécharger l'emploi du temps. Vérifiez votre connexion.");
+      Alert.alert(
+        "Erreur",
+        "Impossible de télécharger l'emploi du temps. Vérifiez votre connexion.",
+      );
     } finally {
       setLoading(null);
     }
@@ -177,12 +186,20 @@ export default function ScheduleScreen() {
         }
       />
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <View className="gap-4">
           <Card className="gap-4">
             <View className="flex-row items-center gap-3">
               <Calendar size={24} color={colors.primary} />
-              <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>Mes emplois du temps</Text>
+              <Text
+                className="text-lg font-semibold"
+                style={{ color: colors.foreground }}
+              >
+                Mes emplois du temps
+              </Text>
             </View>
             <Text className="text-sm" style={{ color: colors.foreground }}>
               Téléchargez votre emploi du temps au format PDF
@@ -193,8 +210,18 @@ export default function ScheduleScreen() {
                 <View key={doc.id} className="gap-2">
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1">
-                      <Text className="text-base font-medium" style={{ color: colors.foreground }}>{doc.title}</Text>
-                      <Text className="mt-1 text-sm" style={{ color: colors.foreground }}>{doc.description}</Text>
+                      <Text
+                        className="text-base font-medium"
+                        style={{ color: colors.foreground }}
+                      >
+                        {doc.title}
+                      </Text>
+                      <Text
+                        className="mt-1 text-sm"
+                        style={{ color: colors.foreground }}
+                      >
+                        {doc.description}
+                      </Text>
                     </View>
                     <Button
                       variant="outline"
@@ -202,7 +229,8 @@ export default function ScheduleScreen() {
                       onPress={() => downloadSchedule(doc.month, doc.year)}
                       disabled={loading !== null}
                     >
-                      {loading === `schedule-${doc.month || "all"}-${doc.year || "all"}` ? (
+                      {loading ===
+                      `schedule-${doc.month || "all"}-${doc.year || "all"}` ? (
                         <ActivityIndicator size="small" />
                       ) : (
                         <>
@@ -218,9 +246,15 @@ export default function ScheduleScreen() {
           </Card>
 
           <Card className="gap-2">
-            <Text className="text-sm font-medium" style={{ color: colors.foreground }}>Information</Text>
+            <Text
+              className="text-sm font-medium"
+              style={{ color: colors.foreground }}
+            >
+              Information
+            </Text>
             <Text className="text-xs text-muted-foreground">
-              Les emplois du temps sont générés au format PDF et peuvent être partagés ou sauvegardés sur votre appareil.
+              Les emplois du temps sont générés au format PDF et peuvent être
+              partagés ou sauvegardés sur votre appareil.
             </Text>
           </Card>
         </View>

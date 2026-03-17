@@ -21,12 +21,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
+import { MoreHorizontal, Eye, Plus } from "lucide-react";
 import {
-  MoreHorizontal,
-  Eye,
-  Plus,
-} from "lucide-react";
-import { AccountingEntry, mockAccountingEntries } from "@/data/accounting-entries";
+  AccountingEntry,
+  mockAccountingEntries,
+} from "@/data/accounting-entries";
 
 // Summary type for display in the table
 interface EntrySummary {
@@ -52,7 +51,9 @@ function AccountingEntriesContent() {
   });
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<AccountingEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<AccountingEntry | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [journalFilterLocal, setJournalFilterLocal] = useState<string>(
@@ -123,7 +124,9 @@ function AccountingEntriesContent() {
       case "Pointée":
         return <Badge variant="secondary">{status}</Badge>;
       case "Lettrée":
-        return <Badge className="bg-purple-500/20 text-purple-400">{status}</Badge>;
+        return (
+          <Badge className="bg-purple-500/20 text-purple-400">{status}</Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -167,7 +170,9 @@ function AccountingEntriesContent() {
       sortable: true,
       render: (item) =>
         item.totalDebit > 0 ? (
-          <span className="text-red-400">{formatCurrency(item.totalDebit)}</span>
+          <span className="text-red-400">
+            {formatCurrency(item.totalDebit)}
+          </span>
         ) : (
           "-"
         ),
@@ -178,7 +183,9 @@ function AccountingEntriesContent() {
       sortable: true,
       render: (item) =>
         item.totalCredit > 0 ? (
-          <span className="text-green-400">{formatCurrency(item.totalCredit)}</span>
+          <span className="text-green-400">
+            {formatCurrency(item.totalCredit)}
+          </span>
         ) : (
           "-"
         ),
@@ -259,7 +266,10 @@ function AccountingEntriesContent() {
             <SelectItem value="Lettrée">Lettrée</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={journalFilterLocal} onValueChange={setJournalFilterLocal}>
+        <Select
+          value={journalFilterLocal}
+          onValueChange={setJournalFilterLocal}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Journal" />
           </SelectTrigger>
@@ -353,9 +363,7 @@ function AccountingEntriesContent() {
                           </td>
                           <td className="px-3 py-2">{line.accountLabel}</td>
                           <td className="px-3 py-2 text-right text-red-400">
-                            {line.debit > 0
-                              ? formatCurrency(line.debit)
-                              : "-"}
+                            {line.debit > 0 ? formatCurrency(line.debit) : "-"}
                           </td>
                           <td className="px-3 py-2 text-right text-green-400">
                             {line.credit > 0

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useReducer, useRef, useMemo } from "react";
+import { useState, useEffect, useReducer, useMemo } from "react";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import {
   Users,
@@ -21,6 +21,10 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useDashboardConfigStore,
+  SavedWidgetConfig,
+} from "@/lib/stores/dashboardConfigStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -775,8 +779,6 @@ type WidgetConfig = {
   span?: number;
 };
 
-type SavedWidgetConfig = Pick<WidgetConfig, "id" | "name" | "visible" | "span">;
-
 function SortableItem({
   config,
   index,
@@ -1012,8 +1014,6 @@ export default function PlanningDashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const hasLoadedRef = useRef(false);
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -1038,32 +1038,30 @@ export default function PlanningDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!hasLoadedRef.current) {
-      const saved = localStorage.getItem("planning-dashboard-config");
-      if (saved) {
-        try {
-          const savedConfigs: SavedWidgetConfig[] = JSON.parse(saved);
-          let loadedConfigs = savedConfigs
-            .map((saved: SavedWidgetConfig) => {
-              const defaultConfig = defaultWidgetConfigs.find(
-                (d: WidgetConfig) => d.id === saved.id,
-              );
-              return defaultConfig ? { ...defaultConfig, ...saved } : null;
-            })
-            .filter(Boolean) as WidgetConfig[];
-          const missingDefaults = defaultWidgetConfigs.filter(
-            (defaultConfig: WidgetConfig) =>
-              savedConfigs.every(
-                (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
-              ),
-          );
-          loadedConfigs = [...loadedConfigs, ...missingDefaults];
-          dispatch({ type: "LOAD", payload: loadedConfigs });
-        } catch (e) {
-          console.error("Error loading dashboard config:", e);
-        }
+    const savedConfigs = useDashboardConfigStore
+      .getState()
+      .getConfig("planning");
+    if (savedConfigs) {
+      try {
+        let loadedConfigs = savedConfigs
+          .map((saved: SavedWidgetConfig) => {
+            const defaultConfig = defaultWidgetConfigs.find(
+              (d: WidgetConfig) => d.id === saved.id,
+            );
+            return defaultConfig ? { ...defaultConfig, ...saved } : null;
+          })
+          .filter(Boolean) as WidgetConfig[];
+        const missingDefaults = defaultWidgetConfigs.filter(
+          (defaultConfig: WidgetConfig) =>
+            savedConfigs.every(
+              (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
+            ),
+        );
+        loadedConfigs = [...loadedConfigs, ...missingDefaults];
+        dispatch({ type: "LOAD", payload: loadedConfigs });
+      } catch (e) {
+        console.error("Error loading dashboard config:", e);
       }
-      hasLoadedRef.current = true;
     }
   }, []);
 
@@ -1074,7 +1072,7 @@ export default function PlanningDashboard() {
       visible: config.visible,
       span: config.span,
     }));
-    localStorage.setItem("planning-dashboard-config", JSON.stringify(toSave));
+    useDashboardConfigStore.getState().setConfig("planning", toSave);
   }, [widgetConfigs]);
 
   const toggleVisibility = (id: string) => {
