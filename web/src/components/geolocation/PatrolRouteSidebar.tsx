@@ -42,7 +42,7 @@ interface PatrolRouteSidebarProps {
   onEditRoute: (route: PatrolRoute) => void;
   onDeleteRoute: (route: PatrolRoute) => void;
   onViewDetail: (route: PatrolRoute) => void;
-  sidebarView: "list" | "detail";
+  sidebarView: "list" | "detail" | "form";
   onBackToList: () => void;
 }
 

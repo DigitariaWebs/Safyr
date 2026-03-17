@@ -15,7 +15,7 @@ interface PatrolExecutionSidebarProps {
   executions: PatrolExecution[];
   selectedExecutionId: string | null;
   onSelectExecution: (id: string) => void;
-  sidebarView: "list" | "detail";
+  sidebarView: "list" | "detail" | "form";
   onBackToList: () => void;
 }
 

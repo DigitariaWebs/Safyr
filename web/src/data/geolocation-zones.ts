@@ -202,6 +202,35 @@ export function distanceToZone(
   return minDist;
 }
 
+/** Bounding box of all zones for a given site, for map viewport fitting */
+export function getSiteBounds(
+  zones: GeoZone[],
+  site: string,
+): [[number, number], [number, number]] | null {
+  const siteZones = zones.filter((z) => z.site === site);
+  if (siteZones.length === 0) return null;
+
+  const points: [number, number][] = [];
+  for (const zone of siteZones) {
+    if (zone.shape.kind === "circle") {
+      const { center, radius } = zone.shape;
+      const dLat = radius / 111320;
+      const dLng = radius / (111320 * Math.cos((center[1] * Math.PI) / 180));
+      points.push([center[0] - dLng, center[1] - dLat]);
+      points.push([center[0] + dLng, center[1] + dLat]);
+    } else {
+      for (const v of zone.shape.vertices) points.push(v);
+    }
+  }
+
+  const lngs = points.map((p) => p[0]);
+  const lats = points.map((p) => p[1]);
+  return [
+    [Math.min(...lngs), Math.min(...lats)],
+    [Math.max(...lngs), Math.max(...lats)],
+  ];
+}
+
 // ── Mock Data ──────────────────────────────────────────────────────
 
 export const mockGeolocationZones: GeoZone[] = [

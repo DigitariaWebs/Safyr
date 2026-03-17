@@ -6,18 +6,29 @@ import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PatrolMap } from "@/components/geolocation/PatrolMap";
+import {
+  PatrolMap,
+  type PatrolMapHandle,
+} from "@/components/geolocation/PatrolMap";
 import { PatrolRouteSidebar } from "@/components/geolocation/PatrolRouteSidebar";
-import { PatrolRouteFormModal } from "@/components/geolocation/PatrolRouteFormModal";
+import { PatrolRouteFormPanel } from "@/components/geolocation/PatrolRouteFormPanel";
 import { PatrolExecutionSidebar } from "@/components/geolocation/PatrolExecutionSidebar";
 import { PatrolHistoryPanel } from "@/components/geolocation/PatrolHistoryPanel";
-import type { PatrolRoute, PatrolExecution } from "@/data/geolocation-patrols";
+import type {
+  PatrolRoute,
+  PatrolExecution,
+  PatrolCheckpoint,
+} from "@/data/geolocation-patrols";
 import {
   mockPatrolRoutes,
   mockPatrolExecutions,
   getRouteById,
 } from "@/data/geolocation-patrols";
-import { mockGeolocationZones } from "@/data/geolocation-zones";
+import {
+  mockGeolocationZones,
+  isPointInZone,
+  getSiteBounds,
+} from "@/data/geolocation-zones";
 
 // ── Tab type ────────────────────────────────────────────────────────
 
@@ -36,12 +47,23 @@ export default function RoundsPage() {
   const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(
     null,
   );
-  const [sidebarView, setSidebarView] = useState<"list" | "detail">("list");
+  const [sidebarView, setSidebarView] = useState<"list" | "detail" | "form">(
+    "list",
+  );
 
   // ── Form state ──────────────────────────────────────────────────
-  const [formOpen, setFormOpen] = useState(false);
   const [editingRoute, setEditingRoute] = useState<PatrolRoute | null>(null);
+  const [formSite, setFormSite] = useState("");
+  const [formCheckpoints, setFormCheckpoints] = useState<PatrolCheckpoint[]>(
+    [],
+  );
+  const [selectedCheckpointId, setSelectedCheckpointId] = useState<
+    string | null
+  >(null);
   const [deleteTarget, setDeleteTarget] = useState<PatrolRoute | null>(null);
+
+  // ── Map handle (for imperative fitBoundsTo calls) ────────────────
+  const patrolMapRef = useRef<PatrolMapHandle>(null);
 
   // ── UI state ────────────────────────────────────────────────────
   const [showSidebar, setShowSidebar] = useState(true);
@@ -111,12 +133,25 @@ export default function RoundsPage() {
 
   const handleCreateRoute = useCallback(() => {
     setEditingRoute(null);
-    setFormOpen(true);
+    setFormSite("");
+    setFormCheckpoints([]);
+    setSelectedCheckpointId(null);
+    setSidebarView("form");
+    setShowSidebar(true);
   }, []);
 
   const handleEditRoute = useCallback((route: PatrolRoute) => {
     setEditingRoute(route);
-    setFormOpen(true);
+    setFormSite(route.site);
+    setFormCheckpoints(route.checkpoints);
+    setSelectedCheckpointId(null);
+    setSidebarView("form");
+    setShowSidebar(true);
+    // Fly to site bounds after state settles
+    const bounds = getSiteBounds(mockGeolocationZones, route.site);
+    if (bounds) {
+      setTimeout(() => patrolMapRef.current?.fitBoundsTo(bounds), 150);
+    }
   }, []);
 
   const handleViewRouteDetail = useCallback((route: PatrolRoute) => {
@@ -131,11 +166,34 @@ export default function RoundsPage() {
       } else {
         setRoutes((prev) => [...prev, route]);
       }
-      setFormOpen(false);
+      setSidebarView("list");
       setEditingRoute(null);
+      setFormSite("");
+      setFormCheckpoints([]);
+      setSelectedCheckpointId(null);
     },
     [editingRoute],
   );
+
+  const handleFormCancel = useCallback(() => {
+    setSidebarView("list");
+    setEditingRoute(null);
+    setFormSite("");
+    setFormCheckpoints([]);
+    setSelectedCheckpointId(null);
+  }, []);
+
+  // ── Site change: fly to site bounds, clear checkpoints ─────────
+
+  const handleFormSiteChange = useCallback((newSite: string) => {
+    setFormSite(newSite);
+    setFormCheckpoints([]);
+    setSelectedCheckpointId(null);
+    const bounds = getSiteBounds(mockGeolocationZones, newSite);
+    if (bounds) {
+      setTimeout(() => patrolMapRef.current?.fitBoundsTo(bounds), 150);
+    }
+  }, []);
 
   const handleDeleteRoute = useCallback(() => {
     if (!deleteTarget) return;
@@ -176,9 +234,65 @@ export default function RoundsPage() {
     });
   }, [replayProgress]);
 
+  // ── Checkpoint warnings: which checkpoints are outside site zones ─
+
+  const checkpointWarnings = useMemo(() => {
+    const warningSet = new Set<string>();
+    if (!formSite) return warningSet;
+    const siteZones = mockGeolocationZones.filter((z) => z.site === formSite);
+    if (siteZones.length === 0) return warningSet;
+    for (const cp of formCheckpoints) {
+      if (!siteZones.some((z) => isPointInZone(cp.coords, z.shape))) {
+        warningSet.add(cp.id);
+      }
+    }
+    return warningSet;
+  }, [formSite, formCheckpoints]);
+
+  // ── Map click: add checkpoint in form mode ──────────────────────
+
+  const handleMapClickAddCheckpoint = useCallback(
+    (lngLat: { lng: number; lat: number }) => {
+      if (sidebarView !== "form" || !formSite) return;
+      const newCheckpoint: PatrolCheckpoint = {
+        id: crypto.randomUUID(),
+        name: "",
+        coords: [lngLat.lng, lngLat.lat],
+        type: "GPS",
+        expectedMinutes: 0,
+        toleranceMinutes: 2,
+        order: formCheckpoints.length + 1,
+      };
+      setFormCheckpoints((prev) => [...prev, newCheckpoint]);
+      setSelectedCheckpointId(newCheckpoint.id);
+    },
+    [sidebarView, formSite, formCheckpoints.length],
+  );
+
+  // ── Map checkpoint click: select for editing in form mode ──────
+
+  const handleCheckpointClickInForm = useCallback(
+    (checkpoint: PatrolCheckpoint) => {
+      if (sidebarView === "form") {
+        setSelectedCheckpointId(checkpoint.id);
+      }
+    },
+    [sidebarView],
+  );
+
   // ── Map props based on active tab ──────────────────────────────
 
   const mapProps = useMemo(() => {
+    // Form mode: show form checkpoints with edit interactions
+    if (activeTab === "itineraires" && sidebarView === "form") {
+      return {
+        routeCheckpoints: formCheckpoints,
+        selectedCheckpointId,
+        onCheckpointClick: handleCheckpointClickInForm,
+        onMapClick: formSite ? handleMapClickAddCheckpoint : undefined,
+        editMode: !!formSite,
+      };
+    }
     if (activeTab === "itineraires" && selectedRoute) {
       return {
         routeCheckpoints: selectedRoute.checkpoints,
@@ -203,6 +317,12 @@ export default function RoundsPage() {
     return {};
   }, [
     activeTab,
+    sidebarView,
+    formSite,
+    formCheckpoints,
+    selectedCheckpointId,
+    handleCheckpointClickInForm,
+    handleMapClickAddCheckpoint,
     selectedRoute,
     selectedExecution,
     selectedExecutionRoute,
@@ -212,6 +332,24 @@ export default function RoundsPage() {
   // ── Sidebar content renderer ──────────────────────────────────
 
   const renderSidebarContent = () => {
+    // Form view for route creation/editing
+    if (activeTab === "itineraires" && sidebarView === "form") {
+      return (
+        <PatrolRouteFormPanel
+          editingRoute={editingRoute}
+          site={formSite}
+          onSiteChange={handleFormSiteChange}
+          checkpoints={formCheckpoints}
+          selectedCheckpointId={selectedCheckpointId}
+          checkpointWarnings={checkpointWarnings}
+          onCheckpointsChange={setFormCheckpoints}
+          onSelectedCheckpointChange={setSelectedCheckpointId}
+          onSave={handleSaveRoute}
+          onCancel={handleFormCancel}
+        />
+      );
+    }
+
     if (activeTab === "itineraires") {
       return (
         <PatrolRouteSidebar
@@ -266,11 +404,15 @@ export default function RoundsPage() {
   // ── Sidebar label ─────────────────────────────────────────────
 
   const sidebarLabel =
-    activeTab === "itineraires"
-      ? "Itinéraires"
-      : activeTab === "en-cours"
-        ? "En cours"
-        : "Historique";
+    sidebarView === "form"
+      ? editingRoute
+        ? "Modifier"
+        : "Nouvel itinéraire"
+      : activeTab === "itineraires"
+        ? "Itinéraires"
+        : activeTab === "en-cours"
+          ? "En cours"
+          : "Historique";
 
   // ── Sidebar width ─────────────────────────────────────────────
 
@@ -283,6 +425,7 @@ export default function RoundsPage() {
     <div className="relative h-full">
       {/* Full-page map */}
       <PatrolMap
+        ref={patrolMapRef}
         className="absolute inset-0"
         {...mapProps}
         allRoutes={routes}
@@ -371,14 +514,6 @@ export default function RoundsPage() {
           {renderSidebarContent()}
         </SheetContent>
       </Sheet>
-
-      {/* ── Route form modal ──────────────────────────────────── */}
-      <PatrolRouteFormModal
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        editingRoute={editingRoute}
-        onSave={handleSaveRoute}
-      />
 
       {/* ── Delete confirmation modal ─────────────────────────── */}
       <Modal
