@@ -7,3 +7,4 @@ export { EmployeeBadgesTab } from "./EmployeeBadgesTab";
 export { EmployeeDisciplineTab } from "./EmployeeDisciplineTab";
 export { EmployeeCSETab } from "./EmployeeCSETab";
 export { EmployeeSavingsTab } from "./EmployeeSavingsTab";
+export { EmployeeGeolocationTab } from "./EmployeeGeolocationTab";
