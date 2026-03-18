@@ -130,11 +130,7 @@ function createSeededRandom(seed: number) {
   };
 }
 
-function periodMultiplier(
-  period: KPIPeriod,
-  week = 7,
-  month = 30,
-): number {
+function periodMultiplier(period: KPIPeriod, week = 7, month = 30): number {
   return period === "today" ? 1 : period === "week" ? week : month;
 }
 
@@ -151,7 +147,9 @@ function filterBySite<T>(
 // ── Data generation ───────────────────────────────────────────────
 
 function generateTrendData(period: KPIPeriod): TrendDataPoint[] {
-  const rand = createSeededRandom(period === "today" ? 101 : period === "week" ? 202 : 303);
+  const rand = createSeededRandom(
+    period === "today" ? 101 : period === "week" ? 202 : 303,
+  );
 
   if (period === "today") {
     return Array.from({ length: 15 }, (_, i) => {
@@ -184,7 +182,9 @@ function generatePatrolsBySite(
   period: KPIPeriod,
   siteFilter: SiteFilter,
 ): PatrolBySite[] {
-  const rand = createSeededRandom(period === "today" ? 401 : period === "week" ? 402 : 403);
+  const rand = createSeededRandom(
+    period === "today" ? 401 : period === "week" ? 402 : 403,
+  );
   const multiplier = periodMultiplier(period);
 
   const all: PatrolBySite[] = [
@@ -237,7 +237,9 @@ function generateZoneActivity(
   period: KPIPeriod,
   siteFilter: SiteFilter,
 ): ZoneActivity[] {
-  const rand = createSeededRandom(period === "today" ? 501 : period === "week" ? 502 : 503);
+  const rand = createSeededRandom(
+    period === "today" ? 501 : period === "week" ? 502 : 503,
+  );
   const multiplier = periodMultiplier(period, 5, 18);
 
   const allZones: ZoneActivity[] = [
@@ -277,7 +279,9 @@ function generateTopAgents(
   period: KPIPeriod,
   siteFilter: SiteFilter,
 ): HRAgentEntry[] {
-  const rand = createSeededRandom(period === "today" ? 601 : period === "week" ? 602 : 603);
+  const rand = createSeededRandom(
+    period === "today" ? 601 : period === "week" ? 602 : 603,
+  );
   const multiplier = periodMultiplier(period, 5, 20);
 
   const allAgents: HRAgentEntry[] = [
@@ -330,10 +334,7 @@ function generateTopAgents(
 
 // ── Main export ───────────────────────────────────────────────────
 
-export function getKPIData(
-  period: KPIPeriod,
-  siteFilter: SiteFilter,
-): KPIData {
+export function getKPIData(period: KPIPeriod, siteFilter: SiteFilter): KPIData {
   const rand = createSeededRandom(
     (period === "today" ? 1000 : period === "week" ? 2000 : 3000) +
       (siteFilter === "all" ? 0 : siteFilter.length * 7),
@@ -343,9 +344,7 @@ export function getKPIData(
   const siteScale = siteFilter === "all" ? 1 : 0.35;
 
   const patrolsPlanned = Math.round(8 * multiplier * siteScale);
-  const patrolsCompleted = Math.round(
-    patrolsPlanned * (0.75 + rand() * 0.2),
-  );
+  const patrolsCompleted = Math.round(patrolsPlanned * (0.75 + rand() * 0.2));
 
   const security: SecurityKPIs = {
     patrolsCompleted,

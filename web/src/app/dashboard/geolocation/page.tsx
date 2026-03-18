@@ -19,12 +19,7 @@ import {
   type KPIPeriod,
   type SiteFilter,
 } from "@/data/geolocation-kpis";
-import {
-  Route,
-  CheckCircle,
-  Bell,
-  ShieldAlert,
-} from "lucide-react";
+import { Route, CheckCircle, Bell, ShieldAlert } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -63,7 +58,9 @@ function ChartTooltip({
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-muted-foreground">{entry.name}</span>
-          <span className="ml-auto font-medium tabular-nums">{entry.value}</span>
+          <span className="ml-auto font-medium tabular-nums">
+            {entry.value}
+          </span>
         </div>
       ))}
     </div>
@@ -104,7 +101,10 @@ function ChartLegend({
   return (
     <div className="flex items-center justify-center gap-4 pt-2">
       {payload.map((entry, i) => (
-        <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div
+          key={i}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground"
+        >
           <span
             className="h-2 w-2 rounded-full"
             style={{ backgroundColor: entry.color }}
@@ -194,11 +194,14 @@ export default function GeolocationDashboard() {
                   <Route className="h-4 w-4 text-blue-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Rondes effectuées</p>
+                  <p className="text-xs text-muted-foreground">
+                    Rondes effectuées
+                  </p>
                   <p className="text-2xl font-light tracking-tight">
                     {data.security.patrolsCompleted}
                     <span className="text-sm text-muted-foreground">
-                      {" "}/ {data.security.patrolsPlanned}
+                      {" "}
+                      / {data.security.patrolsPlanned}
                     </span>
                   </p>
                 </div>
@@ -214,8 +217,12 @@ export default function GeolocationDashboard() {
                   <CheckCircle className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Conformité rondes</p>
-                  <p className={`text-2xl font-light tracking-tight ${data.security.conformityRate >= 80 ? "text-emerald-400" : "text-amber-400"}`}>
+                  <p className="text-xs text-muted-foreground">
+                    Conformité rondes
+                  </p>
+                  <p
+                    className={`text-2xl font-light tracking-tight ${data.security.conformityRate >= 80 ? "text-emerald-400" : "text-amber-400"}`}
+                  >
                     {data.security.conformityRate}%
                   </p>
                 </div>
@@ -237,7 +244,9 @@ export default function GeolocationDashboard() {
                   <Bell className="h-4 w-4 text-purple-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Événements zone</p>
+                  <p className="text-xs text-muted-foreground">
+                    Événements zone
+                  </p>
                   <p className="text-2xl font-light tracking-tight">
                     {data.security.zoneEvents}
                   </p>
@@ -247,18 +256,27 @@ export default function GeolocationDashboard() {
           </Card>
 
           {/* Alertes SOS */}
-          <Card className={`glass-card border-border/40 hover:border-primary/30 transition-all ${data.security.sosActive > 0 ? "border-red-500/30" : ""}`}>
+          <Card
+            className={`glass-card border-border/40 hover:border-primary/30 transition-all ${data.security.sosActive > 0 ? "border-red-500/30" : ""}`}
+          >
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${data.security.sosActive > 0 ? "bg-red-500/15" : "bg-muted/30"}`}>
-                  <ShieldAlert className={`h-4 w-4 ${data.security.sosActive > 0 ? "text-red-400" : "text-muted-foreground"}`} />
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${data.security.sosActive > 0 ? "bg-red-500/15" : "bg-muted/30"}`}
+                >
+                  <ShieldAlert
+                    className={`h-4 w-4 ${data.security.sosActive > 0 ? "text-red-400" : "text-muted-foreground"}`}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Alertes SOS</p>
-                  <p className={`text-2xl font-light tracking-tight ${data.security.sosActive > 0 ? "text-red-400" : ""}`}>
+                  <p
+                    className={`text-2xl font-light tracking-tight ${data.security.sosActive > 0 ? "text-red-400" : ""}`}
+                  >
                     {data.security.sosActive}
                     <span className="text-sm text-muted-foreground">
-                      {" "}actives
+                      {" "}
+                      actives
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -281,22 +299,69 @@ export default function GeolocationDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <div role="img" aria-label="Graphique : évolution des présences et absences">
+            <div
+              role="img"
+              aria-label="Graphique : évolution des présences et absences"
+            >
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={data.trendData}>
                   <defs>
-                    <linearGradient id="gradPresence" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART_COLORS.green} stopOpacity={0.2} />
-                      <stop offset="95%" stopColor={CHART_COLORS.green} stopOpacity={0} />
+                    <linearGradient
+                      id="gradPresence"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_COLORS.green}
+                        stopOpacity={0.2}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={CHART_COLORS.green}
+                        stopOpacity={0}
+                      />
                     </linearGradient>
-                    <linearGradient id="gradAbsence" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART_COLORS.red} stopOpacity={0.15} />
-                      <stop offset="95%" stopColor={CHART_COLORS.red} stopOpacity={0} />
+                    <linearGradient
+                      id="gradAbsence"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_COLORS.red}
+                        stopOpacity={0.15}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={CHART_COLORS.red}
+                        stopOpacity={0}
+                      />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.08} />
-                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} dy={8} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} dx={-8} />
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="3 3"
+                    stroke="#94a3b8"
+                    strokeOpacity={0.08}
+                  />
+                  <XAxis
+                    dataKey="label"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    dy={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    dx={-8}
+                  />
                   <Tooltip content={<ChartTooltip />} />
                   <Legend content={<ChartLegend />} />
                   <Area
@@ -366,9 +431,13 @@ export default function GeolocationDashboard() {
                         className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: entry.color }}
                       />
-                      <span className="text-muted-foreground">{entry.status}</span>
+                      <span className="text-muted-foreground">
+                        {entry.status}
+                      </span>
                     </div>
-                    <span className="font-medium tabular-nums">{entry.count}</span>
+                    <span className="font-medium tabular-nums">
+                      {entry.count}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -393,7 +462,9 @@ export default function GeolocationDashboard() {
               value: Math.abs(data.trends.presenceDelta),
               direction: data.trends.presenceDelta >= 0 ? "up" : "down",
             }}
-            variant={data.operational.presenceRate >= 90 ? "success" : "warning"}
+            variant={
+              data.operational.presenceRate >= 90 ? "success" : "warning"
+            }
             subtext="Agents en poste / planifiés"
           />
           <StatsCard
@@ -403,7 +474,9 @@ export default function GeolocationDashboard() {
               value: Math.abs(data.trends.tardinessDelta),
               direction: data.trends.tardinessDelta >= 0 ? "up" : "down",
             }}
-            variant={data.operational.tardinessRate <= 5 ? "success" : "warning"}
+            variant={
+              data.operational.tardinessRate <= 5 ? "success" : "warning"
+            }
             subtext="Retards signalés"
           />
           <StatsCard
@@ -441,16 +514,46 @@ export default function GeolocationDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <div role="img" aria-label="Rondes planifiées vs réalisées par site">
+            <div
+              role="img"
+              aria-label="Rondes planifiées vs réalisées par site"
+            >
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={data.patrolsBySite} barGap={4} barSize={20}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.08} />
-                  <XAxis dataKey="site" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} dy={8} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#64748b" }} dx={-8} />
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="3 3"
+                    stroke="#94a3b8"
+                    strokeOpacity={0.08}
+                  />
+                  <XAxis
+                    dataKey="site"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    dy={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#64748b" }}
+                    dx={-8}
+                  />
                   <Tooltip content={<ChartTooltip />} />
                   <Legend content={<ChartLegend />} />
-                  <Bar dataKey="planned" name="Planifiées" fill={CHART_COLORS.blue} radius={[4, 4, 0, 0]} opacity={0.6} />
-                  <Bar dataKey="actual" name="Réalisées" fill={CHART_COLORS.cyan} radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="planned"
+                    name="Planifiées"
+                    fill={CHART_COLORS.blue}
+                    radius={[4, 4, 0, 0]}
+                    opacity={0.6}
+                  />
+                  <Bar
+                    dataKey="actual"
+                    name="Réalisées"
+                    fill={CHART_COLORS.cyan}
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -541,23 +644,31 @@ export default function GeolocationDashboard() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{agent.agentName}</p>
-                        <p className="text-xs text-muted-foreground">{agent.site}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {agent.site}
+                        </p>
                       </div>
                       <div className="flex items-center gap-4 text-sm tabular-nums">
                         <div className="text-right">
                           <p className="font-medium">{agent.missionsCount}</p>
-                          <p className="text-xs text-muted-foreground">missions</p>
+                          <p className="text-xs text-muted-foreground">
+                            missions
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="font-medium">{agent.hoursWorked}h</p>
-                          <p className="text-xs text-muted-foreground">heures</p>
+                          <p className="text-xs text-muted-foreground">
+                            heures
+                          </p>
                         </div>
                         {agent.incidentCount > 0 && (
                           <div className="text-right">
                             <p className="font-medium text-amber-400">
                               {agent.incidentCount}
                             </p>
-                            <p className="text-xs text-muted-foreground">incidents</p>
+                            <p className="text-xs text-muted-foreground">
+                              incidents
+                            </p>
                           </div>
                         )}
                       </div>
@@ -572,30 +683,46 @@ export default function GeolocationDashboard() {
           <div className="flex flex-col gap-4">
             <Card className="glass-card border-border/40 hover:border-primary/30 transition-all flex-1">
               <CardContent className="flex h-full flex-col justify-center p-5">
-                <p className="text-xs text-muted-foreground">Absences géolocalisées</p>
-                <p className={`text-3xl font-light tracking-tight ${data.hr.absenceCount > 5 ? "text-red-400" : ""}`}>
+                <p className="text-xs text-muted-foreground">
+                  Absences géolocalisées
+                </p>
+                <p
+                  className={`text-3xl font-light tracking-tight ${data.hr.absenceCount > 5 ? "text-red-400" : ""}`}
+                >
                   {data.hr.absenceCount}
                 </p>
-                <p className="text-xs text-muted-foreground">Signalées par GPS</p>
+                <p className="text-xs text-muted-foreground">
+                  Signalées par GPS
+                </p>
               </CardContent>
             </Card>
             <Card className="glass-card border-border/40 hover:border-primary/30 transition-all flex-1">
               <CardContent className="flex h-full flex-col justify-center p-5">
                 <p className="text-xs text-muted-foreground">Incidents SOS</p>
-                <p className={`text-3xl font-light tracking-tight ${data.hr.sosHistoryCount > 3 ? "text-amber-400" : ""}`}>
+                <p
+                  className={`text-3xl font-light tracking-tight ${data.hr.sosHistoryCount > 3 ? "text-amber-400" : ""}`}
+                >
                   {data.hr.sosHistoryCount}
                 </p>
-                <p className="text-xs text-muted-foreground">Historique période</p>
+                <p className="text-xs text-muted-foreground">
+                  Historique période
+                </p>
               </CardContent>
             </Card>
             <Card className="glass-card border-border/40 hover:border-primary/30 transition-all flex-1">
               <CardContent className="flex h-full flex-col justify-center p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Indice fatigue</p>
-                    <p className={`text-3xl font-light tracking-tight ${data.hr.fatigueIndex > 60 ? "text-red-400" : data.hr.fatigueIndex > 40 ? "text-amber-400" : "text-emerald-400"}`}>
+                    <p className="text-xs text-muted-foreground">
+                      Indice fatigue
+                    </p>
+                    <p
+                      className={`text-3xl font-light tracking-tight ${data.hr.fatigueIndex > 60 ? "text-red-400" : data.hr.fatigueIndex > 40 ? "text-amber-400" : "text-emerald-400"}`}
+                    >
                       {data.hr.fatigueIndex}
-                      <span className="text-sm text-muted-foreground">/100</span>
+                      <span className="text-sm text-muted-foreground">
+                        /100
+                      </span>
                     </p>
                   </div>
                 </div>
