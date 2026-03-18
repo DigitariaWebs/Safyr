@@ -26,7 +26,7 @@ export default function GeolocationLayout({
           showConteurs={true}
         />
         <GeolocationNavigationBar showNav={true} />
-        <main className="flex-1 overflow-hidden relative">{children}</main>
+        <main className="flex-1 overflow-auto relative">{children}</main>
       </div>
 
       <SOSNotificationEffect />
