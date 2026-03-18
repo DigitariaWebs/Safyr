@@ -11,6 +11,7 @@ import {
   Gavel,
   Eye,
   CheckCircle,
+  ShieldAlert,
 } from "lucide-react";
 import type {
   Employee,
@@ -19,10 +20,57 @@ import type {
   Sanction,
 } from "@/lib/types";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
+import {
+  getEmployeeGeolocationSummary,
+  HSE_TYPE_CONFIG,
+  HSE_STATUS_CONFIG,
+  type HSEIncident,
+} from "@/data/hr-geolocation";
 
 interface EmployeeDisciplineTabProps {
   employee: Employee;
 }
+
+const hseColumns: ColumnDef<HSEIncident>[] = [
+  {
+    key: "date",
+    label: "Date",
+    render: (item) =>
+      new Date(item.date).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+  },
+  {
+    key: "type",
+    label: "Type",
+    render: (item) => {
+      const config = HSE_TYPE_CONFIG[item.type];
+      return (
+        <Badge variant="outline" className={config.className}>
+          {config.label}
+        </Badge>
+      );
+    },
+  },
+  { key: "site", label: "Site" },
+  {
+    key: "status",
+    label: "Statut",
+    render: (item) => {
+      const config = HSE_STATUS_CONFIG[item.status];
+      return (
+        <Badge variant="outline" className={config.className}>
+          {config.label}
+        </Badge>
+      );
+    },
+  },
+  { key: "description", label: "Description" },
+];
 
 export function EmployeeDisciplineTab({
   employee,
@@ -96,6 +144,9 @@ export function EmployeeDisciplineTab({
       updatedAt: new Date("2024-01-10"),
     },
   ]);
+
+  const geolocationSummary = getEmployeeGeolocationSummary(employee.id);
+  const hseIncidents = geolocationSummary?.hseIncidents ?? [];
 
   const getStatusBadge = (
     status: string,
@@ -253,7 +304,7 @@ export function EmployeeDisciplineTab({
   return (
     <div className="space-y-6">
       {/* Discipline Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -294,6 +345,22 @@ export function EmployeeDisciplineTab({
           <CardContent>
             <div className="text-2xl font-bold">{sanctions.length}</div>
             <p className="text-xs text-muted-foreground">Total des sanctions</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-red-600" />
+              Incidents HSE
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{hseIncidents.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {hseIncidents.filter((i) => i.status === "Ouvert").length}{" "}
+              ouvert(s)
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -379,6 +446,35 @@ export function EmployeeDisciplineTab({
               columns={sanctionColumns}
               searchKeys={["type", "reason", "description"]}
               searchPlaceholder="Rechercher des sanctions..."
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* HSE Incidents (Geolocation) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5 text-red-600" />
+            Incidents HSE — Géolocalisation ({hseIncidents.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {hseIncidents.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Aucun incident HSE</h3>
+              <p className="text-sm text-muted-foreground">
+                Aucun incident SOS ou immobilité enregistré via la
+                géolocalisation
+              </p>
+            </div>
+          ) : (
+            <DataTable
+              data={hseIncidents}
+              columns={hseColumns}
+              searchKeys={["description", "site"]}
+              searchPlaceholder="Rechercher des incidents..."
             />
           )}
         </CardContent>

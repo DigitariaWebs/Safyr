@@ -36,6 +36,7 @@ import {
   EmployeeCSETab,
   EmployeeDisciplineTab,
   EmployeeSavingsTab,
+  EmployeeGeolocationTab,
 } from "@/components/employees";
 import { useSendEmail } from "@/hooks/useSendEmail";
 
@@ -78,6 +79,7 @@ export default function EmployeeDetailPage({
     { id: "savings" as const, label: "Épargne", icon: DollarSign },
     { id: "discipline" as const, label: "Discipline", icon: Gavel },
     { id: "cse" as const, label: "CSE", icon: Users },
+    { id: "geolocation" as const, label: "Géolocalisation", icon: MapPin },
   ];
 
   const getStatusBadge = (status: Employee["status"]) => {
@@ -267,6 +269,9 @@ export default function EmployeeDetailPage({
         </TabsContent>
         <TabsContent value="cse">
           <EmployeeCSETab employee={employee} />
+        </TabsContent>
+        <TabsContent value="geolocation">
+          <EmployeeGeolocationTab employee={employee} />
         </TabsContent>
       </div>
     </Tabs>
