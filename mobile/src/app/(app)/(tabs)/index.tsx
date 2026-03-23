@@ -1,4 +1,4 @@
-import { Text, View, ScrollView } from "react-native";
+import { Text, View, ScrollView, Pressable } from "react-native";
 import { router } from "expo-router";
 import {
   Bell,
@@ -10,12 +10,14 @@ import {
   Clock,
   TrendingUp,
   ChevronRight,
+  Footprints,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Card, Header, Screen, Toggle } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useState } from "react";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
+import { mockScheduledPatrols } from "@/features/geolocation/patrol.mock";
 import { getBodyFont, getHeadingFont } from "@/utils/fonts";
 
 export default function HomeDashboardScreen() {
@@ -260,16 +262,16 @@ export default function HomeDashboardScreen() {
                   fontFamily: getHeadingFont(),
                 }}
               >
-                12
+                {mockScheduledPatrols.length}
               </Text>
               <Text
                 style={{
                   fontSize: 11,
-                  color: colors.mutedForeground,
-                  fontFamily: getBodyFont("400"),
+                  color: colors.primary,
+                  fontFamily: getBodyFont("500"),
                 }}
               >
-                ce mois
+                {"aujourd'hui"}
               </Text>
             </View>
           </Card>
@@ -362,6 +364,73 @@ export default function HomeDashboardScreen() {
             >
               Rappels
             </Text>
+
+            {/* Prochaines rondes */}
+            {mockScheduledPatrols.map((sp) => {
+              const time = new Date(sp.scheduledAt);
+              const hh = String(time.getHours()).padStart(2, "0");
+              const mm = String(time.getMinutes()).padStart(2, "0");
+              return (
+                <Pressable
+                  key={sp.id}
+                  onPress={() => router.push("/(app)/(tabs)/geolocation")}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    backgroundColor: `${colors.primary}10`,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      backgroundColor: `${colors.primary}20`,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Footprints size={14} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 13,
+                        color: colors.foreground,
+                        fontFamily: getBodyFont("500"),
+                      }}
+                    >
+                      {sp.routeName}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: colors.mutedForeground,
+                        fontFamily: getBodyFont("400"),
+                      }}
+                    >
+                      {sp.site} • {sp.checkpointCount} points • ~
+                      {sp.estimatedDurationMinutes} min
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: getHeadingFont(),
+                      color: colors.primary,
+                    }}
+                  >
+                    {hh}:{mm}
+                  </Text>
+                </Pressable>
+              );
+            })}
+
             <ReminderItem
               colors={colors}
               text="Vérifier le matériel (radio, lampe)"

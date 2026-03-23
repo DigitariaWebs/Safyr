@@ -1,18 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Mic, Play, Pause, Trash2 } from "lucide-react-native";
 
-// Import conditionnel pour expo-av
-let Audio: any = null;
-let Recording: any = null;
+// Import conditionnel pour expo-audio
+let expoAudio: any = null;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const expoAv = require("expo-av");
-  Audio = expoAv.Audio;
-  Recording = expoAv.Recording;
+  expoAudio = require("expo-audio");
 } catch {
-  console.warn("expo-av not installed. Install with: npx expo install expo-av");
+  console.warn(
+    "expo-audio not installed. Install with: npx expo install expo-audio",
+  );
 }
 
 interface VoiceRecorderProps {
@@ -29,29 +28,19 @@ export function VoiceRecorder({
   className,
 }: VoiceRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<any>(null);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sound, setSound] = useState<any>(null);
-  const [, setPlaybackStatus] = useState<any>(null);
   const durationInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const recordingRef = useRef<any>(recording);
-  const soundRef = useRef<any>(sound);
+  const recorderRef = useRef<any>(null);
+  const playerRef = useRef<any>(null);
 
-  useEffect(() => {
-    recordingRef.current = recording;
-  }, [recording]);
-
-  useEffect(() => {
-    soundRef.current = sound;
-  }, [sound]);
-
+  // Cleanup on unmount
   useEffect(() => {
     // Initialiser le mode audio
-    if (Audio) {
-      Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+    if (expoAudio) {
+      expoAudio.setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
     }
 
@@ -59,88 +48,67 @@ export function VoiceRecorder({
       if (durationInterval.current) {
         clearInterval(durationInterval.current);
       }
-      if (recordingRef.current) {
-        recordingRef.current.stopAndUnloadAsync().catch(() => {});
-      }
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(() => {});
+      if (playerRef.current) {
+        playerRef.current.release();
+        playerRef.current = null;
       }
     };
   }, []);
 
   // Charger le son si une URI existe
   useEffect(() => {
-    let isMounted = true;
-    let currentSound: any = null;
-
-    async function loadSound() {
-      if (!existingUri || !Audio) {
-        if (soundRef.current) {
-          soundRef.current.unloadAsync().catch(() => {});
-          setSound(null);
-        }
-        return;
+    if (!existingUri || !expoAudio) {
+      if (playerRef.current) {
+        playerRef.current.release();
+        playerRef.current = null;
       }
-
-      try {
-        // Décharger le son précédent s'il existe
-        if (soundRef.current) {
-          await soundRef.current.unloadAsync().catch(() => {});
-        }
-
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          { uri: existingUri },
-          { shouldPlay: false },
-          (status: {
-            isLoaded: boolean;
-            isPlaying?: boolean;
-            didJustFinish?: boolean;
-          }) => {
-            if (isMounted) {
-              setPlaybackStatus(status);
-              if (status.isLoaded) {
-                setIsPlaying(status.isPlaying ?? false);
-                if (status.didJustFinish) {
-                  setIsPlaying(false);
-                }
-              }
-            }
-          },
-        );
-        if (isMounted) {
-          currentSound = newSound;
-          setSound(newSound);
-        }
-      } catch (error) {
-        console.error("Error loading sound:", error);
-        if (isMounted) {
-          setSound(null);
-        }
-      }
+      setIsPlaying(false);
+      return;
     }
 
-    loadSound();
+    // Créer un player pour l'URI existante
+    if (playerRef.current) {
+      playerRef.current.release();
+    }
+
+    const player = expoAudio.createAudioPlayer(existingUri);
+    playerRef.current = player;
+
+    // Écouter les changements de statut
+    const subscription = player.addListener(
+      "playbackStatusUpdate",
+      (status: { playing?: boolean; didJustFinish?: boolean }) => {
+        if (status.playing !== undefined) {
+          setIsPlaying(status.playing);
+        }
+        if (status.didJustFinish) {
+          setIsPlaying(false);
+        }
+      },
+    );
 
     return () => {
-      isMounted = false;
-      if (currentSound) {
-        currentSound.unloadAsync().catch(() => {});
+      subscription?.remove();
+      if (playerRef.current === player) {
+        player.release();
+        playerRef.current = null;
       }
     };
   }, [existingUri]);
 
-  async function startRecording() {
-    if (!Recording) {
+  const startRecording = useCallback(async () => {
+    if (!expoAudio) {
       Alert.alert(
         "Erreur",
-        "expo-av n'est pas installé. Installez-le avec: npx expo install expo-av",
+        "expo-audio n'est pas installé. Installez-le avec: npx expo install expo-audio",
       );
       return;
     }
 
     try {
       // Demander les permissions
-      const permissionResponse = await Audio.requestPermissionsAsync();
+      const permissionResponse =
+        await expoAudio.requestRecordingPermissionsAsync();
       if (permissionResponse.status !== "granted") {
         Alert.alert(
           "Permission requise",
@@ -149,34 +117,37 @@ export function VoiceRecorder({
         return;
       }
 
-      // Configurer l'enregistrement
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      // Configurer le mode audio pour l'enregistrement
+      await expoAudio.setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
 
-      const { recording: newRecording } = await Recording.createAsync(
-        Recording.OptionsPresets.HIGH_QUALITY,
+      // Créer et préparer le recorder
+      const recorder = new expoAudio.AudioModule.AudioRecorder();
+      await recorder.prepareToRecordAsync(
+        expoAudio.RecordingPresets.HIGH_QUALITY,
       );
+      recorderRef.current = recorder;
 
-      setRecording(newRecording);
       setIsRecording(true);
       setDuration(0);
 
       // Démarrer le timer
       durationInterval.current = setInterval(() => {
-        setDuration((prev) => prev + 1);
+        setDuration((prev: number) => prev + 1);
       }, 1000);
 
-      await newRecording.startAsync();
+      recorder.record();
     } catch (error) {
       console.error("Error starting recording:", error);
       Alert.alert("Erreur", "Impossible de démarrer l'enregistrement");
     }
-  }
+  }, []);
 
-  async function stopRecording() {
-    if (!recording) return;
+  const stopRecording = useCallback(async () => {
+    const recorder = recorderRef.current;
+    if (!recorder) return;
 
     try {
       setIsRecording(false);
@@ -185,35 +156,35 @@ export function VoiceRecorder({
         durationInterval.current = null;
       }
 
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      const status = await recording.getStatusAsync();
-      const finalDuration = status.durationMillis
-        ? Math.floor(status.durationMillis / 1000)
+      await recorder.stop();
+      const uri = recorder.uri;
+      const finalDuration = recorder.currentDuration
+        ? Math.floor(recorder.currentDuration / 1000)
         : duration;
 
-      setRecording(null);
+      recorderRef.current = null;
       onRecordingComplete(uri || "", finalDuration);
     } catch (error) {
       console.error("Error stopping recording:", error);
       Alert.alert("Erreur", "Impossible d'arrêter l'enregistrement");
     }
-  }
+  }, [duration, onRecordingComplete]);
 
-  async function togglePlayback() {
-    if (!sound || !existingUri) return;
+  const togglePlayback = useCallback(async () => {
+    const player = playerRef.current;
+    if (!player || !existingUri) return;
 
     try {
       if (isPlaying) {
-        await sound.pauseAsync();
+        player.pause();
       } else {
-        await sound.playAsync();
+        player.play();
       }
     } catch (error) {
       console.error("Error toggling playback:", error);
       Alert.alert("Erreur", "Impossible de lire le message vocal");
     }
-  }
+  }, [isPlaying, existingUri]);
 
   function formatDuration(seconds: number): string {
     const mins = Math.floor(seconds / 60);
@@ -221,8 +192,8 @@ export function VoiceRecorder({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
-  // Si expo-av n'est pas installé
-  if (!Recording || !Audio) {
+  // Si expo-audio n'est pas installé
+  if (!expoAudio) {
     return (
       <View
         className={`rounded-xl border border-border bg-muted p-4 ${className || ""}`}
@@ -234,7 +205,7 @@ export function VoiceRecorder({
               Message vocal non disponible
             </Text>
             <Text className="mt-1 text-xs text-muted-foreground">
-              Installez expo-av pour enregistrer des messages vocaux
+              Installez expo-audio pour enregistrer des messages vocaux
             </Text>
           </View>
         </View>
