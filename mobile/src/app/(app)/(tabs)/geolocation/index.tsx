@@ -7,6 +7,7 @@ import {
   Text,
   View,
   useColorScheme,
+  useWindowDimensions,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { Crosshair } from "lucide-react-native";
@@ -17,33 +18,50 @@ import {
   type ZoneAlertBannerHandle,
 } from "@/components/geolocation/ZoneAlertBanner";
 import { ZoneListCard } from "@/components/geolocation/ZoneListCard";
+import { BottomSheet } from "@/components/geolocation/BottomSheet";
+import { PatrolModeSelector } from "@/components/geolocation/PatrolModeSelector";
+import { PatrolRouteList } from "@/components/geolocation/PatrolRouteList";
+import { PatrolRoutePreview } from "@/components/geolocation/PatrolRoutePreview";
+import { PatrolActivePanel } from "@/components/geolocation/PatrolActivePanel";
+import { PatrolSummary } from "@/components/geolocation/PatrolSummary";
+import { PatrolQrScanner } from "@/components/geolocation/PatrolQrScanner";
 import { Toggle } from "@/components/ui";
 import { useAgentLocation } from "@/features/geolocation/useAgentLocation";
 import {
   useMultiZoneMonitor,
   type ZoneTransition,
 } from "@/features/geolocation/useMultiZoneMonitor";
+import { usePatrolSession } from "@/features/geolocation/usePatrolSession";
 import type { WorkZone } from "@/features/geolocation/workZone";
 import { mockWorkZones } from "@/features/geolocation/zones.mock";
+import { mockPatrolRoutes } from "@/features/geolocation/patrol.mock";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useTheme } from "@/theme";
 import { getBodyFont, getHeadingFont } from "@/utils/fonts";
+
+const SHEET_MIN_HEIGHT = 100; // collapsed: handle + toggle + mode selector
+const SHEET_MAX_RATIO = 0.55; // expanded: 55% of screen
 
 export default function GeolocationScreen() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
   const mapRef = useRef<MapViewHandle>(null);
 
-  // Tab bar height: paddingTop(6) + icon(20) + gap(3) + label(~12) + paddingBottom(safeArea)
-  // Matches the TabBar component layout
   const tabBarHeight = 42 + Math.max(insets.bottom, 8);
+  const sheetMaxHeight = Math.round(screenHeight * SHEET_MAX_RATIO);
 
   const [enabled, setEnabled] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [mapMode, setMapMode] = useState<"zones" | "patrol">("zones");
+  const [qrScannerVisible, setQrScannerVisible] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const { permission, location, error } = useAgentLocation(enabled);
   const { push } = useNotifications();
   const bannerRef = useRef<ZoneAlertBannerHandle>(null);
+
+  // ── Zone monitoring ──────────────────────────────────────────────
 
   const handleProlongedOutside = useCallback(
     ({ zone, outsideMs }: { zone: WorkZone; outsideMs: number }) => {
@@ -82,11 +100,29 @@ export default function GeolocationScreen() {
     onTransition: handleTransition,
   });
 
+  // ── Patrol session ───────────────────────────────────────────────
+
+  const handleCheckpointValidated = useCallback(
+    (cp: { name: string }) => {
+      bannerRef.current?.show(`Point validé : ${cp.name}`, colors.success);
+    },
+    [colors.success],
+  );
+
+  const patrol = usePatrolSession({
+    enabled,
+    location,
+    onCheckpointValidated: handleCheckpointValidated,
+  });
+
+  // ── Derived ──────────────────────────────────────────────────────
+
   const coords = location?.coords;
   const hasLocation = !!coords;
   const isActive = enabled && permission === "granted" && hasLocation;
   const isDenied = enabled && permission === "denied";
   const blurTint = colorScheme === "dark" ? "dark" : "light";
+  const patrolIsActive = patrol.phase === "active";
 
   // Overlay fade-in animation
   const overlayOpacity = useRef(new Animated.Value(0)).current;
@@ -102,7 +138,7 @@ export default function GeolocationScreen() {
   // Pulsing dot animation
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive && !patrolIsActive) {
       pulseAnim.setValue(1);
       return;
     }
@@ -122,24 +158,28 @@ export default function GeolocationScreen() {
     );
     loop.start();
     return () => loop.stop();
-  }, [isActive, pulseAnim]);
+  }, [isActive, patrolIsActive, pulseAnim]);
 
   function handleCenter() {
     if (!coords) return;
     mapRef.current?.flyTo([coords.longitude, coords.latitude]);
   }
 
-  // Status
-  const statusColor = isDenied
-    ? colors.error
-    : isActive
-      ? colors.success
-      : colors.mutedForeground;
-  const statusText = isDenied
-    ? "Permission refusée"
-    : isActive
-      ? "En service"
-      : "Hors service";
+  // Status overlay text
+  const statusColor = patrolIsActive
+    ? colors.primary
+    : isDenied
+      ? colors.error
+      : isActive
+        ? colors.success
+        : colors.mutedForeground;
+  const statusText = patrolIsActive
+    ? "Ronde en cours"
+    : isDenied
+      ? "Permission refusée"
+      : isActive
+        ? "En service"
+        : "Hors service";
 
   // Zone summary
   const { zonePillColor, zonePillText } = useMemo(() => {
@@ -168,6 +208,28 @@ export default function GeolocationScreen() {
     colors.success,
   ]);
 
+  // ── Patrol save handler ──────────────────────────────────────────
+
+  const handlePatrolSave = useCallback(() => {
+    const event = patrol.buildMainCouranteEvent();
+    if (event) {
+      push({
+        title: event.title,
+        message: event.description,
+        level: event.priority === "low" ? "success" : "warning",
+        source: "geolocation",
+      });
+    }
+    patrol.dismissSummary();
+  }, [patrol, push]);
+
+  // ── Render ───────────────────────────────────────────────────────
+
+  const showPatrolOnMap =
+    patrol.phase === "previewing" ||
+    patrol.phase === "active" ||
+    patrol.phase === "summary";
+
   return (
     <View style={styles.container}>
       {/* Full-bleed map */}
@@ -177,6 +239,16 @@ export default function GeolocationScreen() {
         zones={mockWorkZones}
         zoneStatuses={statuses}
         selectedZoneId={selectedZoneId}
+        patrolRoute={
+          showPatrolOnMap ? (patrol.selectedRoute ?? undefined) : undefined
+        }
+        patrolScans={showPatrolOnMap ? patrol.checkpointScans : undefined}
+        patrolTrail={
+          patrol.phase === "active" || patrol.phase === "summary"
+            ? patrol.gpsTrail
+            : undefined
+        }
+        nextCheckpointId={patrol.nextCheckpoint?.id ?? null}
         style={StyleSheet.absoluteFillObject}
       />
 
@@ -213,7 +285,7 @@ export default function GeolocationScreen() {
                   marginBottom: 3,
                 }}
               >
-                Géolocalisation
+                {patrolIsActive ? "Ronde" : "Géolocalisation"}
               </Text>
               <View style={styles.statusRow}>
                 <Animated.View
@@ -221,7 +293,7 @@ export default function GeolocationScreen() {
                     styles.statusDot,
                     {
                       backgroundColor: statusColor,
-                      opacity: isActive ? pulseAnim : 1,
+                      opacity: isActive || patrolIsActive ? pulseAnim : 1,
                     },
                   ]}
                 />
@@ -239,44 +311,46 @@ export default function GeolocationScreen() {
           </BlurView>
         </View>
 
-        {/* Top-right: zone pill */}
-        <View
-          style={[
-            styles.glassOuter,
-            { top: insets.top + 8, right: 16, borderRadius: 20 },
-          ]}
-        >
-          <BlurView intensity={50} tint={blurTint} style={styles.blurFill}>
-            <View
-              style={[
-                styles.glassInner,
-                {
-                  backgroundColor: `${colors.background}CC`,
-                  borderColor: colors.borderSubtle,
-                  borderRadius: 20,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 5,
-                },
-              ]}
-            >
+        {/* Top-right: zone pill (hidden during active patrol) */}
+        {!patrolIsActive && (
+          <View
+            style={[
+              styles.glassOuter,
+              { top: insets.top + 8, right: 16, borderRadius: 20 },
+            ]}
+          >
+            <BlurView intensity={50} tint={blurTint} style={styles.blurFill}>
               <View
-                style={[styles.statusDot, { backgroundColor: zonePillColor }]}
-              />
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: zonePillColor,
-                  fontFamily: getBodyFont("500"),
-                }}
+                style={[
+                  styles.glassInner,
+                  {
+                    backgroundColor: `${colors.background}CC`,
+                    borderColor: colors.borderSubtle,
+                    borderRadius: 20,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                  },
+                ]}
               >
-                {zonePillText}
-              </Text>
-            </View>
-          </BlurView>
-        </View>
+                <View
+                  style={[styles.statusDot, { backgroundColor: zonePillColor }]}
+                />
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: zonePillColor,
+                    fontFamily: getBodyFont("500"),
+                  }}
+                >
+                  {zonePillText}
+                </Text>
+              </View>
+            </BlurView>
+          </View>
+        )}
 
         {/* Centrer FAB */}
         <View
@@ -284,7 +358,7 @@ export default function GeolocationScreen() {
             styles.glassOuter,
             {
               right: 16,
-              bottom: tabBarHeight + 160,
+              bottom: tabBarHeight + SHEET_MIN_HEIGHT + 16,
               borderRadius: 22,
               width: 44,
               height: 44,
@@ -316,162 +390,218 @@ export default function GeolocationScreen() {
           </BlurView>
         </View>
 
-        {/* Bottom info card — flush with tab bar */}
-        <View
-          style={[
-            styles.glassOuter,
-            {
-              bottom: tabBarHeight,
-              left: 0,
-              right: 0,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              borderBottomLeftRadius: 0,
-              borderBottomRightRadius: 0,
-            },
-          ]}
-        >
-          <BlurView intensity={50} tint={blurTint} style={styles.blurFill}>
-            <View
-              style={[
-                styles.glassInner,
-                {
-                  backgroundColor: `${colors.background}CC`,
-                  borderColor: colors.borderSubtle,
-                  borderBottomWidth: 0,
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
-                  paddingHorizontal: 20,
-                  paddingTop: 16,
-                  paddingBottom: 12,
-                  gap: 10,
-                },
-              ]}
-            >
-              {/* Toggle */}
-              <Toggle
-                value={enabled}
-                onValueChange={setEnabled}
-                size="sm"
-                enabledLabel="En service"
-                disabledLabel="Hors service"
-              />
-
-              {/* Error */}
-              {error ? (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: colors.error,
-                    fontFamily: getBodyFont("400"),
-                    textAlign: "center",
-                  }}
-                >
-                  {error}
-                </Text>
-              ) : null}
-
-              {/* Coordinates */}
-              {hasLocation ? (
-                <View style={styles.coordsContainer}>
-                  <View style={styles.coordRow}>
-                    <Text
-                      style={[
-                        styles.coordLabel,
-                        { color: colors.mutedForeground },
-                      ]}
-                    >
-                      Lat
-                    </Text>
-                    <Text
-                      style={[styles.coordValue, { color: colors.foreground }]}
-                    >
-                      {coords.latitude.toFixed(6)}°
-                    </Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.coordDivider,
-                      { backgroundColor: colors.borderSubtle },
-                    ]}
-                  />
-                  <View style={styles.coordRow}>
-                    <Text
-                      style={[
-                        styles.coordLabel,
-                        { color: colors.mutedForeground },
-                      ]}
-                    >
-                      Lon
-                    </Text>
-                    <Text
-                      style={[styles.coordValue, { color: colors.foreground }]}
-                    >
-                      {coords.longitude.toFixed(6)}°
-                    </Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.coordDivider,
-                      { backgroundColor: colors.borderSubtle },
-                    ]}
-                  />
-                  <View style={styles.coordRow}>
-                    <Text
-                      style={[
-                        styles.coordLabel,
-                        { color: colors.mutedForeground },
-                      ]}
-                    >
-                      Préc
-                    </Text>
-                    <Text
-                      style={[styles.coordValue, { color: colors.foreground }]}
-                    >
-                      ±{Math.round(coords.accuracy ?? 0)}m
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-
-              {/* Zone list */}
-              {isActive ? (
-                <>
-                  <View
-                    style={{
-                      backgroundColor: colors.borderSubtle,
-                      height: StyleSheet.hairlineWidth,
-                    }}
-                  />
-                  <ScrollView
-                    style={{ maxHeight: 160 }}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    <ZoneListCard
-                      statuses={statuses}
-                      onZonePress={(zone) => {
-                        setSelectedZoneId((prev) =>
-                          prev === zone.id ? null : zone.id,
-                        );
-                        mapRef.current?.flyTo([
-                          zone.center.longitude,
-                          zone.center.latitude,
-                        ]);
-                      }}
-                      isActive={isActive}
-                    />
-                  </ScrollView>
-                </>
-              ) : null}
-            </View>
-          </BlurView>
-        </View>
-
         {/* Zone alert banner */}
         <ZoneAlertBanner ref={bannerRef} />
       </Animated.View>
+
+      {/* Swipable bottom sheet */}
+      <BottomSheet
+        minHeight={SHEET_MIN_HEIGHT}
+        maxHeight={sheetMaxHeight}
+        bottomOffset={tabBarHeight}
+        expanded={sheetExpanded}
+        onStateChange={setSheetExpanded}
+        header={
+          <View style={{ gap: 10 }}>
+            {/* Toggle */}
+            <Toggle
+              value={enabled}
+              onValueChange={setEnabled}
+              size="sm"
+              enabledLabel="En service"
+              disabledLabel="Hors service"
+            />
+
+            {/* Mode selector */}
+            <PatrolModeSelector
+              value={mapMode}
+              onChange={(mode) => {
+                setMapMode(mode);
+                setSheetExpanded(true);
+                if (mode === "patrol" && patrol.phase === "idle") {
+                  patrol.selectRoute(mockPatrolRoutes[0]);
+                  patrol.clearSelection();
+                }
+              }}
+            />
+          </View>
+        }
+      >
+        {/* Error */}
+        {error ? (
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.error,
+              fontFamily: getBodyFont("400"),
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </Text>
+        ) : null}
+
+        {/* Divider */}
+        <View
+          style={{
+            backgroundColor: colors.borderSubtle,
+            height: StyleSheet.hairlineWidth,
+            marginBottom: 10,
+          }}
+        />
+
+        {/* Content area based on mode */}
+        {mapMode === "zones" ? (
+          <>
+            {/* Coordinates */}
+            {hasLocation ? (
+              <View style={styles.coordsContainer}>
+                <View style={styles.coordRow}>
+                  <Text
+                    style={[
+                      styles.coordLabel,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    Lat
+                  </Text>
+                  <Text
+                    style={[styles.coordValue, { color: colors.foreground }]}
+                  >
+                    {coords!.latitude.toFixed(6)}°
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.coordDivider,
+                    { backgroundColor: colors.borderSubtle },
+                  ]}
+                />
+                <View style={styles.coordRow}>
+                  <Text
+                    style={[
+                      styles.coordLabel,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    Lon
+                  </Text>
+                  <Text
+                    style={[styles.coordValue, { color: colors.foreground }]}
+                  >
+                    {coords!.longitude.toFixed(6)}°
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.coordDivider,
+                    { backgroundColor: colors.borderSubtle },
+                  ]}
+                />
+                <View style={styles.coordRow}>
+                  <Text
+                    style={[
+                      styles.coordLabel,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    Préc
+                  </Text>
+                  <Text
+                    style={[styles.coordValue, { color: colors.foreground }]}
+                  >
+                    ±{Math.round(coords!.accuracy ?? 0)}m
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {/* Zone list */}
+            {isActive ? (
+              <ScrollView
+                style={{ flex: 1, marginTop: 8 }}
+                showsVerticalScrollIndicator={true}
+              >
+                <ZoneListCard
+                  statuses={statuses}
+                  onZonePress={(zone) => {
+                    setSelectedZoneId((prev) =>
+                      prev === zone.id ? null : zone.id,
+                    );
+                    mapRef.current?.flyTo([
+                      zone.center.longitude,
+                      zone.center.latitude,
+                    ]);
+                  }}
+                  isActive={isActive}
+                />
+              </ScrollView>
+            ) : null}
+          </>
+        ) : (
+          /* Patrol mode content */
+          <>
+            {(patrol.phase === "idle" || patrol.phase === "selecting") && (
+              <PatrolRouteList
+                routes={mockPatrolRoutes}
+                onSelect={(route) => {
+                  patrol.selectRoute(route);
+                  mapRef.current?.fitToPatrolRoute(route, location);
+                }}
+              />
+            )}
+
+            {patrol.phase === "previewing" && patrol.selectedRoute && (
+              <PatrolRoutePreview
+                route={patrol.selectedRoute}
+                onStart={() => {
+                  patrol.startPatrol();
+                  if (patrol.selectedRoute) {
+                    mapRef.current?.fitToPatrolRoute(
+                      patrol.selectedRoute,
+                      location,
+                    );
+                  }
+                }}
+                onBack={patrol.clearSelection}
+              />
+            )}
+
+            {patrol.phase === "active" && patrol.selectedRoute && (
+              <PatrolActivePanel
+                route={patrol.selectedRoute}
+                scans={patrol.checkpointScans}
+                elapsedSeconds={patrol.elapsedSeconds}
+                completionRate={patrol.completionRate}
+                checkpointDistances={patrol.checkpointDistances}
+                nextCheckpointId={patrol.nextCheckpoint?.id ?? null}
+                onValidate={patrol.validateCheckpoint}
+                onScanQr={() => setQrScannerVisible(true)}
+                onEnd={patrol.endPatrol}
+              />
+            )}
+
+            {patrol.phase === "summary" && patrol.selectedRoute && (
+              <PatrolSummary
+                routeName={patrol.selectedRoute.name}
+                site={patrol.selectedRoute.site}
+                scans={patrol.checkpointScans}
+                elapsedSeconds={patrol.elapsedSeconds}
+                gpsTrail={patrol.gpsTrail}
+                completionRate={patrol.completionRate}
+                onSave={handlePatrolSave}
+              />
+            )}
+          </>
+        )}
+      </BottomSheet>
+
+      {/* QR Scanner modal */}
+      <PatrolQrScanner
+        visible={qrScannerVisible}
+        onScan={patrol.scanQrCheckpoint}
+        onClose={() => setQrScannerVisible(false)}
+      />
     </View>
   );
 }

@@ -10,6 +10,11 @@ import * as Location from "expo-location";
 import { useTheme } from "@/theme";
 import type { WorkZone } from "@/features/geolocation/workZone";
 import type { ZoneStatus } from "@/features/geolocation/useMultiZoneMonitor";
+import type {
+  CheckpointScan,
+  PatrolRoute,
+} from "@/features/geolocation/patrol.types";
+import { CheckpointMarker } from "./CheckpointMarker";
 
 // Conditional import for Mapbox
 let Mapbox: any = null;
@@ -29,6 +34,10 @@ try {
 
 export type MapViewHandle = {
   flyTo: (coords: [number, number], duration?: number) => void;
+  fitToPatrolRoute: (
+    route: PatrolRoute,
+    location?: Location.LocationObject | null,
+  ) => void;
 };
 
 interface MapViewProps {
@@ -39,6 +48,14 @@ interface MapViewProps {
   zones?: WorkZone[];
   zoneStatuses?: Map<string, ZoneStatus>;
   selectedZoneId?: string | null;
+  /** Patrol route to display (checkpoints + route line) */
+  patrolRoute?: PatrolRoute;
+  /** Scan statuses for patrol checkpoint coloring */
+  patrolScans?: CheckpointScan[];
+  /** Live GPS trail of the patrol */
+  patrolTrail?: { coords: [number, number]; timestamp: string }[];
+  /** ID of the next pending checkpoint (for highlight ring) */
+  nextCheckpointId?: string | null;
 }
 
 function circlePolygon(
@@ -75,10 +92,11 @@ function circlePolygon(
   };
 }
 
-/** Compute [sw, ne] bounds that fit the zone circle(s) + user location with padding. */
+/** Compute [sw, ne] bounds that fit the zone circle(s) + user location + optional patrol checkpoints. */
 function computeBounds(
   location: Location.LocationObject | null,
   zones: WorkZone[],
+  patrolRoute?: PatrolRoute,
 ): { sw: [number, number]; ne: [number, number] } | null {
   const points: { lat: number; lon: number }[] = [];
 
@@ -104,6 +122,13 @@ function computeBounds(
         lon: z.center.longitude - lonOffset,
       },
     );
+  }
+
+  // Include patrol checkpoint coords in bounds
+  if (patrolRoute) {
+    for (const cp of patrolRoute.checkpoints) {
+      points.push({ lat: cp.coords[1], lon: cp.coords[0] });
+    }
   }
 
   if (points.length === 0) return null;
@@ -160,9 +185,87 @@ const BOUNDS_PADDING = {
   paddingRight: 60,
 };
 
+/** Memoized patrol route line connecting checkpoints in order. */
+const PatrolRouteLine = React.memo(function PatrolRouteLine({
+  route,
+}: {
+  route: PatrolRoute;
+}) {
+  const shape = useMemo(
+    () => ({
+      type: "Feature" as const,
+      properties: {},
+      geometry: {
+        type: "LineString" as const,
+        coordinates: route.checkpoints
+          .sort((a, b) => a.order - b.order)
+          .map((cp) => cp.coords),
+      },
+    }),
+    [route.checkpoints],
+  );
+  return (
+    <Mapbox.ShapeSource id="patrol-route-line" shape={shape}>
+      <Mapbox.LineLayer
+        id="patrol-route-line-layer"
+        style={{
+          lineColor: "#64748b",
+          lineWidth: 2,
+          lineDasharray: [4, 3],
+          lineOpacity: 0.7,
+        }}
+      />
+    </Mapbox.ShapeSource>
+  );
+});
+
+/** Memoized GPS trail polyline. */
+const PatrolTrailLine = React.memo(function PatrolTrailLine({
+  trail,
+}: {
+  trail: { coords: [number, number] }[];
+}) {
+  const shape = useMemo(
+    () => ({
+      type: "Feature" as const,
+      properties: {},
+      geometry: {
+        type: "LineString" as const,
+        coordinates: trail.map((t) => t.coords),
+      },
+    }),
+    [trail],
+  );
+  if (trail.length < 2) return null;
+  return (
+    <Mapbox.ShapeSource id="patrol-trail" shape={shape}>
+      <Mapbox.LineLayer
+        id="patrol-trail-layer"
+        style={{
+          lineColor: "#22d3ee",
+          lineWidth: 3,
+          lineOpacity: 0.85,
+        }}
+      />
+    </Mapbox.ShapeSource>
+  );
+});
+
 export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
   function MapView(
-    { location, className, style, zone, zones, zoneStatuses, selectedZoneId },
+    {
+      location,
+      className,
+      style,
+      zone,
+      zones,
+      zoneStatuses,
+      selectedZoneId,
+      patrolRoute,
+      patrolScans,
+      patrolTrail,
+      nextCheckpointId,
+    },
     ref,
   ) {
     const colorScheme = useColorScheme();
@@ -175,9 +278,17 @@ export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
     );
 
     const bounds = useMemo(
-      () => computeBounds(location, allZones),
-      [location, allZones],
+      () => computeBounds(location, allZones, patrolRoute),
+      [location, allZones, patrolRoute],
     );
+
+    const scanStatusMap = useMemo(() => {
+      const map = new Map<string, "pending" | "scanned" | "missed">();
+      if (patrolScans) {
+        for (const s of patrolScans) map.set(s.checkpointId, s.status);
+      }
+      return map;
+    }, [patrolScans]);
 
     useImperativeHandle(ref, () => ({
       flyTo(coords: [number, number], duration = 1500) {
@@ -187,6 +298,23 @@ export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
           animationDuration: duration,
           animationMode: "flyTo",
         });
+      },
+      fitToPatrolRoute(
+        route: PatrolRoute,
+        loc?: Location.LocationObject | null,
+      ) {
+        const routeBounds = computeBounds(loc ?? null, [], route);
+        if (routeBounds) {
+          cameraRef.current?.setCamera({
+            bounds: {
+              ne: routeBounds.ne,
+              sw: routeBounds.sw,
+              ...BOUNDS_PADDING,
+            },
+            animationDuration: 1500,
+            animationMode: "flyTo",
+          });
+        }
       },
     }));
 
@@ -337,6 +465,71 @@ export const MapView = React.forwardRef<MapViewHandle, MapViewProps>(
                 fillColor={fillColor}
                 isSelected={isSelected}
               />
+            );
+          })}
+
+          {/* Patrol route line (dashed) */}
+          {patrolRoute && <PatrolRouteLine route={patrolRoute} />}
+
+          {/* Patrol GPS trail (solid cyan) */}
+          {patrolTrail && patrolTrail.length >= 2 && (
+            <PatrolTrailLine trail={patrolTrail} />
+          )}
+
+          {/* Guide line: agent → next checkpoint */}
+          {location &&
+            nextCheckpointId &&
+            patrolRoute &&
+            (() => {
+              const nextCp = patrolRoute.checkpoints.find(
+                (cp) => cp.id === nextCheckpointId,
+              );
+              if (!nextCp) return null;
+              const guideLine = {
+                type: "Feature" as const,
+                properties: {},
+                geometry: {
+                  type: "LineString" as const,
+                  coordinates: [
+                    [location.coords.longitude, location.coords.latitude],
+                    nextCp.coords,
+                  ],
+                },
+              };
+              return (
+                <Mapbox.ShapeSource id="patrol-guide-line" shape={guideLine}>
+                  <Mapbox.LineLayer
+                    id="patrol-guide-line-layer"
+                    style={{
+                      lineColor: "#22d3ee",
+                      lineWidth: 2,
+                      lineDasharray: [2, 4],
+                      lineOpacity: 0.5,
+                    }}
+                  />
+                </Mapbox.ShapeSource>
+              );
+            })()}
+
+          {/* Patrol checkpoint markers */}
+          {patrolRoute?.checkpoints.map((cp) => {
+            const status = scanStatusMap.get(cp.id) ?? "pending";
+            const isDone = status === "scanned" || status === "missed";
+            return (
+              <Mapbox.MarkerView
+                key={cp.id}
+                id={`checkpoint-${cp.id}`}
+                coordinate={cp.coords}
+              >
+                <View style={{ opacity: isDone ? 0.4 : 1 }}>
+                  <CheckpointMarker
+                    order={cp.order}
+                    status={status}
+                    type={cp.type}
+                    isNext={nextCheckpointId === cp.id}
+                  />
+                </View>
+              </Mapbox.MarkerView>
             );
           })}
         </Mapbox.MapView>

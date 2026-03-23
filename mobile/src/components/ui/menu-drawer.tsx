@@ -138,8 +138,8 @@ export function MenuDrawer({ visible, onClose }: MenuDrawerProps) {
     {
       Icon: Footprints,
       label: "Ronde",
-      route: "/(app)/(tabs)/ronde",
-      onPress: () => handleNavigate("/(app)/(tabs)/ronde"),
+      route: "/(app)/(tabs)/geolocation",
+      onPress: () => handleNavigate("/(app)/(tabs)/geolocation"),
     },
     {
       Icon: MapPin,

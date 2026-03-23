@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Video as VideoIcon, Play, Pause, X } from "lucide-react-native";
 
-// Import conditionnel pour expo-av
+// Import conditionnel pour expo-video
 let VideoComponent: React.ComponentType<Record<string, unknown>> | null = null;
 let useVideoPlayerHook:
   | ((
@@ -19,11 +19,11 @@ let useVideoPlayerHook:
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const expoAv = require("expo-av");
-  VideoComponent = expoAv.Video;
-  useVideoPlayerHook = expoAv.useVideoPlayer;
+  const expoVideo = require("expo-video");
+  VideoComponent = expoVideo.VideoView;
+  useVideoPlayerHook = expoVideo.useVideoPlayer;
 } catch {
-  // expo-av not installed
+  // expo-video not installed
 }
 
 interface VideoPlayerProps {
@@ -49,7 +49,7 @@ function VideoPlayerFallback({ uri, onRemove, className }: VideoPlayerProps) {
           Appuyez pour ouvrir
         </Text>
         <Text className="mt-1 text-xs text-muted-foreground">
-          Installez expo-av pour la lecture intégrée
+          Installez expo-video pour la lecture intégrée
         </Text>
       </TouchableOpacity>
       {onRemove && (
