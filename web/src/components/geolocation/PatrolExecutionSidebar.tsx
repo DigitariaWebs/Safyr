@@ -60,7 +60,7 @@ export function PatrolExecutionSidebar({
   if (sidebarView === "detail" && selectedExecution) {
     const statusConfig = PATROL_STATUS_CONFIG[selectedExecution.status];
     const scannedCount = selectedExecution.checkpointScans.filter(
-      (s) => s.status === "scanned",
+      (s) => s.status === "validated",
     ).length;
     const totalCount = selectedExecution.checkpointScans.length;
     const progressPercent =
@@ -111,7 +111,7 @@ export function PatrolExecutionSidebar({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium">
-                  {scannedCount} / {totalCount} points scannés
+                  {scannedCount} / {totalCount} points validés
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {progressPercent}%
@@ -155,7 +155,7 @@ export function PatrolExecutionSidebar({
                 <div className="space-y-3">
                   {selectedExecution.checkpointScans.map((scan, index) => {
                     const dotColor =
-                      scan.status === "scanned"
+                      scan.status === "validated"
                         ? "bg-emerald-500"
                         : scan.status === "missed"
                           ? "bg-red-500"
@@ -180,12 +180,12 @@ export function PatrolExecutionSidebar({
                             <span className="text-xs font-medium truncate">
                               Point {index + 1}
                             </span>
-                            {scan.status === "scanned" && (
+                            {scan.status === "validated" && (
                               <Badge
                                 variant="success"
                                 className="text-[9px] px-1 py-0"
                               >
-                                Scanné
+                                Validé
                               </Badge>
                             )}
                             {scan.status === "missed" && (
@@ -206,8 +206,8 @@ export function PatrolExecutionSidebar({
                             )}
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {scan.status === "scanned" && scan.scannedAt
-                              ? `Scanné à ${formatTime(scan.scannedAt)}`
+                            {scan.status === "validated" && scan.scannedAt
+                              ? `Validé à ${formatTime(scan.scannedAt)}`
                               : scan.status === "missed"
                                 ? "Manqué"
                                 : "En attente"}
@@ -256,7 +256,7 @@ export function PatrolExecutionSidebar({
               const isSelected = selectedExecutionId === exec.id;
               const statusConfig = PATROL_STATUS_CONFIG[exec.status];
               const scannedCount = exec.checkpointScans.filter(
-                (s) => s.status === "scanned",
+                (s) => s.status === "validated",
               ).length;
               const totalCount = exec.checkpointScans.length;
               const progressPercent =

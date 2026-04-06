@@ -19,12 +19,12 @@ const navItems: NavItem[] = [
     icon: MapPin,
   },
   {
-    label: "Zones Géo-fencées",
+    label: "Zone Géolocalisée",
     href: "/dashboard/geolocation/zones",
     icon: Square,
   },
   {
-    label: "Contrôle Présence",
+    label: "Pointage",
     href: "/dashboard/geolocation/presence",
     icon: CheckCircle,
   },

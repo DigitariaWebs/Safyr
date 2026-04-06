@@ -184,7 +184,7 @@ export function PatrolHistoryPanel({
   if (selectedExecution) {
     const statusConfig = PATROL_STATUS_CONFIG[selectedExecution.status];
     const scannedCount = selectedExecution.checkpointScans.filter(
-      (s) => s.status === "scanned",
+      (s) => s.status === "validated",
     ).length;
     const missedCount = selectedExecution.checkpointScans.filter(
       (s) => s.status === "missed",
@@ -293,7 +293,7 @@ export function PatrolHistoryPanel({
             <div className="flex items-center gap-1.5 text-xs">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
               <span className="text-muted-foreground">
-                {scannedCount} scannés
+                {scannedCount} validés
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">

@@ -59,7 +59,7 @@ const SCAN_STATUS_STYLES: Record<
     text: "text-slate-300",
     pulse: false,
   },
-  scanned: {
+  validated: {
     bg: "bg-emerald-500",
     border: "border-emerald-600",
     text: "text-white",
@@ -76,7 +76,7 @@ const SCAN_STATUS_STYLES: Record<
 // ── Legend config ────────────────────────────────────────────────────
 
 const LEGEND: { label: string; dot: string }[] = [
-  { label: "Scanné", dot: "bg-emerald-500" },
+  { label: "Validé", dot: "bg-emerald-500" },
   { label: "En attente", dot: "bg-slate-500" },
   { label: "Manqué", dot: "bg-red-500" },
   { label: "Trajet réel", dot: "bg-cyan-400" },
@@ -552,10 +552,10 @@ export const PatrolMap = forwardRef<PatrolMapHandle, PatrolMapProps>(
                   (() => {
                     const scanTime = getScanTime(hoveredCheckpoint.id);
                     const status = getScanStatus(hoveredCheckpoint.id);
-                    if (status === "scanned" && scanTime) {
+                    if (status === "validated" && scanTime) {
                       return (
                         <p style={{ color: "#34d399", margin: "2px 0 0" }}>
-                          Scanné à{" "}
+                          Validé à{" "}
                           {new Date(scanTime).toLocaleTimeString("fr-FR", {
                             hour: "2-digit",
                             minute: "2-digit",

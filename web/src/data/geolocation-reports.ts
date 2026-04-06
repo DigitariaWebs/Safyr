@@ -37,7 +37,7 @@ export const REPORT_TYPE_CONFIG: Record<
   },
   zones: {
     label: "Activité zones",
-    description: "Activité par zone géo-fencée",
+    description: "Activité par zone géolocalisée",
   },
 };
 

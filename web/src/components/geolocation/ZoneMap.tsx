@@ -271,7 +271,7 @@ export function ZoneMap({
   return (
     <div
       className={cn("relative overflow-hidden", className)}
-      aria-label="Carte des zones géo-fencées"
+      aria-label="Carte des zones géolocalisées"
       role="region"
     >
       <Map

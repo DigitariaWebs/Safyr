@@ -36,7 +36,7 @@ export interface PatrolRoute {
 export interface CheckpointScan {
   checkpointId: string;
   scannedAt: string | null;
-  status: "scanned" | "missed" | "pending";
+  status: "validated" | "missed" | "pending";
 }
 
 export interface PatrolExecution {
@@ -447,10 +447,10 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     startedAt: isoAt(0, 30),
     endedAt: null,
     checkpointScans: [
-      { checkpointId: "cp-r1-1", scannedAt: isoAt(0, 30), status: "scanned" },
-      { checkpointId: "cp-r1-2", scannedAt: isoAt(0, 22), status: "scanned" },
-      { checkpointId: "cp-r1-3", scannedAt: isoAt(0, 14), status: "scanned" },
-      { checkpointId: "cp-r1-4", scannedAt: isoAt(0, 6), status: "scanned" },
+      { checkpointId: "cp-r1-1", scannedAt: isoAt(0, 30), status: "validated" },
+      { checkpointId: "cp-r1-2", scannedAt: isoAt(0, 22), status: "validated" },
+      { checkpointId: "cp-r1-3", scannedAt: isoAt(0, 14), status: "validated" },
+      { checkpointId: "cp-r1-4", scannedAt: isoAt(0, 6), status: "validated" },
       { checkpointId: "cp-r1-5", scannedAt: null, status: "pending" },
       { checkpointId: "cp-r1-6", scannedAt: null, status: "pending" },
     ],
@@ -476,8 +476,8 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     startedAt: isoAt(0, 15),
     endedAt: null,
     checkpointScans: [
-      { checkpointId: "cp-r2-1", scannedAt: isoAt(0, 15), status: "scanned" },
-      { checkpointId: "cp-r2-2", scannedAt: isoAt(0, 8), status: "scanned" },
+      { checkpointId: "cp-r2-1", scannedAt: isoAt(0, 15), status: "validated" },
+      { checkpointId: "cp-r2-2", scannedAt: isoAt(0, 8), status: "validated" },
       { checkpointId: "cp-r2-3", scannedAt: null, status: "pending" },
       { checkpointId: "cp-r2-4", scannedAt: null, status: "pending" },
       { checkpointId: "cp-r2-5", scannedAt: null, status: "pending" },
@@ -506,7 +506,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     checkpointScans: rosny2Checkpoints.map((cp) => ({
       checkpointId: cp.id,
       scannedAt: isoAt(3, -cp.expectedMinutes),
-      status: "scanned" as const,
+      status: "validated" as const,
     })),
     gpsTrail: generateMockTrail(rosny2Checkpoints, {
       startTime: new Date(now.getTime() - 3 * 3600000),
@@ -534,7 +534,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     checkpointScans: defenseCheckpoints.map((cp) => ({
       checkpointId: cp.id,
       scannedAt: isoAt(5, -cp.expectedMinutes),
-      status: "scanned" as const,
+      status: "validated" as const,
     })),
     gpsTrail: generateMockTrail(defenseCheckpoints, {
       startTime: new Date(now.getTime() - 5 * 3600000),
@@ -560,10 +560,10 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     startedAt: isoAt(6, 0),
     endedAt: isoAt(5, 32),
     checkpointScans: [
-      { checkpointId: "cp-r3-1", scannedAt: isoAt(6, 0), status: "scanned" },
-      { checkpointId: "cp-r3-2", scannedAt: isoAt(5, 54), status: "scanned" },
+      { checkpointId: "cp-r3-1", scannedAt: isoAt(6, 0), status: "validated" },
+      { checkpointId: "cp-r3-2", scannedAt: isoAt(5, 54), status: "validated" },
       { checkpointId: "cp-r3-3", scannedAt: null, status: "missed" },
-      { checkpointId: "cp-r3-4", scannedAt: isoAt(5, 35), status: "scanned" },
+      { checkpointId: "cp-r3-4", scannedAt: isoAt(5, 35), status: "validated" },
     ],
     gpsTrail: generateMockTrail(
       [
@@ -596,8 +596,8 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     startedAt: isoAt(8, 0),
     endedAt: isoAt(7, 45),
     checkpointScans: [
-      { checkpointId: "cp-r3-1", scannedAt: isoAt(8, 0), status: "scanned" },
-      { checkpointId: "cp-r3-2", scannedAt: isoAt(7, 54), status: "scanned" },
+      { checkpointId: "cp-r3-1", scannedAt: isoAt(8, 0), status: "validated" },
+      { checkpointId: "cp-r3-2", scannedAt: isoAt(7, 54), status: "validated" },
       { checkpointId: "cp-r3-3", scannedAt: null, status: "missed" },
       { checkpointId: "cp-r3-4", scannedAt: null, status: "missed" },
     ],
@@ -628,12 +628,12 @@ export const mockPatrolExecutions: PatrolExecution[] = [
       {
         checkpointId: "cp-r4-1",
         scannedAt: `${today}T02:00:00Z`,
-        status: "scanned",
+        status: "validated",
       },
       {
         checkpointId: "cp-r4-2",
         scannedAt: `${today}T02:06:00Z`,
-        status: "scanned",
+        status: "validated",
       },
       { checkpointId: "cp-r4-3", scannedAt: null, status: "missed" },
     ],

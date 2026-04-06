@@ -329,7 +329,7 @@ export default function ZonesPage() {
           <div className="flex items-center justify-between px-4 py-2.5">
             <div>
               <h1 className="text-lg font-bold tracking-tight">
-                Zones Géo-fencées
+                Zone Géolocalisée
               </h1>
               <p className="text-xs text-muted-foreground">
                 {filteredZones.length} zone
