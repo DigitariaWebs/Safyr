@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { ArrowLeft, Clock, Route, User } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, Clock, MessageSquare, Route, User } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +17,11 @@ interface PatrolExecutionSidebarProps {
   onSelectExecution: (id: string) => void;
   sidebarView: "list" | "detail" | "form";
   onBackToList: () => void;
+  onUpdateCheckpointComment?: (
+    executionId: string,
+    checkpointId: string,
+    comment: string,
+  ) => void;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -40,6 +45,7 @@ export function PatrolExecutionSidebar({
   onSelectExecution,
   sidebarView,
   onBackToList,
+  onUpdateCheckpointComment,
 }: PatrolExecutionSidebarProps) {
   // Only show active + planned executions in this tab
   const activeExecutions = useMemo(
@@ -54,6 +60,23 @@ export function PatrolExecutionSidebar({
     () => executions.find((e) => e.id === selectedExecutionId) ?? null,
     [executions, selectedExecutionId],
   );
+
+  // Local comment state, reset when selected execution changes
+  const [localComments, setLocalComments] = useState<Record<string, string>>(
+    {},
+  );
+  const [prevExecutionId, setPrevExecutionId] = useState<string | null>(null);
+
+  if (selectedExecutionId !== prevExecutionId) {
+    setPrevExecutionId(selectedExecutionId);
+    const initial: Record<string, string> = {};
+    if (selectedExecution) {
+      for (const scan of selectedExecution.checkpointScans) {
+        if (scan.comment) initial[scan.checkpointId] = scan.comment;
+      }
+    }
+    setLocalComments(initial);
+  }
 
   // ── Detail view ──────────────────────────────────────────────────
 
@@ -110,14 +133,14 @@ export function PatrolExecutionSidebar({
             {/* Progress */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">
-                  {scannedCount} / {totalCount} points validés
+                <span className="text-xs font-bold">
+                  {scannedCount}/{totalCount} points validés
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {progressPercent}%
                 </span>
               </div>
-              <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+              <div className="h-3 rounded-full bg-muted/50 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-cyan-500 transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
@@ -175,7 +198,7 @@ export function PatrolExecutionSidebar({
                           aria-hidden="true"
                         />
 
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 space-y-1.5">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-medium truncate">
                               Point {index + 1}
@@ -205,13 +228,38 @@ export function PatrolExecutionSidebar({
                               </Badge>
                             )}
                           </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                          <p className="text-[10px] text-muted-foreground">
                             {scan.status === "validated" && scan.scannedAt
                               ? `Validé à ${formatTime(scan.scannedAt)}`
                               : scan.status === "missed"
                                 ? "Manqué"
                                 : "En attente"}
                           </p>
+                          {scan.status === "missed" && (
+                            <div className="flex items-start gap-1.5">
+                              <MessageSquare className="h-3 w-3 text-muted-foreground/60 shrink-0 mt-1.5" />
+                              <textarea
+                                rows={2}
+                                placeholder="Ajouter une observation…"
+                                value={
+                                  localComments[scan.checkpointId] ?? ""
+                                }
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setLocalComments((prev) => ({
+                                    ...prev,
+                                    [scan.checkpointId]: value,
+                                  }));
+                                  onUpdateCheckpointComment?.(
+                                    selectedExecution.id,
+                                    scan.checkpointId,
+                                    value,
+                                  );
+                                }}
+                                className="flex-1 rounded-md border border-border/50 bg-muted/30 px-2 py-1 text-[10px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:border-cyan-500/40 transition-colors"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

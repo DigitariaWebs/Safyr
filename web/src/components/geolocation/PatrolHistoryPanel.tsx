@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   MapPin,
+  MessageSquare,
   Pause,
   Play,
   User,
@@ -341,6 +342,74 @@ export function PatrolHistoryPanel({
               </span>
             </div>
           </div>
+
+          {/* Checkpoint detail with comments */}
+          {selectedExecution.checkpointScans.some((s) => s.comment) && (
+            <div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">
+                Détail des points
+              </div>
+              <div className="relative pl-4 space-y-3">
+                <div
+                  className="absolute left-[7px] top-1 bottom-1 w-px bg-border/50"
+                  aria-hidden="true"
+                />
+                {selectedExecution.checkpointScans.map((scan, index) => {
+                  const dotColor =
+                    scan.status === "validated"
+                      ? "bg-emerald-500"
+                      : scan.status === "missed"
+                        ? "bg-red-500"
+                        : "bg-slate-500";
+                  return (
+                    <div
+                      key={scan.checkpointId}
+                      className="relative flex items-start gap-3"
+                    >
+                      <div
+                        className={cn(
+                          "absolute -left-4 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-background shrink-0 z-10",
+                          dotColor,
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium">
+                            Point {index + 1}
+                          </span>
+                          <Badge
+                            variant={
+                              scan.status === "validated"
+                                ? "success"
+                                : scan.status === "missed"
+                                  ? "error"
+                                  : "muted"
+                            }
+                            className="text-[9px] px-1 py-0"
+                          >
+                            {scan.status === "validated"
+                              ? "Validé"
+                              : scan.status === "missed"
+                                ? "Manqué"
+                                : "En attente"}
+                          </Badge>
+                        </div>
+                        {scan.comment && (
+                          <div className="flex items-start gap-1.5">
+                            <MessageSquare className="h-3 w-3 text-muted-foreground/60 shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+                              {scan.comment}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

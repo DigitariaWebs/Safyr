@@ -228,6 +228,18 @@ export function PatrolRouteSidebar({
       role="region"
       aria-label="Liste des itinéraires"
     >
+      {/* Create CTA */}
+      <div className="p-3 border-b border-border/50">
+        <Button
+          size="sm"
+          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-medium"
+          onClick={onCreateRoute}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Nouvel itinéraire
+        </Button>
+      </div>
+
       {/* Header */}
       <div className="p-3 border-b border-border/50 space-y-2">
         <div className="relative">
@@ -393,18 +405,6 @@ export function PatrolRouteSidebar({
         </ul>
       </ScrollArea>
 
-      {/* Create button */}
-      <div className="p-3 border-t border-border/50">
-        <Button
-          variant="default"
-          size="sm"
-          className="w-full"
-          onClick={onCreateRoute}
-        >
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Créer un itinéraire
-        </Button>
-      </div>
     </div>
   );
 }

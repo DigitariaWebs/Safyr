@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { AlertTriangle, MapPin, X } from "lucide-react";
+import { AlertTriangle, MapPin, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,12 @@ export const PATROL_SITES = [
   "Siège Social La Défense",
   "Entrepôt Logistique Gennevilliers",
 ];
+
+const SITE_CENTER_COORDS: Record<string, [number, number]> = {
+  "Centre Commercial Rosny 2": [2.352, 48.857],
+  "Siège Social La Défense": [2.236, 48.893],
+  "Entrepôt Logistique Gennevilliers": [2.298, 48.933],
+};
 
 const CHECKPOINT_TYPES: CheckpointType[] = ["GPS", "QR", "NFC"];
 
@@ -117,6 +123,28 @@ export function PatrolRouteFormPanel({
     if (checkpoints[index]?.id === selectedCheckpointId) {
       onSelectedCheckpointChange(null);
     }
+  };
+
+  // ── Add point handler ─────────────────────────────────────────────
+
+  const handleAddPoint = () => {
+    const lastCp = checkpoints[checkpoints.length - 1];
+    const baseCoords: [number, number] = lastCp
+      ? [lastCp.coords[0] + 0.0005, lastCp.coords[1] + 0.0003]
+      : (SITE_CENTER_COORDS[site] ?? [2.35, 48.86]);
+
+    const newCp: PatrolCheckpoint = {
+      id: crypto.randomUUID(),
+      name: "",
+      coords: baseCoords,
+      type: "GPS",
+      expectedMinutes: lastCp ? lastCp.expectedMinutes + 8 : 0,
+      toleranceMinutes: 2,
+      order: checkpoints.length + 1,
+    };
+
+    onCheckpointsChange([...checkpoints, newCp]);
+    onSelectedCheckpointChange(newCp.id);
   };
 
   // ── Save handler ──────────────────────────────────────────────────
@@ -426,6 +454,16 @@ export function PatrolRouteFormPanel({
                   </p>
                 </div>
               )}
+
+              {/* Add point button */}
+              <button
+                type="button"
+                onClick={handleAddPoint}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border/60 py-2 text-xs text-muted-foreground hover:border-cyan-500/40 hover:text-cyan-400 hover:bg-cyan-500/5 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Ajouter un point
+              </button>
             </>
           )}
         </div>

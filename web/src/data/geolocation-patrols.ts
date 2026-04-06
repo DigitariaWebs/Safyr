@@ -37,6 +37,7 @@ export interface CheckpointScan {
   checkpointId: string;
   scannedAt: string | null;
   status: "validated" | "missed" | "pending";
+  comment?: string;
 }
 
 export interface PatrolExecution {
@@ -562,7 +563,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     checkpointScans: [
       { checkpointId: "cp-r3-1", scannedAt: isoAt(6, 0), status: "validated" },
       { checkpointId: "cp-r3-2", scannedAt: isoAt(5, 54), status: "validated" },
-      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed" },
+      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed", comment: "Zone de stockage B verrouillée — accès impossible, signalé au responsable" },
       { checkpointId: "cp-r3-4", scannedAt: isoAt(5, 35), status: "validated" },
     ],
     gpsTrail: generateMockTrail(
@@ -598,8 +599,8 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     checkpointScans: [
       { checkpointId: "cp-r3-1", scannedAt: isoAt(8, 0), status: "validated" },
       { checkpointId: "cp-r3-2", scannedAt: isoAt(7, 54), status: "validated" },
-      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed" },
-      { checkpointId: "cp-r3-4", scannedAt: null, status: "missed" },
+      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed", comment: "Zone inondée suite aux intempéries, accès dangereux" },
+      { checkpointId: "cp-r3-4", scannedAt: null, status: "missed", comment: "Ronde interrompue sur instruction du chef de site" },
     ],
     gpsTrail: generateMockTrail(gennevilliersCheckpoints.slice(0, 2), {
       startTime: new Date(now.getTime() - 8 * 3600000),
@@ -635,7 +636,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
         scannedAt: `${today}T02:06:00Z`,
         status: "validated",
       },
-      { checkpointId: "cp-r4-3", scannedAt: null, status: "missed" },
+      { checkpointId: "cp-r4-3", scannedAt: null, status: "missed", comment: "Badge NFC de la baie B endommagé — remplacement demandé" },
     ],
     gpsTrail: generateMockTrail(serveursCheckpoints.slice(0, 2), {
       startTime: new Date(`${today}T02:00:00Z`),
