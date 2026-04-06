@@ -10,6 +10,8 @@ export interface GeolocationAgent {
   speed: number; // km/h
   direction: number; // degrees (0 = North, 90 = East, 180 = South, 270 = West)
   battery: number; // percentage
+  shiftStart: string; // HH:mm
+  shiftEnd: string; // HH:mm
 }
 
 export const mockGeolocationAgents: GeolocationAgent[] = [
@@ -25,6 +27,8 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 0,
     direction: 0,
     battery: 85,
+    shiftStart: "06:00",
+    shiftEnd: "14:00",
   },
   {
     id: "2",
@@ -38,6 +42,8 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 35,
     direction: 45,
     battery: 60,
+    shiftStart: "14:00",
+    shiftEnd: "22:00",
   },
   {
     id: "3",
@@ -51,6 +57,8 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 0,
     direction: 0,
     battery: 92,
+    shiftStart: "06:00",
+    shiftEnd: "14:00",
   },
   {
     id: "4",
@@ -65,6 +73,8 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 0,
     direction: 0,
     battery: 12,
+    shiftStart: "22:00",
+    shiftEnd: "06:00",
   },
   {
     id: "5",
@@ -78,6 +88,8 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 12,
     direction: 270,
     battery: 74,
+    shiftStart: "14:00",
+    shiftEnd: "22:00",
   },
   {
     id: "6",
@@ -91,5 +103,7 @@ export const mockGeolocationAgents: GeolocationAgent[] = [
     speed: 0,
     direction: 180,
     battery: 48,
+    shiftStart: "06:00",
+    shiftEnd: "14:00",
   },
 ];

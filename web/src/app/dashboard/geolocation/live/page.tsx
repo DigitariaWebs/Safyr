@@ -348,6 +348,19 @@ function AgentDetailContent({
             </div>
           </div>
 
+          {/* Shift hours */}
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground mb-2">
+              Vacation
+            </p>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-sm tabular-nums">
+                {agent.shiftStart} – {agent.shiftEnd}
+              </span>
+            </div>
+          </div>
+
           {/* Movement — only for actively moving agents */}
           {isMoving && (
             <div>
