@@ -10,7 +10,11 @@ import { Button } from "@/components/ui/button";
 import { circleToPolygon, ensureClosedRing } from "@/data/geolocation-zones";
 import type { GeoZone, ZoneShape } from "@/data/geolocation-zones";
 import type { PresenceRecord } from "@/data/geolocation-presence";
-import { PRESENCE_STATUS_CONFIG } from "@/data/geolocation-presence";
+import {
+  PRESENCE_STATUS_CONFIG,
+  formatDuration,
+  computeDeltaColor,
+} from "@/data/geolocation-presence";
 import { cn, getInitials } from "@/lib/utils";
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -121,6 +125,39 @@ export function PresenceDetailPanel({
             {statusConfig.label}
           </Badge>
         </div>
+
+        {/* Actual hours + delta */}
+        {record.actualStart && record.actualEnd ? (
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">
+              Réalisé :{" "}
+              <span className="text-foreground font-medium">
+                {record.actualStart} – {record.actualEnd}
+              </span>{" "}
+              <span className="text-muted-foreground">
+                ({formatDuration(record.actualDurationMinutes ?? 0)})
+              </span>
+            </div>
+            {record.deltaMinutes !== null && (
+              <div
+                className={cn(
+                  "text-xs font-medium",
+                  computeDeltaColor(record.deltaMinutes),
+                )}
+              >
+                Écart :{" "}
+                {record.deltaMinutes >= 0 ? "+" : "-"}
+                {formatDuration(Math.abs(record.deltaMinutes))}
+              </div>
+            )}
+          </div>
+        ) : (
+          record.status === "absent" && (
+            <div className="text-xs text-muted-foreground italic">
+              Aucune donnée de pointage
+            </div>
+          )
+        )}
 
         {/* Last seen */}
         {record.lastSeenAt && (

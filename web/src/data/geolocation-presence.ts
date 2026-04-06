@@ -24,6 +24,22 @@ export interface PresenceRecord extends ShiftAssignment {
   lastLongitude: number | null;
   distanceFromZone: number | null;
   anomalies: string[];
+  plannedDurationMinutes: number;
+  actualStart: string | null; // HH:mm
+  actualEnd: string | null; // HH:mm
+  actualDurationMinutes: number | null;
+  deltaMinutes: number | null; // actual - planned (positive = overtime)
+}
+
+// ── Cumulative summary ────────────────────────────────────────────
+
+export interface AgentCumulativeSummary {
+  agentId: string;
+  agentName: string;
+  totalPlannedMinutes: number;
+  totalActualMinutes: number;
+  totalDeltaMinutes: number;
+  daysWorked: number;
 }
 
 // ── Status config ──────────────────────────────────────────────────
@@ -83,6 +99,21 @@ export const PRESENCE_STATUSES: PresenceStatus[] = [
   "absent",
   "off-zone",
 ];
+
+// ── Hour helpers ───────────────────────────────────────────────────
+
+export function formatDuration(minutes: number): string {
+  const h = Math.floor(Math.abs(minutes) / 60);
+  const m = Math.abs(minutes) % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}min`;
+}
+
+export function computeDeltaColor(deltaMinutes: number): string {
+  const abs = Math.abs(deltaMinutes);
+  if (abs < 15) return "text-emerald-400";
+  if (abs < 30) return "text-amber-400";
+  return "text-red-400";
+}
 
 // ── Mock shift data ────────────────────────────────────────────────
 
@@ -178,6 +209,26 @@ export function getMockShiftAssignments(
   ];
 }
 
+export function getMockShiftAssignmentsForPeriod(
+  startDate: string,
+  endDate: string,
+): ShiftAssignment[] {
+  const result: ShiftAssignment[] = [];
+  const d = new Date(startDate);
+  const end = new Date(endDate);
+  let idx = 0;
+  while (d <= end) {
+    const dateStr = localDateStr(d);
+    const dayShifts = getMockShiftAssignments(dateStr).map((s) => ({
+      ...s,
+      id: `${s.id}-${dateStr}-${idx++}`,
+    }));
+    result.push(...dayShifts);
+    d.setDate(d.getDate() + 1);
+  }
+  return result;
+}
+
 // ── Presence computation ───────────────────────────────────────────
 
 const LATE_TOLERANCE_MIN = 15;
@@ -187,6 +238,71 @@ function parseShiftTime(date: string, time: string): Date {
   const d = new Date(date);
   d.setHours(h, m, 0, 0);
   return d;
+}
+
+function toHHmm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function deterministicOffset(seed: string, range: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) & 0xffff;
+  }
+  return hash % range;
+}
+
+function computeMockActualHours(
+  shift: ShiftAssignment,
+  status: PresenceStatus,
+  shiftStart: Date,
+  shiftEnd: Date,
+): Pick<
+  PresenceRecord,
+  "actualStart" | "actualEnd" | "actualDurationMinutes" | "deltaMinutes"
+> {
+  const plannedDurationMinutes = Math.round(
+    (shiftEnd.getTime() - shiftStart.getTime()) / 60000,
+  );
+
+  if (status === "absent") {
+    return {
+      actualStart: null,
+      actualEnd: null,
+      actualDurationMinutes: null,
+      deltaMinutes: null,
+    };
+  }
+
+  const seed = `${shift.agentId}-${shift.date}-${shift.shiftStart}`;
+  let startOffsetMin: number;
+  let endOffsetMin: number;
+
+  if (status === "late") {
+    // Arrive 15–45 min after shift start, leave roughly on time
+    startOffsetMin = 15 + deterministicOffset(seed + "ls", 31);
+    endOffsetMin = deterministicOffset(seed + "le", 11) - 5;
+  } else {
+    // present / off-zone: small variation around scheduled times
+    startOffsetMin = deterministicOffset(seed + "ps", 11) - 5;
+    endOffsetMin = deterministicOffset(seed + "pe", 21) - 10;
+  }
+
+  const actualStartDate = new Date(
+    shiftStart.getTime() + startOffsetMin * 60000,
+  );
+  const actualEndDate = new Date(shiftEnd.getTime() + endOffsetMin * 60000);
+  const actualDurationMinutes = Math.round(
+    (actualEndDate.getTime() - actualStartDate.getTime()) / 60000,
+  );
+  const deltaMinutes = actualDurationMinutes - plannedDurationMinutes;
+
+  return {
+    actualStart: toHHmm(actualStartDate),
+    actualEnd: toHHmm(actualEndDate),
+    actualDurationMinutes,
+    deltaMinutes,
+  };
 }
 
 export function computePresenceRecords(
@@ -209,74 +325,106 @@ export function computePresenceRecords(
     const isActive = now >= shiftStart && now <= shiftEnd;
     const hasNotStarted = now < shiftStart;
 
-    const base: PresenceRecord = {
-      ...shift,
-      status: "present",
-      lastSeenAt: agent?.lastUpdate ?? null,
-      lastLatitude: agent?.latitude ?? null,
-      lastLongitude: agent?.longitude ?? null,
-      distanceFromZone: null,
-      anomalies: [],
-    };
+    const plannedDurationMinutes = Math.round(
+      (shiftEnd.getTime() - shiftStart.getTime()) / 60000,
+    );
 
-    // Shift hasn't started yet
+    let status: PresenceStatus = "present";
+    const lastSeenAt = agent?.lastUpdate ?? null;
+    const lastLatitude = agent?.latitude ?? null;
+    const lastLongitude = agent?.longitude ?? null;
+    let distanceFromZone: number | null = null;
+    const anomalies: string[] = [];
+
     if (hasNotStarted) {
-      base.status = "present";
-      base.anomalies = [];
-      return base;
-    }
-
-    // No agent data found
-    if (!agent) {
-      base.status = "absent";
-      base.anomalies.push("Agent introuvable dans le système");
-      return base;
-    }
-
-    // Agent is offline during active shift
-    if (agent.status === "Hors ligne" && isActive) {
-      base.status = "absent";
+      // Pre-shift neutral state — no anomalies
+    } else if (!agent) {
+      status = "absent";
+      anomalies.push("Agent introuvable dans le système");
+    } else if (agent.status === "Hors ligne" && isActive) {
+      status = "absent";
       const offlineMinutes = Math.round(
         (now.getTime() - new Date(agent.lastUpdate).getTime()) / 60000,
       );
-      base.anomalies.push(`Aucun signal GPS depuis ${offlineMinutes} min`);
-      return base;
-    }
+      anomalies.push(`Aucun signal GPS depuis ${offlineMinutes} min`);
+    } else if (zone) {
+      const agentPoint: [number, number] = [agent.longitude, agent.latitude];
+      const inZone = isPointInZone(agentPoint, zone.shape);
 
-    // No zone to check against
-    if (!zone) {
-      base.status = "present";
-      return base;
-    }
-
-    // Check GPS position against zone
-    const agentPoint: [number, number] = [agent.longitude, agent.latitude];
-    const inZone = isPointInZone(agentPoint, zone.shape);
-
-    if (inZone) {
-      // Check if agent's first GPS signal came after the late tolerance
-      const agentLastUpdate = new Date(agent.lastUpdate);
-      const lateThreshold = new Date(
-        shiftStart.getTime() + LATE_TOLERANCE_MIN * 60000,
-      );
-
-      if (isActive && agentLastUpdate.getTime() > lateThreshold.getTime()) {
-        const lateMinutes = Math.round(
-          (agentLastUpdate.getTime() - shiftStart.getTime()) / 60000,
+      if (inZone) {
+        const agentLastUpdate = new Date(agent.lastUpdate);
+        const lateThreshold = new Date(
+          shiftStart.getTime() + LATE_TOLERANCE_MIN * 60000,
         );
-        base.status = "late";
-        base.anomalies.push(`Retard de ${lateMinutes} min`);
+        if (isActive && agentLastUpdate.getTime() > lateThreshold.getTime()) {
+          const lateMinutes = Math.round(
+            (agentLastUpdate.getTime() - shiftStart.getTime()) / 60000,
+          );
+          status = "late";
+          anomalies.push(`Retard de ${lateMinutes} min`);
+        }
       } else {
-        base.status = "present";
+        status = "off-zone";
+        const dist = Math.round(distanceToZone(agentPoint, zone.shape));
+        distanceFromZone = dist;
+        anomalies.push(`GPS hors zone assignée (${dist} m)`);
       }
-    } else {
-      // Agent is outside the zone
-      base.status = "off-zone";
-      const dist = Math.round(distanceToZone(agentPoint, zone.shape));
-      base.distanceFromZone = dist;
-      base.anomalies.push(`GPS hors zone assignée (${dist} m)`);
     }
 
-    return base;
+    const actualHours = computeMockActualHours(
+      shift,
+      status,
+      shiftStart,
+      shiftEnd,
+    );
+
+    return {
+      ...shift,
+      status,
+      lastSeenAt,
+      lastLatitude,
+      lastLongitude,
+      distanceFromZone,
+      anomalies,
+      plannedDurationMinutes,
+      ...actualHours,
+    };
   });
+}
+
+export function computeCumulativeSummary(
+  records: PresenceRecord[],
+): AgentCumulativeSummary[] {
+  const map = new Map<string, AgentCumulativeSummary>();
+  const datesWorked = new Map<string, Set<string>>();
+
+  for (const r of records) {
+    if (!map.has(r.agentId)) {
+      map.set(r.agentId, {
+        agentId: r.agentId,
+        agentName: r.agentName,
+        totalPlannedMinutes: 0,
+        totalActualMinutes: 0,
+        totalDeltaMinutes: 0,
+        daysWorked: 0,
+      });
+      datesWorked.set(r.agentId, new Set());
+    }
+    const entry = map.get(r.agentId)!;
+    entry.totalPlannedMinutes += r.plannedDurationMinutes;
+    if (r.actualDurationMinutes !== null) {
+      entry.totalActualMinutes += r.actualDurationMinutes;
+      datesWorked.get(r.agentId)!.add(r.date);
+    }
+  }
+
+  for (const [agentId, entry] of map.entries()) {
+    entry.totalDeltaMinutes =
+      entry.totalActualMinutes - entry.totalPlannedMinutes;
+    entry.daysWorked = datesWorked.get(agentId)!.size;
+  }
+
+  return Array.from(map.values()).sort((a, b) =>
+    a.agentName.localeCompare(b.agentName, "fr"),
+  );
 }
