@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSOSStore } from "@/lib/stores/sosStore";
-import { SOSAlertBanner } from "@/components/geolocation/SOSAlertBanner";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -790,11 +789,6 @@ export default function LiveTrackingPage() {
 
   return (
     <div className="relative h-full">
-      {/* SOS alert banner */}
-      <div className="absolute top-0 left-0 right-0 z-20">
-        <SOSAlertBanner />
-      </div>
-
       {/* Full-page map */}
       <AgentMap
         agents={historyMode ? [] : filteredAgents}

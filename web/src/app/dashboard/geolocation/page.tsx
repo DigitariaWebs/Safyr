@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SOSAlertBanner } from "@/components/geolocation/SOSAlertBanner";
 import {
   getKPIData,
   SITES,
@@ -174,8 +173,6 @@ export default function GeolocationDashboard() {
           </Select>
         </div>
       </div>
-
-      <SOSAlertBanner />
 
       {/* ── Section 1 — KPI Sécurité ───────────────────────────── */}
       <section aria-labelledby="kpi-securite">

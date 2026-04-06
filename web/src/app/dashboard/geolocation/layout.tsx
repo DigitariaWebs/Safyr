@@ -6,6 +6,7 @@ import { SOSNotificationEffect } from "@/components/geolocation/SOSNotificationE
 import { ModuleTopBar } from "@/components/ui/module-top-bar";
 import { MapPin } from "lucide-react";
 import { GeolocationNavigationBar } from "@/components/layout/GeolocationNavigationBar";
+import { SOSAlertBanner } from "@/components/geolocation/SOSAlertBanner";
 
 export default function GeolocationLayout({
   children,
@@ -26,6 +27,9 @@ export default function GeolocationLayout({
           showConteurs={true}
         />
         <GeolocationNavigationBar showNav={true} />
+        <div className="bg-background">
+          <SOSAlertBanner />
+        </div>
         <main className="flex-1 overflow-auto relative">{children}</main>
       </div>
 
