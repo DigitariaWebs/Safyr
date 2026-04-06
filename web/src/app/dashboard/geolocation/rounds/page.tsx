@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { PanelRight, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
@@ -13,7 +13,6 @@ import {
 import { PatrolRouteSidebar } from "@/components/geolocation/PatrolRouteSidebar";
 import { PatrolRouteFormPanel } from "@/components/geolocation/PatrolRouteFormPanel";
 import { PatrolExecutionSidebar } from "@/components/geolocation/PatrolExecutionSidebar";
-import { PatrolHistoryPanel } from "@/components/geolocation/PatrolHistoryPanel";
 import type {
   PatrolRoute,
   PatrolExecution,
@@ -32,7 +31,7 @@ import {
 
 // ── Tab type ────────────────────────────────────────────────────────
 
-type PatrolTab = "itineraires" | "en-cours" | "historique";
+type PatrolTab = "itineraires" | "en-cours";
 
 // ── Page component ──────────────────────────────────────────────────
 
@@ -70,32 +69,6 @@ export default function RoundsPage() {
   const [showNav, setShowNav] = useState(true);
   const [showZones, setShowZones] = useState(false);
 
-  // ── Replay state ────────────────────────────────────────────────
-  const [replayProgress, setReplayProgress] = useState(0);
-  const [isReplaying, setIsReplaying] = useState(false);
-  const replayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // ── Replay timer ────────────────────────────────────────────────
-  useEffect(() => {
-    if (isReplaying) {
-      replayRef.current = setInterval(() => {
-        setReplayProgress((prev) => {
-          if (prev >= 1) {
-            setIsReplaying(false);
-            return 1;
-          }
-          return Math.min(prev + 0.005, 1);
-        });
-      }, 50);
-    } else if (replayRef.current) {
-      clearInterval(replayRef.current);
-      replayRef.current = null;
-    }
-    return () => {
-      if (replayRef.current) clearInterval(replayRef.current);
-    };
-  }, [isReplaying]);
-
   // ── Derived data ────────────────────────────────────────────────
 
   const selectedRoute = useMemo(
@@ -127,8 +100,6 @@ export default function RoundsPage() {
     setSidebarView("list");
     setSelectedRouteId(null);
     setSelectedExecutionId(null);
-    setReplayProgress(0);
-    setIsReplaying(false);
   }, []);
 
   const handleCreateRoute = useCallback(() => {
@@ -205,34 +176,15 @@ export default function RoundsPage() {
     setDeleteTarget(null);
   }, [deleteTarget, selectedRouteId]);
 
-  const handleSelectExecution = useCallback(
-    (id: string) => {
-      if (!id) {
-        // Back from detail
-        setSelectedExecutionId(null);
-        setSidebarView("list");
-        setReplayProgress(0);
-        setIsReplaying(false);
-        return;
-      }
-      setSelectedExecutionId(id);
-      setSidebarView("detail");
-      if (activeTab === "historique") {
-        setReplayProgress(0);
-        setIsReplaying(false);
-      }
-    },
-    [activeTab],
-  );
-
-  const handleToggleReplay = useCallback(() => {
-    setIsReplaying((prev) => {
-      if (!prev && replayProgress >= 1) {
-        setReplayProgress(0);
-      }
-      return !prev;
-    });
-  }, [replayProgress]);
+  const handleSelectExecution = useCallback((id: string) => {
+    if (!id) {
+      setSelectedExecutionId(null);
+      setSidebarView("list");
+      return;
+    }
+    setSelectedExecutionId(id);
+    setSidebarView("detail");
+  }, []);
 
   // ── Checkpoint warnings: which checkpoints are outside site zones ─
 
@@ -306,14 +258,6 @@ export default function RoundsPage() {
         routeCheckpoints: selectedExecutionRoute?.checkpoints,
       };
     }
-    if (activeTab === "historique" && selectedExecution) {
-      return {
-        execution: selectedExecution,
-        route: selectedExecutionRoute,
-        routeCheckpoints: selectedExecutionRoute?.checkpoints,
-        replayProgress,
-      };
-    }
     return {};
   }, [
     activeTab,
@@ -326,7 +270,6 @@ export default function RoundsPage() {
     selectedRoute,
     selectedExecution,
     selectedExecutionRoute,
-    replayProgress,
   ]);
 
   // ── Sidebar content renderer ──────────────────────────────────
@@ -384,20 +327,6 @@ export default function RoundsPage() {
       );
     }
 
-    if (activeTab === "historique") {
-      return (
-        <PatrolHistoryPanel
-          executions={executions}
-          selectedExecutionId={selectedExecutionId}
-          onSelectExecution={handleSelectExecution}
-          replayProgress={replayProgress}
-          onReplayProgressChange={setReplayProgress}
-          isReplaying={isReplaying}
-          onToggleReplay={handleToggleReplay}
-        />
-      );
-    }
-
     return null;
   };
 
@@ -410,14 +339,9 @@ export default function RoundsPage() {
         : "Nouvel itinéraire"
       : activeTab === "itineraires"
         ? "Itinéraires"
-        : activeTab === "en-cours"
-          ? "En cours"
-          : "Historique";
+        : "En cours";
 
-  // ── Sidebar width ─────────────────────────────────────────────
-
-  const sidebarWidth =
-    activeTab === "historique" && !selectedExecutionId ? "w-[540px]" : "w-96";
+  const sidebarWidth = "w-96";
 
   // ── Render ──────────────────────────────────────────────────────
 
@@ -442,7 +366,6 @@ export default function RoundsPage() {
               <TabsList>
                 <TabsTrigger value="itineraires">Itinéraires</TabsTrigger>
                 <TabsTrigger value="en-cours">En cours</TabsTrigger>
-                <TabsTrigger value="historique">Historique</TabsTrigger>
               </TabsList>
             </Tabs>
             <button

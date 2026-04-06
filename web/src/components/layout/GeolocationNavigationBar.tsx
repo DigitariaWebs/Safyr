@@ -10,6 +10,7 @@ import {
   Square,
   CheckCircle,
   FileText,
+  History,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -32,6 +33,11 @@ const navItems: NavItem[] = [
     label: "Rondes",
     href: "/dashboard/geolocation/rounds",
     icon: Navigation,
+  },
+  {
+    label: "Historique",
+    href: "/dashboard/geolocation/historique",
+    icon: History,
   },
   {
     label: "Rapports",

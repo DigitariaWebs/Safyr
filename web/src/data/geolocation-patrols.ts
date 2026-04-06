@@ -38,6 +38,8 @@ export interface CheckpointScan {
   scannedAt: string | null;
   status: "validated" | "missed" | "pending";
   comment?: string;
+  incidentDescription?: string;
+  mediaUrls?: string[];
 }
 
 export interface PatrolExecution {
@@ -47,6 +49,7 @@ export interface PatrolExecution {
   agentId: string;
   agentName: string;
   site: string;
+  client?: string;
   status: PatrolStatus;
   startedAt: string; // ISO
   endedAt: string | null;
@@ -131,6 +134,27 @@ export function getPatrolHistory(
   return executions.filter(
     (e) => e.status === "terminee" || e.status === "incomplete",
   );
+}
+
+/** Returns true if a checkpoint scan represents an incident */
+export function checkpointHasIncident(scan: CheckpointScan): boolean {
+  return (
+    scan.status === "missed" && !!(scan.incidentDescription ?? scan.comment)
+  );
+}
+
+/** Returns true if a patrol execution contains at least one incident checkpoint */
+export function patrolHasIncident(exec: PatrolExecution): boolean {
+  return exec.checkpointScans.some(checkpointHasIncident);
+}
+
+/** Returns display-level status including "incident" concept */
+export function getPatrolDisplayStatus(
+  exec: PatrolExecution,
+): "complete" | "incomplete" | "incident" {
+  if (patrolHasIncident(exec)) return "incident";
+  if (exec.status === "terminee") return "complete";
+  return "incomplete";
 }
 
 /** Lookup a route by ID */
@@ -444,6 +468,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "1",
     agentName: "Jean Dupont",
     site: "Centre Commercial Rosny 2",
+    client: "Groupe Inditex",
     status: "en-cours",
     startedAt: isoAt(0, 30),
     endedAt: null,
@@ -473,6 +498,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "2",
     agentName: "Marie Martin",
     site: "Siège Social La Défense",
+    client: "BNP Paribas",
     status: "en-cours",
     startedAt: isoAt(0, 15),
     endedAt: null,
@@ -501,6 +527,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "5",
     agentName: "Lucas Moreau",
     site: "Centre Commercial Rosny 2",
+    client: "Groupe Inditex",
     status: "terminee",
     startedAt: isoAt(3, 0),
     endedAt: isoAt(2, 12),
@@ -529,6 +556,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "6",
     agentName: "Camille Leroy",
     site: "Siège Social La Défense",
+    client: "BNP Paribas",
     status: "terminee",
     startedAt: isoAt(5, 0),
     endedAt: isoAt(4, 22),
@@ -549,7 +577,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     ),
   },
 
-  // ── 5. Terminée — Pierre Bernard, Gennevilliers, 80% (1 missed but still "terminee")
+  // ── 5. Terminée — Pierre Bernard, Gennevilliers, 75% (1 missed, incident)
   {
     id: "exec-5",
     routeId: "route-3",
@@ -557,13 +585,26 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "3",
     agentName: "Pierre Bernard",
     site: "Entrepôt Logistique Gennevilliers",
+    client: "Gefco Logistics",
     status: "terminee",
     startedAt: isoAt(6, 0),
     endedAt: isoAt(5, 32),
     checkpointScans: [
       { checkpointId: "cp-r3-1", scannedAt: isoAt(6, 0), status: "validated" },
       { checkpointId: "cp-r3-2", scannedAt: isoAt(5, 54), status: "validated" },
-      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed", comment: "Zone de stockage B verrouillée — accès impossible, signalé au responsable" },
+      {
+        checkpointId: "cp-r3-3",
+        scannedAt: null,
+        status: "missed",
+        comment:
+          "Zone de stockage B verrouillée — accès impossible, signalé au responsable",
+        incidentDescription:
+          "La porte de la zone de stockage B était verrouillée de l'intérieur sans présence constatée. Trace de forçage visible sur la serrure. Responsable de site contacté immédiatement. Intervention police demandée.",
+        mediaUrls: [
+          "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
+          "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400",
+        ],
+      },
       { checkpointId: "cp-r3-4", scannedAt: isoAt(5, 35), status: "validated" },
     ],
     gpsTrail: generateMockTrail(
@@ -585,7 +626,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     ),
   },
 
-  // ── 6. Incomplète — Sophie Dubois, Gennevilliers, abandoned at 50%
+  // ── 6. Incomplète — Sophie Dubois, Gennevilliers, abandoned at 50% with incidents
   {
     id: "exec-6",
     routeId: "route-3",
@@ -593,14 +634,32 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "4",
     agentName: "Sophie Dubois",
     site: "Entrepôt Logistique Gennevilliers",
+    client: "Gefco Logistics",
     status: "incomplete",
     startedAt: isoAt(8, 0),
     endedAt: isoAt(7, 45),
     checkpointScans: [
       { checkpointId: "cp-r3-1", scannedAt: isoAt(8, 0), status: "validated" },
       { checkpointId: "cp-r3-2", scannedAt: isoAt(7, 54), status: "validated" },
-      { checkpointId: "cp-r3-3", scannedAt: null, status: "missed", comment: "Zone inondée suite aux intempéries, accès dangereux" },
-      { checkpointId: "cp-r3-4", scannedAt: null, status: "missed", comment: "Ronde interrompue sur instruction du chef de site" },
+      {
+        checkpointId: "cp-r3-3",
+        scannedAt: null,
+        status: "missed",
+        comment: "Zone inondée suite aux intempéries, accès dangereux",
+        incidentDescription:
+          "Infiltration d'eau importante au niveau du hangar A suite aux fortes pluies de la nuit. Accès bloqué. Photos transmises au responsable HSE. Balisage posé en attente d'intervention.",
+        mediaUrls: [
+          "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=400",
+        ],
+      },
+      {
+        checkpointId: "cp-r3-4",
+        scannedAt: null,
+        status: "missed",
+        comment: "Ronde interrompue sur instruction du chef de site",
+        incidentDescription:
+          "Ronde interrompue à la demande du chef de site M. Leconte suite à l'incident précédent. Retour au poste de garde enregistré à 07:48.",
+      },
     ],
     gpsTrail: generateMockTrail(gennevilliersCheckpoints.slice(0, 2), {
       startTime: new Date(now.getTime() - 8 * 3600000),
@@ -614,7 +673,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     ),
   },
 
-  // ── 7. Incomplète — Jean Dupont, La Défense (yesterday), 60%
+  // ── 7. Incomplète — Jean Dupont, La Défense (today), 67% with incident
   {
     id: "exec-7",
     routeId: "route-4",
@@ -622,6 +681,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "1",
     agentName: "Jean Dupont",
     site: "Siège Social La Défense",
+    client: "BNP Paribas",
     status: "incomplete",
     startedAt: `${today}T02:00:00Z`,
     endedAt: `${today}T02:10:00Z`,
@@ -636,7 +696,17 @@ export const mockPatrolExecutions: PatrolExecution[] = [
         scannedAt: `${today}T02:06:00Z`,
         status: "validated",
       },
-      { checkpointId: "cp-r4-3", scannedAt: null, status: "missed", comment: "Badge NFC de la baie B endommagé — remplacement demandé" },
+      {
+        checkpointId: "cp-r4-3",
+        scannedAt: null,
+        status: "missed",
+        comment: "Badge NFC de la baie B endommagé — remplacement demandé",
+        incidentDescription:
+          "Le lecteur NFC de la baie serveurs B est hors service. Boîtier fissuré, possiblement suite à un choc. Ticket de maintenance créé (#4412). Accès à la baie non vérifié cette nuit.",
+        mediaUrls: [
+          "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400",
+        ],
+      },
     ],
     gpsTrail: generateMockTrail(serveursCheckpoints.slice(0, 2), {
       startTime: new Date(`${today}T02:00:00Z`),
@@ -650,6 +720,155 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     ),
   },
 
+  // ── Historical executions (past months) ──────────────────────────
+
+  // ── 9. Terminée — Lucas Moreau, Rosny 2, January 2026, 100%
+  {
+    id: "exec-9",
+    routeId: "route-1",
+    routeName: "Ronde Extérieure Rosny 2",
+    agentId: "5",
+    agentName: "Lucas Moreau",
+    site: "Centre Commercial Rosny 2",
+    client: "Groupe Inditex",
+    status: "terminee",
+    startedAt: "2026-01-14T08:00:00Z",
+    endedAt: "2026-01-14T08:51:00Z",
+    checkpointScans: rosny2Checkpoints.map((cp) => ({
+      checkpointId: cp.id,
+      scannedAt: new Date(
+        new Date("2026-01-14T08:00:00Z").getTime() + cp.expectedMinutes * 60000,
+      ).toISOString(),
+      status: "validated" as const,
+    })),
+    gpsTrail: generateMockTrail(rosny2Checkpoints, {
+      startTime: new Date("2026-01-14T08:00:00Z"),
+      pointsPerSegment: 4,
+      deviationMeters: 7,
+    }),
+    completionRate: 100,
+    actualDurationMinutes: 51,
+    actualDistanceMeters: Math.round(
+      computeRouteDistance(rosny2Checkpoints) * 1.03,
+    ),
+  },
+
+  // ── 10. Terminée — Camille Leroy, La Défense, February 2026, 100%
+  {
+    id: "exec-10",
+    routeId: "route-2",
+    routeName: "Ronde Nocturne La Défense",
+    agentId: "6",
+    agentName: "Camille Leroy",
+    site: "Siège Social La Défense",
+    client: "BNP Paribas",
+    status: "terminee",
+    startedAt: "2026-02-08T22:00:00Z",
+    endedAt: "2026-02-08T22:39:00Z",
+    checkpointScans: defenseCheckpoints.map((cp) => ({
+      checkpointId: cp.id,
+      scannedAt: new Date(
+        new Date("2026-02-08T22:00:00Z").getTime() + cp.expectedMinutes * 60000,
+      ).toISOString(),
+      status: "validated" as const,
+    })),
+    gpsTrail: generateMockTrail(defenseCheckpoints, {
+      startTime: new Date("2026-02-08T22:00:00Z"),
+      pointsPerSegment: 4,
+      deviationMeters: 9,
+    }),
+    completionRate: 100,
+    actualDurationMinutes: 39,
+    actualDistanceMeters: Math.round(
+      computeRouteDistance(defenseCheckpoints) * 1.06,
+    ),
+  },
+
+  // ── 11. Incomplète with incident — Pierre Bernard, Gennevilliers, February 2026
+  {
+    id: "exec-11",
+    routeId: "route-3",
+    routeName: "Ronde Entrepôt Gennevilliers",
+    agentId: "3",
+    agentName: "Pierre Bernard",
+    site: "Entrepôt Logistique Gennevilliers",
+    client: "Gefco Logistics",
+    status: "incomplete",
+    startedAt: "2026-02-22T06:00:00Z",
+    endedAt: "2026-02-22T06:18:00Z",
+    checkpointScans: [
+      {
+        checkpointId: "cp-r3-1",
+        scannedAt: "2026-02-22T06:00:00Z",
+        status: "validated",
+      },
+      {
+        checkpointId: "cp-r3-2",
+        scannedAt: null,
+        status: "missed",
+        comment: "Hangar A bloqué — individu suspect signalé",
+        incidentDescription:
+          "Présence d'un individu non identifié signalée dans le hangar A. L'agent a refusé de pénétrer seul dans la zone et a alerté le superviseur. La police a été contactée. L'individu avait quitté les lieux à l'arrivée des forces de l'ordre.",
+        mediaUrls: [
+          "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=400",
+        ],
+      },
+      {
+        checkpointId: "cp-r3-3",
+        scannedAt: null,
+        status: "missed",
+        comment: "Zone non accessible suite à l'incident précédent",
+      },
+      {
+        checkpointId: "cp-r3-4",
+        scannedAt: null,
+        status: "missed",
+        comment: "Ronde interrompue — sécurisation du site en cours",
+      },
+    ],
+    gpsTrail: generateMockTrail(gennevilliersCheckpoints.slice(0, 1), {
+      startTime: new Date("2026-02-22T06:00:00Z"),
+      pointsPerSegment: 3,
+      deviationMeters: 10,
+    }),
+    completionRate: 25,
+    actualDurationMinutes: 18,
+    actualDistanceMeters: Math.round(
+      computeRouteDistance(gennevilliersCheckpoints.slice(0, 2)) * 0.5,
+    ),
+  },
+
+  // ── 12. Terminée — Marie Martin, La Défense, March 2026, 100%
+  {
+    id: "exec-12",
+    routeId: "route-4",
+    routeName: "Ronde Périmétrique Serveurs",
+    agentId: "2",
+    agentName: "Marie Martin",
+    site: "Siège Social La Défense",
+    client: "BNP Paribas",
+    status: "terminee",
+    startedAt: "2026-03-05T02:00:00Z",
+    endedAt: "2026-03-05T02:17:00Z",
+    checkpointScans: serveursCheckpoints.map((cp) => ({
+      checkpointId: cp.id,
+      scannedAt: new Date(
+        new Date("2026-03-05T02:00:00Z").getTime() + cp.expectedMinutes * 60000,
+      ).toISOString(),
+      status: "validated" as const,
+    })),
+    gpsTrail: generateMockTrail(serveursCheckpoints, {
+      startTime: new Date("2026-03-05T02:00:00Z"),
+      pointsPerSegment: 3,
+      deviationMeters: 4,
+    }),
+    completionRate: 100,
+    actualDurationMinutes: 17,
+    actualDistanceMeters: Math.round(
+      computeRouteDistance(serveursCheckpoints) * 1.04,
+    ),
+  },
+
   // ── 8. Planifiée — Camille Leroy, La Défense, tonight
   {
     id: "exec-8",
@@ -658,6 +877,7 @@ export const mockPatrolExecutions: PatrolExecution[] = [
     agentId: "6",
     agentName: "Camille Leroy",
     site: "Siège Social La Défense",
+    client: "BNP Paribas",
     status: "planifiee",
     startedAt: `${today}T22:00:00Z`,
     endedAt: null,
