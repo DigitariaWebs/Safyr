@@ -1059,7 +1059,7 @@ export default function PostesPage() {
                       !selectedPoste.schedule.weekendWork &&
                       !selectedPoste.schedule.rotatingShift && (
                         <span className="text-muted-foreground text-xs">
-                          Standard
+                          Modèle
                         </span>
                       )}
                   </div>

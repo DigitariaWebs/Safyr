@@ -553,7 +553,6 @@ export default function ShiftsPage() {
               <SelectValue placeholder="Sélectionner la durée" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">Aucune pause</SelectItem>
               {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((min) => (
                 <SelectItem key={min} value={String(min)}>
                   {min} minutes
@@ -807,7 +806,7 @@ export default function ShiftsPage() {
         type="form"
         title="Nouveau shift"
         description="Définir un modèle de shift pour un site"
-        size="lg"
+        size="md"
         actions={{
           primary: {
             label: "Créer",
@@ -835,7 +834,7 @@ export default function ShiftsPage() {
             ? `${selectedShift.name} — ${getSiteName(selectedShift.siteId)}`
             : undefined
         }
-        size="lg"
+        size="md"
         actions={{
           primary: {
             label: "Enregistrer",
