@@ -8,7 +8,7 @@ export type SavedWidgetConfig = {
   span?: number | string;
 };
 
-type DashboardModule = "planning" | "hr" | "payroll";
+export type DashboardModule = "planning" | "hr" | "payroll" | "geolocation";
 
 interface DashboardConfigStore {
   configs: Record<DashboardModule, SavedWidgetConfig[] | null>;
@@ -23,6 +23,7 @@ export const useDashboardConfigStore = create<DashboardConfigStore>()(
         planning: null,
         hr: null,
         payroll: null,
+        geolocation: null,
       },
 
       getConfig: (module) => get().configs[module],

@@ -404,7 +404,6 @@ export function PatrolRouteSidebar({
           )}
         </ul>
       </ScrollArea>
-
     </div>
   );
 }

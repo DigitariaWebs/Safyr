@@ -241,9 +241,7 @@ export function PatrolExecutionSidebar({
                               <textarea
                                 rows={2}
                                 placeholder="Ajouter une observation…"
-                                value={
-                                  localComments[scan.checkpointId] ?? ""
-                                }
+                                value={localComments[scan.checkpointId] ?? ""}
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   setLocalComments((prev) => ({

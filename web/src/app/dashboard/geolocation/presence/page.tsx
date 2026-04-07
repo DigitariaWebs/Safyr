@@ -633,8 +633,7 @@ export default function PresenceControlPage() {
           itemsPerPage={10}
           getRowId={(entry) => entry.agentId}
           expandableContent={(entry) => {
-            const agentRecords =
-              agentPeriodRecords.get(entry.agentId) ?? [];
+            const agentRecords = agentPeriodRecords.get(entry.agentId) ?? [];
             return (
               <div className="rounded-md border overflow-x-auto">
                 <Table>
@@ -642,24 +641,15 @@ export default function PresenceControlPage() {
                     <TableRow>
                       <TableHead>Date</TableHead>
                       <TableHead>Vacation</TableHead>
-                      <TableHead className="text-right">
-                        Prévues
-                      </TableHead>
-                      <TableHead className="text-right">
-                        Réalisées
-                      </TableHead>
-                      <TableHead className="text-right">
-                        Écart
-                      </TableHead>
-                      <TableHead className="text-right">
-                        Statut
-                      </TableHead>
+                      <TableHead className="text-right">Prévues</TableHead>
+                      <TableHead className="text-right">Réalisées</TableHead>
+                      <TableHead className="text-right">Écart</TableHead>
+                      <TableHead className="text-right">Statut</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {agentRecords.map((r) => {
-                      const statusCfg =
-                        PRESENCE_STATUS_CONFIG[r.status];
+                      const statusCfg = PRESENCE_STATUS_CONFIG[r.status];
                       const delta = r.deltaMinutes;
                       const deltaSign =
                         delta !== null && delta >= 0 ? "+" : "-";
@@ -681,14 +671,11 @@ export default function PresenceControlPage() {
                             )}
                           >
                             <div className="flex items-center gap-2">
-                              {new Date(r.date).toLocaleDateString(
-                                "fr-FR",
-                                {
-                                  weekday: "short",
-                                  day: "numeric",
-                                  month: "short",
-                                },
-                              )}
+                              {new Date(r.date).toLocaleDateString("fr-FR", {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "short",
+                              })}
                               {isRecordToday && (
                                 <span className="inline-flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                               )}
@@ -720,10 +707,7 @@ export default function PresenceControlPage() {
                           <TableCell className="text-right">
                             <Badge
                               variant={statusCfg.badgeVariant}
-                              className={cn(
-                                "gap-1",
-                                statusCfg.badgeClassName,
-                              )}
+                              className={cn("gap-1", statusCfg.badgeClassName)}
                             >
                               <span
                                 className={cn(

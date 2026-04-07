@@ -145,8 +145,7 @@ export function PresenceDetailPanel({
                   computeDeltaColor(record.deltaMinutes),
                 )}
               >
-                Écart :{" "}
-                {record.deltaMinutes >= 0 ? "+" : "-"}
+                Écart : {record.deltaMinutes >= 0 ? "+" : "-"}
                 {formatDuration(Math.abs(record.deltaMinutes))}
               </div>
             )}

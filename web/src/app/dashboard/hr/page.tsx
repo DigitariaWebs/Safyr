@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useReducer } from "react";
-import { rectSortingStrategy } from "@dnd-kit/sortable";
+import { useState, useEffect } from "react";
 import {
   Users,
   TrendingUp,
@@ -20,47 +19,32 @@ import {
   BarChart3,
   Activity,
   UserPlus,
-  Settings,
-  ChevronUp,
-  ChevronDown,
-  GripVertical,
-  Trash2,
   Mail,
   Megaphone,
   GraduationCap,
   UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  useDashboardConfigStore,
-  SavedWidgetConfig,
-} from "@/lib/stores/dashboardConfigStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragOverlay,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+  WidgetConfig,
+  useWidgetSystem,
+  CustomizerModal,
+  WidgetGrid,
+  PersonnaliserButton,
+} from "@/components/ui/widget-customizer";
+
+// ── Widget type with component ────────────────────────────────────────
+
+type HRWidgetConfig = WidgetConfig & {
+  component: React.ComponentType<{ isLoading: boolean }>;
+};
+
+// ── Widget Components ─────────────────────────────────────────────────
 
 function EmployeeStatsWidget({ isLoading }: { isLoading: boolean }) {
   if (isLoading) {
@@ -969,143 +953,9 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   );
 }
 
-type WidgetConfig = {
-  id: string;
-  name: string;
-  component: React.ComponentType<{ isLoading: boolean }>;
-  visible: boolean;
-  span?: string;
-};
+// ── Widget Config ─────────────────────────────────────────────────────
 
-function SortableItem({
-  config,
-  index,
-  toggleVisibility,
-  moveUp,
-  moveDown,
-  total,
-}: {
-  config: WidgetConfig;
-  index: number;
-  toggleVisibility: (id: string) => void;
-  moveUp: (index: number) => void;
-  moveDown: (index: number) => void;
-  total: number;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: config.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center justify-between"
-    >
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          {...attributes}
-          {...listeners}
-          className="cursor-grab"
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
-        <Checkbox
-          id={config.id}
-          checked={config.visible}
-          onCheckedChange={() => toggleVisibility(config.id)}
-        />
-        <label htmlFor={config.id} className="text-sm">
-          {config.name}
-        </label>
-      </div>
-      <div className="flex space-x-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => moveUp(index)}
-          disabled={index === 0}
-        >
-          <ChevronUp className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => moveDown(index)}
-          disabled={index === total - 1}
-        >
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function SortableWidget({
-  config,
-  isLoading,
-  isEditMode,
-  toggleVisibility,
-}: {
-  config: WidgetConfig;
-  isLoading: boolean;
-  isEditMode: boolean;
-  toggleVisibility: (id: string) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: config.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const Component = config.component;
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(config.span || "", "h-full relative")}
-    >
-      <Component isLoading={isLoading} />
-      {isEditMode && (
-        <div className="absolute top-2 right-2 flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => toggleVisibility(config.id)}
-            className="bg-background/80 rounded shadow h-6 w-6 p-0"
-          >
-            <Trash2 className="h-3 w-3 text-red-500" />
-          </Button>
-          <div
-            {...attributes}
-            {...listeners}
-            className="cursor-grab bg-background/80 rounded p-1 shadow h-6 w-6 flex items-center justify-center"
-          >
-            <GripVertical className="h-3 w-3" />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const defaultWidgetConfigs: WidgetConfig[] = [
+const defaultWidgetConfigs: HRWidgetConfig[] = [
   {
     id: "employeeStats",
     name: "Effectif Total",
@@ -1200,171 +1050,40 @@ const defaultWidgetConfigs: WidgetConfig[] = [
   },
 ];
 
-type WidgetAction =
-  | { type: "load"; payload: WidgetConfig[] }
-  | { type: "toggle"; payload: string }
-  | { type: "reorder"; payload: { oldIndex: number; newIndex: number } }
-  | { type: "move"; payload: { activeId: string; overId: string } };
+const hrWidgetMap = new Map<string, HRWidgetConfig>(
+  defaultWidgetConfigs.map((c) => [c.id, c]),
+);
 
-function widgetReducer(
-  state: WidgetConfig[],
-  action: WidgetAction,
-): WidgetConfig[] {
-  switch (action.type) {
-    case "load":
-      return action.payload;
-    case "toggle":
-      return state.map((config: WidgetConfig) =>
-        config.id === action.payload
-          ? { ...config, visible: !config.visible }
-          : config,
-      );
-    case "reorder":
-      return arrayMove(state, action.payload.oldIndex, action.payload.newIndex);
-    case "move":
-      const { activeId, overId } = action.payload;
-      const activeIndex = state.findIndex(
-        (c: WidgetConfig) => c.id === activeId,
-      );
-      const overIndex = state.findIndex((c: WidgetConfig) => c.id === overId);
-      return arrayMove(state, activeIndex, overIndex);
-    default:
-      return state;
-  }
-}
+// ── Page ──────────────────────────────────────────────────────────────
 
 export default function HRDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [widgetConfigs, dispatch] = useReducer(
-    widgetReducer,
-    defaultWidgetConfigs,
-  );
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
 
-  const gridSensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const {
+    widgetConfigs,
+    visibleWidgets,
+    isEditMode,
+    setIsEditMode,
+    isDialogOpen,
+    setIsDialogOpen,
+    toggleVisibility,
+    moveUp,
+    moveDown,
+    handleDragEnd,
+    handleGridDragEnd,
+  } = useWidgetSystem("hr", defaultWidgetConfigs);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const savedConfigs = useDashboardConfigStore.getState().getConfig("hr");
-    if (savedConfigs) {
-      try {
-        let loadedConfigs = savedConfigs
-          .map((saved: SavedWidgetConfig) => {
-            const defaultConfig = defaultWidgetConfigs.find(
-              (d: WidgetConfig) => d.id === saved.id,
-            );
-            return defaultConfig ? { ...defaultConfig, ...saved } : null;
-          })
-          .filter(Boolean) as WidgetConfig[];
-        const missingDefaults = defaultWidgetConfigs.filter(
-          (defaultConfig: WidgetConfig) =>
-            savedConfigs.every(
-              (saved: SavedWidgetConfig) => saved.id !== defaultConfig.id,
-            ),
-        );
-        loadedConfigs = [...loadedConfigs, ...missingDefaults];
-        dispatch({ type: "load", payload: loadedConfigs });
-      } catch (e) {
-        console.error("Error loading dashboard config:", e);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const toSave: SavedWidgetConfig[] = widgetConfigs.map((config) => ({
-      id: config.id,
-      name: config.name,
-      visible: config.visible,
-      span: config.span,
-    }));
-    useDashboardConfigStore.getState().setConfig("hr", toSave);
-  }, [widgetConfigs]);
-
-  const toggleVisibility = (id: string) => {
-    dispatch({ type: "toggle", payload: id });
+  const renderWidget = (config: WidgetConfig) => {
+    const hrConfig = hrWidgetMap.get(config.id);
+    if (!hrConfig) return null;
+    const Component = hrConfig.component;
+    return <Component isLoading={isLoading} />;
   };
-
-  const moveUp = (index: number) => {
-    if (index > 0) {
-      dispatch({
-        type: "reorder",
-        payload: { oldIndex: index, newIndex: index - 1 },
-      });
-    }
-  };
-
-  const moveDown = (index: number) => {
-    if (index < widgetConfigs.length - 1) {
-      dispatch({
-        type: "reorder",
-        payload: { oldIndex: index, newIndex: index + 1 },
-      });
-    }
-  };
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      dispatch({
-        type: "move",
-        payload: { activeId: active.id as string, overId: over.id as string },
-      });
-    }
-  }
-
-  function handleGridDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const activeConfig = widgetConfigs.find((c) => c.id === activeId);
-    const overConfig = widgetConfigs.find((c) => c.id === overId);
-
-    if (!activeConfig || !overConfig) return;
-
-    const isActiveVisible = activeConfig.visible;
-    const isOverVisible = overConfig.visible;
-
-    if (isActiveVisible === isOverVisible) {
-      // reorder within same group
-      dispatch({ type: "move", payload: { activeId, overId } });
-    } else {
-      // move between groups - first toggle visibility, then reorder
-      dispatch({ type: "toggle", payload: activeId });
-      // After toggle, the state updates, then reorder
-      setTimeout(() => {
-        dispatch({ type: "move", payload: { activeId, overId } });
-      }, 0);
-    }
-  }
-
-  const visibleWidgets = widgetConfigs.filter((config) => config.visible);
-  const hiddenWidgets = widgetConfigs.filter((config) => !config.visible);
 
   return (
     <div className="space-y-6">
@@ -1387,135 +1106,29 @@ export default function HRDashboardPage() {
               Quitter Édition
             </Button>
           )}
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Settings className="h-4 w-4" />
-            Personnaliser
-          </Button>
-
-          <Modal
+          <PersonnaliserButton onClick={() => setIsDialogOpen(true)} />
+          <CustomizerModal
             open={isDialogOpen}
             onOpenChange={setIsDialogOpen}
-            type="form"
-            title="Personnaliser le tableau de bord"
-            size="md"
-            actions={{
-              primary: {
-                label: "Fermer",
-                onClick: () => setIsDialogOpen(false),
-                variant: "outline",
-              },
-            }}
-          >
-            <Button
-              variant={isEditMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-                setIsDialogOpen(false);
-              }}
-              className="mb-4"
-            >
-              <GripVertical className="h-4 w-4 mr-2" />
-              {isEditMode ? "Quitter Édition" : "Mode Édition"}
-            </Button>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={widgetConfigs.map((config) => config.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-4">
-                  {widgetConfigs.map((config: WidgetConfig, index: number) => (
-                    <SortableItem
-                      key={config.id}
-                      config={config}
-                      index={index}
-                      toggleVisibility={toggleVisibility}
-                      moveUp={moveUp}
-                      moveDown={moveDown}
-                      total={widgetConfigs.length}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          </Modal>
+            configs={widgetConfigs}
+            isEditMode={isEditMode}
+            onToggleEditMode={() => setIsEditMode(!isEditMode)}
+            onDragEnd={handleDragEnd}
+            onToggle={toggleVisibility}
+            onMoveUp={moveUp}
+            onMoveDown={moveDown}
+          />
         </div>
       </div>
 
       {isEditMode ? (
-        <DndContext
-          sensors={gridSensors}
-          collisionDetection={closestCenter}
-          onDragStart={(event) => setActiveId(event.active.id as string)}
-          onDragEnd={(event) => {
-            setActiveId(null);
-            handleGridDragEnd(event);
-          }}
-        >
-          <SortableContext
-            items={visibleWidgets.map((config) => config.id)}
-            strategy={rectSortingStrategy}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {visibleWidgets.map((config: WidgetConfig) => (
-                <SortableWidget
-                  key={config.id}
-                  config={config}
-                  isLoading={isLoading}
-                  isEditMode={isEditMode}
-                  toggleVisibility={toggleVisibility}
-                />
-              ))}
-            </div>
-          </SortableContext>
-
-          {hiddenWidgets.length > 0 && (
-            <>
-              <Separator className="my-6" />
-              <div>
-                <h2 className="text-sm font-light text-muted-foreground mb-4">
-                  Widgets masqués
-                </h2>
-                <SortableContext
-                  items={hiddenWidgets.map((config) => config.id)}
-                  strategy={rectSortingStrategy}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {hiddenWidgets.map((config: WidgetConfig) => (
-                      <SortableWidget
-                        key={config.id}
-                        config={config}
-                        isLoading={isLoading}
-                        isEditMode={isEditMode}
-                        toggleVisibility={toggleVisibility}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </div>
-            </>
-          )}
-          <DragOverlay>
-            {activeId ? (
-              <div className="rotate-3 opacity-90">
-                <SortableWidget
-                  config={widgetConfigs.find((c) => c.id === activeId)!}
-                  isLoading={isLoading}
-                  isEditMode={isEditMode}
-                  toggleVisibility={toggleVisibility}
-                />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+        <WidgetGrid
+          configs={widgetConfigs}
+          isEditMode={isEditMode}
+          renderWidget={renderWidget}
+          onToggle={toggleVisibility}
+          onGridDragEnd={handleGridDragEnd}
+        />
       ) : (
         <div className="space-y-6">
           {/* Top Row - Key Metrics */}
@@ -1526,14 +1139,11 @@ export default function HRDashboardPage() {
                   config.id,
                 ),
               )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div key={config.id} className="h-full">
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
+              .map((config) => (
+                <div key={config.id} className="h-full">
+                  {renderWidget(config)}
+                </div>
+              ))}
           </div>
 
           {/* Second Row - Training & Alerts */}
@@ -1542,14 +1152,11 @@ export default function HRDashboardPage() {
               .filter((config) =>
                 ["training", "alerts", "pendingRequests"].includes(config.id),
               )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div key={config.id} className="h-full">
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
+              .map((config) => (
+                <div key={config.id} className="h-full">
+                  {renderWidget(config)}
+                </div>
+              ))}
           </div>
 
           {/* Third Row - Detailed Metrics */}
@@ -1568,33 +1175,26 @@ export default function HRDashboardPage() {
                     "quickActions",
                   ].includes(config.id),
               )
-              .map((config: WidgetConfig) => {
-                const Component = config.component;
-                return (
-                  <div
-                    key={config.id}
-                    className={cn(config.span || "", "h-full")}
-                  >
-                    <Component isLoading={isLoading} />
-                  </div>
-                );
-              })}
+              .map((config) => (
+                <div
+                  key={config.id}
+                  className={cn(config.span || "", "h-full")}
+                >
+                  {renderWidget(config)}
+                </div>
+              ))}
           </div>
 
           {/* Bottom Row - Quick Actions */}
-          {visibleWidgets.filter((config) => config.id === "quickActions")
-            .length > 0 && (
+          {visibleWidgets.some((config) => config.id === "quickActions") && (
             <div className="grid grid-cols-1 gap-4">
               {visibleWidgets
                 .filter((config) => config.id === "quickActions")
-                .map((config: WidgetConfig) => {
-                  const Component = config.component;
-                  return (
-                    <div key={config.id} className="h-full">
-                      <Component isLoading={isLoading} />
-                    </div>
-                  );
-                })}
+                .map((config) => (
+                  <div key={config.id} className="h-full">
+                    {renderWidget(config)}
+                  </div>
+                ))}
             </div>
           )}
         </div>

@@ -24,6 +24,14 @@ import {
   Footprints,
   Info,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  WidgetConfig,
+  useWidgetSystem,
+  CustomizerModal,
+  WidgetGrid,
+  PersonnaliserButton,
+} from "@/components/ui/widget-customizer";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import { DataTable } from "@/components/ui/DataTable";
 import type { ColumnDef } from "@/components/ui/DataTable";
@@ -1531,6 +1539,24 @@ function filterReport(
   }
 }
 
+// ── KPI Widget Configs ────────────────────────────────────────────────
+
+const defaultGeoWidgetConfigs: WidgetConfig[] = [
+  { id: "presences-stats", name: "Présences", visible: true },
+  { id: "rondes-stats", name: "Rondes", visible: true },
+  { id: "deplacements-stats", name: "Déplacements", visible: true },
+  { id: "incidents-stats", name: "Incidents", visible: true },
+  { id: "zones-stats", name: "Activité Zones", visible: true },
+];
+
+const GEO_WIDGET_ICON: Record<string, LucideIcon> = {
+  "presences-stats": UserCheck,
+  "rondes-stats": Navigation,
+  "deplacements-stats": Route,
+  "incidents-stats": AlertTriangle,
+  "zones-stats": MapPin,
+};
+
 // ── Page Component ───────────────────────────────────────────────────
 
 export default function GeolocationReportsPage() {
@@ -1542,6 +1568,79 @@ export default function GeolocationReportsPage() {
   const [zoneFilter, setZoneFilter] = useState("all");
   const [rawReport, setRawReport] = useState<GeneratedReport | null>(null);
   const [detailRow, setDetailRow] = useState<DetailRow | null>(null);
+
+  // Widget system
+  const {
+    widgetConfigs,
+    visibleWidgets: visibleKpiWidgets,
+    isEditMode: isKpiEditMode,
+    setIsEditMode: setIsKpiEditMode,
+    isDialogOpen,
+    setIsDialogOpen,
+    toggleVisibility,
+    moveUp,
+    moveDown,
+    handleDragEnd,
+    handleGridDragEnd,
+  } = useWidgetSystem("geolocation", defaultGeoWidgetConfigs);
+
+  // Auto-generate KPI stats for all report types using current date range
+  const allKpiStats = useMemo((): Record<string, SummaryStat[]> => {
+    const start = startDate;
+    const end = endDate;
+    return {
+      "presences-stats": getPresenceStats(generatePresenceReport(start, end)),
+      "rondes-stats": getRondeStats(generateRondeReport(start, end)),
+      "deplacements-stats": getDeplacementStats(
+        generateDeplacementReport(start, end),
+      ),
+      "incidents-stats": getIncidentStats(generateIncidentReport(start, end)),
+      "zones-stats": getZoneStats(generateZoneActivityReport(start, end)),
+    };
+  }, [startDate, endDate]);
+
+  const renderKpiWidget = (config: WidgetConfig) => {
+    const stats = allKpiStats[config.id] ?? [];
+    const Icon = GEO_WIDGET_ICON[config.id] ?? MapPin;
+    return (
+      <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+            <Icon className="h-4 w-4 text-primary" />
+            {config.name}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => {
+              const StatIcon = stat.icon;
+              return (
+                <div
+                  key={stat.title}
+                  className="flex flex-col gap-1 p-2 rounded-md bg-muted/30"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <StatIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="text-xs text-muted-foreground truncate">
+                      {stat.title}
+                    </span>
+                  </div>
+                  <span className="text-lg font-light tabular-nums">
+                    {stat.value}
+                  </span>
+                  {stat.subtext && (
+                    <span className="text-xs text-muted-foreground">
+                      {stat.subtext}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   // Reset generated report when type or dates change
   const [prevGenKey, setPrevGenKey] = useState("");
@@ -1677,12 +1776,58 @@ export default function GeolocationReportsPage() {
   return (
     <div className="flex flex-col gap-6 p-6 overflow-y-auto h-full">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Rapports</h1>
-        <p className="text-sm text-muted-foreground">
-          Générez et exportez des rapports de géolocalisation détaillés
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Rapports</h1>
+          <p className="text-sm text-muted-foreground">
+            Générez et exportez des rapports de géolocalisation détaillés
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {isKpiEditMode && (
+            <button
+              onClick={() => setIsKpiEditMode(false)}
+              className="h-9 px-3 text-sm rounded-md border border-input text-muted-foreground hover:bg-accent transition-colors"
+            >
+              Quitter Édition
+            </button>
+          )}
+          <PersonnaliserButton onClick={() => setIsDialogOpen(true)} />
+          <CustomizerModal
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            configs={widgetConfigs}
+            isEditMode={isKpiEditMode}
+            onToggleEditMode={() => setIsKpiEditMode(!isKpiEditMode)}
+            onDragEnd={handleDragEnd}
+            onToggle={toggleVisibility}
+            onMoveUp={moveUp}
+            onMoveDown={moveDown}
+          />
+        </div>
       </div>
+
+      {/* KPI Dashboard */}
+      {isKpiEditMode ? (
+        <WidgetGrid
+          configs={widgetConfigs}
+          isEditMode={isKpiEditMode}
+          renderWidget={renderKpiWidget}
+          onToggle={toggleVisibility}
+          onGridDragEnd={handleGridDragEnd}
+          gridClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"
+        />
+      ) : (
+        visibleKpiWidgets.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {visibleKpiWidgets.map((config) => (
+              <div key={config.id} className="h-full">
+                {renderKpiWidget(config)}
+              </div>
+            ))}
+          </div>
+        )
+      )}
 
       {/* Report Type Selector */}
       <div className="flex flex-wrap gap-2">
