@@ -81,11 +81,8 @@ export const mockPostes: Poste[] = [
     type: "agent_securite",
     description: "Rondes de sécurité nocturnes dans l'ensemble du site",
     requirements: {
-      minimumExperience: 6,
       requiredCertifications: ["CQP APS", "Carte Professionnelle"],
       requiredQualifications: ["Formation ronde"],
-      physicalRequirements:
-        "Bonne condition physique, station debout prolongée",
     },
     schedule: {
       defaultShiftDuration: 10,
@@ -132,9 +129,7 @@ export const mockPostes: Poste[] = [
     type: "operateur_video",
     description: "Surveillance depuis le poste central de sécurité",
     requirements: {
-      minimumExperience: 12,
       requiredCertifications: ["CQP APS", "SSIAP 1", "Carte Professionnelle"],
-      physicalRequirements: "Vision correcte, usage prolongé d'écrans",
     },
     schedule: {
       defaultShiftDuration: 12,
@@ -180,9 +175,7 @@ export const mockPostes: Poste[] = [
     type: "accueil",
     description: "Contrôle des entrées et sorties, accueil visiteurs",
     requirements: {
-      minimumExperience: 3,
       requiredCertifications: ["CQP APS", "Carte Professionnelle"],
-      physicalRequirements: "Présentation soignée, station debout",
     },
     schedule: {
       defaultShiftDuration: 8,
@@ -219,7 +212,6 @@ export const mockPostes: Poste[] = [
     type: "agent_securite",
     description: "Surveillance du parking et des zones extérieures",
     requirements: {
-      minimumExperience: 3,
       requiredCertifications: ["CQP APS", "Carte Professionnelle"],
     },
     schedule: {
@@ -254,9 +246,7 @@ export const mockPostes: Poste[] = [
     type: "ssiap1",
     description: "Sécurité incendie et assistance aux personnes",
     requirements: {
-      minimumExperience: 12,
       requiredCertifications: ["SSIAP 1", "SST", "Carte Professionnelle"],
-      physicalRequirements: "Capacité d'intervention rapide",
     },
     schedule: {
       defaultShiftDuration: 12,
@@ -293,7 +283,6 @@ export const mockPostes: Poste[] = [
     type: "manager",
     description: "Coordination et supervision de l'équipe sur site",
     requirements: {
-      minimumExperience: 24,
       requiredCertifications: ["CQP APS", "SSIAP 2", "Carte Professionnelle"],
       requiredQualifications: ["Management", "Formation chef d'équipe"],
     },
@@ -333,13 +322,11 @@ export const mockPostes: Poste[] = [
     type: "agent_securite",
     description: "Surveillance avec chien",
     requirements: {
-      minimumExperience: 12,
       requiredCertifications: [
         "CQP APS",
         "Agent Cynophile",
         "Carte Professionnelle",
       ],
-      physicalRequirements: "Excellente condition physique",
     },
     schedule: {
       defaultShiftDuration: 10,

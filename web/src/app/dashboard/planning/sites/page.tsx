@@ -36,12 +36,10 @@ import {
   Users,
   DollarSign,
   ShieldCheck,
-  ChevronDown,
-  ChevronUp,
   Clock,
   AlertCircle,
 } from "lucide-react";
-import type { Site, Poste, SiteFormData, PosteFormData } from "@/lib/types";
+import type { Site, Poste, SiteFormData } from "@/lib/types";
 import { mockSites, mockSiteStats, mockPostes } from "@/data/sites";
 
 export default function SitesPage() {
@@ -53,14 +51,9 @@ export default function SitesPage() {
   const [isEditSiteModalOpen, setIsEditSiteModalOpen] = useState(false);
   const [isViewSiteModalOpen, setIsViewSiteModalOpen] = useState(false);
   const [isDeleteSiteModalOpen, setIsDeleteSiteModalOpen] = useState(false);
-  const [isCreatePosteModalOpen, setIsCreatePosteModalOpen] = useState(false);
-  const [isEditPosteModalOpen, setIsEditPosteModalOpen] = useState(false);
   const [isViewPosteModalOpen, setIsViewPosteModalOpen] = useState(false);
-  const [isDeletePosteModalOpen, setIsDeletePosteModalOpen] = useState(false);
   const [siteToDelete, setSiteToDelete] = useState<Site | null>(null);
   const [selectedPoste, setSelectedPoste] = useState<Poste | null>(null);
-  const [posteToDelete, setPosteToDelete] = useState<Poste | null>(null);
-  const [expandedSites, setExpandedSites] = useState<Set<string>>(new Set());
   const showCreateFromUrl = searchParams.get("create") === "true";
 
   const [siteFormData, setSiteFormData] = useState<SiteFormData>({
@@ -87,29 +80,6 @@ export default function SitesPage() {
     contractStartDate: "",
     contractEndDate: "",
     notes: "",
-  });
-
-  const [posteFormData, setPosteFormData] = useState<PosteFormData>({
-    name: "",
-    type: "agent_securite",
-    description: "",
-    requiredCertifications: [],
-    requiredQualifications: [],
-    vacationStart: "08:00",
-    vacationEnd: "16:00",
-    defaultShiftDuration: 8,
-    breakDuration: 30,
-    nightShift: false,
-    weekendWork: false,
-    rotatingShift: false,
-    minAgents: 1,
-    maxAgents: 1,
-    duties: "",
-    procedures: "",
-    equipment: "",
-    emergencyContact: "",
-    status: "active",
-    priority: "medium",
   });
 
   const getStatusBadge = (status: Site["status"]) => {
@@ -146,16 +116,6 @@ export default function SitesPage() {
       comptable: "Comptable",
     };
     return labels[type] || type;
-  };
-
-  const toggleSiteExpansion = (siteId: string) => {
-    const newExpanded = new Set(expandedSites);
-    if (newExpanded.has(siteId)) {
-      newExpanded.delete(siteId);
-    } else {
-      newExpanded.add(siteId);
-    }
-    setExpandedSites(newExpanded);
   };
 
   const handleViewSite = (site: Site) => {
@@ -314,175 +274,6 @@ export default function SitesPage() {
     setIsViewPosteModalOpen(true);
   };
 
-  const handleEditPoste = (poste: Poste) => {
-    setSelectedPoste(poste);
-    setPosteFormData({
-      name: poste.name,
-      type: poste.type,
-      description: poste.description || "",
-      requiredCertifications: poste.requirements.requiredCertifications,
-      requiredQualifications: poste.requirements.requiredQualifications || [],
-      vacationStart:
-        ((poste.schedule as Record<string, unknown>).vacationStart as string) ||
-        "08:00",
-      vacationEnd:
-        ((poste.schedule as Record<string, unknown>).vacationEnd as string) ||
-        "16:00",
-      defaultShiftDuration: poste.schedule.defaultShiftDuration,
-      breakDuration: poste.schedule.breakDuration || 30,
-      nightShift: poste.schedule.nightShift,
-      weekendWork: poste.schedule.weekendWork,
-      rotatingShift: poste.schedule.rotatingShift,
-      minAgents: poste.capacity.minAgents,
-      maxAgents: poste.capacity.maxAgents,
-      duties: poste.instructions?.duties.join("\n") || "",
-      procedures: poste.instructions?.procedures || "",
-      equipment: poste.instructions?.equipment?.join(", ") || "",
-      emergencyContact: poste.instructions?.emergencyContact || "",
-      status: poste.status,
-      priority: poste.priority,
-    });
-    setIsEditPosteModalOpen(true);
-  };
-
-  const handleSavePoste = () => {
-    if (selectedPoste) {
-      // Update existing poste
-      setPostes(
-        postes.map((p) =>
-          p.id === selectedPoste.id
-            ? {
-                ...p,
-                name: posteFormData.name,
-                type: posteFormData.type,
-                description: posteFormData.description,
-                requirements: {
-                  requiredCertifications: posteFormData.requiredCertifications,
-                  requiredQualifications: posteFormData.requiredQualifications,
-                },
-                schedule: {
-                  defaultShiftDuration: posteFormData.defaultShiftDuration,
-                  breakDuration: posteFormData.breakDuration,
-                  nightShift: posteFormData.nightShift,
-                  weekendWork: posteFormData.weekendWork,
-                  rotatingShift: posteFormData.rotatingShift,
-                  vacationStart: posteFormData.vacationStart,
-                  vacationEnd: posteFormData.vacationEnd,
-                },
-                capacity: {
-                  minAgents: posteFormData.minAgents,
-                  maxAgents: posteFormData.maxAgents,
-                  currentAgents: p.capacity.currentAgents,
-                },
-                instructions: {
-                  duties: (posteFormData.duties || "")
-                    .split("\n")
-                    .filter((d) => d.trim()),
-                  procedures: posteFormData.procedures,
-                  equipment: (posteFormData.equipment || "")
-                    .split(",")
-                    .map((e) => e.trim())
-                    .filter((e) => e),
-                  emergencyContact: posteFormData.emergencyContact,
-                },
-                status: posteFormData.status,
-                priority: posteFormData.priority,
-                updatedAt: new Date(),
-              }
-            : p,
-        ),
-      );
-      setIsEditPosteModalOpen(false);
-    } else if (selectedSite) {
-      // Create new poste
-      const newPoste: Poste = {
-        id: `poste-${Date.now()}`,
-        siteId: selectedSite.id,
-        name: posteFormData.name,
-        type: posteFormData.type,
-        description: posteFormData.description,
-        requirements: {
-          requiredCertifications: posteFormData.requiredCertifications,
-          requiredQualifications: posteFormData.requiredQualifications,
-        },
-        schedule: {
-          defaultShiftDuration: posteFormData.defaultShiftDuration,
-          breakDuration: posteFormData.breakDuration,
-          nightShift: posteFormData.nightShift,
-          weekendWork: posteFormData.weekendWork,
-          rotatingShift: posteFormData.rotatingShift,
-          vacationStart: posteFormData.vacationStart,
-          vacationEnd: posteFormData.vacationEnd,
-        },
-        capacity: {
-          minAgents: posteFormData.minAgents,
-          maxAgents: posteFormData.maxAgents,
-          currentAgents: 0,
-        },
-        instructions: {
-          duties: (posteFormData.duties || "")
-            .split("\n")
-            .filter((d) => d.trim()),
-          procedures: posteFormData.procedures,
-          equipment: (posteFormData.equipment || "")
-            .split(",")
-            .map((e) => e.trim())
-            .filter((e) => e),
-          emergencyContact: posteFormData.emergencyContact,
-        },
-        status: posteFormData.status,
-        priority: posteFormData.priority,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setPostes([...postes, newPoste]);
-      setIsCreatePosteModalOpen(false);
-    }
-    setSelectedPoste(null);
-    setSelectedSite(null);
-  };
-
-  const handleDeletePoste = (poste: Poste) => {
-    setPosteToDelete(poste);
-    setIsDeletePosteModalOpen(true);
-  };
-
-  const confirmDeletePoste = () => {
-    if (posteToDelete) {
-      setPostes(postes.filter((p) => p.id !== posteToDelete.id));
-      setIsDeletePosteModalOpen(false);
-      setPosteToDelete(null);
-    }
-  };
-
-  const handleCreatePoste = (siteId: string) => {
-    const site = sites.find((s) => s.id === siteId);
-    setSelectedSite(site || null);
-    setPosteFormData({
-      name: "",
-      type: "agent_securite",
-      description: "",
-      requiredCertifications: [],
-      requiredQualifications: [],
-      vacationStart: "08:00",
-      vacationEnd: "16:00",
-      defaultShiftDuration: 8,
-      breakDuration: 30,
-      nightShift: false,
-      weekendWork: false,
-      rotatingShift: false,
-      minAgents: 1,
-      maxAgents: 1,
-      duties: "",
-      procedures: "",
-      equipment: "",
-      emergencyContact: "",
-      status: "active",
-      priority: "medium",
-    });
-    setIsCreatePosteModalOpen(true);
-  };
-
   const resetSiteForm = () => {
     setSiteFormData({
       name: "",
@@ -516,24 +307,10 @@ export default function SitesPage() {
       key: "name",
       label: "Nom du site",
       render: (site) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => toggleSiteExpansion(site.id)}
-            className="h-6 w-6 p-0"
-          >
-            {expandedSites.has(site.id) ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </Button>
-          <div>
-            <div className="font-medium">{site.name}</div>
-            <div className="text-xs text-muted-foreground">
-              {site.address.city}
-            </div>
+        <div>
+          <div className="font-medium">{site.name}</div>
+          <div className="text-xs text-muted-foreground">
+            {site.address.city}
           </div>
         </div>
       ),
@@ -542,24 +319,6 @@ export default function SitesPage() {
       key: "clientName",
       label: "Client",
       render: (site) => site.clientName,
-    },
-    {
-      key: "postes",
-      label: "Postes",
-      render: (site) => {
-        const postesCount = site.postes.length;
-        const activePostes = site.postes.filter(
-          (p: Poste) => p.status === "active",
-        ).length;
-        return (
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span>
-              {activePostes}/{postesCount}
-            </span>
-          </div>
-        );
-      },
     },
     {
       key: "billing",
@@ -594,10 +353,6 @@ export default function SitesPage() {
             <DropdownMenuItem onClick={() => handleEditSite(site)}>
               <Pencil className="mr-2 h-4 w-4" />
               Modifier
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCreatePoste(site.id)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un poste
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleDeleteSite(site)}
@@ -658,81 +413,6 @@ export default function SitesPage() {
       </div>
 
       <DataTable<Site> columns={siteColumns} data={sites} />
-
-      {/* Expanded site details */}
-      {Array.from(expandedSites).map((siteId) => {
-        const site = sites.find((s) => s.id === siteId);
-        if (!site) return null;
-
-        const sitePostes = postes.filter((p) => p.siteId === siteId);
-
-        return (
-          <div
-            key={siteId}
-            className="ml-8 rounded-lg border bg-muted/50 p-4 space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Postes de {site.name}</h3>
-              <Button size="sm" onClick={() => handleCreatePoste(siteId)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un poste
-              </Button>
-            </div>
-
-            {sitePostes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucun poste créé pour ce site
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {sitePostes.map((poste) => (
-                  <div
-                    key={poste.id}
-                    className="flex items-center justify-between rounded-md border bg-background p-3"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <div className="font-medium">{poste.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {getPosteTypeLabel(poste.type)} •{" "}
-                          {poste.schedule.defaultShiftDuration}h
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {getPriorityBadge(poste.priority)}
-                        {getStatusBadge(poste.status)}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewPoste(poste)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditPoste(poste)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeletePoste(poste)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
 
       {/* Create Site Modal */}
       <Modal
@@ -1746,60 +1426,31 @@ export default function SitesPage() {
                       </span>
                     </div>
                   </div>
-                  {selectedPoste.requirements.minimumExperience &&
-                    selectedPoste.requirements.minimumExperience > 0 && (
-                      <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="text-xs text-muted-foreground mb-1">
-                          Expérience minimum
-                        </div>
-                        <div className="font-semibold">
-                          {selectedPoste.requirements.minimumExperience} mois
-                        </div>
-                      </div>
-                    )}
                 </div>
               </div>
             </div>
 
             {/* Requirements */}
-            {(selectedPoste.requirements.requiredCertifications.length > 0 ||
-              selectedPoste.requirements.physicalRequirements) && (
+            {selectedPoste.requirements.requiredCertifications.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                   <h4 className="font-semibold">Exigences</h4>
                 </div>
-                <div className="space-y-3">
-                  {selectedPoste.requirements.requiredCertifications.length >
-                    0 && (
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        Certifications
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedPoste.requirements.requiredCertifications.map(
-                          (cert) => (
-                            <Badge
-                              key={cert}
-                              variant="secondary"
-                              className="font-normal"
-                            >
-                              {cert}
-                            </Badge>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {selectedPoste.requirements.physicalRequirements && (
-                    <div>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        Exigences physiques
-                      </div>
-                      <p className="text-sm p-3 rounded-lg bg-muted/50">
-                        {selectedPoste.requirements.physicalRequirements}
-                      </p>
-                    </div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Certifications
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedPoste.requirements.requiredCertifications.map(
+                    (cert) => (
+                      <Badge
+                        key={cert}
+                        variant="secondary"
+                        className="font-normal"
+                      >
+                        {cert}
+                      </Badge>
+                    ),
                   )}
                 </div>
               </div>
@@ -1872,596 +1523,6 @@ export default function SitesPage() {
                 </div>
               </div>
             )}
-          </div>
-        </Modal>
-      )}
-
-      {/* Delete Poste Modal */}
-      <Modal
-        open={isDeletePosteModalOpen}
-        onOpenChange={setIsDeletePosteModalOpen}
-        title="Supprimer le poste"
-        description="Êtes-vous sûr de vouloir supprimer ce poste ?"
-        type="confirmation"
-      >
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsDeletePosteModalOpen(false)}
-          >
-            Annuler
-          </Button>
-          <Button variant="destructive" onClick={confirmDeletePoste}>
-            Supprimer
-          </Button>
-        </div>
-      </Modal>
-
-      {/* Create Poste Modal */}
-      <Modal
-        open={isCreatePosteModalOpen}
-        onOpenChange={setIsCreatePosteModalOpen}
-        title="Créer un nouveau poste"
-        description={
-          selectedSite
-            ? `Ajouter un poste pour ${selectedSite.name}`
-            : "Ajoutez un nouveau poste de sécurité"
-        }
-        size="xl"
-        type="form"
-      >
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-          <div>
-            <Label htmlFor="poste-site">Site *</Label>
-            <Select
-              value={selectedSite?.id || ""}
-              onValueChange={(siteId: string) => {
-                const site = sites.find((s) => s.id === siteId);
-                setSelectedSite(site || null);
-              }}
-              disabled={!!selectedSite}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner un site" />
-              </SelectTrigger>
-              <SelectContent>
-                {sites.map((site) => (
-                  <SelectItem key={site.id} value={site.id}>
-                    {site.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Informations générales</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <Label htmlFor="poste-name">Nom du poste *</Label>
-                <Input
-                  id="poste-name"
-                  value={posteFormData.name}
-                  onChange={(e) =>
-                    setPosteFormData({ ...posteFormData, name: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="poste-type">Type *</Label>
-                <Select
-                  value={posteFormData.type}
-                  onValueChange={(value) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      type: value as PosteFormData["type"],
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="agent_securite">
-                      Agent de Sécurité
-                    </SelectItem>
-                    <SelectItem value="ssiap1">SSIAP 1</SelectItem>
-                    <SelectItem value="ssiap2">SSIAP 2</SelectItem>
-                    <SelectItem value="ssiap3">SSIAP 3</SelectItem>
-                    <SelectItem value="operateur_video">
-                      Opérateur Vidéo
-                    </SelectItem>
-                    <SelectItem value="accueil">Accueil</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="rh">RH</SelectItem>
-                    <SelectItem value="comptable">Comptable</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="poste-priority">Priorité *</Label>
-                <Select
-                  value={posteFormData.priority}
-                  onValueChange={(value) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      priority: value as PosteFormData["priority"],
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Basse</SelectItem>
-                    <SelectItem value="medium">Moyenne</SelectItem>
-                    <SelectItem value="high">Haute</SelectItem>
-                    <SelectItem value="critical">Critique</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2">
-                <Label htmlFor="poste-description">Description</Label>
-                <Textarea
-                  id="poste-description"
-                  value={posteFormData.description}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      description: e.target.value,
-                    })
-                  }
-                  rows={2}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Horaires et planning</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="poste-shift">Durée vacation (heures) *</Label>
-                <Input
-                  id="poste-shift"
-                  type="number"
-                  value={posteFormData.defaultShiftDuration}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      defaultShiftDuration: parseInt(e.target.value) || 8,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="poste-break">Pause (minutes)</Label>
-                <Input
-                  id="poste-break"
-                  type="number"
-                  value={posteFormData.breakDuration}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      breakDuration: parseInt(e.target.value) || 30,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="text-sm">Début de vacation</Label>
-                <Input
-                  type="time"
-                  value={posteFormData.vacationStart}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      vacationStart: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label className="text-sm">Fin de vacation</Label>
-                <Input
-                  type="time"
-                  value={posteFormData.vacationEnd}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      vacationEnd: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-span-2 flex gap-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="poste-night"
-                    checked={posteFormData.nightShift}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        nightShift: e.target.checked,
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <Label htmlFor="poste-night" className="font-normal">
-                    Travail de nuit
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="poste-weekend"
-                    checked={posteFormData.weekendWork}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        weekendWork: e.target.checked,
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <Label htmlFor="poste-weekend" className="font-normal">
-                    Travail weekend
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="poste-rotating"
-                    checked={posteFormData.rotatingShift}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        rotatingShift: e.target.checked,
-                      })
-                    }
-                    className="rounded"
-                  />
-                  <Label htmlFor="poste-rotating" className="font-normal">
-                    Roulement
-                  </Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Capacité</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="poste-min">Agents minimum *</Label>
-                <Input
-                  id="poste-min"
-                  type="number"
-                  value={posteFormData.minAgents}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      minAgents: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="poste-max">Agents maximum *</Label>
-                <Input
-                  id="poste-max"
-                  type="number"
-                  value={posteFormData.maxAgents}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      maxAgents: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="font-medium">Instructions</h4>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="poste-duties">Tâches (une par ligne)</Label>
-                <Textarea
-                  id="poste-duties"
-                  value={posteFormData.duties}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      duties: e.target.value,
-                    })
-                  }
-                  rows={4}
-                  placeholder="Effectuer les rondes&#10;Contrôler les accès&#10;..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="poste-equipment">
-                  Équipement (séparé par des virgules)
-                </Label>
-                <Input
-                  id="poste-equipment"
-                  value={posteFormData.equipment}
-                  onChange={(e) =>
-                    setPosteFormData({
-                      ...posteFormData,
-                      equipment: e.target.value,
-                    })
-                  }
-                  placeholder="Radio, Lampe torche, Badge"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsCreatePosteModalOpen(false);
-              setSelectedSite(null);
-            }}
-          >
-            Annuler
-          </Button>
-          <Button onClick={handleSavePoste} disabled={!selectedSite}>
-            Créer le poste
-          </Button>
-        </div>
-      </Modal>
-
-      {/* Edit Poste Modal */}
-      {selectedPoste && (
-        <Modal
-          open={isEditPosteModalOpen}
-          onOpenChange={setIsEditPosteModalOpen}
-          title="Modifier le poste"
-          description="Modifiez les informations du poste"
-          size="xl"
-          type="form"
-        >
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-            <div className="space-y-4">
-              <h4 className="font-medium">Informations générales</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <Label htmlFor="edit-poste-name">Nom du poste *</Label>
-                  <Input
-                    id="edit-poste-name"
-                    value={posteFormData.name}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        name: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-poste-type">Type *</Label>
-                  <Select
-                    value={posteFormData.type}
-                    onValueChange={(value) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        type: value as PosteFormData["type"],
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="agent_securite">
-                        Agent de Sécurité
-                      </SelectItem>
-                      <SelectItem value="ssiap1">SSIAP 1</SelectItem>
-                      <SelectItem value="ssiap2">SSIAP 2</SelectItem>
-                      <SelectItem value="ssiap3">SSIAP 3</SelectItem>
-                      <SelectItem value="operateur_video">
-                        Opérateur Vidéo
-                      </SelectItem>
-                      <SelectItem value="accueil">Accueil</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="rh">RH</SelectItem>
-                      <SelectItem value="comptable">Comptable</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="edit-poste-priority">Priorité *</Label>
-                  <Select
-                    value={posteFormData.priority}
-                    onValueChange={(value) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        priority: value as PosteFormData["priority"],
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Basse</SelectItem>
-                      <SelectItem value="medium">Moyenne</SelectItem>
-                      <SelectItem value="high">Haute</SelectItem>
-                      <SelectItem value="critical">Critique</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium">Horaires</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-poste-shift">
-                    Durée vacation (heures) *
-                  </Label>
-                  <Input
-                    id="edit-poste-shift"
-                    type="number"
-                    value={posteFormData.defaultShiftDuration}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        defaultShiftDuration: parseInt(e.target.value) || 8,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-poste-break">Pause (minutes)</Label>
-                  <Input
-                    id="edit-poste-break"
-                    type="number"
-                    value={posteFormData.breakDuration}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        breakDuration: parseInt(e.target.value) || 30,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Début de vacation</Label>
-                  <Input
-                    type="time"
-                    value={posteFormData.vacationStart}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        vacationStart: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Fin de vacation</Label>
-                  <Input
-                    type="time"
-                    value={posteFormData.vacationEnd}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        vacationEnd: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="col-span-2 flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="edit-poste-night"
-                      checked={posteFormData.nightShift}
-                      onChange={(e) =>
-                        setPosteFormData({
-                          ...posteFormData,
-                          nightShift: e.target.checked,
-                        })
-                      }
-                      className="rounded"
-                    />
-                    <Label htmlFor="edit-poste-night" className="font-normal">
-                      Travail de nuit
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="edit-poste-weekend"
-                      checked={posteFormData.weekendWork}
-                      onChange={(e) =>
-                        setPosteFormData({
-                          ...posteFormData,
-                          weekendWork: e.target.checked,
-                        })
-                      }
-                      className="rounded"
-                    />
-                    <Label htmlFor="edit-poste-weekend" className="font-normal">
-                      Travail weekend
-                    </Label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium">Capacité</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-poste-min">Agents minimum *</Label>
-                  <Input
-                    id="edit-poste-min"
-                    type="number"
-                    value={posteFormData.minAgents}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        minAgents: parseInt(e.target.value) || 1,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-poste-max">Agents maximum *</Label>
-                  <Input
-                    id="edit-poste-max"
-                    type="number"
-                    value={posteFormData.maxAgents}
-                    onChange={(e) =>
-                      setPosteFormData({
-                        ...posteFormData,
-                        maxAgents: parseInt(e.target.value) || 1,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-poste-status">Statut *</Label>
-                  <Select
-                    value={posteFormData.status}
-                    onValueChange={(value: "active" | "inactive") =>
-                      setPosteFormData({ ...posteFormData, status: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Actif</SelectItem>
-                      <SelectItem value="inactive">Inactif</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditPosteModalOpen(false);
-                setSelectedPoste(null);
-              }}
-            >
-              Annuler
-            </Button>
-            <Button onClick={handleSavePoste}>Enregistrer</Button>
           </div>
         </Modal>
       )}

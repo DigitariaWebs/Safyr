@@ -1113,19 +1113,6 @@ export default function PostesPage() {
                   <ShieldCheck className="h-3.5 w-3.5" /> Exigences
                 </p>
                 <div className="space-y-2">
-                  {(selectedPoste.requirements.minimumExperience ?? 0) > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Exp. min.</span>
-                      <span>
-                        {selectedPoste.requirements.minimumExperience} mois
-                      </span>
-                    </div>
-                  )}
-                  {selectedPoste.requirements.physicalRequirements && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {selectedPoste.requirements.physicalRequirements}
-                    </p>
-                  )}
                   <div className="flex flex-wrap gap-1 pt-1">
                     {selectedPoste.requirements.requiredCertifications.map(
                       (c) => (

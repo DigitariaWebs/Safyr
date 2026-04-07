@@ -2517,10 +2517,8 @@ export interface Poste {
   description?: string;
   // Exigences
   requirements: {
-    minimumExperience?: number; // en mois
     requiredCertifications: string[]; // Ex: ["CQP APS", "SSIAP 1"]
     requiredQualifications?: string[];
-    physicalRequirements?: string;
   };
   // Planning
   schedule: {
