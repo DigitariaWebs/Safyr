@@ -1,8 +1,4 @@
-# Safyr monorepo — Worktrunk hooks
-# Turborepo with bun workspaces (web + mobile)
-
-# Install all workspace dependencies when creating a new worktree
-post-create = "bun install"
+pre-start = "bun install"
 
 # Validate code quality before committing
 [pre-commit]

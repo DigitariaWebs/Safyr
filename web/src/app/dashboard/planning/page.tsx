@@ -694,7 +694,11 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
         string,
         {
           name: string;
-          vacations: { agentName: string; startTime: string; endTime: string }[];
+          vacations: {
+            agentName: string;
+            startTime: string;
+            endTime: string;
+          }[];
         }
       >();
       for (const shift of shiftsForDay) {

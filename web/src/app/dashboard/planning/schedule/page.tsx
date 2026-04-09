@@ -1096,25 +1096,88 @@ export default function SchedulePage() {
       d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
     );
 
-    if (mode === "agent" || mode === "global") {
-      const tableData = assignedAgents.map(({ agentId, agentName }) => {
-        const row: (string | number)[] = [agentName];
+    const buildShiftRows = (
+      agents: { agentId: string; agentName?: string; name?: string }[],
+      shifts: AgentShift[],
+    ) =>
+      agents.map((a) => {
+        const name = a.agentName ?? a.name ?? "Inconnu";
+        const row: (string | number)[] = [name];
         displayDates.forEach((date) => {
           const ds = date.toISOString().split("T")[0];
-          const s = filteredShifts.find(
-            (sh) => sh.agentId === agentId && sh.date === ds,
+          const s = shifts.find(
+            (sh) => sh.agentId === a.agentId && sh.date === ds,
           );
           row.push(s ? `${s.startTime}–${s.endTime}` : "");
         });
         return row;
       });
 
+    const tableStyles = { fontSize: 7, cellPadding: 2 };
+    const headStyles = { fillColor: [15, 23, 42] as [number, number, number] };
+
+    if (mode === "agent" || mode === "global") {
       autoTable(doc, {
         startY: 30,
         head: [["Agent", ...dateLabels]],
-        body: tableData,
-        styles: { fontSize: 7, cellPadding: 2 },
-        headStyles: { fillColor: [15, 23, 42] },
+        body: buildShiftRows(assignedAgents, filteredShifts),
+        styles: tableStyles,
+        headStyles,
+      });
+    }
+
+    if (mode === "site") {
+      doc.setFontSize(11);
+      doc.text(`Site : ${siteName}`, 14, 28);
+      autoTable(doc, {
+        startY: 33,
+        head: [["Agent", ...dateLabels]],
+        body: buildShiftRows(assignedAgents, filteredShifts),
+        styles: tableStyles,
+        headStyles,
+      });
+    }
+
+    if (mode === "client") {
+      const clientSites = mockSites.filter(
+        (s) => s.clientId === selectedClientId,
+      );
+      let currentY = 30;
+
+      clientSites.forEach((site, siteIdx) => {
+        if (siteIdx > 0) {
+          doc.addPage();
+          doc.setFontSize(16);
+          doc.text(`Planning — ${clientName}`, 14, 16);
+          doc.setFontSize(10);
+          doc.text(periodLabel, 14, 23);
+          currentY = 30;
+        }
+        doc.setFontSize(11);
+        doc.text(`Site : ${site.name}`, 14, currentY);
+        currentY += 5;
+
+        const siteShifts = agentShifts.filter((s) => s.siteId === site.id);
+        const siteAgentIds = [...new Set(siteShifts.map((s) => s.agentId))];
+        const siteAgents = siteAgentIds.map((id) => ({
+          agentId: id,
+          name: mockPlanningAgents.find((a) => a.id === id)?.name,
+        }));
+        const rows = buildShiftRows(siteAgents, siteShifts);
+
+        if (rows.length > 0) {
+          autoTable(doc, {
+            startY: currentY,
+            head: [["Agent", ...dateLabels]],
+            body: rows,
+            styles: tableStyles,
+            headStyles,
+          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          currentY = ((doc as any).lastAutoTable?.finalY ?? currentY + 20) + 10;
+        } else {
+          currentY += 15;
+        }
       });
     }
 
@@ -1122,6 +1185,19 @@ export default function SchedulePage() {
       `planning-${siteName.replace(/\s+/g, "-").toLowerCase()}-${mode}.pdf`,
     );
   };
+
+  // Site coverage requirements (shared across all views)
+  const sitePostes = useMemo(
+    () =>
+      selectedSiteId
+        ? mockPostes.filter((p) => p.siteId === selectedSiteId)
+        : [],
+    [selectedSiteId],
+  );
+  const totalNeededPerDay = useMemo(
+    () => sitePostes.reduce((sum, p) => sum + (p.capacity?.minAgents ?? 0), 0),
+    [sitePostes],
+  );
 
   // Group dates into weeks for monthly view
   const weekGroups = useMemo(() => {
@@ -1390,15 +1466,24 @@ export default function SchedulePage() {
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <span className="text-sm">Double affectation</span>
               </div>
-              <div className="flex items-center gap-2" title="Agent a complété son service">
+              <div
+                className="flex items-center gap-2"
+                title="Agent a complété son service"
+              >
                 <div className="w-3 h-3 rounded-full bg-green-500" />
                 <span className="text-sm">Terminé</span>
               </div>
-              <div className="flex items-center gap-2" title="Agent n'a pas assuré son service">
+              <div
+                className="flex items-center gap-2"
+                title="Agent n'a pas assuré son service"
+              >
                 <div className="w-3 h-3 rounded-full bg-red-500" />
                 <span className="text-sm">Absent</span>
               </div>
-              <div className="flex items-center gap-2" title="Statut de présence non encore confirmé">
+              <div
+                className="flex items-center gap-2"
+                title="Statut de présence non encore confirmé"
+              >
                 <div className="w-3 h-3 rounded-full bg-gray-500" />
                 <span className="text-sm">En attente</span>
               </div>
@@ -1421,7 +1506,8 @@ export default function SchedulePage() {
                   className="gap-2 bg-cyan-500/20 text-cyan-700 border-cyan-500/30"
                 >
                   <Clipboard className="h-3 w-3" />
-                  Mode copie activé — {copiedShift.startTime} – {copiedShift.endTime}
+                  Mode copie activé — {copiedShift.startTime} –{" "}
+                  {copiedShift.endTime}
                 </Badge>
                 <Button
                   size="sm"
@@ -1636,6 +1722,7 @@ export default function SchedulePage() {
               onCustomizeShiftHours={handleCustomizeShiftHours}
               isClosedDay={isClosedDay}
               maxDailyWorkHours={settings.maxDailyWorkHours}
+              totalNeededPerDay={totalNeededPerDay}
             />
           )}
 
@@ -1677,6 +1764,7 @@ export default function SchedulePage() {
               onEditShift={handleEditShift}
               onPasteShift={handlePasteShift}
               isClosedDay={isClosedDay}
+              totalNeededPerDay={totalNeededPerDay}
             />
           )}
         </CardContent>
@@ -2928,6 +3016,7 @@ export default function SchedulePage() {
         displayDates={displayDates}
         isPublicHoliday={isPublicHoliday}
         timeOffRequests={mockTimeOffRequests}
+        settings={settings}
       />
     </div>
   );
@@ -2939,29 +3028,89 @@ function HourDetailsSection({
   displayDates,
   isPublicHoliday,
   timeOffRequests,
+  settings,
 }: {
   agents: { agentId: string; agentName: string }[];
   agentShifts: AgentShift[];
   displayDates: Date[];
   isPublicHoliday: (date: Date | string) => boolean;
   timeOffRequests: TimeOffRequest[];
+  settings: PlanningSettings;
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const rows = React.useMemo(() => {
+    const displayDateSet = new Set(
+      displayDates.map((d) => d.toISOString().split("T")[0]),
+    );
+
+    const getWeekNum = (d: Date) => {
+      const date = new Date(
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()),
+      );
+      date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil(
+        ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+      );
+    };
+
+    const computeNightHours = (
+      startTime: string,
+      endTime: string,
+      breakMins: number,
+    ) => {
+      const [sh, sm] = startTime.split(":").map(Number);
+      const [eh, em] = endTime.split(":").map(Number);
+      const startMins = sh * 60 + sm;
+      let endMins = eh * 60 + em;
+      if (endMins <= startMins) endMins += 24 * 60;
+      const dayStart = settings.dayHourStart * 60;
+      const dayEnd = settings.dayHourEnd * 60;
+      let nightMins = 0;
+      if (startMins < dayStart)
+        nightMins += Math.min(endMins, dayStart) - startMins;
+      if (endMins > dayEnd) nightMins += endMins - Math.max(startMins, dayEnd);
+      const totalMins = endMins - startMins;
+      if (totalMins > 0 && breakMins > 0) {
+        nightMins = Math.max(
+          0,
+          nightMins - breakMins * (nightMins / totalMins),
+        );
+      }
+      return nightMins / 60;
+    };
+
+    // Pre-build time-off counts: agentId → { vacation, sick_leave, training }
+    const timeOffCounts = new Map<string, Record<string, number>>();
+    for (const r of timeOffRequests) {
+      if (r.status !== "approved") continue;
+      const rStart = r.startDate.toString().split("T")[0];
+      const rEnd = r.endDate.toString().split("T")[0];
+      const overlaps = [...displayDateSet].some(
+        (ds) => ds >= rStart && ds <= rEnd,
+      );
+      if (!overlaps) continue;
+      let counts = timeOffCounts.get(r.employeeId);
+      if (!counts) {
+        counts = {};
+        timeOffCounts.set(r.employeeId, counts);
+      }
+      counts[r.type] = (counts[r.type] || 0) + 1;
+    }
+
     return agents.map(({ agentId, agentName }) => {
       let normales = 0;
       let nuit = 0;
       let dimanche = 0;
       let feries = 0;
+      let dimancheNuit = 0;
+      let ferieNuit = 0;
       let paniers = 0;
+      const weeklyHours: Record<number, number> = {};
 
       agentShifts
-        .filter(
-          (s) =>
-            s.agentId === agentId &&
-            displayDates.some((d) => d.toISOString().split("T")[0] === s.date),
-        )
+        .filter((s) => s.agentId === agentId && displayDateSet.has(s.date))
         .forEach((s) => {
           const [sh, sm] = s.startTime.split(":").map(Number);
           const [eh, em] = s.endTime.split(":").map(Number);
@@ -2973,29 +3122,63 @@ function HourDetailsSection({
           const date = new Date(s.date + "T00:00:00");
           const isSunday = date.getDay() === 0;
           const isHoliday = isPublicHoliday(date);
-          const startH = sh;
-          const isNight = startH >= 21 || startH < 6;
+          const nightHrs = computeNightHours(
+            s.startTime,
+            s.endTime,
+            s.breakDuration,
+          );
 
           normales += hrs;
-          if (isNight) nuit += hrs;
-          if (isSunday) dimanche += hrs;
-          if (isHoliday) feries += hrs;
-          if (hrs > 6) paniers += 1;
+          nuit += nightHrs;
+          if (isSunday) {
+            dimanche += hrs;
+            dimancheNuit += nightHrs;
+          }
+          if (isHoliday) {
+            feries += hrs;
+            ferieNuit += nightHrs;
+          }
+          if (hrs > settings.mealAllowanceMinContinuousHours) paniers += 1;
+
+          if (s.isSplit && s.splitStartTime2 && s.splitEndTime2) {
+            const [s2h, s2m] = s.splitStartTime2.split(":").map(Number);
+            const [e2h, e2m] = s.splitEndTime2.split(":").map(Number);
+            let mins2 = e2h * 60 + e2m - (s2h * 60 + s2m);
+            if (mins2 < 0) mins2 += 24 * 60;
+            const hrs2 = Math.max(0, mins2 / 60);
+            const nightHrs2 = computeNightHours(
+              s.splitStartTime2,
+              s.splitEndTime2,
+              0,
+            );
+            normales += hrs2;
+            nuit += nightHrs2;
+            if (isSunday) {
+              dimanche += hrs2;
+              dimancheNuit += nightHrs2;
+            }
+            if (isHoliday) {
+              feries += hrs2;
+              ferieNuit += nightHrs2;
+            }
+          }
+
+          const wk = getWeekNum(date);
+          weeklyHours[wk] = (weeklyHours[wk] || 0) + hrs;
         });
 
-      const conges = timeOffRequests.filter(
-        (r) =>
-          r.employeeId === agentId &&
-          r.status === "approved" &&
-          r.type === "vacation" &&
-          displayDates.some((d) => {
-            const ds = d.toISOString().split("T")[0];
-            return (
-              ds >= r.startDate.toString().split("T")[0] &&
-              ds <= r.endDate.toString().split("T")[0]
-            );
-          }),
-      ).length;
+      let overtimeT1 = 0;
+      let overtimeT2 = 0;
+      Object.values(weeklyHours).forEach((weekTotal) => {
+        overtimeT1 += Math.max(
+          0,
+          Math.min(weekTotal, settings.overtimeTier1EndHour) -
+            settings.overtimeTier1StartHour,
+        );
+        overtimeT2 += Math.max(0, weekTotal - settings.overtimeTier2StartHour);
+      });
+
+      const agentTimeOff = timeOffCounts.get(agentId) ?? {};
 
       return {
         agentId,
@@ -3004,11 +3187,24 @@ function HourDetailsSection({
         nuit,
         dimanche,
         feries,
+        dimancheNuit,
+        ferieNuit,
+        overtimeT1,
+        overtimeT2,
         paniers,
-        conges,
+        conges: agentTimeOff["vacation"] ?? 0,
+        arretMaladie: agentTimeOff["sick_leave"] ?? 0,
+        formation: agentTimeOff["training"] ?? 0,
       };
     });
-  }, [agents, agentShifts, displayDates, isPublicHoliday, timeOffRequests]);
+  }, [
+    agents,
+    agentShifts,
+    displayDates,
+    isPublicHoliday,
+    timeOffRequests,
+    settings,
+  ]);
 
   return (
     <Card className="border-border/40">
@@ -3033,21 +3229,37 @@ function HourDetailsSection({
               <thead>
                 <tr className="border-b text-muted-foreground text-xs">
                   <th className="text-left py-2 pr-4 font-medium">Agent</th>
-                  <th className="text-right py-2 px-3 font-medium">
+                  <th className="text-right py-2 px-2 font-medium">
                     H. normales
                   </th>
-                  <th className="text-right py-2 px-3 font-medium">H. nuit</th>
-                  <th className="text-right py-2 px-3 font-medium">
-                    H. dimanche
+                  <th className="text-right py-2 px-2 font-medium text-orange-600">
+                    H. sup T1 ({settings.overtimeTier1Percent}%)
                   </th>
-                  <th className="text-right py-2 px-3 font-medium">
-                    H. fériés
+                  <th className="text-right py-2 px-2 font-medium text-orange-700">
+                    H. sup T2 ({settings.overtimeTier2Percent}%)
                   </th>
-                  <th className="text-right py-2 px-3 font-medium">
-                    Paniers repas
+                  <th className="text-right py-2 px-2 font-medium text-indigo-600">
+                    H. nuit ({settings.nightSurchargePercent}%)
                   </th>
-                  <th className="text-right py-2 px-3 font-medium">
-                    Congés (j)
+                  <th className="text-right py-2 px-2 font-medium text-blue-600">
+                    H. dim. ({settings.sundayDaySurchargePercent}%)
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium text-red-600">
+                    H. fériés ({settings.holidayDaySurchargePercent}%)
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium text-violet-600">
+                    Dim. nuit ({settings.sundayNightSurchargePercent}%)
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium text-rose-700">
+                    Fér. nuit ({settings.holidayNightSurchargePercent}%)
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium">Paniers</th>
+                  <th className="text-right py-2 px-2 font-medium">Congés</th>
+                  <th className="text-right py-2 px-2 font-medium text-rose-600">
+                    Maladie
+                  </th>
+                  <th className="text-right py-2 px-2 font-medium text-purple-600">
+                    Formation
                   </th>
                 </tr>
               </thead>
@@ -3055,26 +3267,44 @@ function HourDetailsSection({
                 {rows.map((row) => (
                   <tr key={row.agentId} className="border-b hover:bg-muted/30">
                     <td className="py-2 pr-4 font-medium">{row.agentName}</td>
-                    <td className="text-right py-2 px-3">
+                    <td className="text-right py-2 px-2">
                       {row.normales.toFixed(2)}h
                     </td>
-                    <td className="text-right py-2 px-3 text-indigo-600">
+                    <td className="text-right py-2 px-2 text-orange-600">
+                      {row.overtimeT1.toFixed(2)}h
+                    </td>
+                    <td className="text-right py-2 px-2 text-orange-700">
+                      {row.overtimeT2.toFixed(2)}h
+                    </td>
+                    <td className="text-right py-2 px-2 text-indigo-600">
                       {row.nuit.toFixed(2)}h
                     </td>
-                    <td className="text-right py-2 px-3 text-blue-600">
+                    <td className="text-right py-2 px-2 text-blue-600">
                       {row.dimanche.toFixed(2)}h
                     </td>
-                    <td className="text-right py-2 px-3 text-red-600">
+                    <td className="text-right py-2 px-2 text-red-600">
                       {row.feries.toFixed(2)}h
                     </td>
-                    <td className="text-right py-2 px-3">{row.paniers}</td>
-                    <td className="text-right py-2 px-3">{row.conges}</td>
+                    <td className="text-right py-2 px-2 text-violet-600">
+                      {row.dimancheNuit.toFixed(2)}h
+                    </td>
+                    <td className="text-right py-2 px-2 text-rose-700">
+                      {row.ferieNuit.toFixed(2)}h
+                    </td>
+                    <td className="text-right py-2 px-2">{row.paniers}</td>
+                    <td className="text-right py-2 px-2">{row.conges}</td>
+                    <td className="text-right py-2 px-2 text-rose-600">
+                      {row.arretMaladie}
+                    </td>
+                    <td className="text-right py-2 px-2 text-purple-600">
+                      {row.formation}
+                    </td>
                   </tr>
                 ))}
                 {rows.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={13}
                       className="text-center py-4 text-muted-foreground"
                     >
                       Aucun agent assigné à ce site
@@ -3110,6 +3340,7 @@ function DailyView({
   onCustomizeShiftHours,
   isClosedDay,
   maxDailyWorkHours,
+  totalNeededPerDay,
 }: {
   date: Date;
   agents: { agentId: string; agentName: string }[];
@@ -3129,6 +3360,7 @@ function DailyView({
   onCustomizeShiftHours: (shift: AgentShift) => void;
   isClosedDay: (date: Date | string) => boolean;
   maxDailyWorkHours: number;
+  totalNeededPerDay: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const dateStr = formatDate(date);
@@ -3140,6 +3372,9 @@ function DailyView({
     return check < today;
   };
 
+  const isClosed = isClosedDay(date);
+  const totalAssigned = shifts.filter((s) => s.date === dateStr).length;
+
   return (
     <div>
       <div className="text-lg font-medium mb-4">
@@ -3150,6 +3385,32 @@ function DailyView({
           year: "numeric",
         })}
       </div>
+
+      {/* Besoin / coverage row */}
+      {totalNeededPerDay > 0 && !isClosed && (
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-56 shrink-0 p-2 bg-amber-500/10 rounded-lg flex items-center">
+            <span className="text-xs font-semibold text-amber-600">
+              Besoins
+            </span>
+          </div>
+          <div
+            className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border ${
+              totalAssigned >= totalNeededPerDay
+                ? "bg-green-500/5 border-green-200/50"
+                : "bg-amber-500/5 border-amber-200/50"
+            }`}
+          >
+            <span
+              className={`text-sm font-medium ${totalAssigned >= totalNeededPerDay ? "text-green-600" : "text-amber-600"}`}
+            >
+              {totalAssigned >= totalNeededPerDay
+                ? `✓ Complet (${totalAssigned}/${totalNeededPerDay} agents affectés)`
+                : `${totalAssigned}/${totalNeededPerDay} agents affectés`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Timeline header */}
       <div className="flex mb-2">
@@ -3761,7 +4022,7 @@ function WeeklyView({
         >
           <div className="w-56 shrink-0 p-2 bg-amber-500/10 rounded-lg flex items-center">
             <span className="text-xs font-semibold text-amber-600">
-              📋 Besoins
+              Besoins
             </span>
           </div>
           <div className="flex-1 flex gap-2">
@@ -4053,6 +4314,7 @@ function MonthlyView({
   onEditShift,
   onPasteShift,
   isClosedDay,
+  totalNeededPerDay,
 }: {
   dates: Date[];
   weekGroups: { dates: Date[]; startIdx: number }[];
@@ -4063,6 +4325,7 @@ function MonthlyView({
   onEditShift: (shift: AgentShift) => void;
   onPasteShift: (agentId: string, date: string) => void;
   isClosedDay: (date: Date | string) => boolean;
+  totalNeededPerDay: number;
 }) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
   const isDateInPast = (d: string | Date) => {
@@ -4106,13 +4369,13 @@ function MonthlyView({
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full flex flex-col">
       {/* Days of week header */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-px mb-1">
         {DAYS_OF_WEEK.map((day) => (
           <div
             key={day}
-            className="text-center text-xs font-semibold text-muted-foreground py-1"
+            className="text-center text-[10px] font-semibold text-muted-foreground py-0.5"
           >
             {day}
           </div>
@@ -4120,7 +4383,7 @@ function MonthlyView({
       </div>
 
       {/* Calendar grid */}
-      <div className="flex-1 grid grid-cols-7 gap-1 overflow-auto">
+      <div className="grid grid-cols-7 gap-px">
         {weekGroups.flatMap(
           (week: { dates: Date[]; startIdx: number }, weekIdx: number) =>
             week.dates.map((date: Date, idx: number) => {
@@ -4135,57 +4398,51 @@ function MonthlyView({
               return (
                 <div
                   key={`${weekIdx}-${idx}`}
-                  className={`
-                  border rounded-lg p-1 flex flex-col min-h-[100px]
-                  ${isClosed ? "bg-muted/30" : "bg-background"}
-                  ${isPast ? "opacity-60" : ""}
-                `}
+                  className={`border rounded p-0.5 flex flex-col min-h-0 ${isClosed ? "bg-muted/30" : "bg-background"} ${isPast ? "opacity-60" : ""}`}
                 >
                   {/* Week number above Thursday */}
                   {weekNum !== null && (
-                    <div className="text-[9px] text-primary font-semibold text-center mb-0.5">
-                      Sem. {weekNum}
+                    <div className="text-[8px] text-primary font-semibold text-center leading-none mb-px">
+                      S.{weekNum}
                     </div>
                   )}
                   {/* Date header */}
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between">
                     <span
-                      className={`
-                      text-sm font-semibold
-                      ${isClosed ? "text-muted-foreground" : ""}
-                      ${!isPast && !isClosed ? "text-primary" : ""}
-                    `}
+                      className={`text-xs font-semibold leading-none ${isClosed ? "text-muted-foreground" : ""} ${!isPast && !isClosed ? "text-primary" : ""}`}
                     >
                       {date.getDate()}
                     </span>
-                    {totalHours > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {totalHours.toFixed(1)}h
-                      </span>
-                    )}
+                    <div className="flex items-center gap-0.5">
+                      {totalNeededPerDay > 0 && !isClosed && (
+                        <span
+                          className={`text-[8px] font-medium leading-none ${dayShifts.length >= totalNeededPerDay ? "text-green-600" : "text-amber-600"}`}
+                        >
+                          {dayShifts.length >= totalNeededPerDay
+                            ? "✓"
+                            : `${dayShifts.length}/${totalNeededPerDay}`}
+                        </span>
+                      )}
+                      {totalHours > 0 && (
+                        <span className="text-[8px] text-muted-foreground leading-none">
+                          {totalHours.toFixed(1)}h
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Shifts list */}
-                  <div className="flex-1 space-y-1 overflow-y-auto">
+                  <div className="flex-1 space-y-px mt-px">
                     {dayShifts.map((shift) => (
                       <button
                         key={shift.id}
                         onClick={() => !isPast && onEditShift(shift)}
-                        className="w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white truncate"
+                        className="w-full text-left px-1 py-px rounded text-[9px] font-medium text-white truncate leading-tight"
                         style={{ backgroundColor: shift.color }}
                         title={`${getAgentName(shift.agentId)}: ${shift.startTime}-${shift.endTime}${shift.isSplit ? ` | ${shift.splitStartTime2}-${shift.splitEndTime2}` : ""}`}
                       >
-                        <div className="truncate">
-                          {getAgentName(shift.agentId).split(" ")[0]}
-                        </div>
-                        <div className="text-white/80 text-[9px]">
-                          {shift.startTime}-{shift.endTime}
-                          {shift.isSplit && (
-                            <span className="block">
-                              {shift.splitStartTime2}-{shift.splitEndTime2}
-                            </span>
-                          )}
-                        </div>
+                        {getAgentName(shift.agentId).split(" ")[0]}{" "}
+                        {shift.startTime}-{shift.endTime}
                       </button>
                     ))}
                   </div>
@@ -4195,7 +4452,6 @@ function MonthlyView({
                     <button
                       onClick={() => {
                         if (copiedShift) {
-                          // For simplicity, add to first agent
                           if (agents.length > 0) {
                             onPasteShift(agents[0].agentId, dateStr);
                           }
@@ -4203,9 +4459,9 @@ function MonthlyView({
                           onCreateShift(agents[0]?.agentId || "", dateStr);
                         }
                       }}
-                      className="mt-1 w-full py-0.5 text-[10px] text-muted-foreground hover:text-primary hover:bg-primary/10 rounded border border-dashed border-muted-foreground/30"
+                      className="w-full py-px text-[8px] text-muted-foreground hover:text-primary rounded border border-dashed border-muted-foreground/20 leading-none mt-px"
                     >
-                      + Ajouter
+                      +
                     </button>
                   )}
                 </div>
