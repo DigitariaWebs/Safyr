@@ -36,8 +36,6 @@ export interface ModuleNavigationBarProps {
   showNav?: boolean;
 }
 
-const MAX_NAV_ITEMS = 6;
-
 export function ModuleNavigationBar({
   moduleIcon: ModuleIcon,
   dashboardHref,
@@ -50,8 +48,7 @@ export function ModuleNavigationBar({
   const [selectedItem, setSelectedItem] = React.useState<NavItem | null>(null);
   const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
 
-  const canExpand = navItems.length <= MAX_NAV_ITEMS;
-  const shouldExpand = isNavExpanded && canExpand;
+  const shouldExpand = isNavExpanded;
 
   const isActiveItem = (item: NavItem) => {
     if (item.href && pathname === item.href) return true;

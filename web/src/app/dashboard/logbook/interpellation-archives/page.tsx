@@ -23,6 +23,7 @@ import {
   Eye,
   Pencil,
   Trash2,
+  Plus,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
@@ -40,7 +41,26 @@ interface InterpellationRecord {
   status: "archived" | "active";
   archivedAt: string;
   archivedBy: string;
+  // Identity
+  personNom?: string;
+  personPrenom?: string;
+  personDateNaissance?: string;
+  personLieuNaissance?: string;
+  personAdresse?: string;
+  personTelephone?: string;
+  // Circumstances
+  heureInterpellation?: string;
+  // Suites
+  appelForcesOrdre?: boolean;
+  detailForcesOrdre?: string;
+  typeInfraction?: "vol" | "degradation" | "intrusion" | "autre";
+  montantProduits?: number;
 }
+
+const mockSites = [
+  { id: "SITE-001", name: "Centre Commercial Atlantis" },
+  { id: "SITE-002", name: "Tour de Bureaux Skyline" },
+];
 
 const mockInterpellationRecords: InterpellationRecord[] = [
   {
@@ -57,6 +77,18 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     status: "archived",
     archivedAt: "2024-12-24T15:00:00Z",
     archivedBy: "Marie Martin",
+    personNom: "Dubois",
+    personPrenom: "Laurent",
+    personDateNaissance: "1987-03-15",
+    personLieuNaissance: "Marseille",
+    personAdresse: "12 rue de la Republique, 75001 Paris",
+    personTelephone: "06 12 34 56 78",
+    heureInterpellation: "14:30",
+    appelForcesOrdre: true,
+    detailForcesOrdre:
+      "Police nationale contactée à 14:45. Arrivée sur site à 15:10. PV numéro 2024-1247.",
+    typeInfraction: "vol",
+    montantProduits: 245.5,
   },
   {
     id: "INT-2024-002",
@@ -71,6 +103,17 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     status: "archived",
     archivedAt: "2024-12-23T11:00:00Z",
     archivedBy: "Pierre Durand",
+    personNom: "Moreau",
+    personPrenom: "Sébastien",
+    personDateNaissance: "1994-07-22",
+    personLieuNaissance: "Lyon",
+    personAdresse: "45 avenue Jean Jaurès, 69007 Lyon",
+    personTelephone: "07 89 01 23 45",
+    heureInterpellation: "10:15",
+    appelForcesOrdre: true,
+    detailForcesOrdre:
+      "Gendarmerie nationale contactée à 10:30. Remise en main propre à 11:05.",
+    typeInfraction: "intrusion",
   },
   {
     id: "INT-2024-003",
@@ -85,6 +128,16 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     status: "active",
     archivedAt: "",
     archivedBy: "",
+    personNom: "Petit",
+    personPrenom: "Arnaud",
+    personDateNaissance: "2002-11-08",
+    personLieuNaissance: "Nantes",
+    personAdresse: "8 boulevard Victor Hugo, 44000 Nantes",
+    personTelephone: "06 55 44 33 22",
+    heureInterpellation: "16:45",
+    appelForcesOrdre: false,
+    typeInfraction: "degradation",
+    montantProduits: 80.0,
   },
 ];
 
@@ -97,10 +150,349 @@ const reasons = [
   "Autre",
 ];
 
+const infractionOptions = [
+  { value: "vol", label: "Vol" },
+  { value: "degradation", label: "Dégradation" },
+  { value: "intrusion", label: "Intrusion" },
+  { value: "autre", label: "Autre" },
+];
+
+const emptyFicheData = {
+  reason: "",
+  description: "",
+  heureInterpellation: "",
+  personNom: "",
+  personPrenom: "",
+  personDateNaissance: "",
+  personLieuNaissance: "",
+  personAdresse: "",
+  personTelephone: "",
+  appelForcesOrdre: false,
+  detailForcesOrdre: "",
+  typeInfraction: "",
+  montantProduits: "",
+};
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">
+      {children}
+    </h3>
+  );
+}
+
+type FicheFormData = typeof emptyFicheData;
+
+function FicheFormSections({
+  data,
+  onChange,
+  readOnly,
+  recordDate,
+  recordSite,
+}: {
+  data: FicheFormData;
+  onChange: (updates: Partial<FicheFormData>) => void;
+  readOnly?: boolean;
+  recordDate?: string;
+  recordSite?: string;
+}) {
+  const today = new Date().toLocaleDateString("fr-FR");
+  const now = new Date().toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const showMontant =
+    data.typeInfraction === "vol" || data.typeInfraction === "degradation";
+
+  return (
+    <div className="space-y-6">
+      {/* Section 1 — Circonstances */}
+      <div>
+        <SectionTitle>Circonstances</SectionTitle>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Date</Label>
+            <Input
+              value={
+                recordDate
+                  ? new Date(recordDate).toLocaleDateString("fr-FR")
+                  : today
+              }
+              readOnly
+              className="bg-muted/30 text-muted-foreground"
+            />
+          </div>
+          <div>
+            <Label>Heure</Label>
+            <Input
+              value={data.heureInterpellation || now}
+              readOnly
+              className="bg-muted/30 text-muted-foreground"
+            />
+          </div>
+          <div className="col-span-2">
+            <Label>Site</Label>
+            <Input
+              value={recordSite ?? mockSites[0].name}
+              readOnly
+              className="bg-muted/30 text-muted-foreground"
+            />
+          </div>
+          <div className="col-span-2">
+            <Label>Motif</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.reason || "-"}</p>
+            ) : (
+              <Select
+                value={data.reason}
+                onValueChange={(v) => onChange({ reason: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un motif" />
+                </SelectTrigger>
+                <SelectContent>
+                  {reasons.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <div className="col-span-2">
+            <Label>Description / Libellé</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1 whitespace-pre-wrap">
+                {data.description || "-"}
+              </p>
+            ) : (
+              <textarea
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                rows={3}
+                value={data.description}
+                onChange={(e) => onChange({ description: e.target.value })}
+                placeholder="Description des circonstances..."
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2 — Personne interpellée */}
+      <div>
+        <SectionTitle>Personne interpellée</SectionTitle>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Nom</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.personNom || "-"}</p>
+            ) : (
+              <Input
+                value={data.personNom}
+                onChange={(e) => onChange({ personNom: e.target.value })}
+                placeholder="Nom de famille"
+              />
+            )}
+          </div>
+          <div>
+            <Label>Prénom</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.personPrenom || "-"}</p>
+            ) : (
+              <Input
+                value={data.personPrenom}
+                onChange={(e) => onChange({ personPrenom: e.target.value })}
+                placeholder="Prénom"
+              />
+            )}
+          </div>
+          <div>
+            <Label>Date de naissance</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">
+                {data.personDateNaissance
+                  ? new Date(data.personDateNaissance).toLocaleDateString(
+                      "fr-FR",
+                    )
+                  : "-"}
+              </p>
+            ) : (
+              <Input
+                type="date"
+                value={data.personDateNaissance}
+                onChange={(e) =>
+                  onChange({ personDateNaissance: e.target.value })
+                }
+              />
+            )}
+          </div>
+          <div>
+            <Label>Lieu de naissance</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.personLieuNaissance || "-"}</p>
+            ) : (
+              <Input
+                value={data.personLieuNaissance}
+                onChange={(e) =>
+                  onChange({ personLieuNaissance: e.target.value })
+                }
+                placeholder="Ville / Commune"
+              />
+            )}
+          </div>
+          <div className="col-span-2">
+            <Label>Adresse</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.personAdresse || "-"}</p>
+            ) : (
+              <Input
+                value={data.personAdresse}
+                onChange={(e) => onChange({ personAdresse: e.target.value })}
+                placeholder="Adresse complète"
+              />
+            )}
+          </div>
+          <div>
+            <Label>Téléphone</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">{data.personTelephone || "-"}</p>
+            ) : (
+              <Input
+                value={data.personTelephone}
+                onChange={(e) => onChange({ personTelephone: e.target.value })}
+                placeholder="Numéro de téléphone"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3 — Suites */}
+      <div>
+        <SectionTitle>Suites</SectionTitle>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            {readOnly ? (
+              <p className="text-sm">
+                Forces de l&apos;ordre contactées :{" "}
+                <strong>{data.appelForcesOrdre ? "Oui" : "Non"}</strong>
+              </p>
+            ) : (
+              <label className="flex items-center gap-2 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  checked={data.appelForcesOrdre}
+                  onChange={(e) =>
+                    onChange({ appelForcesOrdre: e.target.checked })
+                  }
+                  className="h-4 w-4"
+                />
+                Forces de l&apos;ordre contactées
+              </label>
+            )}
+          </div>
+
+          {data.appelForcesOrdre && (
+            <div>
+              <Label>Détail forces de l&apos;ordre</Label>
+              {readOnly ? (
+                <p className="text-sm mt-1 whitespace-pre-wrap">
+                  {data.detailForcesOrdre || "-"}
+                </p>
+              ) : (
+                <textarea
+                  className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  rows={2}
+                  value={data.detailForcesOrdre}
+                  onChange={(e) =>
+                    onChange({ detailForcesOrdre: e.target.value })
+                  }
+                  placeholder="Unité contactée, heure d'arrivée, numéro de procès-verbal..."
+                />
+              )}
+            </div>
+          )}
+
+          <div>
+            <Label>Type d&apos;infraction</Label>
+            {readOnly ? (
+              <p className="text-sm mt-1">
+                {infractionOptions.find((o) => o.value === data.typeInfraction)
+                  ?.label ?? "-"}
+              </p>
+            ) : (
+              <Select
+                value={data.typeInfraction}
+                onValueChange={(v) => onChange({ typeInfraction: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {infractionOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          {showMontant && (
+            <div>
+              <Label>Montant produits / dégradation (€)</Label>
+              {readOnly ? (
+                <p className="text-sm mt-1">
+                  {data.montantProduits
+                    ? `${Number(data.montantProduits).toFixed(2)} €`
+                    : "-"}
+                </p>
+              ) : (
+                <Input
+                  type="number"
+                  value={data.montantProduits}
+                  onChange={(e) =>
+                    onChange({ montantProduits: e.target.value })
+                  }
+                  placeholder="Montant en euros"
+                  min="0"
+                  step="0.01"
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function recordToFormData(record: InterpellationRecord): FicheFormData {
+  return {
+    reason: record.reason ?? "",
+    description: record.description ?? "",
+    heureInterpellation: record.heureInterpellation ?? "",
+    personNom: record.personNom ?? "",
+    personPrenom: record.personPrenom ?? "",
+    personDateNaissance: record.personDateNaissance ?? "",
+    personLieuNaissance: record.personLieuNaissance ?? "",
+    personAdresse: record.personAdresse ?? "",
+    personTelephone: record.personTelephone ?? "",
+    appelForcesOrdre: record.appelForcesOrdre ?? false,
+    detailForcesOrdre: record.detailForcesOrdre ?? "",
+    typeInfraction: record.typeInfraction ?? "",
+    montantProduits: record.montantProduits?.toString() ?? "",
+  };
+}
+
 export default function InterpellationArchivesPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewingRecord, setViewingRecord] =
     useState<InterpellationRecord | null>(null);
   const [editingRecord, setEditingRecord] =
@@ -115,6 +507,11 @@ export default function InterpellationArchivesPage() {
     endDate: "",
     searchTerm: "",
   });
+
+  const [newFicheData, setNewFicheData] =
+    useState<FicheFormData>(emptyFicheData);
+  const [editFicheData, setEditFicheData] =
+    useState<FicheFormData>(emptyFicheData);
 
   let filteredRecords = mockInterpellationRecords;
 
@@ -183,6 +580,27 @@ export default function InterpellationArchivesPage() {
       render: (record) => <Badge variant="outline">{record.reason}</Badge>,
     },
     {
+      key: "personNom",
+      label: "Personne",
+      render: (record) =>
+        record.personNom
+          ? `${record.personNom} ${record.personPrenom ?? ""}`.trim()
+          : "-",
+    },
+    {
+      key: "typeInfraction",
+      label: "Infraction",
+      render: (record) =>
+        record.typeInfraction ? (
+          <Badge variant="outline">
+            {infractionOptions.find((o) => o.value === record.typeInfraction)
+              ?.label ?? record.typeInfraction}
+          </Badge>
+        ) : (
+          "-"
+        ),
+    },
+    {
       key: "status",
       label: "Statut",
       render: (record) => (
@@ -213,6 +631,7 @@ export default function InterpellationArchivesPage() {
             onClick={(e) => {
               e.stopPropagation();
               setEditingRecord(record);
+              setEditFicheData(recordToFormData(record));
               setIsEditModalOpen(true);
             }}
           >
@@ -233,6 +652,12 @@ export default function InterpellationArchivesPage() {
       ),
     },
   ];
+
+  const handleCreate = () => {
+    alert("Fiche d'interpellation créée");
+    setIsCreateModalOpen(false);
+    setNewFicheData(emptyFicheData);
+  };
 
   const handleEdit = () => {
     alert("Fiche d'interpellation modifiée avec succès!");
@@ -257,10 +682,22 @@ export default function InterpellationArchivesPage() {
             Stockage sécurisé par site et date avec recherche avancée
           </p>
         </div>
-        <Button variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Exporter
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setNewFicheData(emptyFicheData);
+              setIsCreateModalOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle fiche
+          </Button>
+          <Button variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Exporter
+          </Button>
+        </div>
       </div>
 
       {/* Search Filters */}
@@ -423,13 +860,46 @@ export default function InterpellationArchivesPage() {
         </CardContent>
       </Card>
 
+      {/* Create Modal */}
+      <Modal
+        open={isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open);
+          if (!open) setNewFicheData(emptyFicheData);
+        }}
+        type="form"
+        title="Nouvelle fiche d'interpellation"
+        size="xl"
+        actions={{
+          primary: {
+            label: "Enregistrer la fiche",
+            onClick: handleCreate,
+          },
+          secondary: {
+            label: "Annuler",
+            onClick: () => {
+              setIsCreateModalOpen(false);
+              setNewFicheData(emptyFicheData);
+            },
+            variant: "outline",
+          },
+        }}
+      >
+        <FicheFormSections
+          data={newFicheData}
+          onChange={(updates) =>
+            setNewFicheData((prev) => ({ ...prev, ...updates }))
+          }
+        />
+      </Modal>
+
       {/* View Modal */}
       <Modal
         open={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         type="details"
         title="Détails de la fiche d'interpellation"
-        size="lg"
+        size="xl"
         actions={{
           secondary: {
             label: "Fermer",
@@ -438,75 +908,55 @@ export default function InterpellationArchivesPage() {
         }}
       >
         {viewingRecord && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>ID</Label>
-                <p className="text-sm font-mono">{viewingRecord.id}</p>
-              </div>
-              <div>
-                <Label>Site</Label>
-                <p className="text-sm font-medium">{viewingRecord.siteName}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Date</Label>
-                <p className="text-sm">
-                  {new Date(viewingRecord.date).toLocaleString("fr-FR")}
-                </p>
+                <p className="text-sm font-mono mt-1">{viewingRecord.id}</p>
               </div>
               <div>
                 <Label>Agent</Label>
-                <p className="text-sm">{viewingRecord.agentName}</p>
+                <p className="text-sm mt-1">{viewingRecord.agentName}</p>
               </div>
             </div>
-
-            <div>
-              <Label>Motif</Label>
-              <Badge variant="outline">{viewingRecord.reason}</Badge>
-            </div>
-
-            <div>
-              <Label>Description</Label>
-              <p className="text-sm whitespace-pre-wrap">
-                {viewingRecord.description}
-              </p>
-            </div>
-
-            {viewingRecord.personInterpellated && (
-              <div>
-                <Label>Personne interpellée</Label>
-                <p className="text-sm">{viewingRecord.personInterpellated}</p>
-              </div>
-            )}
 
             <div>
               <Label>Statut</Label>
-              <Badge
-                variant={
-                  viewingRecord.status === "archived" ? "default" : "secondary"
-                }
-              >
-                {viewingRecord.status === "archived" ? "Archivé" : "Actif"}
-              </Badge>
+              <div className="mt-1">
+                <Badge
+                  variant={
+                    viewingRecord.status === "archived"
+                      ? "default"
+                      : "secondary"
+                  }
+                >
+                  {viewingRecord.status === "archived" ? "Archivé" : "Actif"}
+                </Badge>
+              </div>
             </div>
 
             {viewingRecord.status === "archived" && (
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+              <div className="grid grid-cols-2 gap-4 pb-4 border-b">
                 <div>
                   <Label>Archivé le</Label>
-                  <p className="text-sm">
+                  <p className="text-sm mt-1">
                     {new Date(viewingRecord.archivedAt).toLocaleString("fr-FR")}
                   </p>
                 </div>
                 <div>
                   <Label>Archivé par</Label>
-                  <p className="text-sm">{viewingRecord.archivedBy}</p>
+                  <p className="text-sm mt-1">{viewingRecord.archivedBy}</p>
                 </div>
               </div>
             )}
+
+            <FicheFormSections
+              data={recordToFormData(viewingRecord)}
+              onChange={() => {}}
+              readOnly
+              recordDate={viewingRecord.date}
+              recordSite={viewingRecord.siteName}
+            />
           </div>
         )}
       </Modal>
@@ -514,10 +964,13 @@ export default function InterpellationArchivesPage() {
       {/* Edit Modal */}
       <Modal
         open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) setEditingRecord(null);
+        }}
         type="form"
         title="Modifier la fiche d'interpellation"
-        size="lg"
+        size="xl"
         actions={{
           primary: {
             label: "Enregistrer",
@@ -531,30 +984,25 @@ export default function InterpellationArchivesPage() {
         }}
       >
         {editingRecord && (
-          <div className="space-y-4">
-            <div>
-              <Label>ID</Label>
-              <Input value={editingRecord.id} disabled />
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>ID</Label>
+                <Input value={editingRecord.id} disabled />
+              </div>
+              <div>
+                <Label>Agent</Label>
+                <Input value={editingRecord.agentName} disabled />
+              </div>
             </div>
-            <div>
-              <Label>Motif</Label>
-              <Select defaultValue={editingRecord.reason}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {reasons.map((reason) => (
-                    <SelectItem key={reason} value={reason}>
-                      {reason}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Input defaultValue={editingRecord.description} />
-            </div>
+            <FicheFormSections
+              data={editFicheData}
+              onChange={(updates) =>
+                setEditFicheData((prev) => ({ ...prev, ...updates }))
+              }
+              recordDate={editingRecord.date}
+              recordSite={editingRecord.siteName}
+            />
           </div>
         )}
       </Modal>

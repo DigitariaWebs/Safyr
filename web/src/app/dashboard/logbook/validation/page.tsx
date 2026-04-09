@@ -32,6 +32,7 @@ import {
   Edit,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
+import { getSeverityLabel, getStatusLabel } from "@/lib/logbook-utils";
 
 export default function ValidationPage() {
   const [events, setEvents] = useState<LogbookEvent[]>(mockLogbookEvents);
@@ -192,7 +193,7 @@ export default function ValidationPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant={getSeverityColor(event.severity)}>
-                        {event.severity}
+                        {getSeverityLabel(event.severity)}
                       </Badge>
                       <Badge variant="outline">{event.type}</Badge>
                       <span className="text-xs text-muted-foreground">
@@ -205,7 +206,7 @@ export default function ValidationPage() {
                   </div>
                   <Badge variant="secondary" className="gap-1">
                     <Clock className="h-3 w-3" />
-                    {event.status}
+                    {getStatusLabel(event.status)}
                   </Badge>
                 </div>
               </CardHeader>
@@ -374,7 +375,7 @@ export default function ValidationPage() {
               <div>
                 <Label>Gravité</Label>
                 <Badge variant={getSeverityColor(viewingEvent.severity)}>
-                  {viewingEvent.severity}
+                  {getSeverityLabel(viewingEvent.severity)}
                 </Badge>
               </div>
             </div>
@@ -382,7 +383,9 @@ export default function ValidationPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Statut</Label>
-                <Badge variant="secondary">{viewingEvent.status}</Badge>
+                <Badge variant="secondary">
+                  {getStatusLabel(viewingEvent.status)}
+                </Badge>
               </div>
               <div>
                 <Label>Agent</Label>

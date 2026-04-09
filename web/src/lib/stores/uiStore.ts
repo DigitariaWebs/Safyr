@@ -52,7 +52,7 @@ export const useUiStore = create<UiStore>()(
         })),
 
       // Dashboard navigation
-      isNavExpanded: false,
+      isNavExpanded: true,
       setIsNavExpanded: (expanded) => set({ isNavExpanded: expanded }),
       toggleNavExpanded: () =>
         set((state) => ({ isNavExpanded: !state.isNavExpanded })),

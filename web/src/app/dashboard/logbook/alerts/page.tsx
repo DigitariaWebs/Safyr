@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { mockAlerts, type Alert, type AlertType } from "@/data/logbook-alerts";
+import { getSeverityLabel } from "@/lib/logbook-utils";
 
 export default function AlertsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -135,7 +136,7 @@ export default function AlertsPage() {
                             : "default"
                       }
                     >
-                      {alert.severity}
+                      {getSeverityLabel(alert.severity)}
                     </Badge>
                     <Badge variant="outline">
                       {getAlertTypeLabel(alert.type)}
@@ -192,7 +193,7 @@ export default function AlertsPage() {
         onOpenChange={setIsViewModalOpen}
         type="details"
         title="Détails de l'alerte"
-        size="lg"
+        size="xl"
       >
         {viewingAlert && (
           <div className="space-y-4">
@@ -215,7 +216,7 @@ export default function AlertsPage() {
                           : "default"
                     }
                   >
-                    {viewingAlert.severity}
+                    {getSeverityLabel(viewingAlert.severity)}
                   </Badge>
                 </div>
               </div>

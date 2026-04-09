@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Users, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { getStatusLabel } from "@/lib/logbook-utils";
 
 interface PlanningConnection {
   id: string;
@@ -161,7 +162,17 @@ export default function PlanningRHPage() {
           absent: "destructive",
           late: "secondary",
         };
-        return <Badge variant={variants[conn.status]}>{conn.status}</Badge>;
+        const labels: Record<string, string> = {
+          scheduled: "Planifié",
+          present: "Présent",
+          absent: "Absent",
+          late: "En retard",
+        };
+        return (
+          <Badge variant={variants[conn.status]}>
+            {labels[conn.status] ?? conn.status}
+          </Badge>
+        );
       },
     },
     {
@@ -218,7 +229,11 @@ export default function PlanningRHPage() {
           processed: "default",
           archived: "secondary",
         };
-        return <Badge variant={variants[trans.status]}>{trans.status}</Badge>;
+        return (
+          <Badge variant={variants[trans.status]}>
+            {getStatusLabel(trans.status)}
+          </Badge>
+        );
       },
     },
     {

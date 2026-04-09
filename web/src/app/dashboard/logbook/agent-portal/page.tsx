@@ -26,6 +26,7 @@ import {
 import { MediaUpload } from "@/components/logbook/MediaUpload";
 import { QRCodeScanner } from "@/components/logbook/QRCodeScanner";
 import { DigitalSignature } from "@/components/logbook/DigitalSignature";
+import { getStatusLabel } from "@/lib/logbook-utils";
 
 export default function AgentPortalPage() {
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
@@ -80,7 +81,11 @@ export default function AgentPortalPage() {
           pending: "outline",
           deferred: "outline",
         };
-        return <Badge variant={variants[event.status]}>{event.status}</Badge>;
+        return (
+          <Badge variant={variants[event.status]}>
+            {getStatusLabel(event.status)}
+          </Badge>
+        );
       },
     },
   ];
@@ -397,7 +402,9 @@ export default function AgentPortalPage() {
               </div>
               <div>
                 <Label>Statut</Label>
-                <Badge variant="secondary">{viewingEvent.status}</Badge>
+                <Badge variant="secondary">
+                  {getStatusLabel(viewingEvent.status)}
+                </Badge>
               </div>
             </div>
           </div>

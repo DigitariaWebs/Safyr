@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { mockLogbookEvents, LogbookEvent } from "@/data/logbook-events";
+import { getSeverityLabel, getStatusLabel } from "@/lib/logbook-utils";
 
 export default function ClientPortalPage() {
   const [selectedSite, setSelectedSite] = useState("all");
@@ -95,7 +96,9 @@ export default function ClientPortalPage() {
           low: "secondary",
         };
         return (
-          <Badge variant={variants[event.severity]}>{event.severity}</Badge>
+          <Badge variant={variants[event.severity]}>
+            {getSeverityLabel(event.severity)}
+          </Badge>
         );
       },
     },
@@ -109,7 +112,11 @@ export default function ClientPortalPage() {
           pending: "outline",
           deferred: "outline",
         };
-        return <Badge variant={variants[event.status]}>{event.status}</Badge>;
+        return (
+          <Badge variant={variants[event.status]}>
+            {getStatusLabel(event.status)}
+          </Badge>
+        );
       },
     },
     {
@@ -371,14 +378,16 @@ export default function ClientPortalPage() {
                       : "default"
                   }
                 >
-                  {viewingEvent.severity}
+                  {getSeverityLabel(viewingEvent.severity)}
                 </Badge>
               </div>
             </div>
 
             <div>
               <Label>Statut</Label>
-              <Badge variant="secondary">{viewingEvent.status}</Badge>
+              <Badge variant="secondary">
+                {getStatusLabel(viewingEvent.status)}
+              </Badge>
             </div>
           </div>
         )}

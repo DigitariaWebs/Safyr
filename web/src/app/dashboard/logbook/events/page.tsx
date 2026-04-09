@@ -40,12 +40,30 @@ import { Modal } from "@/components/ui/modal";
 import { QRCodeScanner } from "@/components/logbook/QRCodeScanner";
 import { MediaUpload } from "@/components/logbook/MediaUpload";
 import { DigitalSignature } from "@/components/logbook/DigitalSignature";
+import { DateRangeFilter } from "@/components/ui/date-range-filter";
+import {
+  getSeverityBadgeVariant,
+  getStatusBadgeVariant,
+  getSeverityLabel,
+  getStatusLabel,
+} from "@/lib/logbook-utils";
+import {
+  buildDateRange,
+  isDateInRange,
+  type DateFilterPreset,
+} from "@/lib/date-range";
+
+const CURRENT_AGENT = mockAgents[0];
+const CURRENT_SITE = mockSites.find((s) => s.id === CURRENT_AGENT.siteId)!;
 
 export default function EventsListPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSite, setSelectedSite] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedSeverity, setSelectedSeverity] = useState("all");
+  const [dateFilter, setDateFilter] = useState<DateFilterPreset>("all");
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
   const [isNewEventModalOpen, setIsNewEventModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -104,13 +122,13 @@ export default function EventsListPage() {
 
   const handleCreate = () => {
     setFormData({
-      site: "",
+      site: CURRENT_SITE.id,
       zone: "",
       type: "",
       severity: "",
       title: "",
       description: "",
-      agent: "",
+      agent: CURRENT_AGENT.id,
       status: "in_progress",
     });
     setPhotos([]);
@@ -156,36 +174,6 @@ export default function EventsListPage() {
     setDeletingEvent(null);
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "destructive";
-      case "high":
-        return "destructive";
-      case "medium":
-        return "default";
-      case "low":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "resolved":
-        return "default";
-      case "in_progress":
-        return "secondary";
-      case "pending":
-        return "outline";
-      case "deferred":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
-
   const columns: ColumnDef<LogbookEvent>[] = [
     {
       key: "id",
@@ -226,8 +214,8 @@ export default function EventsListPage() {
       key: "severity",
       label: "Gravité",
       render: (event) => (
-        <Badge variant={getSeverityColor(event.severity)}>
-          {event.severity}
+        <Badge variant={getSeverityBadgeVariant(event.severity)}>
+          {getSeverityLabel(event.severity)}
         </Badge>
       ),
     },
@@ -235,7 +223,9 @@ export default function EventsListPage() {
       key: "status",
       label: "Statut",
       render: (event) => (
-        <Badge variant={getStatusColor(event.status)}>{event.status}</Badge>
+        <Badge variant={getStatusBadgeVariant(event.status)}>
+          {getStatusLabel(event.status)}
+        </Badge>
       ),
     },
     {
@@ -296,7 +286,13 @@ export default function EventsListPage() {
     },
   ];
 
+  const dateRange = buildDateRange(dateFilter, customStartDate, customEndDate);
+
   const filteredEvents = mockLogbookEvents.filter((event) => {
+    if (!isDateInRange(event.timestamp, dateRange)) {
+      return false;
+    }
+
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -329,7 +325,7 @@ export default function EventsListPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 flex-wrap">
         <div className="flex-1">
           <Input
             placeholder="Rechercher un événement..."
@@ -338,6 +334,14 @@ export default function EventsListPage() {
             className="w-full"
           />
         </div>
+        <DateRangeFilter
+          preset={dateFilter}
+          customStartDate={customStartDate}
+          customEndDate={customEndDate}
+          onPresetChange={setDateFilter}
+          onCustomStartDateChange={setCustomStartDate}
+          onCustomEndDateChange={setCustomEndDate}
+        />
         <Select value={selectedSite} onValueChange={setSelectedSite}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Site" />
@@ -449,23 +453,10 @@ export default function EventsListPage() {
           {/* Basic Information */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="site">Site *</Label>
-              <Select
-                value={formData.site}
-                onValueChange={(value) => handleInputChange("site", value)}
-                required
-              >
-                <SelectTrigger id="site">
-                  <SelectValue placeholder="Sélectionner un site" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockSites.map((site) => (
-                    <SelectItem key={site.id} value={site.id}>
-                      {site.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Site (attribue automatiquement)</Label>
+              <p className="text-sm py-2 px-3 bg-muted/30 rounded-md border border-border/40">
+                {CURRENT_SITE.name}
+              </p>
             </div>
 
             <div>
@@ -518,23 +509,10 @@ export default function EventsListPage() {
             </div>
 
             <div>
-              <Label htmlFor="agent">Agent responsable *</Label>
-              <Select
-                value={formData.agent}
-                onValueChange={(value) => handleInputChange("agent", value)}
-                required
-              >
-                <SelectTrigger id="agent">
-                  <SelectValue placeholder="Sélectionner un agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockAgents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Agent responsable (connecte)</Label>
+              <p className="text-sm py-2 px-3 bg-muted/30 rounded-md border border-border/40">
+                {CURRENT_AGENT.name}
+              </p>
             </div>
 
             <div>
@@ -709,8 +687,8 @@ export default function EventsListPage() {
               </div>
               <div>
                 <Label>Gravité</Label>
-                <Badge variant={getSeverityColor(viewingEvent.severity)}>
-                  {viewingEvent.severity}
+                <Badge variant={getSeverityBadgeVariant(viewingEvent.severity)}>
+                  {getSeverityLabel(viewingEvent.severity)}
                 </Badge>
               </div>
             </div>
@@ -718,8 +696,8 @@ export default function EventsListPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Statut</Label>
-                <Badge variant={getStatusColor(viewingEvent.status)}>
-                  {viewingEvent.status}
+                <Badge variant={getStatusBadgeVariant(viewingEvent.status)}>
+                  {getStatusLabel(viewingEvent.status)}
                 </Badge>
               </div>
               <div>

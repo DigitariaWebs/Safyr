@@ -9,7 +9,6 @@ import {
   BookOpen,
   CheckCircle,
   AlertTriangle,
-  BarChart3,
   Calendar,
   Users,
   Shield,
@@ -51,11 +50,6 @@ const navItems: NavItem[] = [
         href: "/dashboard/logbook/agent-portal",
       },
     ],
-  },
-  {
-    label: "Rapports",
-    icon: BarChart3,
-    href: "/dashboard/logbook/statistics",
   },
   {
     label: "Sécurité",
