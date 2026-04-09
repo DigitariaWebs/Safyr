@@ -690,15 +690,31 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
         (shift) => shift.date === dateStr,
       );
 
-      const siteMap = new Map<string, number>();
+      const siteMap = new Map<
+        string,
+        {
+          name: string;
+          vacations: { agentName: string; startTime: string; endTime: string }[];
+        }
+      >();
       for (const shift of shiftsForDay) {
-        siteMap.set(shift.siteId, (siteMap.get(shift.siteId) || 0) + 1);
+        const site = mockSites.find((s) => s.id === shift.siteId);
+        const siteName = site?.name || shift.siteId;
+        const employee = mockEmployees.find((e) => e.id === shift.agentId);
+        const agentName = employee
+          ? `${employee.firstName} ${employee.lastName}`
+          : shift.agentId;
+        if (!siteMap.has(shift.siteId)) {
+          siteMap.set(shift.siteId, { name: siteName, vacations: [] });
+        }
+        siteMap.get(shift.siteId)!.vacations.push({
+          agentName,
+          startTime: shift.startTime,
+          endTime: shift.endTime,
+        });
       }
 
-      const sites = Array.from(siteMap.entries()).map(([siteId, count]) => {
-        const site = mockSites.find((s) => s.id === siteId);
-        return { siteId, name: site?.name || siteId, count };
-      });
+      const sites = Array.from(siteMap.values());
 
       return {
         label: formatDateFr(offset),
@@ -735,36 +751,40 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
         </Link>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-3">
-          {days.map((day, idx) => (
-            <div key={idx} className="space-y-2 p-2 rounded-lg bg-accent/30">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium">{day.label}</p>
-                <span className="text-xs text-muted-foreground">
-                  {day.total} shift{day.total !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="space-y-1">
+        <div className="max-h-72 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-3">
+            {days.map((day, idx) => (
+              <div key={idx} className="space-y-3 p-2 rounded-lg bg-accent/30">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium">{day.label}</p>
+                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                    {day.total}
+                  </span>
+                </div>
                 {day.sites.length > 0 ? (
                   day.sites.map((site) => (
-                    <div
-                      key={site.siteId}
-                      className="flex items-center justify-between text-xs"
-                    >
-                      <span className="truncate text-muted-foreground">
+                    <div key={site.name} className="space-y-1">
+                      <p className="text-xs font-medium text-primary/80 truncate">
                         {site.name}
-                      </span>
-                      <span className="font-medium">{site.count}</span>
+                      </p>
+                      {site.vacations.map((v, vIdx) => (
+                        <div
+                          key={vIdx}
+                          className="text-xs text-muted-foreground pl-2 border-l-2 border-primary/20"
+                        >
+                          {v.agentName} — {v.startTime} – {v.endTime}
+                        </div>
+                      ))}
                     </div>
                   ))
                 ) : (
                   <p className="text-xs text-muted-foreground italic">
-                    Aucun shift
+                    Aucune vacation
                   </p>
                 )}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>

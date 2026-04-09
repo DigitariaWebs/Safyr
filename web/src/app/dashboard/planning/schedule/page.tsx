@@ -199,6 +199,9 @@ export default function SchedulePage() {
     agentId: string;
     date: string;
   } | null>(null);
+  const [pastDateAction, setPastDateAction] = useState<"create" | "paste">(
+    "create",
+  );
 
   // Copy/paste state
   const [copiedShift, setCopiedShift] = useState<AgentShift | null>(null);
@@ -592,9 +595,28 @@ export default function SchedulePage() {
     setSelectedAgentForRemoval(null);
   };
 
+  // Audio alert helper
+  const playAlertBeep = () => {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.3;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch {
+      // AudioContext unavailable — silent fallback
+    }
+  };
+
   // Shift management
   const handleCreateShift = (agentId: string, date: string) => {
     if (isDateInPast(date)) {
+      playAlertBeep();
+      setPastDateAction("create");
       setPastDateWarningCtx({ agentId, date });
       setShowPastDateWarning(true);
       return;
@@ -666,6 +688,27 @@ export default function SchedulePage() {
         : "14:00",
       splitEndTime2: shift.splitEndTime2 || "18:00",
       splitBreakDuration,
+    });
+    setShowShiftModal(true);
+  };
+
+  // Opens edit modal forced to Personnalisé tab for inline hour customization (PG5)
+  const handleCustomizeShiftHours = (shift: AgentShift) => {
+    if (isShiftInPast(shift)) return;
+    setEditingShift(shift);
+    setShiftForm({
+      shiftType: "on_demand",
+      standardShiftId: shift.standardShiftId || "",
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      breakDuration: shift.breakDuration,
+      color: shift.color || "#3b82f6",
+      notes: shift.notes || "",
+      isOvernight: isOvernightShift(shift.startTime, shift.endTime),
+      isSplit: shift.isSplit || false,
+      splitStartTime2: shift.splitStartTime2 || "14:00",
+      splitEndTime2: shift.splitEndTime2 || "18:00",
+      splitBreakDuration: shift.splitBreakDuration || 60,
     });
     setShowShiftModal(true);
   };
@@ -848,7 +891,14 @@ export default function SchedulePage() {
     date: string,
     forceOverride: boolean = false,
   ) => {
-    if (!copiedShift || isDateInPast(date)) return;
+    if (!copiedShift) return;
+    if (isDateInPast(date)) {
+      playAlertBeep();
+      setPastDateAction("paste");
+      setPastDateWarningCtx({ agentId, date });
+      setShowPastDateWarning(true);
+      return;
+    }
 
     const conflict = getDateConflict(agentId, date);
     if (conflict?.type === "time_off") return;
@@ -1340,15 +1390,15 @@ export default function SchedulePage() {
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <span className="text-sm">Double affectation</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" title="Agent a complété son service">
                 <div className="w-3 h-3 rounded-full bg-green-500" />
                 <span className="text-sm">Terminé</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" title="Agent n'a pas assuré son service">
                 <div className="w-3 h-3 rounded-full bg-red-500" />
                 <span className="text-sm">Absent</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" title="Statut de présence non encore confirmé">
                 <div className="w-3 h-3 rounded-full bg-gray-500" />
                 <span className="text-sm">En attente</span>
               </div>
@@ -1357,7 +1407,7 @@ export default function SchedulePage() {
             <Button
               variant="outline"
               size="sm"
-              className="bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/25 border-cyan-500/30"
+              className="bg-cyan-500 text-white hover:bg-cyan-600 border-cyan-500"
               onClick={() => setShowAgentCommand(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -1371,7 +1421,7 @@ export default function SchedulePage() {
                   className="gap-2 bg-cyan-500/20 text-cyan-700 border-cyan-500/30"
                 >
                   <Clipboard className="h-3 w-3" />
-                  Mode copie — {copiedShift.startTime} - {copiedShift.endTime}
+                  Mode copie activé — {copiedShift.startTime} – {copiedShift.endTime}
                 </Badge>
                 <Button
                   size="sm"
@@ -1544,8 +1594,8 @@ export default function SchedulePage() {
           <Clipboard className="h-4 w-4 shrink-0" />
           <span className="text-sm font-medium flex-1">
             {copiedShift
-              ? `Mode copie actif — ${copiedShift.startTime}–${copiedShift.endTime} · cliquez sur une cellule vide pour coller`
-              : "Mode copie actif — Semaine copiée · cliquez sur une ligne vide pour coller"}
+              ? `Mode copie activé — ${copiedShift.startTime}–${copiedShift.endTime} · cliquez sur une cellule vide pour coller`
+              : "Mode copie activé — Semaine copiée · cliquez sur une ligne vide pour coller"}
           </span>
           <Button
             size="sm"
@@ -1558,7 +1608,7 @@ export default function SchedulePage() {
             }}
           >
             <X className="h-3.5 w-3.5 mr-1" />
-            Arrêter
+            Désactiver
           </Button>
         </div>
       )}
@@ -1583,6 +1633,7 @@ export default function SchedulePage() {
               calculateAgentHours={calculateAgentHours}
               onRemoveAgent={handleRemoveAgent}
               onAssignAgent={() => setShowAgentCommand(true)}
+              onCustomizeShiftHours={handleCustomizeShiftHours}
               isClosedDay={isClosedDay}
               maxDailyWorkHours={settings.maxDailyWorkHours}
             />
@@ -1608,6 +1659,7 @@ export default function SchedulePage() {
               getDateConflict={getDateConflict}
               calculateAgentHours={calculateAgentHours}
               onAssignAgent={() => setShowAgentCommand(true)}
+              onCustomizeShiftHours={handleCustomizeShiftHours}
               isClosedDay={isClosedDay}
               maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
               selectedSiteId={selectedSiteId}
@@ -1794,7 +1846,7 @@ export default function SchedulePage() {
         open={showShiftModal}
         onOpenChange={setShowShiftModal}
         type="form"
-        title={editingShift ? "Modifier le poste" : "Créer un poste"}
+        title={editingShift ? "Modifier le Shift" : "Ajouter un Shift"}
         actions={{
           secondary: {
             label: "Annuler",
@@ -2709,9 +2761,37 @@ export default function SchedulePage() {
             onClick: () => {
               if (!pastDateWarningCtx) return;
               setShowPastDateWarning(false);
-              // Re-run create logic skipping the past date check
               const { agentId, date } = pastDateWarningCtx;
               setPastDateWarningCtx(null);
+
+              if (pastDateAction === "paste") {
+                // Re-run paste logic skipping past date check
+                if (!copiedShift) return;
+                const existingShift = agentShifts.find(
+                  (s) =>
+                    s.agentId === agentId &&
+                    s.date === date &&
+                    s.siteId === selectedSiteId,
+                );
+                if (existingShift) {
+                  setAgentShifts(
+                    agentShifts.filter((s) => s.id !== existingShift.id),
+                  );
+                }
+                const newShift: AgentShift = {
+                  ...copiedShift,
+                  id: `shift-${Date.now()}-${Math.random()}`,
+                  agentId,
+                  date,
+                  siteId: selectedSiteId!,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                setAgentShifts((prev) => [...prev, newShift]);
+                return;
+              }
+
+              // Re-run create logic skipping the past date check
               const conflict = getDateConflict(agentId, date);
               if (conflict?.type === "time_off") return;
               if (conflict?.type === "double_booking") {
@@ -3027,6 +3107,7 @@ function DailyView({
   calculateAgentHours,
   onRemoveAgent,
   onAssignAgent,
+  onCustomizeShiftHours,
   isClosedDay,
   maxDailyWorkHours,
 }: {
@@ -3045,6 +3126,7 @@ function DailyView({
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onRemoveAgent: (agentId: string) => void;
   onAssignAgent: () => void;
+  onCustomizeShiftHours: (shift: AgentShift) => void;
   isClosedDay: (date: Date | string) => boolean;
   maxDailyWorkHours: number;
 }) {
@@ -3188,6 +3270,7 @@ function DailyView({
                     onDelete={onDeleteShift}
                     onCopy={onCopyShift}
                     onConflictClick={onConflictClick}
+                    onCustomizeHours={onCustomizeShiftHours}
                   />
                 ) : !isPast ? (
                   conflict?.type === "time_off" ? (
@@ -3286,6 +3369,7 @@ function ShiftBlock({
   onDelete,
   onCopy,
   onConflictClick,
+  onCustomizeHours,
 }: {
   shift: AgentShift;
   conflict: DateConflict | null;
@@ -3294,6 +3378,7 @@ function ShiftBlock({
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
   onConflictClick: (agentId: string, date: string) => void;
+  onCustomizeHours: (shift: AgentShift) => void;
 }) {
   const [startHour, startMin] = shift.startTime.split(":").map(Number);
   const [endHour, endMin] = shift.endTime.split(":").map(Number);
@@ -3476,6 +3561,13 @@ function ShiftBlock({
                   backgroundColor: completionStatus.color,
                   color: "#fff",
                 }}
+                title={
+                  completionStatus.label === "Terminé"
+                    ? "Agent a complété son service"
+                    : completionStatus.label === "Absent"
+                      ? "Agent n'a pas assuré son service"
+                      : "Statut de présence non encore confirmé"
+                }
               >
                 <completionStatus.icon className="h-3 w-3" />
                 {completionStatus.label}
@@ -3508,7 +3600,7 @@ function ShiftBlock({
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit(shift);
+                  onCustomizeHours(shift);
                 }}
               >
                 <Clock className="h-4 w-4 mr-2" />
@@ -3565,6 +3657,7 @@ function WeeklyView({
   onConflictClick,
   getDateConflict,
   calculateAgentHours,
+  onCustomizeShiftHours,
   isClosedDay,
   maxWeeklyWorkHours,
   selectedSiteId,
@@ -3587,6 +3680,7 @@ function WeeklyView({
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
   calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onAssignAgent: () => void;
+  onCustomizeShiftHours: (shift: AgentShift) => void;
   isClosedDay: (date: Date | string) => boolean;
   maxWeeklyWorkHours: number;
   selectedSiteId: string | null;
@@ -3814,6 +3908,7 @@ function WeeklyView({
                           onEdit={onEditShift}
                           onDelete={onDeleteShift}
                           onCopy={onCopyShift}
+                          onCustomizeHours={onCustomizeShiftHours}
                         />
                       ) : !isPast ? (
                         conflict?.type === "time_off" ? (
@@ -4129,12 +4224,14 @@ function ShiftCard({
   onEdit,
   onDelete,
   onCopy,
+  onCustomizeHours,
 }: {
   shift: AgentShift;
   isClosed?: boolean;
   onEdit: (shift: AgentShift) => void;
   onDelete: (shiftId: string) => void;
   onCopy: (shift: AgentShift) => void;
+  onCustomizeHours: (shift: AgentShift) => void;
 }) {
   const isShiftInPast = (s: AgentShift) => {
     const check = new Date(s.date);
@@ -4276,7 +4373,17 @@ function ShiftCard({
                   )}
             </Badge>
             {completionStatus && (
-              <completionStatus.icon className="h-2.5 w-2.5 text-white" />
+              <span
+                title={
+                  completionStatus.label === "Terminé"
+                    ? "Agent a complété son service"
+                    : completionStatus.label === "Absent"
+                      ? "Agent n'a pas assuré son service"
+                      : "Statut de présence non encore confirmé"
+                }
+              >
+                <completionStatus.icon className="h-2.5 w-2.5 text-white" />
+              </span>
             )}
           </div>
         </div>
@@ -4306,7 +4413,7 @@ function ShiftCard({
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEdit(shift);
+                    onCustomizeHours(shift);
                   }}
                 >
                   <Clock className="h-3 w-3 mr-2" />
