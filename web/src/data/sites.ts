@@ -361,6 +361,7 @@ export const mockSites: Site[] = [
   {
     id: "site-1",
     name: "Centre Commercial Atlantis",
+    color: "blue",
     clientId: "client-1",
     clientName: "Immobilière Atlantis SAS",
     address: {
@@ -401,6 +402,7 @@ export const mockSites: Site[] = [
   {
     id: "site-2",
     name: "Siège Social TechCorp",
+    color: "emerald",
     clientId: "client-2",
     clientName: "TechCorp France",
     address: {
@@ -438,6 +440,7 @@ export const mockSites: Site[] = [
   {
     id: "site-3",
     name: "Hôpital Saint-Joseph",
+    color: "amber",
     clientId: "client-3",
     clientName: "Centre Hospitalier Saint-Joseph",
     address: {
@@ -478,6 +481,7 @@ export const mockSites: Site[] = [
   {
     id: "site-4",
     name: "Zone Logistique Bordeaux Nord",
+    color: "violet",
     clientId: "client-4",
     clientName: "LogisFrance Distribution",
     address: {
@@ -516,6 +520,7 @@ export const mockSites: Site[] = [
   {
     id: "site-5",
     name: "Usine Pharmaceutique BioMed",
+    color: "red",
     clientId: "client-5",
     clientName: "BioMed Pharma SA",
     address: {
@@ -560,6 +565,7 @@ export const mockSites: Site[] = [
   {
     id: "site-6",
     name: "Résidence Le Parc",
+    color: "pink",
     clientId: "client-6",
     clientName: "Syndic Résidence Le Parc",
     address: {
@@ -596,6 +602,7 @@ export const mockSites: Site[] = [
   {
     id: "site-7",
     name: "Data Center Cloud-Tech",
+    color: "cyan",
     clientId: "client-7",
     clientName: "Cloud-Tech Services",
     address: {

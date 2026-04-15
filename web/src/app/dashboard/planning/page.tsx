@@ -54,6 +54,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { mockEmployees } from "@/data/employees";
 import { mockAgentShifts } from "@/data/site-shifts";
 import { mockSites } from "@/data/sites";
+import { getSiteColorClasses } from "@/lib/site-colors";
 
 // Convert Employee to agent stats
 function getAgentStats() {
@@ -694,6 +695,7 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
         string,
         {
           name: string;
+          color: ReturnType<typeof getSiteColorClasses> | null;
           vacations: {
             agentName: string;
             startTime: string;
@@ -704,12 +706,17 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
       for (const shift of shiftsForDay) {
         const site = mockSites.find((s) => s.id === shift.siteId);
         const siteName = site?.name || shift.siteId;
+        const siteColor = site ? getSiteColorClasses(site.color) : null;
         const employee = mockEmployees.find((e) => e.id === shift.agentId);
         const agentName = employee
           ? `${employee.firstName} ${employee.lastName}`
           : shift.agentId;
         if (!siteMap.has(shift.siteId)) {
-          siteMap.set(shift.siteId, { name: siteName, vacations: [] });
+          siteMap.set(shift.siteId, {
+            name: siteName,
+            color: siteColor,
+            vacations: [],
+          });
         }
         siteMap.get(shift.siteId)!.vacations.push({
           agentName,
@@ -768,13 +775,22 @@ function PlanningOverviewWidget({ isLoading }: { isLoading: boolean }) {
                 {day.sites.length > 0 ? (
                   day.sites.map((site) => (
                     <div key={site.name} className="space-y-1">
-                      <p className="text-xs font-medium text-primary/80 truncate">
-                        {site.name}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        {site.color && (
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full shrink-0 ${site.color.dot}`}
+                          />
+                        )}
+                        <p
+                          className={`text-xs font-medium truncate ${site.color ? site.color.text : "text-primary/80"}`}
+                        >
+                          {site.name}
+                        </p>
+                      </div>
                       {site.vacations.map((v, vIdx) => (
                         <div
                           key={vIdx}
-                          className="text-xs text-muted-foreground pl-2 border-l-2 border-primary/20"
+                          className={`text-xs text-muted-foreground pl-2 border-l-2 ${site.color ? site.color.border + "/40" : "border-primary/20"}`}
                         >
                           {v.agentName} — {v.startTime} – {v.endTime}
                         </div>

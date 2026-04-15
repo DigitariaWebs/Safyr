@@ -2464,11 +2464,17 @@ export type PosteType =
   | "accueil"
   | "manager"
   | "rh"
-  | "comptable";
+  | "comptable"
+  | "rondier"
+  | "agent_cynophile"
+  | "chef_de_poste"
+  | "di"
+  | "autres";
 
 export interface Site {
   id: string;
   name: string;
+  color: import("@/lib/site-colors").SiteColor;
   clientId: string;
   clientName: string;
   address: {
@@ -2563,6 +2569,7 @@ export interface Poste {
 
 export interface SiteFormData {
   name: string;
+  color: import("@/lib/site-colors").SiteColor;
   clientId: string;
   street: string;
   city: string;

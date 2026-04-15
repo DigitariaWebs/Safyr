@@ -79,7 +79,8 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
   expandableContent?: (item: T) => React.ReactNode;
   groupBy?: string;
-  groupByLabel?: (value: unknown) => string;
+  groupByLabel?: (value: unknown) => React.ReactNode;
+  groupByRowClassName?: (value: unknown) => string;
   groupByOptions?: { value: string; label: string }[];
   onGroupByChange?: (value: string | undefined) => void;
 }
@@ -102,6 +103,7 @@ export function DataTable<T extends object>({
   expandableContent,
   groupBy,
   groupByLabel,
+  groupByRowClassName,
   groupByOptions,
   onGroupByChange,
 }: DataTableProps<T>) {
@@ -495,7 +497,13 @@ export function DataTable<T extends object>({
             ) : groupedData ? (
               Object.entries(groupedData).map(([groupKey, groupItems]) => (
                 <Fragment key={`group-${groupKey}`}>
-                  <TableRow className="bg-muted/50">
+                  <TableRow
+                    className={
+                      groupByRowClassName
+                        ? groupByRowClassName(groupKey)
+                        : "bg-muted/50"
+                    }
+                  >
                     {expandableContent && (
                       <TableCell className="w-12"></TableCell>
                     )}

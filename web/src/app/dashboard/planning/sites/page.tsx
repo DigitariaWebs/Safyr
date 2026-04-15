@@ -41,6 +41,11 @@ import {
 } from "lucide-react";
 import type { Site, Poste, SiteFormData } from "@/lib/types";
 import { mockSites, mockSiteStats, mockPostes } from "@/data/sites";
+import {
+  SITE_COLOR_MAP,
+  SITE_COLOR_OPTIONS,
+  getSiteColorClasses,
+} from "@/lib/site-colors";
 
 export default function SitesPage() {
   const searchParams = useSearchParams();
@@ -58,6 +63,7 @@ export default function SitesPage() {
 
   const [siteFormData, setSiteFormData] = useState<SiteFormData>({
     name: "",
+    color: "blue",
     clientId: "",
     street: "",
     city: "",
@@ -127,6 +133,7 @@ export default function SitesPage() {
     setSelectedSite(site);
     setSiteFormData({
       name: site.name,
+      color: site.color,
       clientId: site.clientId,
       street: site.address.street,
       city: site.address.city,
@@ -164,6 +171,7 @@ export default function SitesPage() {
             ? {
                 ...s,
                 name: siteFormData.name,
+                color: siteFormData.color,
                 clientId: siteFormData.clientId,
                 clientName: siteFormData.clientId, // In real app, fetch from clients
                 address: {
@@ -210,6 +218,7 @@ export default function SitesPage() {
       const newSite: Site = {
         id: `site-${Date.now()}`,
         name: siteFormData.name,
+        color: siteFormData.color,
         clientId: siteFormData.clientId,
         clientName: siteFormData.clientId, // In real app, fetch from clients
         address: {
@@ -277,6 +286,7 @@ export default function SitesPage() {
   const resetSiteForm = () => {
     setSiteFormData({
       name: "",
+      color: "blue",
       clientId: "",
       street: "",
       city: "",
@@ -307,10 +317,15 @@ export default function SitesPage() {
       key: "name",
       label: "Nom du site",
       render: (site) => (
-        <div>
-          <div className="font-medium">{site.name}</div>
-          <div className="text-xs text-muted-foreground">
-            {site.address.city}
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`h-2.5 w-2.5 rounded-full shrink-0 ${getSiteColorClasses(site.color).dot}`}
+          />
+          <div>
+            <div className="font-medium">{site.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {site.address.city}
+            </div>
           </div>
         </div>
       ),
@@ -441,6 +456,21 @@ export default function SitesPage() {
                     setSiteFormData({ ...siteFormData, name: e.target.value })
                   }
                 />
+              </div>
+              <div className="col-span-2">
+                <Label>Couleur</Label>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  {SITE_COLOR_OPTIONS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() =>
+                        setSiteFormData({ ...siteFormData, color: c })
+                      }
+                      className={`h-7 w-7 rounded-full transition-transform ${SITE_COLOR_MAP[c].dot} ${siteFormData.color === c ? "ring-2 ring-offset-2 ring-offset-background ring-white scale-110" : "opacity-70 hover:opacity-100 hover:scale-105"}`}
+                    />
+                  ))}
+                </div>
               </div>
               <div className="col-span-2">
                 <Label htmlFor="clientId">Client *</Label>

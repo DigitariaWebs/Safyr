@@ -26,6 +26,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown } from "lucide-react";
+import {
   Briefcase,
   Plus,
   MoreHorizontal,
@@ -48,6 +55,7 @@ import {
 } from "lucide-react";
 import type { Poste, PosteType, PosteFormData } from "@/lib/types";
 import { mockPostes, mockSites } from "@/data/sites";
+import { SITE_COLOR_MAP } from "@/lib/site-colors";
 
 const POSTE_TYPE_LABELS: Record<string, string> = {
   agent_securite: "Agent de Sécurité",
@@ -59,7 +67,23 @@ const POSTE_TYPE_LABELS: Record<string, string> = {
   manager: "Manager",
   rh: "RH",
   comptable: "Comptable",
+  rondier: "Rondier",
+  agent_cynophile: "Agent Cynophile",
+  chef_de_poste: "Chef de Poste",
+  di: "DI",
+  autres: "Autres",
 };
+
+const CERTIFICATIONS_OPTIONS = [
+  "CQP/APS",
+  "Carte Pro",
+  "SSIAP 1",
+  "SSIAP 2",
+  "SSIAP 3",
+  "SST",
+  "H0B0",
+  "Autres",
+];
 
 const DEFAULT_FORM: PosteFormData = {
   name: "",
@@ -120,8 +144,10 @@ export default function PostesPage() {
     return <Badge variant={c.variant}>{c.label}</Badge>;
   };
 
+  const getSiteById = (siteId: string) =>
+    mockSites.find((s) => s.id === siteId);
   const getSiteNameById = (siteId: string) =>
-    mockSites.find((s) => s.id === siteId)?.name ?? siteId;
+    getSiteById(siteId)?.name ?? siteId;
 
   const columns: ColumnDef<Poste>[] = [
     {
@@ -134,16 +160,6 @@ export default function PostesPage() {
           <p className="text-xs text-muted-foreground">
             {POSTE_TYPE_LABELS[p.type]}
           </p>
-        </div>
-      ),
-    },
-    {
-      key: "siteId",
-      label: "Site",
-      render: (p) => (
-        <div className="flex items-center gap-1.5 text-sm">
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-          {getSiteNameById(p.siteId)}
         </div>
       ),
     },
@@ -524,19 +540,46 @@ export default function PostesPage() {
           <Label className="text-base font-semibold">
             Certifications requises
           </Label>
-          <Input
-            value={formData.requiredCertifications.join(", ")}
-            onChange={(e) =>
-              setFormData((f) => ({
-                ...f,
-                requiredCertifications: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              }))
-            }
-            placeholder="Ex: CQP APS, SSIAP 1"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
+              >
+                <span className="text-muted-foreground">
+                  {formData.requiredCertifications.length === 0
+                    ? "Sélectionner des certifications"
+                    : `${formData.requiredCertifications.length} sélectionnée${formData.requiredCertifications.length > 1 ? "s" : ""}`}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2" align="start">
+              <div className="space-y-1">
+                {CERTIFICATIONS_OPTIONS.map((cert) => (
+                  <label
+                    key={cert}
+                    className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                  >
+                    <Checkbox
+                      checked={formData.requiredCertifications.includes(cert)}
+                      onCheckedChange={(checked) =>
+                        setFormData((f) => ({
+                          ...f,
+                          requiredCertifications: checked
+                            ? [...f.requiredCertifications, cert]
+                            : f.requiredCertifications.filter(
+                                (c) => c !== cert,
+                              ),
+                        }))
+                      }
+                    />
+                    {cert}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           {formData.requiredCertifications.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {formData.requiredCertifications.map((c) => (
@@ -892,7 +935,16 @@ export default function PostesPage() {
           },
         ]}
         groupBy="siteId"
-        groupByLabel={(v) => getSiteNameById(v as string)}
+        groupByLabel={(v) => (
+          <span className="text-lg font-bold text-white">
+            {getSiteNameById(v as string)}
+          </span>
+        )}
+        groupByRowClassName={(v) => {
+          const site = getSiteById(v as string);
+          const color = site?.color ?? "blue";
+          return `${SITE_COLOR_MAP[color].bg} hover:${SITE_COLOR_MAP[color].bg}`;
+        }}
         groupByOptions={mockSites.map((s) => ({ value: s.id, label: s.name }))}
         getRowId={(p) => p.id}
         onRowClick={handleView}

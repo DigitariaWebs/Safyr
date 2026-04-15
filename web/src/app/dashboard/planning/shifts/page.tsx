@@ -40,6 +40,7 @@ import {
 import type { StandardShift } from "@/lib/types";
 import { mockStandardShifts } from "@/data/site-shifts";
 import { mockSites } from "@/data/sites";
+import { SITE_COLOR_MAP } from "@/lib/site-colors";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -84,16 +85,6 @@ const SHIFT_COLORS = [
   "#ec4899",
   "#06b6d4",
   "#f97316",
-];
-
-const SITE_COLORS = [
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
-  "#ec4899",
-  "#06b6d4",
 ];
 
 type ShiftFormData = {
@@ -166,16 +157,20 @@ export default function ShiftsPage() {
     [],
   );
   const siteColorMap = useMemo(
-    () =>
-      new Map(
-        mockSites.map((s, i) => [s.id, SITE_COLORS[i % SITE_COLORS.length]]),
-      ),
+    () => new Map(mockSites.map((s) => [s.id, s.color])),
+    [],
+  );
+  const siteClientMap = useMemo(
+    () => new Map(mockSites.map((s) => [s.id, s.clientName])),
     [],
   );
 
   const getSiteName = (siteId: string) => siteNameMap.get(siteId) ?? siteId;
-  const getSiteColor = (siteId: string) =>
-    siteColorMap.get(siteId) ?? SITE_COLORS[0];
+  const getSiteBgClass = (siteId: string) => {
+    const color = siteColorMap.get(siteId) ?? "blue";
+    return `${SITE_COLOR_MAP[color].bg} hover:${SITE_COLOR_MAP[color].bg}`;
+  };
+  const getSiteClient = (siteId: string) => siteClientMap.get(siteId) ?? "";
 
   // ─── handlers ────────────────────────────────────────────────────────────
 
@@ -278,24 +273,6 @@ export default function ShiftsPage() {
       ),
     },
     {
-      key: "siteId",
-      label: "Site",
-      render: (s) => (
-        <div className="flex items-center gap-1.5">
-          <MapPin
-            className="h-3.5 w-3.5 shrink-0"
-            style={{ color: getSiteColor(s.siteId) }}
-          />
-          <span
-            className="truncate text-lg font-bold"
-            style={{ color: getSiteColor(s.siteId) }}
-          >
-            {getSiteName(s.siteId)}
-          </span>
-        </div>
-      ),
-    },
-    {
       key: "startTime",
       label: "Horaires",
       sortable: true,
@@ -314,7 +291,9 @@ export default function ShiftsPage() {
       render: (s) => (
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Coffee className="h-3.5 w-3.5 shrink-0" />
-          <span>{s.breakDuration} min</span>
+          <span>
+            {s.breakDuration === 0 ? "Aucune" : `${s.breakDuration} min`}
+          </span>
         </div>
       ),
     },
@@ -553,6 +532,7 @@ export default function ShiftsPage() {
               <SelectValue placeholder="Sélectionner la durée" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="0">Aucune</SelectItem>
               {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((min) => (
                 <SelectItem key={min} value={String(min)}>
                   {min} minutes
@@ -642,7 +622,9 @@ export default function ShiftsPage() {
                 <span className="text-muted-foreground">Pause</span>
                 <span className="font-medium flex items-center gap-1.5">
                   <Coffee className="h-3.5 w-3.5 text-muted-foreground" />
-                  {shift.breakDuration} min
+                  {shift.breakDuration === 0
+                    ? "Aucune"
+                    : `${shift.breakDuration} min`}
                 </span>
               </div>
               <div className="flex items-center justify-between border-t border-border/40 pt-2 mt-1">
@@ -786,7 +768,15 @@ export default function ShiftsPage() {
         getSearchValue={(s) => `${s.name} ${getSiteName(s.siteId)}`}
         searchPlaceholder="Rechercher par nom ou site..."
         groupBy="siteId"
-        groupByLabel={(v) => getSiteName(v as string)}
+        groupByLabel={(v) => (
+          <span className="text-lg font-bold text-white">
+            {getSiteName(v as string)}
+            <span className="font-normal opacity-75 ml-2">
+              — {getSiteClient(v as string)}
+            </span>
+          </span>
+        )}
+        groupByRowClassName={(v) => getSiteBgClass(v as string)}
         groupByOptions={mockSites.map((s) => ({ value: s.id, label: s.name }))}
         getRowId={(s) => s.id}
         onRowClick={handleView}
