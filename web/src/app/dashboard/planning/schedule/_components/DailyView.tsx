@@ -24,6 +24,7 @@ import {
   getPosteRequirementForDay,
 } from "./besoin-utils";
 import { summarizeAgentHours } from "./contract-utils";
+import { AgentHoursCell } from "./AgentHoursCell";
 
 export function DailyView({
   date,
@@ -215,28 +216,12 @@ export function DailyView({
                   <X className="h-3.5 w-3.5" />
                 </Button>
                 <div className="font-medium text-sm mb-2">{agentName}</div>
-                <div
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${overDaily ? "bg-destructive/10" : hours.isOver ? "bg-destructive/10" : "bg-primary/10"}`}
-                >
-                  <Clock
-                    className={`h-4 w-4 ${overDaily || hours.isOver ? "text-destructive" : "text-primary"}`}
-                  />
-                  <span
-                    className={`font-bold text-base ${overDaily || hours.isOver ? "text-destructive" : "text-primary"}`}
-                  >
-                    {hours.planned.toFixed(1)}h
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    / {hours.contract.toFixed(1)}h
-                  </span>
-                </div>
-                <div
-                  className={`text-[10px] mt-1 font-medium ${hours.isOver ? "text-destructive" : "text-muted-foreground"}`}
-                >
-                  {hours.isOver
-                    ? `+${Math.abs(hours.diff).toFixed(1)}h dépassement`
-                    : `${hours.diff.toFixed(1)}h restantes`}
-                </div>
+                <AgentHoursCell summary={hours} />
+                {overDaily && (
+                  <div className="mt-1 px-1.5 py-0.5 rounded bg-destructive/10 text-destructive text-[10px] font-medium text-center">
+                    Dépassement journalier
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 relative h-24 border rounded-lg bg-background">

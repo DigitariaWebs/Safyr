@@ -11,9 +11,83 @@ import {
 } from "@/components/ui/popover";
 import { Building2, MapPin, Users, ChevronDown, X } from "lucide-react";
 
+import type { ComponentType } from "react";
 import type { Client, Site } from "@/lib/types";
 import type { PlanningAgent } from "@/data/planning-agents";
 import { getSiteColorClasses } from "@/lib/site-colors";
+
+type LucideIcon = ComponentType<{ className?: string }>;
+
+const BUTTON_CLS =
+  "h-10 gap-2 flex-1 justify-between data-[state=open]:bg-muted min-w-0";
+
+const pillCls = (active: boolean, disabled?: boolean) =>
+  `inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-medium transition data-[state=open]:ring-2 data-[state=open]:ring-primary/30 ${
+    disabled
+      ? "bg-muted/30 border-border/40 text-muted-foreground/50 cursor-not-allowed"
+      : active
+        ? "bg-primary/10 border-primary/30 text-primary hover:bg-primary/15"
+        : "bg-muted/50 border-border/50 text-muted-foreground hover:bg-muted"
+  }`;
+
+type TriggerProps = {
+  variant: "button" | "pill";
+  icon: LucideIcon;
+  label: string;
+  count: number;
+  disabled?: boolean;
+  title?: string;
+};
+
+const FilterTrigger = ({
+  variant,
+  icon: Icon,
+  label,
+  count,
+  disabled,
+  title,
+}: TriggerProps) => {
+  if (variant === "pill") {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        className={pillCls(count > 0, disabled)}
+        title={title}
+      >
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate max-w-[10rem]">{label}</span>
+        {count > 0 && (
+          <Badge variant="secondary" className="h-4 px-1.5 text-[10px] ml-0.5">
+            {count}
+          </Badge>
+        )}
+      </button>
+    );
+  }
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={disabled}
+      className={BUTTON_CLS}
+      title={title}
+    >
+      <span className="flex items-center gap-2 min-w-0">
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      <span className="flex items-center gap-1.5 shrink-0">
+        {count > 0 && (
+          <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+            {count}
+          </Badge>
+        )}
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      </span>
+    </Button>
+  );
+};
 
 type FilterProps = {
   clients: Client[];
@@ -25,6 +99,8 @@ type FilterProps = {
   onChangeClients: (ids: string[]) => void;
   onChangeSites: (ids: string[]) => void;
   onChangeAgents: (ids: string[]) => void;
+  orientation?: "row" | "col";
+  variant?: "button" | "pill";
 };
 
 export function FilterBar({
@@ -37,6 +113,8 @@ export function FilterBar({
   onChangeClients,
   onChangeSites,
   onChangeAgents,
+  orientation = "row",
+  variant = "button",
 }: FilterProps) {
   const toggle = (
     current: string[],
@@ -91,29 +169,24 @@ export function FilterBar({
     selectedSiteIds.length > 0 ||
     selectedAgentIds.length > 0;
 
+  const containerCls =
+    orientation === "col"
+      ? "flex flex-col gap-2 w-full"
+      : variant === "pill"
+        ? "flex items-center gap-2 flex-1 min-w-0 flex-wrap"
+        : "flex items-center gap-3 flex-1 min-w-0";
+
   return (
-    <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className={containerCls}>
       {/* Clients */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-2 flex-1 justify-between data-[state=open]:bg-muted min-w-0"
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              <Building2 className="h-4 w-4 shrink-0" />
-              <span className="truncate">{clientLabel}</span>
-            </span>
-            <span className="flex items-center gap-1.5 shrink-0">
-              {selectedClientIds.length > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {selectedClientIds.length}
-                </Badge>
-              )}
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </span>
-          </Button>
+          <FilterTrigger
+            variant={variant}
+            icon={Building2}
+            label={clientLabel}
+            count={selectedClientIds.length}
+          />
         </PopoverTrigger>
         <PopoverContent className="w-64 p-0" align="start">
           <div className="max-h-64 overflow-y-auto py-1">
@@ -155,26 +228,14 @@ export function FilterBar({
       {/* Sites — disabled until a client is selected */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
+          <FilterTrigger
+            variant={variant}
+            icon={MapPin}
+            label={siteLabel}
+            count={selectedSiteIds.length}
             disabled={clientsGate}
-            className="h-10 gap-2 flex-1 justify-between data-[state=open]:bg-muted min-w-0"
             title={clientsGate ? "Sélectionner d'abord un client" : undefined}
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              <MapPin className="h-4 w-4 shrink-0" />
-              <span className="truncate">{siteLabel}</span>
-            </span>
-            <span className="flex items-center gap-1.5 shrink-0">
-              {selectedSiteIds.length > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {selectedSiteIds.length}
-                </Badge>
-              )}
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </span>
-          </Button>
+          />
         </PopoverTrigger>
         <PopoverContent className="w-72 p-0" align="start">
           <div className="max-h-72 overflow-y-auto py-1">
@@ -225,24 +286,12 @@ export function FilterBar({
       {/* Agents */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 gap-2 flex-1 justify-between data-[state=open]:bg-muted min-w-0"
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              <Users className="h-4 w-4 shrink-0" />
-              <span className="truncate">{agentLabel}</span>
-            </span>
-            <span className="flex items-center gap-1.5 shrink-0">
-              {selectedAgentIds.length > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {selectedAgentIds.length}
-                </Badge>
-              )}
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </span>
-          </Button>
+          <FilterTrigger
+            variant={variant}
+            icon={Users}
+            label={agentLabel}
+            count={selectedAgentIds.length}
+          />
         </PopoverTrigger>
         <PopoverContent className="w-64 p-0" align="start">
           <div className="max-h-72 overflow-y-auto py-1">

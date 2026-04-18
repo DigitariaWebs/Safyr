@@ -13,7 +13,6 @@ import {
   Ban,
   CalendarOff,
   Clipboard,
-  Clock,
   Copy,
   MoreVertical,
   Plus,
@@ -27,11 +26,13 @@ import { mockPostes } from "@/data/sites";
 import type { DateConflict } from "./types";
 import { ShiftCard } from "./ShiftCard";
 import { summarizeAgentHours } from "./contract-utils";
+import { AgentHoursCell } from "./AgentHoursCell";
 import {
   inferPosteWindow,
   countPosteCoverage,
   getPosteRequirementForDay,
 } from "./besoin-utils";
+import { isoWeekNumber } from "./date-utils";
 
 export function WeeklyView({
   dates,
@@ -51,10 +52,8 @@ export function WeeklyView({
   onDeleteWeek,
   onConflictClick,
   getDateConflict,
-  calculateAgentHours,
   onCustomizeShiftHours,
   isClosedDay,
-  maxWeeklyWorkHours,
   selectedSiteId,
   siteColor,
 }: {
@@ -75,10 +74,8 @@ export function WeeklyView({
   onDeleteWeek: (agentId: string, dates: string[]) => void;
   onConflictClick: (agentId: string, date: string) => void;
   getDateConflict: (agentId: string, date: string) => DateConflict | null;
-  calculateAgentHours: (agentId: string, dates: Date[]) => number;
   onCustomizeShiftHours: (shift: AgentShift) => void;
   isClosedDay: (date: Date | string) => boolean;
-  maxWeeklyWorkHours: number;
   selectedSiteId: string | null;
   siteColor: SiteColor;
 }) {
@@ -107,29 +104,56 @@ export function WeeklyView({
 
   return (
     <div className="overflow-x-auto">
+      {/* Week-number pill — centered over the weekdays row */}
+      {dates.length > 0 &&
+        (() => {
+          const midIdx = Math.floor(dates.length / 2);
+          const refDate = dates[midIdx];
+          const weekNum = isoWeekNumber(refDate);
+          const today = new Date();
+          const isCurrentWeek =
+            isoWeekNumber(today) === weekNum &&
+            today.getFullYear() === refDate.getFullYear();
+          return (
+            <div className="flex mb-3" style={{ minWidth: `${MIN_TOTAL}px` }}>
+              <div className="w-56 shrink-0" />
+              <div className="flex-1 flex justify-center">
+                <span
+                  className={`inline-flex items-center h-10 px-6 rounded-full text-base font-bold tracking-wide border-2 transition ${
+                    isCurrentWeek
+                      ? "bg-primary text-primary-foreground border-primary shadow-md ring-4 ring-primary/25"
+                      : "bg-background border-border text-foreground"
+                  }`}
+                >
+                  Semaine {String(weekNum).padStart(2, "0")}
+                </span>
+              </div>
+              <div className="w-10 shrink-0" />
+            </div>
+          );
+        })()}
+
       {/* Header with dates as x-axis */}
       <div className="flex mb-4 gap-2" style={{ minWidth: `${MIN_TOTAL}px` }}>
         <div className="w-56 shrink-0" />
         <div className="flex-1 flex gap-2">
-          {dates.map((date: Date, idx: number) => {
-            return (
-              <div
-                key={idx}
-                className="flex-1 text-center p-3 rounded-lg"
-                style={{ minWidth: `${MIN_COL_WIDTH}px` }}
-              >
-                <div className="text-sm font-medium">
-                  {date.toLocaleDateString("fr-FR", { weekday: "short" })}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {date.toLocaleDateString("fr-FR", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-                </div>
+          {dates.map((date: Date, idx: number) => (
+            <div
+              key={idx}
+              className="flex-1 text-center p-3 rounded-lg"
+              style={{ minWidth: `${MIN_COL_WIDTH}px` }}
+            >
+              <div className="text-sm font-medium">
+                {date.toLocaleDateString("fr-FR", { weekday: "short" })}
               </div>
-            );
-          })}
+              <div className="text-xs text-muted-foreground">
+                {date.toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </div>
+            </div>
+          ))}
           <div className="w-10 shrink-0" />
         </div>
       </div>
@@ -142,18 +166,12 @@ export function WeeklyView({
             return (
               <div key={poste.id} className="flex items-stretch gap-2">
                 <div
-                  className={`w-56 shrink-0 px-3 py-1.5 rounded-md ${colors.bgMuted} flex items-center justify-between gap-2`}
-                  title={poste.name}
+                  className={`w-56 shrink-0 px-3 py-1.5 rounded-md ${colors.bgMuted} flex items-center gap-2`}
+                  title={`${poste.name} · ${win.start}–${win.end}`}
                 >
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium truncate">
-                      {poste.name}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-2.5 w-2.5" />
-                      {win.start}–{win.end}
-                    </div>
-                  </div>
+                  <span className="text-xs font-medium truncate">
+                    {poste.name}
+                  </span>
                 </div>
                 <div className="flex-1 flex gap-2">
                   {dates.map((date) => {
@@ -164,27 +182,35 @@ export function WeeklyView({
                       date.getDay(),
                     );
                     const covered = countPosteCoverage(shifts, poste, dateStr);
-                    const complete = covered >= required;
+                    const remaining = Math.max(0, required - covered);
+                    const complete = required > 0 && covered >= required;
                     return (
                       <div
                         key={dateStr}
-                        className={`flex-1 flex items-center justify-center rounded-md border ${isClosed ? "bg-muted/30 border-border/30" : complete ? "bg-green-500/5 border-green-500/30" : "bg-amber-500/5 border-amber-500/30"}`}
+                        className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1 rounded-md border ${isClosed ? "bg-muted/30 border-border/30" : complete ? "bg-green-500/10 border-green-500/40" : required === 0 ? "bg-muted/20 border-border/30" : "bg-amber-500/10 border-amber-500/40"}`}
                         style={{ minWidth: `${MIN_COL_WIDTH}px` }}
                       >
-                        {isClosed ? (
-                          <span className="text-[10px] text-muted-foreground">
-                            —
-                          </span>
-                        ) : required === 0 ? (
+                        {isClosed || required === 0 ? (
                           <span className="text-[10px] text-muted-foreground">
                             —
                           </span>
                         ) : (
-                          <span
-                            className={`text-xs font-medium ${complete ? "text-green-600" : "text-amber-600"}`}
-                          >
-                            {covered}/{required}
-                          </span>
+                          <>
+                            <span className="text-[10px] font-medium text-muted-foreground tracking-tight">
+                              {win.start}–{win.end}
+                            </span>
+                            <span
+                              className={`text-xs font-semibold ${complete ? "text-green-600" : "text-amber-600"}`}
+                              title={`${covered} couvert${covered > 1 ? "s" : ""} · ${remaining} restant${remaining > 1 ? "s" : ""}`}
+                            >
+                              {covered}/{required}
+                              {remaining > 0 && (
+                                <span className="ml-1 text-[10px] font-normal opacity-80">
+                                  (−{remaining})
+                                </span>
+                              )}
+                            </span>
+                          </>
                         )}
                       </div>
                     );
@@ -200,7 +226,6 @@ export function WeeklyView({
       {/* Agent rows */}
       <div className="space-y-3" style={{ minWidth: `${MIN_TOTAL}px` }}>
         {agents.map(({ agentId, agentName }) => {
-          const agentHours = calculateAgentHours(agentId, dates);
           const hasAnyShift = weekDates.some((date) =>
             shifts.find((s) => s.agentId === agentId && s.date === date),
           );
@@ -219,35 +244,12 @@ export function WeeklyView({
 
           // Contract hours scoped to the visible week
           const hours = summarizeAgentHours(agentId, allShifts, dates);
-          const overWeekly = agentHours > maxWeeklyWorkHours;
-          const hoursTone = overWeekly || hours.isOver;
 
           return (
             <div key={agentId} className="flex items-stretch gap-2">
-              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center gap-1.5">
+              <div className="w-56 shrink-0 p-3 bg-muted rounded-lg flex flex-col justify-center gap-1">
                 <div className="font-medium text-sm">{agentName}</div>
-                <div
-                  className={`flex items-center gap-2 px-2 py-1 rounded-md ${hoursTone ? "bg-destructive/10" : "bg-primary/10"}`}
-                >
-                  <Clock
-                    className={`h-3.5 w-3.5 ${hoursTone ? "text-destructive" : "text-primary"}`}
-                  />
-                  <span
-                    className={`font-bold text-sm ${hoursTone ? "text-destructive" : "text-primary"}`}
-                  >
-                    {hours.planned.toFixed(1)}h
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    / {hours.contract.toFixed(1)}h
-                  </span>
-                </div>
-                <div
-                  className={`text-[10px] font-medium ${hours.isOver ? "text-destructive" : "text-muted-foreground"}`}
-                >
-                  {hours.isOver
-                    ? `+${Math.abs(hours.diff).toFixed(1)}h dépassement`
-                    : `${hours.diff.toFixed(1)}h restantes`}
-                </div>
+                <AgentHoursCell summary={hours} />
               </div>
 
               <div className="flex-1 relative flex gap-2">
@@ -267,7 +269,7 @@ export function WeeklyView({
                       } ${showWeekPasteBlock ? "invisible" : ""}`}
                       style={{
                         minWidth: `${MIN_COL_WIDTH}px`,
-                        height: "120px",
+                        height: "80px",
                       }}
                     >
                       {shift ? (

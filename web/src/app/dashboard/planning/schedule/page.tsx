@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   Dialog,
@@ -39,10 +39,12 @@ import {
   Moon,
   AlertCircle,
   Clock,
-  Download,
-  FileText,
   Scissors,
+  PanelRightOpen,
+  Filter as FilterIcon,
 } from "lucide-react";
+import { useUiStore } from "@/lib/stores/uiStore";
+import { PlanningSidebar } from "./_components/PlanningSidebar";
 
 import type {
   StandardShift,
@@ -52,6 +54,7 @@ import type {
 } from "@/lib/types";
 
 import { mockClients, mockSites, mockPostes } from "@/data/sites";
+import { BREAK_DURATION_OPTIONS } from "@/lib/planning-constants";
 import { getSiteColorClasses } from "@/lib/site-colors";
 import {
   mockStandardShifts,
@@ -97,6 +100,11 @@ export default function SchedulePage() {
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
+
+  const scheduleSidebarOpen = useUiStore((s) => s.scheduleSidebarOpen);
+  const setScheduleSidebarOpen = useUiStore((s) => s.setScheduleSidebarOpen);
+  const activeFilterCount =
+    selectedClientIds.length + selectedSiteIds.length + selectedAgentIds.length;
 
   // Active site context for handler operations — set by view interactions,
   // read synchronously by handlers (ref avoids closure staleness)
@@ -225,6 +233,7 @@ export default function SchedulePage() {
   // Modals
   const [showAgentCommand, setShowAgentCommand] = useState(false);
   const [agentsToAssign, setAgentsToAssign] = useState<string[]>([]);
+  const [assignSiteId, setAssignSiteId] = useState<string>("");
   const [assignSearch, setAssignSearch] = useState("");
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -1323,6 +1332,46 @@ export default function SchedulePage() {
     return total / 60;
   }, [shiftsAcrossVisibleSites, displayDates]);
 
+  const planningSummary = useMemo(() => {
+    const overtimeHours = Math.max(
+      0,
+      totalPlannedHours - visibleAgentsFlat.length * 35,
+    );
+    const mealCount = agentShifts.filter((s) => {
+      if (!visibleSites.some((vs) => vs.id === s.siteId)) return false;
+      const hoursStr = calculateShiftLength(
+        s.startTime,
+        s.endTime,
+        s.breakDuration,
+      );
+      const hours = parseFloat(hoursStr.replace("h", ".")) || 0;
+      const hours2Str = s.isSplit
+        ? calculateShiftLength(
+            s.splitStartTime2 || "00:00",
+            s.splitEndTime2 || "00:00",
+            0,
+          )
+        : "0";
+      const hours2 = parseFloat(hours2Str.replace("h", ".")) || 0;
+      return hours + hours2 > 6;
+    }).length;
+    const absenceCount = visibleAgentsFlat.filter(({ agentId }) =>
+      displayDates.some((date) => hasTimeOff(agentId, formatDate(date))),
+    ).length;
+    return {
+      totalHours: totalPlannedHours,
+      overtimeHours,
+      mealCount,
+      absenceCount,
+    };
+  }, [
+    totalPlannedHours,
+    visibleAgentsFlat,
+    visibleSites,
+    agentShifts,
+    displayDates,
+  ]);
+
   const toggleSiteCollapse = (siteId: string) => {
     setCollapsedSiteIds((prev) =>
       prev.includes(siteId)
@@ -1361,166 +1410,54 @@ export default function SchedulePage() {
             month: "long",
           });
 
-  // Week number label (ISO week). Range for monthly, single week for daily/weekly.
-  const isoWeekNumber = (d: Date) => {
-    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil(
-      ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-    );
-  };
-  const weekLabel = (() => {
-    if (displayDates.length === 0) return "";
-    if (viewType === "monthly") {
-      const first = isoWeekNumber(displayDates[0]);
-      const last = isoWeekNumber(displayDates[displayDates.length - 1]);
-      return first === last ? `S.${first}` : `Semaines ${first} – ${last}`;
-    }
-    return `Semaine ${isoWeekNumber(displayDates[0])}`;
-  })();
-
   return (
     <div>
-      {/* Full-bleed sticky header — 3 rows + optional copy banner */}
+      {/* Full-bleed sticky header — single row + optional banners */}
       <header className="sticky -top-6 -mx-6 z-40 bg-background/95 backdrop-blur-sm border-b">
-        {/* Row 1 — Title + stats + large week number */}
+        {/* Row 1 — Title + active-filter pills + week label */}
         <div className="flex items-center gap-6 px-8 py-4">
           <h1 className="text-3xl font-bold leading-none shrink-0 tracking-tight">
             Planning
           </h1>
-          <div className="flex-1 flex items-center gap-5 text-sm min-w-0">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold leading-none">
-                {visibleSites.length}
-              </span>
-              <span className="text-muted-foreground">
-                site{visibleSites.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold leading-none">
-                {visibleAgentsFlat.length}
-              </span>
-              <span className="text-muted-foreground">
-                agent{visibleAgentsFlat.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-semibold leading-none">
-                {totalPlannedHours.toFixed(0)}h
-              </span>
-              <span className="text-muted-foreground">planifiées</span>
-            </div>
+          <div className="flex-1 flex items-center gap-2 min-w-0">
+            <FilterBar
+              clients={mockClients}
+              sites={mockSites.filter((s) => s.status === "active")}
+              agents={mockPlanningAgents}
+              selectedClientIds={selectedClientIds}
+              selectedSiteIds={selectedSiteIds}
+              selectedAgentIds={selectedAgentIds}
+              onChangeClients={handleChangeClients}
+              onChangeSites={setSelectedSiteIds}
+              onChangeAgents={setSelectedAgentIds}
+              variant="pill"
+            />
           </div>
-          <div className="shrink-0">
-            <span className="text-3xl font-bold tracking-tight text-primary leading-none">
-              {weekLabel}
-            </span>
-          </div>
-        </div>
-
-        {/* Row 2 — Filters (stretched to fill width) */}
-        <div className="flex items-stretch gap-3 px-8 py-3 border-t border-border/40">
-          <FilterBar
-            clients={mockClients}
-            sites={mockSites.filter((s) => s.status === "active")}
-            agents={mockPlanningAgents}
-            selectedClientIds={selectedClientIds}
-            selectedSiteIds={selectedSiteIds}
-            selectedAgentIds={selectedAgentIds}
-            onChangeClients={handleChangeClients}
-            onChangeSites={setSelectedSiteIds}
-            onChangeAgents={setSelectedAgentIds}
-          />
-        </div>
-
-        {/* Row 3 — Controls (spread across full width) */}
-        <div className="flex items-center gap-4 px-8 py-3 border-t border-border/40">
-          {/* Date nav — takes a fair share */}
-          <div className="flex items-center gap-1 flex-1 min-w-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => navigateDate("prev")}
-              title="Période précédente"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-base font-semibold px-3 min-w-[200px] text-center capitalize">
-              {periodLabel}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              onClick={() => navigateDate("next")}
-              title="Période suivante"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 ml-2"
-              onClick={() => setCurrentDate(new Date())}
-            >
-              Aujourd&apos;hui
-            </Button>
-          </div>
-
-          {/* Segmented view switcher — prominent center */}
-          <div className="flex rounded-lg border bg-muted/30 p-1 text-sm shrink-0">
-            {(["daily", "weekly", "monthly"] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setViewType(v)}
-                className={`px-5 py-1.5 rounded-md transition font-medium ${
-                  viewType === v
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {v === "daily" ? "Jour" : v === "weekly" ? "Semaine" : "Mois"}
-              </button>
-            ))}
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-            <Button
-              size="sm"
-              variant={simulationMode ? "destructive" : "outline"}
-              className="h-9 gap-2"
-              onClick={
-                simulationMode
-                  ? handleRequestExitSimulation
-                  : handleEnterSimulation
-              }
-            >
-              <Scissors className="h-4 w-4" />
-              {simulationMode ? "Simulation active" : "Simulation"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 gap-2"
-              onClick={handleExportPDF}
-            >
-              <Download className="h-4 w-4" />
-              Export PDF
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setScheduleSidebarOpen(!scheduleSidebarOpen)}
+            className="shrink-0 inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-border/50 bg-background hover:bg-muted/60 transition"
+            title={
+              scheduleSidebarOpen
+                ? "Masquer résumé & détails"
+                : "Afficher résumé & détails"
+            }
+          >
+            <PanelRightOpen className="h-4 w-4" />
+            <FilterIcon className="h-4 w-4" />
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Optional copy-mode banner row */}
         {(copiedShift || copiedWeekDates) && (
-          <div className="flex items-center gap-3 px-6 py-1.5 bg-cyan-500/10 border-t border-cyan-500/30 text-cyan-700 dark:text-cyan-400">
-            <Clipboard className="h-3.5 w-3.5 shrink-0" />
-            <span className="text-xs font-medium flex-1">
+          <div className="flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
+            <Clipboard className="h-5 w-5 shrink-0" />
+            <span className="text-base font-bold tracking-wide flex-1 uppercase">
               {copiedShift
                 ? `Mode copie actif — ${copiedShift.startTime}–${copiedShift.endTime} · cliquez sur une cellule vide pour coller`
                 : "Mode copie — semaine copiée · cliquez sur une ligne vide pour coller"}
@@ -1528,14 +1465,14 @@ export default function SchedulePage() {
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 text-xs text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500/20"
+              className="h-8 text-sm font-semibold text-white hover:bg-red-700"
               onClick={() => {
                 setCopiedShift(null);
                 setCopiedWeekDates(null);
                 setCopiedWeekAgentId(null);
               }}
             >
-              <X className="h-3 w-3 mr-1" />
+              <X className="h-4 w-4 mr-1" />
               Désactiver
             </Button>
           </div>
@@ -1561,103 +1498,45 @@ export default function SchedulePage() {
         )}
       </header>
 
-      {/* Content with its own padding */}
-      <div className="p-6 space-y-4">
-        {/* Planning summary — filter-scoped, always visible */}
-        <Card className="border-border/40">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-light text-muted-foreground flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Résumé du planning
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <Clock className="h-4 w-4" />
-                  Heures totales
-                </div>
-                <div className="text-2xl font-bold">
-                  {totalPlannedHours.toFixed(1)}h
-                </div>
-              </div>
-
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <AlertCircle className="h-4 w-4" />
-                  Heures sup.
-                </div>
-                <div className="text-2xl font-bold">
-                  {Math.max(
-                    0,
-                    totalPlannedHours - visibleAgentsFlat.length * 35,
-                  ).toFixed(1)}
-                  h
-                </div>
-              </div>
-
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <FileText className="h-4 w-4" />
-                  Repas
-                </div>
-                <div className="text-2xl font-bold">
-                  {
-                    agentShifts.filter((s) => {
-                      if (!visibleSites.some((vs) => vs.id === s.siteId))
-                        return false;
-                      const hoursStr = calculateShiftLength(
-                        s.startTime,
-                        s.endTime,
-                        s.breakDuration,
-                      );
-                      const hours = parseFloat(hoursStr.replace("h", ".")) || 0;
-                      const hours2Str = s.isSplit
-                        ? calculateShiftLength(
-                            s.splitStartTime2 || "00:00",
-                            s.splitEndTime2 || "00:00",
-                            0,
-                          )
-                        : "0";
-                      const hours2 =
-                        parseFloat(hours2Str.replace("h", ".")) || 0;
-                      return hours + hours2 > 6;
-                    }).length
-                  }
-                </div>
-              </div>
-
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <Ban className="h-4 w-4" />
-                  Absences
-                </div>
-                <div className="text-2xl font-bold">
-                  {
-                    visibleAgentsFlat.filter(({ agentId }) =>
-                      displayDates.some((date) =>
-                        hasTimeOff(agentId, formatDate(date)),
-                      ),
-                    ).length
-                  }
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Majorations detail — filter-scoped, always visible */}
-        <HourDetailsSection
-          agents={visibleAgentsFlat}
-          agentShifts={agentShifts.filter((s) =>
-            visibleSites.some((vs) => vs.id === s.siteId),
-          )}
-          displayDates={displayDates}
-          isPublicHoliday={isPublicHoliday}
-          timeOffRequests={mockTimeOffRequests}
-          settings={settings}
+      {/* Right sidebar — résumé + détails */}
+      {scheduleSidebarOpen && (
+        <PlanningSidebar
+          periodLabel={periodLabel}
+          onPrev={() => navigateDate("prev")}
+          onNext={() => navigateDate("next")}
+          onToday={() => setCurrentDate(new Date())}
+          viewType={viewType}
+          onViewChange={setViewType}
+          simulationMode={simulationMode}
+          onToggleSimulation={
+            simulationMode ? handleRequestExitSimulation : handleEnterSimulation
+          }
+          onExportPDF={handleExportPDF}
+          summary={planningSummary}
+          onClose={() => setScheduleSidebarOpen(false)}
         />
+      )}
+
+      {/* Content with its own padding */}
+      <div
+        className={`p-6 space-y-4 ${scheduleSidebarOpen ? "lg:pr-[22rem]" : ""}`}
+      >
+        {/* Global assign-agent action */}
+        <div className="flex justify-end">
+          <Button
+            className="gap-2"
+            onClick={() => {
+              activeSiteIdRef.current = null;
+              setAssignSiteId("");
+              setAgentsToAssign([]);
+              setAssignSearch("");
+              setShowAgentCommand(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Assigner un agent
+          </Button>
+        </div>
 
         {/* Per-site schedule grid */}
         <div className="space-y-6">
@@ -1715,18 +1594,6 @@ export default function SchedulePage() {
                         Besoin {siteTotalNeeded}/jour
                       </span>
                     )}
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="h-7 bg-white/20 hover:bg-white/30 text-white border-0"
-                      onClick={() => {
-                        activeSiteIdRef.current = site.id;
-                        setShowAgentCommand(true);
-                      }}
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1" />
-                      Assigner un agent
-                    </Button>
                   </div>
                 </div>
                 {!collapsed && (
@@ -1776,12 +1643,10 @@ export default function SchedulePage() {
                         onDeleteWeek={withSite(handleDeleteWeekForAgent)}
                         onConflictClick={withSite(handleConflictClick)}
                         getDateConflict={getDateConflict}
-                        calculateAgentHours={calculateAgentHours}
                         onCustomizeShiftHours={withSite(
                           handleCustomizeShiftHours,
                         )}
                         isClosedDay={isClosedDay}
-                        maxWeeklyWorkHours={settings.maxWeeklyWorkHours}
                         selectedSiteId={site.id}
                         siteColor={site.color}
                       />
@@ -1814,6 +1679,18 @@ export default function SchedulePage() {
             </Card>
           )}
         </div>
+
+        {/* Détail des majorations — bottom of page, filter-scoped */}
+        <HourDetailsSection
+          agents={visibleAgentsFlat}
+          agentShifts={agentShifts.filter((s) =>
+            visibleSites.some((vs) => vs.id === s.siteId),
+          )}
+          displayDates={displayDates}
+          isPublicHoliday={isPublicHoliday}
+          timeOffRequests={mockTimeOffRequests}
+          settings={settings}
+        />
 
         {/* Compact Shift Template Popover */}
         <Dialog
@@ -2037,12 +1914,10 @@ export default function SchedulePage() {
 
         {/* Agent Assignment Modal — multi-select */}
         {(() => {
-          const activeSite = mockSites.find(
-            (s) => s.id === activeSiteIdRef.current,
-          );
-          const availableAgents = getAvailableAgentsForSite(
-            activeSiteIdRef.current,
-          );
+          const activeSite = mockSites.find((s) => s.id === assignSiteId);
+          const availableAgents = assignSiteId
+            ? getAvailableAgentsForSite(assignSiteId)
+            : [];
           const filteredAvailable = availableAgents.filter((a) => {
             const q = assignSearch.trim().toLowerCase();
             if (!q) return true;
@@ -2069,7 +1944,7 @@ export default function SchedulePage() {
               description={
                 activeSite
                   ? `${activeSite.name} · ${availableAgents.length} agent${availableAgents.length > 1 ? "s" : ""} disponible${availableAgents.length > 1 ? "s" : ""}`
-                  : undefined
+                  : "Sélectionnez un site puis les agents à assigner"
               }
               actions={{
                 primary: {
@@ -2078,7 +1953,7 @@ export default function SchedulePage() {
                       ? `Assigner ${agentsToAssign.length} agent${agentsToAssign.length > 1 ? "s" : ""}`
                       : "Assigner",
                   onClick: handleBulkAssignAgents,
-                  disabled: agentsToAssign.length === 0,
+                  disabled: !assignSiteId || agentsToAssign.length === 0,
                 },
                 secondary: {
                   label: "Annuler",
@@ -2087,12 +1962,41 @@ export default function SchedulePage() {
               }}
             >
               <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Site</Label>
+                  <Select
+                    value={assignSiteId}
+                    onValueChange={(v) => {
+                      setAssignSiteId(v);
+                      activeSiteIdRef.current = v;
+                      setAgentsToAssign([]);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un site" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockSites
+                        .filter((s) => s.status === "active")
+                        .map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name} — {s.clientName}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Input
                   placeholder="Rechercher par nom, qualification ou contrat..."
                   value={assignSearch}
                   onChange={(e) => setAssignSearch(e.target.value)}
-                  autoFocus
+                  disabled={!assignSiteId}
                 />
+                {!assignSiteId && (
+                  <div className="text-center py-10 text-sm text-muted-foreground">
+                    Sélectionnez un site pour voir les agents disponibles.
+                  </div>
+                )}
 
                 {availableAgents.length === 0 ? (
                   <div className="text-center py-10 text-sm text-muted-foreground">
@@ -2169,6 +2073,7 @@ export default function SchedulePage() {
           open={showShiftModal}
           onOpenChange={setShowShiftModal}
           type="form"
+          size="lg"
           title={editingShift ? "Modifier le Shift" : "Ajouter un Shift"}
           actions={{
             secondary: {
@@ -2656,25 +2561,23 @@ export default function SchedulePage() {
                   <Label className="text-base font-semibold mb-3 block">
                     Durée de pause
                   </Label>
-                  <div className="flex gap-2 flex-wrap">
-                    {[0, 15, 30, 45, 60].map((min) => (
-                      <Button
-                        key={min}
-                        type="button"
-                        variant={
-                          shiftForm.breakDuration === min
-                            ? "default"
-                            : "outline"
-                        }
-                        onClick={() =>
-                          setShiftForm({ ...shiftForm, breakDuration: min })
-                        }
-                        className="flex-1 min-w-20"
-                      >
-                        {min === 0 ? "Aucune" : `${min}min`}
-                      </Button>
-                    ))}
-                  </div>
+                  <Select
+                    value={String(shiftForm.breakDuration)}
+                    onValueChange={(v) =>
+                      setShiftForm({ ...shiftForm, breakDuration: Number(v) })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BREAK_DURATION_OPTIONS.map((min) => (
+                        <SelectItem key={min} value={String(min)}>
+                          {min === 0 ? "Aucune" : `${min} min`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Color Selection */}

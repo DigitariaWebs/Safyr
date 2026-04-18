@@ -6,7 +6,8 @@ import { Clipboard, Plus } from "lucide-react";
 import type { AgentShift, Poste } from "@/lib/types";
 import type { SiteColor } from "@/lib/site-colors";
 import { getSiteColorClasses } from "@/lib/site-colors";
-import { summarizeAgentHours } from "./contract-utils";
+import { summarizeAgentHours, type AgentHoursSummary } from "./contract-utils";
+import { AgentHoursCell } from "./AgentHoursCell";
 
 const DAY_LETTERS = ["D", "L", "M", "M", "J", "V", "S"];
 
@@ -139,10 +140,7 @@ export function MonthlyView({
             <MonthAgentRow
               key={agent.agentId}
               agent={agent}
-              contractHours={hours.contract}
-              assignedHours={hours.planned}
-              overrun={hours.isOver}
-              diff={hours.diff}
+              hours={hours}
               dates={dates}
               shifts={shifts}
               copiedShift={copiedShift}
@@ -150,7 +148,6 @@ export function MonthlyView({
               onEditShift={onEditShift}
               onPasteShift={onPasteShift}
               isClosedDay={isClosedDay}
-              dotClass={colors.dot}
             />
           );
         })}
@@ -206,10 +203,7 @@ function MonthBesoinRow({
 
 function MonthAgentRow({
   agent,
-  contractHours,
-  assignedHours,
-  overrun,
-  diff,
+  hours,
   dates,
   shifts,
   copiedShift,
@@ -217,13 +211,9 @@ function MonthAgentRow({
   onEditShift,
   onPasteShift,
   isClosedDay,
-  dotClass,
 }: {
   agent: { agentId: string; agentName: string };
-  contractHours: number;
-  assignedHours: number;
-  overrun: boolean;
-  diff: number;
+  hours: AgentHoursSummary;
   dates: Date[];
   shifts: AgentShift[];
   copiedShift: AgentShift | null;
@@ -231,7 +221,6 @@ function MonthAgentRow({
   onEditShift: (shift: AgentShift) => void;
   onPasteShift: (agentId: string, date: string) => void;
   isClosedDay: (d: Date | string) => boolean;
-  dotClass: string;
 }) {
   return (
     <>
@@ -240,26 +229,7 @@ function MonthAgentRow({
         <div className="font-medium text-[11px] truncate">
           {agent.agentName}
         </div>
-        <div className="flex items-center gap-1 text-[9px]">
-          <span
-            className={
-              overrun ? "text-destructive font-semibold" : "font-medium"
-            }
-          >
-            {assignedHours.toFixed(0)}
-          </span>
-          <span className="text-muted-foreground">
-            / {contractHours.toFixed(0)}h
-          </span>
-          {overrun && <span className="text-destructive">▲</span>}
-        </div>
-        <div
-          className={`text-[9px] font-medium leading-none ${overrun ? "text-destructive" : "text-muted-foreground"}`}
-        >
-          {overrun
-            ? `+${Math.abs(diff).toFixed(0)}h dép.`
-            : `${diff.toFixed(0)}h reste`}
-        </div>
+        <AgentHoursCell summary={hours} size="sm" />
       </div>
 
       {/* Day cells */}
@@ -284,7 +254,10 @@ function MonthAgentRow({
                     key={shift.id}
                     onClick={() => onEditShift(shift)}
                     title={`${shift.startTime}–${shift.endTime}${shift.isSplit ? ` | ${shift.splitStartTime2}–${shift.splitEndTime2}` : ""} · ${agent.agentName}`}
-                    className={`h-2 w-2 rounded-full ${dotClass} hover:ring-2 hover:ring-offset-1 hover:ring-primary/40 transition`}
+                    className="h-2 w-2 rounded-full hover:ring-2 hover:ring-offset-1 hover:ring-primary/40 transition"
+                    style={{
+                      backgroundColor: shift.color ?? undefined,
+                    }}
                   />
                 ))}
               </div>

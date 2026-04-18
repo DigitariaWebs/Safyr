@@ -25,6 +25,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Shared `planning-constants.ts` module exporting `BREAK_DURATION_OPTIONS`, `SHIFT_DURATION_OPTIONS`, `EQUIPMENT_OPTIONS`
 - Multi-select equipment picker in postes form (replaces freetext comma-separated input)
 - `@tanstack/react-form` dependency
+- Collapsible right sidebar on schedule page (`PlanningSidebar`) for period navigation, view switcher, actions (simulation, PDF), and résumé metrics — open state persisted in `uiStore`
+- Pill-variant filter controls in schedule topbar (client / site / agent popovers) with active-state styling
+- Single global "Assigner un agent" button with required site select in the modal, replacing per-site buttons (P3-PG2)
+- Week-number pill ("Semaine XX") centered above the weekly view weekday header, highlighted when it is the current ISO week (P3-PG7)
+- Explicit 3-value agent summary (Contrat / Affectées / Restantes, Dépassement in red) in daily, weekly, and monthly agent cells (P3-PG8)
 
 ### Changed
 
@@ -35,6 +40,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Migrate postes form from `useState` to `@tanstack/react-form` with per-field bindings
 - Unify break duration control as `Select` (0/15/30/45/60 min) in postes and shifts pages
 - Restyle site group labels in postes & shifts tables as colored badges instead of full-row tinted backgrounds
+- Schedule topbar redesigned: filter pills replace stats readout, week label removed; sidebar toggle (with active-filter count badge) replaces week indicator (P3-PG1)
+- Résumé du planning moved from main content into sidebar with compact 2x2 metric tiles; Détail des majorations rendered at bottom of the grid
+- Weekly besoin per-day cells stack vacation window (`HH:mm–HH:mm`) and coverage `X/Y` with remaining deduction (`−N`) (P3-PG6)
+- Copy-mode banner: bright red background, white bold uppercase text, larger icon & padding (P3-PG5)
+- Month-view shift dot uses the shift's own color instead of the site color (P3-PG9)
 
 ### Fixed
 

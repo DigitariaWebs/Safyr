@@ -24,6 +24,11 @@ interface UiStore {
   isNavExpanded: boolean;
   setIsNavExpanded: (expanded: boolean) => void;
   toggleNavExpanded: () => void;
+
+  // Planning — schedule right sidebar (filters + controls)
+  scheduleSidebarOpen: boolean;
+  setScheduleSidebarOpen: (open: boolean) => void;
+  toggleScheduleSidebar: () => void;
 }
 
 export const useUiStore = create<UiStore>()(
@@ -56,6 +61,12 @@ export const useUiStore = create<UiStore>()(
       setIsNavExpanded: (expanded) => set({ isNavExpanded: expanded }),
       toggleNavExpanded: () =>
         set((state) => ({ isNavExpanded: !state.isNavExpanded })),
+
+      // Planning — schedule right sidebar
+      scheduleSidebarOpen: true,
+      setScheduleSidebarOpen: (open) => set({ scheduleSidebarOpen: open }),
+      toggleScheduleSidebar: () =>
+        set((state) => ({ scheduleSidebarOpen: !state.scheduleSidebarOpen })),
     }),
     {
       name: "ui-store",
@@ -64,6 +75,7 @@ export const useUiStore = create<UiStore>()(
         sidebarMode: state.sidebarMode,
         sidebarHidden: state.sidebarHidden,
         isNavExpanded: state.isNavExpanded,
+        scheduleSidebarOpen: state.scheduleSidebarOpen,
       }),
     },
   ),

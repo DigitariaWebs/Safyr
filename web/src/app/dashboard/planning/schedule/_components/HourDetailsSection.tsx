@@ -6,6 +6,7 @@ import { FileText } from "lucide-react";
 
 import type { AgentShift, TimeOffRequest } from "@/lib/types";
 import type { PlanningSettings } from "@/lib/stores/planningSettingsStore";
+import { isoWeekNumber } from "./date-utils";
 
 export function HourDetailsSection({
   agents,
@@ -28,17 +29,6 @@ export function HourDetailsSection({
     const displayDateSet = new Set(
       displayDates.map((d) => d.toISOString().split("T")[0]),
     );
-
-    const getWeekNum = (d: Date) => {
-      const date = new Date(
-        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()),
-      );
-      date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-      return Math.ceil(
-        ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
-      );
-    };
 
     const computeNightHours = (
       startTime: string,
@@ -147,7 +137,7 @@ export function HourDetailsSection({
             }
           }
 
-          const wk = getWeekNum(date);
+          const wk = isoWeekNumber(date);
           weeklyHours[wk] = (weeklyHours[wk] || 0) + hrs;
         });
 
