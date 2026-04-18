@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useForm } from "@tanstack/react-form";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,9 +54,15 @@ import {
   CalendarClock,
   ChevronRight,
 } from "lucide-react";
-import type { Poste, PosteType, PosteFormData } from "@/lib/types";
-import { mockPostes, mockSites } from "@/data/sites";
+import type { Poste, PosteType } from "@/lib/types";
+import { mockPostes, mockSites, mockClients } from "@/data/sites";
 import { SITE_COLOR_MAP } from "@/lib/site-colors";
+import { PhoneInput } from "@/components/ui/phone-input";
+import {
+  BREAK_DURATION_OPTIONS,
+  SHIFT_DURATION_OPTIONS,
+  EQUIPMENT_OPTIONS,
+} from "@/lib/planning-constants";
 
 const POSTE_TYPE_LABELS: Record<string, string> = {
   agent_securite: "Agent de Sécurité",
@@ -85,14 +92,39 @@ const CERTIFICATIONS_OPTIONS = [
   "Autres",
 ];
 
-const DEFAULT_FORM: PosteFormData = {
+type PosteFormValues = {
+  name: string;
+  type: PosteType;
+  description: string;
+  requiredCertifications: string[];
+  requiredQualifications: string[];
+  defaultShiftDuration: number;
+  breakDuration: number;
+  nightShift: boolean;
+  weekendWork: boolean;
+  rotatingShift: boolean;
+  minAgents: number;
+  maxAgents: number;
+  duties: string;
+  procedures: string;
+  equipment: string[];
+  emergencyContactMode: "site" | "client" | "manual";
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  status: "active" | "inactive";
+  priority: "low" | "medium" | "high" | "critical";
+  vacationStart: string;
+  vacationEnd: string;
+};
+
+const DEFAULT_FORM: PosteFormValues = {
   name: "",
   type: "agent_securite" as PosteType,
   description: "",
   requiredCertifications: [],
   requiredQualifications: [],
   defaultShiftDuration: 8,
-  breakDuration: 30,
+  breakDuration: 0,
   nightShift: false,
   weekendWork: false,
   rotatingShift: false,
@@ -100,8 +132,10 @@ const DEFAULT_FORM: PosteFormData = {
   maxAgents: 1,
   duties: "",
   procedures: "",
-  equipment: "",
-  emergencyContact: "",
+  equipment: [],
+  emergencyContactMode: "manual" as const,
+  emergencyContactName: "",
+  emergencyContactPhone: "",
   status: "active",
   priority: "medium",
   vacationStart: "08:00",
@@ -118,8 +152,17 @@ export default function PostesPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [createSiteId, setCreateSiteId] = useState<string>("");
-  const [formData, setFormData] = useState<PosteFormData>(DEFAULT_FORM);
   const showCreateFromUrl = searchParams.get("create") === "true";
+
+  const form = useForm({ defaultValues: DEFAULT_FORM });
+
+  const activeSiteId = isEditModalOpen
+    ? (selectedPoste?.siteId ?? createSiteId)
+    : createSiteId;
+  const activeSite = mockSites.find((s) => s.id === activeSiteId);
+  const activeClient = activeSite
+    ? mockClients.find((c) => c.id === activeSite.clientId)
+    : undefined;
 
   const totalPostes = postes.length;
   const activePostes = postes.filter((p) => p.status === "active").length;
@@ -263,14 +306,14 @@ export default function PostesPage() {
     setIsViewModalOpen(false);
     setIsDeleteModalOpen(false);
     setSelectedPoste(p);
-    setFormData({
+    form.reset({
       name: p.name,
       type: p.type,
       description: p.description ?? "",
       requiredCertifications: p.requirements.requiredCertifications,
       requiredQualifications: p.requirements.requiredQualifications ?? [],
       defaultShiftDuration: p.schedule.defaultShiftDuration,
-      breakDuration: p.schedule.breakDuration ?? 30,
+      breakDuration: p.schedule.breakDuration ?? 0,
       nightShift: p.schedule.nightShift,
       weekendWork: p.schedule.weekendWork,
       rotatingShift: p.schedule.rotatingShift,
@@ -278,8 +321,40 @@ export default function PostesPage() {
       maxAgents: p.capacity.maxAgents,
       duties: p.instructions?.duties.join("\n") ?? "",
       procedures: p.instructions?.procedures ?? "",
-      equipment: p.instructions?.equipment?.join(", ") ?? "",
-      emergencyContact: p.instructions?.emergencyContact ?? "",
+      equipment: p.instructions?.equipment ?? [],
+      ...(() => {
+        const existing = p.instructions?.emergencyContact ?? "";
+        const pSite = mockSites.find((s) => s.id === p.siteId);
+        const pClient = pSite
+          ? mockClients.find((c) => c.id === pSite.clientId)
+          : undefined;
+        const siteStr = pSite
+          ? `${pSite.contact.name} — ${pSite.contact.phone}`
+          : null;
+        const clientStr = pClient?.contactPerson
+          ? `${pClient.contactPerson} — ${pClient.phone ?? ""}`
+          : null;
+        if (siteStr && existing === siteStr)
+          return {
+            emergencyContactMode: "site" as const,
+            emergencyContactName: "",
+            emergencyContactPhone: "",
+          };
+        if (clientStr && existing === clientStr)
+          return {
+            emergencyContactMode: "client" as const,
+            emergencyContactName: "",
+            emergencyContactPhone: "",
+          };
+        const parts = existing.split(" — ");
+        return {
+          emergencyContactMode: "manual" as const,
+          emergencyContactName:
+            parts.length >= 2 ? parts.slice(0, -1).join(" — ") : "",
+          emergencyContactPhone:
+            parts.length >= 2 ? parts[parts.length - 1] : existing,
+        };
+      })(),
       status: p.status,
       priority: p.priority,
       vacationStart:
@@ -307,54 +382,76 @@ export default function PostesPage() {
   };
 
   const handleOpenCreate = () => {
-    setFormData({ ...DEFAULT_FORM });
+    form.reset();
     setCreateSiteId(mockSites[0]?.id ?? "");
     setIsCreateModalOpen(true);
   };
 
+  const resolveEmergencyContact = (
+    values: PosteFormValues,
+    siteId: string,
+  ): string | undefined => {
+    if (values.emergencyContactMode === "site") {
+      const s = mockSites.find((x) => x.id === siteId);
+      return s ? `${s.contact.name} — ${s.contact.phone}` : undefined;
+    }
+    if (values.emergencyContactMode === "client") {
+      const s = mockSites.find((x) => x.id === siteId);
+      const c = s ? mockClients.find((x) => x.id === s.clientId) : undefined;
+      return c?.contactPerson
+        ? `${c.contactPerson} — ${c.phone ?? ""}`
+        : undefined;
+    }
+    if (values.emergencyContactName || values.emergencyContactPhone) {
+      return values.emergencyContactName
+        ? `${values.emergencyContactName} — ${values.emergencyContactPhone}`
+        : values.emergencyContactPhone;
+    }
+    return undefined;
+  };
+
   const handleSave = (isEdit: boolean) => {
+    const values = form.state.values;
     if (isEdit && selectedPoste) {
       setPostes((prev) =>
         prev.map((p) =>
           p.id === selectedPoste.id
             ? {
                 ...p,
-                name: formData.name,
-                type: formData.type,
-                description: formData.description,
+                name: values.name,
+                type: values.type,
+                description: values.description,
                 requirements: {
-                  requiredCertifications: formData.requiredCertifications,
-                  requiredQualifications: formData.requiredQualifications,
+                  requiredCertifications: values.requiredCertifications,
+                  requiredQualifications: values.requiredQualifications,
                 },
                 schedule: {
-                  defaultShiftDuration: formData.defaultShiftDuration,
-                  breakDuration: formData.breakDuration,
-                  nightShift: formData.nightShift,
-                  weekendWork: formData.weekendWork,
-                  rotatingShift: formData.rotatingShift,
-                  vacationStart: formData.vacationStart,
-                  vacationEnd: formData.vacationEnd,
+                  defaultShiftDuration: values.defaultShiftDuration,
+                  breakDuration: values.breakDuration,
+                  nightShift: values.nightShift,
+                  weekendWork: values.weekendWork,
+                  rotatingShift: values.rotatingShift,
+                  vacationStart: values.vacationStart,
+                  vacationEnd: values.vacationEnd,
                 },
                 capacity: {
-                  minAgents: formData.minAgents,
-                  maxAgents: formData.maxAgents,
+                  minAgents: values.minAgents,
+                  maxAgents: values.maxAgents,
                   currentAgents: p.capacity.currentAgents,
                 },
                 instructions: {
-                  duties: formData.duties
-                    ? formData.duties.split("\n").filter(Boolean)
+                  duties: values.duties
+                    ? values.duties.split("\n").filter(Boolean)
                     : [],
-                  procedures: formData.procedures,
-                  equipment: formData.equipment
-                    ? formData.equipment
-                        .split(",")
-                        .map((e) => e.trim())
-                        .filter(Boolean)
-                    : [],
-                  emergencyContact: formData.emergencyContact,
+                  procedures: values.procedures,
+                  equipment: values.equipment,
+                  emergencyContact: resolveEmergencyContact(
+                    values,
+                    selectedPoste.siteId,
+                  ),
                 },
-                status: formData.status,
-                priority: formData.priority,
+                status: values.status,
+                priority: values.priority,
                 updatedAt: new Date(),
               }
             : p,
@@ -365,42 +462,37 @@ export default function PostesPage() {
       const newPoste: Poste = {
         id: `poste-${Date.now()}`,
         siteId: createSiteId,
-        name: formData.name,
-        type: formData.type,
-        description: formData.description,
+        name: values.name,
+        type: values.type,
+        description: values.description,
         requirements: {
-          requiredCertifications: formData.requiredCertifications,
-          requiredQualifications: formData.requiredQualifications,
+          requiredCertifications: values.requiredCertifications,
+          requiredQualifications: values.requiredQualifications,
         },
         schedule: {
-          defaultShiftDuration: formData.defaultShiftDuration,
-          breakDuration: formData.breakDuration,
-          nightShift: formData.nightShift,
-          weekendWork: formData.weekendWork,
-          rotatingShift: formData.rotatingShift,
-          vacationStart: formData.vacationStart,
-          vacationEnd: formData.vacationEnd,
+          defaultShiftDuration: values.defaultShiftDuration,
+          breakDuration: values.breakDuration,
+          nightShift: values.nightShift,
+          weekendWork: values.weekendWork,
+          rotatingShift: values.rotatingShift,
+          vacationStart: values.vacationStart,
+          vacationEnd: values.vacationEnd,
         },
         capacity: {
-          minAgents: formData.minAgents,
-          maxAgents: formData.maxAgents,
+          minAgents: values.minAgents,
+          maxAgents: values.maxAgents,
           currentAgents: 0,
         },
         instructions: {
-          duties: formData.duties
-            ? formData.duties.split("\n").filter(Boolean)
+          duties: values.duties
+            ? values.duties.split("\n").filter(Boolean)
             : [],
-          procedures: formData.procedures,
-          equipment: formData.equipment
-            ? formData.equipment
-                .split(",")
-                .map((e) => e.trim())
-                .filter(Boolean)
-            : [],
-          emergencyContact: formData.emergencyContact,
+          procedures: values.procedures,
+          equipment: values.equipment,
+          emergencyContact: resolveEmergencyContact(values, createSiteId),
         },
-        status: formData.status,
-        priority: formData.priority,
+        status: values.status,
+        priority: values.priority,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -431,106 +523,124 @@ export default function PostesPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5 col-span-2">
             <Label className="text-base font-semibold">Nom du poste</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, name: e.target.value }))
-              }
-              placeholder="Ex: Agent de surveillance principale"
-              className="text-base"
-            />
+            <form.Field name="name">
+              {(field) => (
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Ex: Agent de surveillance principale"
+                  className="text-base"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-base font-semibold">Type de poste</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(v) =>
-                setFormData((f) => ({ ...f, type: v as PosteType }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(POSTE_TYPE_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <form.Field name="type">
+              {(field) => (
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v as PosteType)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(POSTE_TYPE_LABELS).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </form.Field>
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-base font-semibold">Priorité</Label>
-            <div className="grid grid-cols-4 gap-2">
-              {(
-                [
-                  { value: "low", label: "Faible", color: "bg-slate-500" },
-                  { value: "medium", label: "Moyen", color: "bg-blue-500" },
-                  { value: "high", label: "Élevé", color: "bg-amber-500" },
-                  { value: "critical", label: "Critique", color: "bg-red-500" },
-                ] as {
-                  value: Poste["priority"];
-                  label: string;
-                  color: string;
-                }[]
-              ).map(({ value, label, color }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() =>
-                    setFormData((f) => ({ ...f, priority: value }))
-                  }
-                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 text-xs font-medium transition-all ${
-                    formData.priority === value
-                      ? "border-foreground shadow-sm"
-                      : "border-border hover:border-foreground/40"
-                  }`}
-                >
-                  <span className={`h-3 w-3 rounded-full ${color}`} />
-                  {label}
-                </button>
-              ))}
-            </div>
+            <form.Field name="priority">
+              {(field) => (
+                <div className="grid grid-cols-4 gap-2">
+                  {(
+                    [
+                      { value: "low", label: "Faible", color: "bg-slate-500" },
+                      { value: "medium", label: "Moyen", color: "bg-blue-500" },
+                      { value: "high", label: "Élevé", color: "bg-amber-500" },
+                      {
+                        value: "critical",
+                        label: "Critique",
+                        color: "bg-red-500",
+                      },
+                    ] as {
+                      value: Poste["priority"];
+                      label: string;
+                      color: string;
+                    }[]
+                  ).map(({ value, label, color }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => field.handleChange(value)}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 text-xs font-medium transition-all ${
+                        field.state.value === value
+                          ? "border-foreground shadow-sm"
+                          : "border-border hover:border-foreground/40"
+                      }`}
+                    >
+                      <span className={`h-3 w-3 rounded-full ${color}`} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </form.Field>
           </div>
 
           <div className="space-y-1.5 col-span-2">
             <Label className="text-base font-semibold">Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, description: e.target.value }))
-              }
-              placeholder="Description du poste..."
-              rows={3}
-            />
+            <form.Field name="description">
+              {(field) => (
+                <Textarea
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Description du poste..."
+                  rows={3}
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-base font-semibold">Statut</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  { value: "active", label: "Actif" },
-                  { value: "inactive", label: "Inactif" },
-                ] as { value: "active" | "inactive"; label: string }[]
-              ).map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setFormData((f) => ({ ...f, status: value }))}
-                  className={`p-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                    formData.status === value
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <form.Field name="status">
+              {(field) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      { value: "active", label: "Actif" },
+                      { value: "inactive", label: "Inactif" },
+                    ] as { value: "active" | "inactive"; label: string }[]
+                  ).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => field.handleChange(value)}
+                      className={`p-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                        field.state.value === value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </form.Field>
           </div>
         </div>
 
@@ -540,69 +650,76 @@ export default function PostesPage() {
           <Label className="text-base font-semibold">
             Certifications requises
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-between font-normal"
-              >
-                <span className="text-muted-foreground">
-                  {formData.requiredCertifications.length === 0
-                    ? "Sélectionner des certifications"
-                    : `${formData.requiredCertifications.length} sélectionnée${formData.requiredCertifications.length > 1 ? "s" : ""}`}
-                </span>
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-2" align="start">
-              <div className="space-y-1">
-                {CERTIFICATIONS_OPTIONS.map((cert) => (
-                  <label
-                    key={cert}
-                    className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
-                  >
-                    <Checkbox
-                      checked={formData.requiredCertifications.includes(cert)}
-                      onCheckedChange={(checked) =>
-                        setFormData((f) => ({
-                          ...f,
-                          requiredCertifications: checked
-                            ? [...f.requiredCertifications, cert]
-                            : f.requiredCertifications.filter(
-                                (c) => c !== cert,
-                              ),
-                        }))
-                      }
-                    />
-                    {cert}
-                  </label>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          {formData.requiredCertifications.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {formData.requiredCertifications.map((c) => (
-                <Badge key={c} variant="outline" className="gap-1">
-                  <ShieldCheck className="h-3 w-3" />
-                  {c}
-                </Badge>
-              ))}
-            </div>
-          )}
-          <Input
-            value={(formData.requiredQualifications ?? []).join(", ")}
-            onChange={(e) =>
-              setFormData((f) => ({
-                ...f,
-                requiredQualifications: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              }))
-            }
-            placeholder="Qualifications — Ex: Permis B, Habilitation électrique"
-          />
+          <form.Field name="requiredCertifications">
+            {(field) => (
+              <>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="text-muted-foreground">
+                        {field.state.value.length === 0
+                          ? "Sélectionner des certifications"
+                          : `${field.state.value.length} sélectionnée${field.state.value.length > 1 ? "s" : ""}`}
+                      </span>
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="start">
+                    <div className="space-y-1">
+                      {CERTIFICATIONS_OPTIONS.map((cert) => (
+                        <label
+                          key={cert}
+                          className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                        >
+                          <Checkbox
+                            checked={field.state.value.includes(cert)}
+                            onCheckedChange={(checked) =>
+                              field.handleChange(
+                                checked
+                                  ? [...field.state.value, cert]
+                                  : field.state.value.filter((c) => c !== cert),
+                              )
+                            }
+                          />
+                          {cert}
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {field.state.value.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {field.state.value.map((c) => (
+                      <Badge key={c} variant="outline" className="gap-1">
+                        <ShieldCheck className="h-3 w-3" />
+                        {c}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </form.Field>
+          <form.Field name="requiredQualifications">
+            {(field) => (
+              <Input
+                value={(field.state.value ?? []).join(", ")}
+                onChange={(e) =>
+                  field.handleChange(
+                    e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
+                onBlur={field.handleBlur}
+                placeholder="Qualifications — Ex: Permis B, Habilitation électrique"
+              />
+            )}
+          </form.Field>
         </div>
       </TabsContent>
 
@@ -612,82 +729,76 @@ export default function PostesPage() {
           <Label className="text-base font-semibold mb-3 block">
             Durée de vacation
           </Label>
-          <div className="flex gap-2 flex-wrap">
-            {[4, 6, 8, 10, 12].map((h) => (
-              <Button
-                key={h}
-                type="button"
-                variant={
-                  formData.defaultShiftDuration === h ? "default" : "outline"
-                }
-                onClick={() =>
-                  setFormData((f) => ({ ...f, defaultShiftDuration: h }))
-                }
-                className="flex-1 min-w-14"
+          <form.Field name="defaultShiftDuration">
+            {(field) => (
+              <Select
+                value={String(field.state.value)}
+                onValueChange={(v) => field.handleChange(Number(v))}
               >
-                {h}h
-              </Button>
-            ))}
-            <div className="flex items-center gap-2 flex-1 min-w-20">
-              <Input
-                type="number"
-                min={1}
-                max={24}
-                value={formData.defaultShiftDuration}
-                onChange={(e) =>
-                  setFormData((f) => ({
-                    ...f,
-                    defaultShiftDuration: Number(e.target.value),
-                  }))
-                }
-                className="text-base"
-              />
-              <span className="text-sm text-muted-foreground shrink-0">h</span>
-            </div>
-          </div>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHIFT_DURATION_OPTIONS.map((h) => (
+                    <SelectItem key={h} value={String(h)}>
+                      {h}h
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </form.Field>
         </div>
 
         <div>
           <Label className="text-base font-semibold mb-3 block">
             Durée de pause
           </Label>
-          <div className="flex gap-2 flex-wrap">
-            {[0, 15, 30, 45, 60].map((min) => (
-              <Button
-                key={min}
-                type="button"
-                variant={formData.breakDuration === min ? "default" : "outline"}
-                onClick={() =>
-                  setFormData((f) => ({ ...f, breakDuration: min }))
-                }
-                className="flex-1 min-w-16"
+          <form.Field name="breakDuration">
+            {(field) => (
+              <Select
+                value={String(field.state.value ?? 0)}
+                onValueChange={(v) => field.handleChange(Number(v))}
               >
-                {min === 0 ? "Aucune" : `${min} min`}
-              </Button>
-            ))}
-          </div>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BREAK_DURATION_OPTIONS.map((min) => (
+                    <SelectItem key={min} value={String(min)}>
+                      {min === 0 ? "Aucune" : `${min} min`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </form.Field>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label className="text-sm">Début de vacation</Label>
-            <Input
-              type="time"
-              value={formData.vacationStart}
-              onChange={(e) =>
-                setFormData({ ...formData, vacationStart: e.target.value })
-              }
-            />
+            <form.Field name="vacationStart">
+              {(field) => (
+                <Input
+                  type="time"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              )}
+            </form.Field>
           </div>
           <div>
             <Label className="text-sm">Fin de vacation</Label>
-            <Input
-              type="time"
-              value={formData.vacationEnd}
-              onChange={(e) =>
-                setFormData({ ...formData, vacationEnd: e.target.value })
-              }
-            />
+            <form.Field name="vacationEnd">
+              {(field) => (
+                <Input
+                  type="time"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              )}
+            </form.Field>
           </div>
         </div>
 
@@ -700,33 +811,33 @@ export default function PostesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-sm">Minimum requis</Label>
-              <Input
-                type="number"
-                min={1}
-                value={formData.minAgents}
-                onChange={(e) =>
-                  setFormData((f) => ({
-                    ...f,
-                    minAgents: Number(e.target.value),
-                  }))
-                }
-                className="text-base"
-              />
+              <form.Field name="minAgents">
+                {(field) => (
+                  <Input
+                    type="number"
+                    min={1}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(Number(e.target.value))}
+                    onBlur={field.handleBlur}
+                    className="text-base"
+                  />
+                )}
+              </form.Field>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm">Maximum autorisé</Label>
-              <Input
-                type="number"
-                min={1}
-                value={formData.maxAgents}
-                onChange={(e) =>
-                  setFormData((f) => ({
-                    ...f,
-                    maxAgents: Number(e.target.value),
-                  }))
-                }
-                className="text-base"
-              />
+              <form.Field name="maxAgents">
+                {(field) => (
+                  <Input
+                    type="number"
+                    min={1}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(Number(e.target.value))}
+                    onBlur={field.handleBlur}
+                    className="text-base"
+                  />
+                )}
+              </form.Field>
             </div>
           </div>
         </div>
@@ -738,32 +849,37 @@ export default function PostesPage() {
             Contraintes horaires
           </Label>
           <div className="grid grid-cols-3 gap-3">
-            {(
-              [
-                { key: "nightShift", label: "Shift de nuit", icon: Moon },
-                { key: "weekendWork", label: "Week-end", icon: Users },
-                { key: "rotatingShift", label: "Tournant", icon: RotateCcw },
-              ] as {
-                key: keyof PosteFormData;
-                label: string;
-                icon: React.ElementType;
-              }[]
-            ).map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFormData((f) => ({ ...f, [key]: !f[key] }))}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                  formData[key]
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40"
-                }`}
-              >
-                <Icon
-                  className={`h-5 w-5 ${formData[key] ? "text-primary" : "text-muted-foreground"}`}
-                />
-                {label}
-              </button>
+            {[
+              {
+                key: "nightShift" as const,
+                label: "Shift de nuit",
+                icon: Moon,
+              },
+              { key: "weekendWork" as const, label: "Week-end", icon: Users },
+              {
+                key: "rotatingShift" as const,
+                label: "Tournant",
+                icon: RotateCcw,
+              },
+            ].map(({ key, label, icon: Icon }) => (
+              <form.Field key={key} name={key}>
+                {(field) => (
+                  <button
+                    type="button"
+                    onClick={() => field.handleChange(!field.state.value)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                      field.state.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-5 w-5 ${field.state.value ? "text-primary" : "text-muted-foreground"}`}
+                    />
+                    {label}
+                  </button>
+                )}
+              </form.Field>
             ))}
           </div>
         </div>
@@ -773,76 +889,203 @@ export default function PostesPage() {
       <TabsContent value="instructions" className="space-y-5 mt-0">
         <div className="space-y-1.5">
           <Label className="text-base font-semibold">Tâches & missions</Label>
-          <Textarea
-            value={formData.duties ?? ""}
-            onChange={(e) =>
-              setFormData((f) => ({ ...f, duties: e.target.value }))
-            }
-            placeholder="Une tâche par ligne..."
-            rows={5}
-          />
-          <p className="text-xs text-muted-foreground">Une tâche par ligne</p>
+          <form.Field name="duties">
+            {(field) => (
+              <>
+                <Textarea
+                  value={field.state.value ?? ""}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Une tâche par ligne..."
+                  rows={5}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Une tâche par ligne
+                </p>
+              </>
+            )}
+          </form.Field>
         </div>
 
         <div className="space-y-1.5">
           <Label className="text-base font-semibold">
             Équipements nécessaires
           </Label>
-          <Input
-            value={formData.equipment ?? ""}
-            onChange={(e) =>
-              setFormData((f) => ({ ...f, equipment: e.target.value }))
-            }
-            placeholder="Ex: Radio, Lampe torche, Gilet pare-balles"
-          />
-          {formData.equipment && (
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {formData.equipment
-                .split(",")
-                .map((e) => e.trim())
-                .filter(Boolean)
-                .map((eq) => (
-                  <Badge key={eq} variant="outline" className="gap-1 text-xs">
-                    <Wrench className="h-3 w-3" />
-                    {eq}
-                  </Badge>
-                ))}
-            </div>
-          )}
+          <form.Field name="equipment">
+            {(field) => (
+              <>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="text-muted-foreground">
+                        {field.state.value.length === 0
+                          ? "Sélectionner des équipements"
+                          : `${field.state.value.length} sélectionné(s)`}
+                      </span>
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="start">
+                    <div className="space-y-1">
+                      {EQUIPMENT_OPTIONS.map((eq) => (
+                        <label
+                          key={eq}
+                          className="flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                        >
+                          <Checkbox
+                            checked={field.state.value.includes(eq)}
+                            onCheckedChange={(checked) =>
+                              field.handleChange(
+                                checked
+                                  ? [...field.state.value, eq]
+                                  : field.state.value.filter((e) => e !== eq),
+                              )
+                            }
+                          />
+                          {eq}
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {field.state.value.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {field.state.value.map((eq) => (
+                      <Badge
+                        key={eq}
+                        variant="outline"
+                        className="gap-1 text-xs"
+                      >
+                        <Wrench className="h-3 w-3" />
+                        {eq}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </form.Field>
         </div>
 
         <div className="space-y-1.5">
           <Label className="text-base font-semibold">
             Procédures spécifiques
           </Label>
-          <Textarea
-            value={formData.procedures ?? ""}
-            onChange={(e) =>
-              setFormData((f) => ({ ...f, procedures: e.target.value }))
-            }
-            placeholder="Procédures à suivre en cas d'incident..."
-            rows={4}
-          />
+          <form.Field name="procedures">
+            {(field) => (
+              <Textarea
+                value={field.state.value ?? ""}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                placeholder="Procédures à suivre en cas d'incident..."
+                rows={4}
+              />
+            )}
+          </form.Field>
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <Label className="text-base font-semibold">
             Contact d&apos;urgence
           </Label>
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-            <Input
-              value={formData.emergencyContact ?? ""}
-              onChange={(e) =>
-                setFormData((f) => ({
-                  ...f,
-                  emergencyContact: e.target.value,
-                }))
-              }
-              placeholder="Ex: Responsable sécurité — 06 00 00 00 00"
-              className="text-base"
-            />
-          </div>
+          <form.Field name="emergencyContactMode">
+            {(modeField) => (
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { value: "site", label: "Contact site" },
+                      { value: "client", label: "Contact client" },
+                      { value: "manual", label: "Manuel" },
+                    ] as {
+                      value: "site" | "client" | "manual";
+                      label: string;
+                    }[]
+                  ).map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => modeField.handleChange(value)}
+                      className={`p-2 rounded-lg border-2 text-xs font-medium transition-all ${
+                        modeField.state.value === value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {modeField.state.value === "site" &&
+                  (activeSite ? (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/50">
+                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {activeSite.contact.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activeSite.contact.phone}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Aucun site sélectionné
+                    </p>
+                  ))}
+
+                {modeField.state.value === "client" &&
+                  (activeClient?.contactPerson ? (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/50">
+                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {activeClient.contactPerson}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {activeClient.phone ?? "—"}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Aucun contact client disponible
+                    </p>
+                  ))}
+
+                {modeField.state.value === "manual" && (
+                  <div className="space-y-2">
+                    <form.Field name="emergencyContactName">
+                      {(nameField) => (
+                        <Input
+                          value={nameField.state.value}
+                          onChange={(e) =>
+                            nameField.handleChange(e.target.value)
+                          }
+                          onBlur={nameField.handleBlur}
+                          placeholder="Nom du contact"
+                        />
+                      )}
+                    </form.Field>
+                    <form.Field name="emergencyContactPhone">
+                      {(phoneField) => (
+                        <PhoneInput
+                          value={phoneField.state.value}
+                          onChange={(v) => phoneField.handleChange(v)}
+                          placeholder="6 12 34 56 78"
+                        />
+                      )}
+                    </form.Field>
+                  </div>
+                )}
+              </div>
+            )}
+          </form.Field>
         </div>
       </TabsContent>
     </Tabs>
@@ -917,16 +1160,6 @@ export default function PostesPage() {
             ],
           },
           {
-            key: "priority",
-            label: "Priorité",
-            options: [
-              { value: "low", label: "Faible" },
-              { value: "medium", label: "Moyen" },
-              { value: "high", label: "Élevé" },
-              { value: "critical", label: "Critique" },
-            ],
-          },
-          {
             key: "type",
             label: "Type",
             options: (Object.keys(POSTE_TYPE_LABELS) as PosteType[]).map(
@@ -935,16 +1168,20 @@ export default function PostesPage() {
           },
         ]}
         groupBy="siteId"
-        groupByLabel={(v) => (
-          <span className="text-lg font-bold text-white">
-            {getSiteNameById(v as string)}
-          </span>
-        )}
-        groupByRowClassName={(v) => {
+        groupByLabel={(v) => {
           const site = getSiteById(v as string);
           const color = site?.color ?? "blue";
-          return `${SITE_COLOR_MAP[color].bg} hover:${SITE_COLOR_MAP[color].bg}`;
+          const cls = SITE_COLOR_MAP[color as keyof typeof SITE_COLOR_MAP];
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold text-white ${cls.bg}`}
+            >
+              <MapPin className="h-3.5 w-3.5" />
+              {getSiteNameById(v as string)}
+            </span>
+          );
         }}
+        groupByRowClassName={() => ""}
         groupByOptions={mockSites.map((s) => ({ value: s.id, label: s.name }))}
         getRowId={(p) => p.id}
         onRowClick={handleView}
@@ -968,7 +1205,7 @@ export default function PostesPage() {
           primary: {
             label: "Créer le poste",
             onClick: () => handleSave(false),
-            disabled: !formData.name,
+            disabled: !form.state.values.name,
           },
           secondary: {
             label: "Annuler",
@@ -1009,7 +1246,7 @@ export default function PostesPage() {
           primary: {
             label: "Enregistrer",
             onClick: () => handleSave(true),
-            disabled: !formData.name,
+            disabled: !form.state.values.name,
           },
           secondary: {
             label: "Annuler",

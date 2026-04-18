@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { BREAK_DURATION_OPTIONS } from "@/lib/planning-constants";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,10 +167,6 @@ export default function ShiftsPage() {
   );
 
   const getSiteName = (siteId: string) => siteNameMap.get(siteId) ?? siteId;
-  const getSiteBgClass = (siteId: string) => {
-    const color = siteColorMap.get(siteId) ?? "blue";
-    return `${SITE_COLOR_MAP[color].bg} hover:${SITE_COLOR_MAP[color].bg}`;
-  };
   const getSiteClient = (siteId: string) => siteClientMap.get(siteId) ?? "";
 
   // ─── handlers ────────────────────────────────────────────────────────────
@@ -532,10 +529,9 @@ export default function ShiftsPage() {
               <SelectValue placeholder="Sélectionner la durée" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">Aucune</SelectItem>
-              {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((min) => (
+              {BREAK_DURATION_OPTIONS.map((min) => (
                 <SelectItem key={min} value={String(min)}>
-                  {min} minutes
+                  {min === 0 ? "Aucune" : `${min} minutes`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -768,15 +764,22 @@ export default function ShiftsPage() {
         getSearchValue={(s) => `${s.name} ${getSiteName(s.siteId)}`}
         searchPlaceholder="Rechercher par nom ou site..."
         groupBy="siteId"
-        groupByLabel={(v) => (
-          <span className="text-lg font-bold text-white">
-            {getSiteName(v as string)}
-            <span className="font-normal opacity-75 ml-2">
-              — {getSiteClient(v as string)}
+        groupByLabel={(v) => {
+          const siteId = v as string;
+          const color = siteColorMap.get(siteId) ?? "blue";
+          const cls = SITE_COLOR_MAP[color as keyof typeof SITE_COLOR_MAP];
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold text-white ${cls.bg}`}
+            >
+              {getSiteName(siteId)}
+              <span className="font-normal opacity-80">
+                — {getSiteClient(siteId)}
+              </span>
             </span>
-          </span>
-        )}
-        groupByRowClassName={(v) => getSiteBgClass(v as string)}
+          );
+        }}
+        groupByRowClassName={() => ""}
         groupByOptions={mockSites.map((s) => ({ value: s.id, label: s.name }))}
         getRowId={(s) => s.id}
         onRowClick={handleView}

@@ -2611,7 +2611,7 @@ export interface PosteFormData {
   maxAgents: number;
   duties?: string;
   procedures?: string;
-  equipment?: string;
+  equipment: string[];
   emergencyContact?: string;
   status: "active" | "inactive";
   priority: "low" | "medium" | "high" | "critical";

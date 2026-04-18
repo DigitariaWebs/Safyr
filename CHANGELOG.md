@@ -21,6 +21,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - "Assigner un agent" button inside each site group header
 - Planning summary card (Heures totales / sup. / Repas / Absences) and Détail des majorations always visible above the grid and scoped to active filters
 - Mock data expanded to 12 agents across 5 sites with rotating shifts
+- Structured emergency contact modes in postes form (site / client / manual) with `PhoneInput`
+- Shared `planning-constants.ts` module exporting `BREAK_DURATION_OPTIONS`, `SHIFT_DURATION_OPTIONS`, `EQUIPMENT_OPTIONS`
+- Multi-select equipment picker in postes form (replaces freetext comma-separated input)
+- `@tanstack/react-form` dependency
 
 ### Changed
 
@@ -28,6 +32,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Shared `playAlertBeep` helper extracted to `lib/audio-alerts.ts`
 - Contract hours interpreted as weekly reference and pro-rated across each view's visible period
 - Shift template popover ordering: needed postes first, then site templates
+- Migrate postes form from `useState` to `@tanstack/react-form` with per-field bindings
+- Unify break duration control as `Select` (0/15/30/45/60 min) in postes and shifts pages
+- Restyle site group labels in postes & shifts tables as colored badges instead of full-row tinted backgrounds
 
 ### Fixed
 
