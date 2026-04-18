@@ -10,7 +10,6 @@ import {
   Download,
   FileText,
   PanelRightClose,
-  Scissors,
 } from "lucide-react";
 
 type ViewType = "daily" | "weekly" | "monthly";
@@ -29,8 +28,6 @@ type Props = {
   onToday: () => void;
   viewType: ViewType;
   onViewChange: (v: ViewType) => void;
-  simulationMode: boolean;
-  onToggleSimulation: () => void;
   onExportPDF: () => void;
   summary: PlanningSummary;
   onClose: () => void;
@@ -43,8 +40,6 @@ export function PlanningSidebar({
   onToday,
   viewType,
   onViewChange,
-  simulationMode,
-  onToggleSimulation,
   onExportPDF,
   summary,
   onClose,
@@ -159,26 +154,15 @@ export function PlanningSidebar({
           <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Actions
           </h3>
-          <div className="space-y-2">
-            <Button
-              size="sm"
-              variant={simulationMode ? "destructive" : "outline"}
-              className="w-full h-9 gap-2 justify-start"
-              onClick={onToggleSimulation}
-            >
-              <Scissors className="h-4 w-4" />
-              {simulationMode ? "Simulation active" : "Simulation"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full h-9 gap-2 justify-start"
-              onClick={onExportPDF}
-            >
-              <Download className="h-4 w-4" />
-              Export PDF
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-9 gap-2 justify-start"
+            onClick={onExportPDF}
+          >
+            <Download className="h-4 w-4" />
+            Export PDF
+          </Button>
         </section>
 
         {/* Résumé */}

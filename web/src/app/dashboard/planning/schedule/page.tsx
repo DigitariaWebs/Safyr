@@ -43,6 +43,7 @@ import {
   PanelRightOpen,
   Filter as FilterIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { PlanningSidebar } from "./_components/PlanningSidebar";
 
@@ -89,6 +90,14 @@ declare global {
 }
 
 export default function SchedulePage() {
+  return <ScheduleView />;
+}
+
+export function ScheduleView({
+  forceSimulation = false,
+}: {
+  forceSimulation?: boolean;
+}) {
   const { settings } = usePlanningSettingsStore();
   const idCounterRef = React.useRef(0);
   const generateShiftId = () => {
@@ -126,7 +135,7 @@ export default function SchedulePage() {
     useState<AgentShift[]>(mockAgentShifts);
 
   // Simulation mode — writes go to shadow state instead of live
-  const [simulationMode, setSimulationMode] = useState(false);
+  const simulationMode = forceSimulation;
   const [simStandardShifts, setSimStandardShifts] = useState<
     StandardShift[] | null
   >(null);
@@ -136,8 +145,6 @@ export default function SchedulePage() {
   const [simAgentShifts, setSimAgentShifts] = useState<AgentShift[] | null>(
     null,
   );
-  const [showSimExitModal, setShowSimExitModal] = useState(false);
-
   // Effective reads (simulation shadow if in sim mode + shadow initialized)
   const standardShifts =
     simulationMode && simStandardShifts !== null
@@ -192,42 +199,6 @@ export default function SchedulePage() {
     } else {
       setLiveAgentShifts(v);
     }
-  };
-
-  const hasSimulationChanges =
-    simStandardShifts !== null ||
-    simSiteAgents !== null ||
-    simAgentShifts !== null;
-
-  const handleEnterSimulation = () => {
-    setSimulationMode(true);
-  };
-
-  const handleRequestExitSimulation = () => {
-    if (hasSimulationChanges) {
-      setShowSimExitModal(true);
-    } else {
-      setSimulationMode(false);
-    }
-  };
-
-  const handleSimSave = () => {
-    if (simStandardShifts !== null) setLiveStandardShifts(simStandardShifts);
-    if (simSiteAgents !== null) setLiveSiteAgents(simSiteAgents);
-    if (simAgentShifts !== null) setLiveAgentShifts(simAgentShifts);
-    setSimStandardShifts(null);
-    setSimSiteAgents(null);
-    setSimAgentShifts(null);
-    setSimulationMode(false);
-    setShowSimExitModal(false);
-  };
-
-  const handleSimDiscard = () => {
-    setSimStandardShifts(null);
-    setSimSiteAgents(null);
-    setSimAgentShifts(null);
-    setSimulationMode(false);
-    setShowSimExitModal(false);
   };
 
   // Modals
@@ -1413,11 +1384,20 @@ export default function SchedulePage() {
   return (
     <div>
       {/* Full-bleed sticky header — single row + optional banners */}
-      <header className="sticky -top-6 -mx-6 z-40 bg-background/95 backdrop-blur-sm border-b">
-        {/* Row 1 — Title + active-filter pills + week label */}
+      <header
+        className={cn(
+          "sticky -top-6 -mx-6 z-40 bg-background/95 backdrop-blur-sm border-b",
+          forceSimulation && "border-red-600",
+        )}
+      >
         <div className="flex items-center gap-6 px-8 py-4">
-          <h1 className="text-3xl font-bold leading-none shrink-0 tracking-tight">
-            Planning
+          <h1
+            className={cn(
+              "text-3xl font-bold leading-none shrink-0 tracking-tight",
+              forceSimulation && "text-red-600",
+            )}
+          >
+            {forceSimulation ? "Simulation" : "Planning"}
           </h1>
           <div className="flex-1 flex items-center gap-2 min-w-0">
             <FilterBar
@@ -1480,20 +1460,11 @@ export default function SchedulePage() {
 
         {/* Optional simulation banner row */}
         {simulationMode && (
-          <div className="flex items-center gap-3 px-6 py-1.5 bg-red-500/10 border-t border-red-500/40 text-red-700 dark:text-red-300">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            <span className="text-xs font-semibold flex-1">
+          <div className="flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <span className="text-base font-bold tracking-wide flex-1 uppercase">
               Mode simulation actif — les modifications ne sont pas sauvegardées
             </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-xs text-red-700 dark:text-red-300 hover:bg-red-500/20"
-              onClick={handleRequestExitSimulation}
-            >
-              <X className="h-3 w-3 mr-1" />
-              Quitter
-            </Button>
           </div>
         )}
       </header>
@@ -1507,10 +1478,6 @@ export default function SchedulePage() {
           onToday={() => setCurrentDate(new Date())}
           viewType={viewType}
           onViewChange={setViewType}
-          simulationMode={simulationMode}
-          onToggleSimulation={
-            simulationMode ? handleRequestExitSimulation : handleEnterSimulation
-          }
           onExportPDF={handleExportPDF}
           summary={planningSummary}
           onClose={() => setScheduleSidebarOpen(false)}
@@ -2674,34 +2641,6 @@ export default function SchedulePage() {
               </div>
             </div>
           </div>
-        </Modal>
-
-        {/* Simulation exit confirmation */}
-        <Modal
-          open={showSimExitModal}
-          onOpenChange={setShowSimExitModal}
-          type="warning"
-          title="Quitter le mode simulation"
-          actions={{
-            primary: {
-              label: "Sauvegarder les modifications",
-              onClick: handleSimSave,
-            },
-            tertiary: {
-              label: "Jeter les modifications",
-              onClick: handleSimDiscard,
-            },
-            secondary: {
-              label: "Rester en simulation",
-              onClick: () => setShowSimExitModal(false),
-            },
-          }}
-        >
-          <p className="text-sm">
-            Des modifications ont été apportées pendant la simulation.
-            Voulez-vous les sauvegarder dans le planning réel, les jeter, ou
-            continuer en mode simulation ?
-          </p>
         </Modal>
 
         {/* Conflict Modal */}

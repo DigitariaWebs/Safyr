@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Settings,
   Briefcase,
+  FlaskConical,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -38,6 +39,11 @@ const navItems: NavItem[] = [
     label: "Planning",
     href: "/dashboard/planning/schedule",
     icon: Calendar,
+  },
+  {
+    label: "Simulation",
+    href: "/dashboard/planning/simulation",
+    icon: FlaskConical,
   },
   {
     label: "Paramètres",

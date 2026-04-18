@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Single global "Assigner un agent" button with required site select in the modal, replacing per-site buttons (P3-PG2)
 - Week-number pill ("Semaine XX") centered above the weekly view weekday header, highlighted when it is the current ISO week (P3-PG7)
 - Explicit 3-value agent summary (Contrat / Affectées / Restantes, Dépassement in red) in daily, weekly, and monthly agent cells (P3-PG8)
+- Dedicated "Simulation" page at `/dashboard/planning/simulation` (named `ScheduleView` export with `forceSimulation` prop) — shares the schedule grid but forces simulation mode, shows red top banner and red "Simulation" title; nav entry between Planning and Paramètres with `FlaskConical` icon (P3-SIM1)
 
 ### Changed
 
@@ -45,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Weekly besoin per-day cells stack vacation window (`HH:mm–HH:mm`) and coverage `X/Y` with remaining deduction (`−N`) (P3-PG6)
 - Copy-mode banner: bright red background, white bold uppercase text, larger icon & padding (P3-PG5)
 - Month-view shift dot uses the shift's own color instead of the site color (P3-PG9)
+- Remove in-page Simulation button, exit flow, and exit-confirmation modal from the schedule page — simulation now lives exclusively on the dedicated route (P3-SIM1)
+- Simulation banner restyled to match copy-mode banner (bright red, white bold uppercase, larger padding)
 
 ### Fixed
 
