@@ -5,41 +5,30 @@ import {
   NavItem,
 } from "@/components/ui/module-navigation-bar";
 import {
-  Users,
   Building2,
+  Users,
   Calendar,
   Wallet,
-  UserCheck,
-  Scale,
-  MessageSquare,
-  Stethoscope,
-  UserX,
-  BookOpen,
-  GitBranch,
   Award,
-  BarChart3,
-  Mail,
-  Megaphone,
-  FileText,
+  UserCog,
+  ShieldCheck,
+  Workflow,
 } from "lucide-react";
 
 const navItems: NavItem[] = [
   {
-    label: "Organisme Social",
+    label: "Organisation",
     icon: Building2,
     children: [
-      {
-        label: "Information Organisme Social",
-        href: "/dashboard/hr/entreprise",
-      },
+      { label: "Mon entreprise", href: "/dashboard/hr/entreprise" },
       {
         label: "Sous-traitants",
         href: "/dashboard/hr/entreprise/sous-traitants",
       },
       { label: "Clients", href: "/dashboard/hr/entreprise/clients" },
-      { label: "Impôt SIE", href: "/dashboard/hr/entreprise/impot-sie" },
+      { label: "Impôts", href: "/dashboard/hr/entreprise/impot-sie" },
       {
-        label: "Divers Documents",
+        label: "Divers documents administratifs",
         href: "/dashboard/hr/entreprise/divers-documents",
       },
     ],
@@ -49,31 +38,37 @@ const navItems: NavItem[] = [
     icon: Users,
     children: [
       { label: "Dossiers salariés", href: "/dashboard/hr/employees" },
-      { label: "AKTO", href: "/dashboard/hr/employees/akto-opco" },
-      { label: "Archives BS", href: "/dashboard/hr/employees/archives" },
+      { label: "Dossiers AKTO", href: "/dashboard/hr/employees/akto-opco" },
+      {
+        label: "Archives bulletins de salaire",
+        href: "/dashboard/hr/employees/archives",
+      },
+      {
+        label: "Registre du personnel",
+        href: "/dashboard/hr/employees/personnel-register",
+      },
     ],
   },
   {
     label: "Temps & Absences",
     icon: Calendar,
     children: [
-      { label: "Absences", href: "/dashboard/hr/time-management" },
       {
         label: "Heures travaillées",
         href: "/dashboard/hr/time-management/worked-hours",
       },
+      { label: "Absences", href: "/dashboard/hr/time-management" },
       {
         label: "Heures CSE",
         href: "/dashboard/hr/time-management/cse-hours",
       },
       {
-        label: "Compteur heures supplémentaires",
+        label: "Compteurs heures supplémentaires",
         href: "/dashboard/hr/time-management/overtime-counter",
       },
       {
-        label: "Suivi Congés Payés",
+        label: "Suivi congés payés",
         href: "/dashboard/hr/time-management/paid-leave-tracking",
-        isNew: true,
       },
     ],
   },
@@ -81,206 +76,158 @@ const navItems: NavItem[] = [
     label: "Paie & Coûts",
     icon: Wallet,
     children: [
+      { label: "Variables de paie", href: "/dashboard/hr/payroll/variables" },
+      { label: "Contrôles de paie", href: "/dashboard/hr/payroll/control" },
       {
-        label: "Variables de paie",
-        href: "/dashboard/hr/payroll/variables",
+        label: "Maintien de salaire",
+        href: "/dashboard/hr/payroll/maintenance-analysis",
       },
-      {
-        label: "Notes de frais",
-        href: "/dashboard/hr/payroll/expenses",
-      },
-      {
-        label: "Contrôle paie",
-        href: "/dashboard/hr/payroll/control",
-      },
+      { label: "Notes de frais", href: "/dashboard/hr/payroll/expenses" },
       {
         label: "Coût salarié / heure",
         href: "/dashboard/hr/payroll/cost-per-hour",
       },
       {
-        label: "Maintien de salaire",
-        href: "/dashboard/hr/payroll/maintenance-analysis",
-      },
-      {
-        label: "Export Silae/Sage",
+        label: "Exports Silae / Sage",
         href: "/dashboard/hr/payroll/export-config",
       },
     ],
   },
   {
-    label: "Formations",
+    label: "Formation",
     icon: Award,
     children: [
+      { label: "SSIAP", href: "/dashboard/hr/training/ssiap" },
+      { label: "SST & recyclages", href: "/dashboard/hr/training/sst" },
       {
-        label: "SSIAP",
-        href: "/dashboard/hr/training/ssiap",
-      },
-      {
-        label: "SST & recyclages",
-        href: "/dashboard/hr/training/sst",
-      },
-      {
-        label: "Habilitations",
-        href: "/dashboard/hr/training/certifications",
+        label: "Habilitations H0B0",
+        href: "/dashboard/hr/training/h0b0",
       },
       {
         label: "Plan & budget de formation",
         href: "/dashboard/hr/training/plan",
       },
+      { label: "Alertes d'expiration", href: "/dashboard/hr/training/alerts" },
       {
-        label: "Alertes d'expiration",
-        href: "/dashboard/hr/training/alerts",
+        label: "Formations",
+        href: "/dashboard/hr/training/history",
       },
     ],
   },
   {
-    label: "Recrutement",
-    icon: UserCheck,
+    label: "Cycle de vie salarié",
+    icon: UserCog,
     children: [
       {
         label: "Candidatures",
-        href: "/dashboard/hr/recruitment/applications",
+        href: "/dashboard/hr/lifecycle/recruitment/applications",
       },
       {
         label: "Vérifications réglementaires",
-        href: "/dashboard/hr/recruitment/verifications",
+        href: "/dashboard/hr/lifecycle/recruitment/verifications",
       },
       {
-        label: "Création & signature",
-        href: "/dashboard/hr/recruitment/contracts",
+        label: "Création contrat & signature électronique",
+        href: "/dashboard/hr/lifecycle/recruitment/contracts",
       },
       {
         label: "Parcours d'intégration",
-        href: "/dashboard/hr/recruitment/onboarding",
+        href: "/dashboard/hr/lifecycle/recruitment/onboarding",
       },
+      { label: "Entretiens", href: "/dashboard/hr/lifecycle/interviews" },
+      { label: "Discipline", href: "/dashboard/hr/lifecycle/discipline" },
+      { label: "Offboarding", href: "/dashboard/hr/lifecycle/offboarding" },
     ],
   },
   {
-    label: "Discipline",
-    icon: Scale,
+    label: "Conformité & Registres",
+    icon: ShieldCheck,
     children: [
-      {
-        label: "Avertissements",
-        href: "/dashboard/hr/discipline/warnings",
-      },
-      {
-        label: "Procédures disciplinaires",
-        href: "/dashboard/hr/discipline/disciplinary-procedures",
-      },
-      {
-        label: "Registre des sanctions",
-        href: "/dashboard/hr/discipline/sanctions-register",
-      },
-    ],
-  },
-  {
-    label: "Entretiens",
-    icon: MessageSquare,
-    href: "/dashboard/hr/interviews",
-  },
-  {
-    label: "Médecine",
-    icon: Stethoscope,
-    href: "/dashboard/hr/occupational-medicine",
-  },
-  {
-    label: "Offboarding",
-    icon: UserX,
-    href: "/dashboard/hr/offboarding",
-  },
-  {
-    label: "Registres",
-    icon: BookOpen,
-    children: [
-      {
-        label: "Registre du personnel",
-        href: "/dashboard/hr/legal-registers/personnel",
-      },
-      { label: "DUERP", href: "/dashboard/hr/legal-registers/duerp" },
+      { label: "DUERP", href: "/dashboard/hr/compliance/duerp" },
       {
         label: "Accidents du travail",
-        href: "/dashboard/hr/legal-registers/work-accidents",
+        href: "/dashboard/hr/compliance/work-accidents",
       },
+      { label: "Suivi CDD", href: "/dashboard/hr/compliance/cdd" },
       {
-        label: "Formations",
-        href: "/dashboard/hr/legal-registers/training",
-      },
-      {
-        label: "Entrées/Sorties CDD",
-        href: "/dashboard/hr/legal-registers/cdd",
+        label: "Médecine du travail",
+        href: "/dashboard/hr/compliance/occupational-medicine",
       },
       {
         label: "Exports réglementaires",
-        href: "/dashboard/hr/legal-registers",
+        href: "/dashboard/hr/compliance",
+      },
+      {
+        label: "Registres réglementaires",
+        href: "/dashboard/hr/compliance/registers",
       },
     ],
   },
   {
-    label: "Workflows",
-    icon: GitBranch,
+    label: "Workflows & Pilotage",
+    icon: Workflow,
     children: [
       {
-        label: "Vue d'ensemble",
+        label: "Vue d'ensemble workflows",
         href: "/dashboard/hr/workflows/requests",
+        section: "Workflows",
       },
       {
-        label: "Demande de documents",
+        label: "Demandes de documents",
         href: "/dashboard/hr/workflows/document",
+        section: "Workflows",
       },
       {
         label: "Changements d'informations",
         href: "/dashboard/hr/workflows/bank-details",
+        section: "Workflows",
       },
       {
-        label: "Signatures électroniques",
-        href: "/dashboard/hr/workflows/signatures",
-      },
-      {
-        label: "Gestion des signatures",
+        label: "Signature électronique",
         href: "/dashboard/hr/workflows/signatures/all",
+        section: "Workflows",
       },
       {
-        label: "Automatisation",
+        label: "Automatisation RH",
         href: "/dashboard/hr/workflows/automation",
+        section: "Workflows",
       },
-    ],
-  },
-  {
-    label: "Pilotage",
-    icon: BarChart3,
-    href: "/dashboard/hr/social-report",
-  },
-  {
-    label: "Communication",
-    icon: Mail,
-    children: [
+      {
+        label: "Tableaux de bord RH",
+        href: "/dashboard/hr/pilotage/dashboards",
+        section: "Pilotage",
+      },
       {
         label: "Modèles d'emails",
-        href: "/dashboard/hr/communication/templates",
+        href: "/dashboard/hr/pilotage/communication/templates",
+        section: "Pilotage",
       },
       {
-        label: "Envoi d'emails",
-        href: "/dashboard/hr/communication/send-email",
-      },
-      {
-        label: "Archives",
-        href: "/dashboard/hr/communication/archives",
+        label: "Envois emails",
+        href: "/dashboard/hr/pilotage/communication/send-email",
+        section: "Pilotage",
       },
       {
         label: "Notifications & SMS",
-        href: "/dashboard/hr/communication/notifications",
+        href: "/dashboard/hr/pilotage/communication/notifications",
+        section: "Pilotage",
+      },
+      {
+        label: "Archives",
+        href: "/dashboard/hr/pilotage/communication/archives",
+        section: "Pilotage",
+      },
+      {
+        label: "Marketing RH",
+        href: "/dashboard/hr/business/marketing",
+        section: "Business",
+      },
+      {
+        label: "Appels d'offres",
+        href: "/dashboard/hr/business/tenders",
+        section: "Business",
       },
     ],
-  },
-  {
-    label: "Marketing",
-    icon: Megaphone,
-    href: "/dashboard/hr/marketing",
-  },
-  {
-    label: "Appels d'Offre",
-    icon: FileText,
-    href: "/dashboard/hr/tenders",
   },
 ];
 

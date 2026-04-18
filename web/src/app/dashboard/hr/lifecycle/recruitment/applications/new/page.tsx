@@ -86,7 +86,7 @@ export default function NewApplicationPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Redirect back to applications list
-      router.push("/dashboard/hr/recruitment/applications");
+      router.push("/dashboard/hr/lifecycle/recruitment/applications");
     } catch (error) {
       console.error("Error creating application:", error);
     } finally {

@@ -117,7 +117,7 @@ const statusColors = {
   cancelled: "destructive",
 } as const;
 
-export default function DisciplinaryProceduresPage() {
+export function ProceduresSection() {
   const [procedures, setProcedures] =
     useState<DisciplinaryProcedure[]>(mockProcedures);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

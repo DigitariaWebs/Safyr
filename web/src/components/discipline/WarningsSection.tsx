@@ -84,7 +84,7 @@ const statusColors = {
   lifted: "secondary",
 } as const;
 
-export default function WarningsPage() {
+export function WarningsSection() {
   const [warnings, setWarnings] = useState<Warning[]>(mockWarnings);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);

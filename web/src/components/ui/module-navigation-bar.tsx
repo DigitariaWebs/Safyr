@@ -26,6 +26,7 @@ export interface NavItem {
     href: string;
     disabled?: boolean;
     isNew?: boolean;
+    section?: string;
   }[];
 }
 
@@ -156,20 +157,23 @@ export function ModuleNavigationBar({
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
-                        {item.children.map((child) => {
-                          if (child.disabled) {
-                            return (
-                              <DropdownMenuItem
-                                key={child.href}
-                                disabled
-                                className="opacity-50"
-                              >
-                                {child.label}
-                              </DropdownMenuItem>
-                            );
-                          }
+                        {item.children.map((child, index) => {
+                          const prevSection =
+                            index > 0
+                              ? item.children![index - 1].section
+                              : undefined;
+                          const showSectionHeader =
+                            child.section && child.section !== prevSection;
 
-                          return (
+                          const node = child.disabled ? (
+                            <DropdownMenuItem
+                              key={child.href}
+                              disabled
+                              className="opacity-50"
+                            >
+                              {child.label}
+                            </DropdownMenuItem>
+                          ) : (
                             <DropdownMenuItem key={child.href} asChild>
                               <Link
                                 href={child.href}
@@ -187,6 +191,21 @@ export function ModuleNavigationBar({
                               </Link>
                             </DropdownMenuItem>
                           );
+
+                          if (showSectionHeader) {
+                            return (
+                              <div key={`${child.href}-with-header`}>
+                                {index > 0 && (
+                                  <div className="my-1 h-px bg-border" />
+                                )}
+                                <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                  {child.section}
+                                </div>
+                                {node}
+                              </div>
+                            );
+                          }
+                          return node;
                         })}
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -370,19 +389,22 @@ export function ModuleNavigationBar({
             <>
               <div className="h-6 w-px bg-border" />
               <div className="flex items-center gap-1 flex-1 overflow-x-auto">
-                {activeItem.children.map((child) => {
-                  if (child.disabled) {
-                    return (
-                      <div
-                        key={child.href}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg text-muted-foreground opacity-50 cursor-not-allowed whitespace-nowrap"
-                      >
-                        <span>{child.label}</span>
-                      </div>
-                    );
-                  }
+                {activeItem.children.map((child, index) => {
+                  const prevSection =
+                    index > 0
+                      ? activeItem.children![index - 1].section
+                      : undefined;
+                  const showSectionHeader =
+                    child.section && child.section !== prevSection;
 
-                  return (
+                  const node = child.disabled ? (
+                    <div
+                      key={child.href}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg text-muted-foreground opacity-50 cursor-not-allowed whitespace-nowrap"
+                    >
+                      <span>{child.label}</span>
+                    </div>
+                  ) : (
                     <Link
                       key={child.href}
                       href={child.href}
@@ -401,6 +423,24 @@ export function ModuleNavigationBar({
                       )}
                     </Link>
                   );
+
+                  if (showSectionHeader) {
+                    return (
+                      <div
+                        key={`${child.href}-with-header`}
+                        className="flex items-center gap-1"
+                      >
+                        {index > 0 && (
+                          <div className="h-6 w-px bg-border mx-1" />
+                        )}
+                        <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                          {child.section}
+                        </span>
+                        {node}
+                      </div>
+                    );
+                  }
+                  return node;
                 })}
               </div>
             </>

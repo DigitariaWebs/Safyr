@@ -220,7 +220,7 @@ export function EmployeeDisciplineTab({
       label: "Actions",
       render: () => (
         <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/hr/discipline/warnings">
+          <Link href="/dashboard/hr/lifecycle/discipline?tab=warnings">
             <Eye className="mr-2 h-4 w-4" />
             Voir
           </Link>
@@ -254,7 +254,7 @@ export function EmployeeDisciplineTab({
       label: "Actions",
       render: () => (
         <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/hr/discipline/disciplinary-procedures">
+          <Link href="/dashboard/hr/lifecycle/discipline?tab=procedures">
             <Eye className="mr-2 h-4 w-4" />
             Voir
           </Link>
@@ -292,7 +292,7 @@ export function EmployeeDisciplineTab({
       label: "Actions",
       render: () => (
         <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/hr/discipline/sanctions-register">
+          <Link href="/dashboard/hr/lifecycle/discipline?tab=sanctions">
             <Eye className="mr-2 h-4 w-4" />
             Voir
           </Link>
@@ -492,14 +492,14 @@ export function EmployeeDisciplineTab({
             </div>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
-                <Link href="/dashboard/hr/discipline/warnings">
+                <Link href="/dashboard/hr/lifecycle/discipline?tab=warnings">
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Nouvel avertissement
                 </Link>
               </Button>
 
               <Button variant="outline" asChild>
-                <Link href="/dashboard/hr/discipline/disciplinary-procedures">
+                <Link href="/dashboard/hr/lifecycle/discipline?tab=procedures">
                   <Gavel className="mr-2 h-4 w-4" />
                   Nouvelle procédure
                 </Link>

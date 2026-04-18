@@ -370,7 +370,7 @@ function AlertsWidget({ isLoading }: { isLoading: boolean }) {
             Alertes RH
           </CardTitle>
           <Link
-            href="/dashboard/hr/communication/notifications"
+            href="/dashboard/hr/pilotage/communication/notifications"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             Voir tout
@@ -894,17 +894,17 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
     },
     {
       label: "Bilan social",
-      href: "/dashboard/hr/social-report",
+      href: "/dashboard/hr/pilotage/dashboards",
       icon: BarChart3,
     },
     {
       label: "Marketing",
-      href: "/dashboard/hr/marketing",
+      href: "/dashboard/hr/business/marketing",
       icon: Megaphone,
     },
     {
       label: "Appels d'offre",
-      href: "/dashboard/hr/tenders",
+      href: "/dashboard/hr/business/tenders",
       icon: FileText,
     },
     {
@@ -914,12 +914,12 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
     },
     {
       label: "Fin de contrat",
-      href: "/dashboard/hr/offboarding",
+      href: "/dashboard/hr/lifecycle/offboarding",
       icon: UserX,
     },
     {
       label: "Communication",
-      href: "/dashboard/hr/communication/send-email",
+      href: "/dashboard/hr/pilotage/communication/send-email",
       icon: Mail,
     },
   ];

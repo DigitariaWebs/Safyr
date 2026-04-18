@@ -99,7 +99,7 @@ const severityColors = {
   severe: "destructive",
 } as const;
 
-export default function SanctionsRegisterPage() {
+export function SanctionsSection() {
   const getEmployeeName = (employeeId: string) => {
     const employee = mockEmployees.find((e) => e.id === employeeId);
     return employee ? employee.name : "Employé inconnu";

@@ -194,25 +194,25 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Candidatures",
-        url: "/dashboard/hr/recruitment/applications",
+        url: "/dashboard/hr/lifecycle/recruitment/applications",
         icon: Users,
         disabled: true,
       },
       {
         title: "Vérifications réglementaires",
-        url: "/dashboard/hr/recruitment/verifications",
+        url: "/dashboard/hr/lifecycle/recruitment/verifications",
         icon: FileCheck,
         disabled: true,
       },
       {
         title: "Création & signature",
-        url: "/dashboard/hr/recruitment/contracts",
+        url: "/dashboard/hr/lifecycle/recruitment/contracts",
         icon: FilePenLine,
         disabled: true,
       },
       {
         title: "Parcours d'intégration",
-        url: "/dashboard/hr/recruitment/onboarding",
+        url: "/dashboard/hr/lifecycle/recruitment/onboarding",
         icon: UserCheck,
         disabled: true,
       },
@@ -223,25 +223,25 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Avertissements",
-        url: "/dashboard/hr/discipline/warnings",
+        url: "/dashboard/hr/lifecycle/discipline/warnings",
         icon: AlertTriangle,
         disabled: true,
       },
       {
         title: "Sanctions",
-        url: "/dashboard/hr/discipline/sanctions",
+        url: "/dashboard/hr/lifecycle/discipline/sanctions",
         icon: Scale,
         disabled: true,
       },
       {
         title: "Procédures disciplinaires",
-        url: "/dashboard/hr/discipline/procedures",
+        url: "/dashboard/hr/lifecycle/discipline/procedures",
         icon: FileText,
         disabled: true,
       },
       {
         title: "Registre des sanctions",
-        url: "/dashboard/hr/discipline/register",
+        url: "/dashboard/hr/lifecycle/discipline/register",
         icon: BookOpen,
         disabled: true,
       },
@@ -252,19 +252,19 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Entretiens annuels",
-        url: "/dashboard/hr/interviews/annual",
+        url: "/dashboard/hr/lifecycle/interviews/annual",
         icon: MessageSquare,
         disabled: false,
       },
       {
         title: "Entretiens professionnels",
-        url: "/dashboard/hr/interviews/professional",
+        url: "/dashboard/hr/lifecycle/interviews/professional",
         icon: Briefcase,
         disabled: false,
       },
       {
         title: "Objectifs & évolution",
-        url: "/dashboard/hr/interviews/objectives",
+        url: "/dashboard/hr/lifecycle/interviews/objectives",
         icon: TrendingUp,
         disabled: false,
       },
@@ -298,25 +298,25 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Préavis",
-        url: "/dashboard/hr/offboarding/notice",
+        url: "/dashboard/hr/lifecycle/offboarding/notice",
         icon: Calendar,
         disabled: true,
       },
       {
         title: "Restitution matériel",
-        url: "/dashboard/hr/offboarding/equipment",
+        url: "/dashboard/hr/lifecycle/offboarding/equipment",
         icon: Package,
         disabled: true,
       },
       {
         title: "Documents de fin",
-        url: "/dashboard/hr/offboarding/documents",
+        url: "/dashboard/hr/lifecycle/offboarding/documents",
         icon: FileText,
         disabled: true,
       },
       {
         title: "Archivage",
-        url: "/dashboard/hr/offboarding/archive",
+        url: "/dashboard/hr/lifecycle/offboarding/archive",
         icon: BookOpen,
         disabled: true,
       },
@@ -327,27 +327,27 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Registre du personnel",
-        url: "/dashboard/hr/legal-registers/personnel",
+        url: "/dashboard/hr/employees/personnel-register",
         icon: Users,
       },
       {
         title: "Accidents du travail",
-        url: "/dashboard/hr/legal-registers/work-accidents",
+        url: "/dashboard/hr/compliance/work-accidents",
         icon: AlertTriangle,
       },
       {
         title: "Formations",
-        url: "/dashboard/hr/legal-registers/training",
+        url: "/dashboard/hr/training/history",
         icon: GraduationCap,
       },
       {
         title: "Entrées/Sorties CDD",
-        url: "/dashboard/hr/legal-registers/cdd",
+        url: "/dashboard/hr/compliance/cdd",
         icon: CalendarRange,
       },
       {
         title: "Exports réglementaires",
-        url: "/dashboard/hr/legal-registers",
+        url: "/dashboard/hr/compliance",
         icon: FileSearch,
       },
     ],
@@ -427,31 +427,31 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Accès plateformes AO",
-        url: "/dashboard/hr/tenders/platforms",
+        url: "/dashboard/hr/business/tenders/platforms",
         icon: FileSearch,
         disabled: true,
       },
       {
         title: "Veille appels d'offres",
-        url: "/dashboard/hr/tenders/monitoring",
+        url: "/dashboard/hr/business/tenders/monitoring",
         icon: Bell,
         disabled: true,
       },
       {
         title: "Dossiers de réponse",
-        url: "/dashboard/hr/tenders/responses",
+        url: "/dashboard/hr/business/tenders/responses",
         icon: FileText,
         disabled: true,
       },
       {
         title: "Modèles de dossiers",
-        url: "/dashboard/hr/tenders/templates",
+        url: "/dashboard/hr/business/tenders/templates",
         icon: ClipboardList,
         disabled: true,
       },
       {
         title: "Suivi & historique",
-        url: "/dashboard/hr/tenders/tracking",
+        url: "/dashboard/hr/business/tenders/tracking",
         icon: BarChart3,
         disabled: true,
       },
@@ -561,7 +561,7 @@ const navigationSections: MenuSection[] = [
     items: [
       {
         title: "Modèles d'emails",
-        url: "/dashboard/hr/communication/templates",
+        url: "/dashboard/hr/pilotage/communication/templates",
         icon: Mail,
       },
     ],
