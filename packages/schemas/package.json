@@ -1,0 +1,23 @@
+{
+  "name": "@safyr/schemas",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo \"(no lint)\"",
+    "typecheck": "tsc --noEmit",
+    "format": "echo \"(no format)\"",
+    "format:check": "echo \"(no format:check)\""
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

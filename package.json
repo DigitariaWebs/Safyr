@@ -3,8 +3,8 @@
   "private": true,
   "packageManager": "bun@1.3.10",
   "workspaces": [
-    "web",
-    "mobile"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "turbo dev",
