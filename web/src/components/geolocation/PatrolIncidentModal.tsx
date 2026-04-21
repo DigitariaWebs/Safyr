@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Clock, X, ZoomIn } from "lucide-react";
+import { AlertTriangle, Clock, Save, X, ZoomIn } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,16 @@ import type {
   PatrolCheckpoint,
 } from "@/data/geolocation-patrols";
 
+export type IncidentSendTarget = "responsable" | "client";
+
 interface PatrolIncidentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   scan: CheckpointScan | null;
   checkpoint: PatrolCheckpoint | null;
   checkpointIndex: number;
-  onSendReport?: () => void;
+  onSendReport?: (target: IncidentSendTarget) => void;
+  onSaveObservation?: (observation: string) => void;
 }
 
 export function PatrolIncidentModal({
@@ -30,8 +33,20 @@ export function PatrolIncidentModal({
   checkpoint,
   checkpointIndex,
   onSendReport,
+  onSaveObservation,
 }: PatrolIncidentModalProps) {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [observation, setObservation] = useState("");
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setObservation(scan?.incidentDescription ?? "");
+      setSavedFlash(false);
+    }
+  }
 
   if (!scan) return null;
 
@@ -80,17 +95,43 @@ export function PatrolIncidentModal({
               </div>
             )}
 
-            {/* Incident description */}
-            {scan.incidentDescription && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-red-400 mb-1.5">
-                  Description de l&apos;incident
+            {/* Observation (editable) */}
+            <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-red-400">
+                  Observation de l&apos;incident
                 </div>
-                <p className="text-sm text-foreground/90 leading-relaxed">
-                  {scan.incidentDescription}
-                </p>
+                {savedFlash && (
+                  <span className="text-[10px] text-emerald-400">
+                    Enregistré
+                  </span>
+                )}
               </div>
-            )}
+              <textarea
+                value={observation}
+                onChange={(e) => setObservation(e.target.value)}
+                placeholder="Décrire l'incident observé sur ce point de contrôle…"
+                rows={3}
+                className="w-full text-sm bg-background/40 border border-border/50 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500/40 leading-relaxed resize-none"
+              />
+              {onSaveObservation && (
+                <div className="flex justify-end mt-1.5">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      onSaveObservation(observation);
+                      setSavedFlash(true);
+                      setTimeout(() => setSavedFlash(false), 1500);
+                    }}
+                  >
+                    <Save className="h-3 w-3 mr-1" />
+                    Enregistrer
+                  </Button>
+                </div>
+              )}
+            </div>
 
             {/* Media grid */}
             {scan.mediaUrls && scan.mediaUrls.length > 0 && (
@@ -122,17 +163,28 @@ export function PatrolIncidentModal({
 
             {/* Actions */}
             {onSendReport && (
-              <div className="flex justify-end pt-1">
+              <div className="flex justify-end gap-2 pt-1">
                 <Button
                   size="sm"
                   variant="outline"
                   className="text-xs border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
                   onClick={() => {
                     onOpenChange(false);
-                    onSendReport();
+                    onSendReport("responsable");
                   }}
                 >
                   Envoyer au responsable
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onSendReport("client");
+                  }}
+                >
+                  Envoyer au client
                 </Button>
               </div>
             )}

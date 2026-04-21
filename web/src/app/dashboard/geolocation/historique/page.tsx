@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   ArrowLeft,
+  Calendar,
   CheckCircle2,
   Flame,
   MapPin,
@@ -53,21 +54,6 @@ const DISPLAY_STATUS_TABS: { value: DisplayStatus; label: string }[] = [
   { value: "complete", label: "Complètes" },
   { value: "incomplete", label: "Incomplètes" },
   { value: "incident", label: "Incidents" },
-];
-
-const FRENCH_MONTHS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -176,8 +162,8 @@ export default function HistoriquePage() {
   const allHistory = useMemo(() => getPatrolHistory(mockPatrolExecutions), []);
 
   // ── Filter state ──────────────────────────────────────────────────
-  const [yearFilter, setYearFilter] = useState("all");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
   const [siteFilter, setSiteFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<DisplayStatus>("all");
@@ -202,6 +188,9 @@ export default function HistoriquePage() {
 
   // ── Email modal state ─────────────────────────────────────────────
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailTarget, setEmailTarget] = useState<
+    "responsable" | "client" | null
+  >(null);
 
   // ── Replay timer ──────────────────────────────────────────────────
   useEffect(() => {
@@ -226,13 +215,6 @@ export default function HistoriquePage() {
 
   // ── Derived filter options ────────────────────────────────────────
 
-  const availableYears = useMemo(() => {
-    const years = new Set(
-      allHistory.map((e) => new Date(e.startedAt).getFullYear()),
-    );
-    return Array.from(years).sort((a, b) => b - a);
-  }, [allHistory]);
-
   const availableSites = useMemo(() => {
     return Array.from(new Set(allHistory.map((e) => e.site))).sort();
   }, [allHistory]);
@@ -246,12 +228,16 @@ export default function HistoriquePage() {
   // ── Filtered executions ───────────────────────────────────────────
 
   const filteredExecutions = useMemo(() => {
+    const startMs = startDateFilter
+      ? new Date(startDateFilter).getTime()
+      : null;
+    const endMs = endDateFilter
+      ? new Date(endDateFilter).getTime() + 24 * 60 * 60 * 1000 - 1
+      : null;
     return allHistory.filter((e) => {
-      const date = new Date(e.startedAt);
-      if (yearFilter !== "all" && date.getFullYear() !== Number(yearFilter))
-        return false;
-      if (monthFilter !== "all" && date.getMonth() !== Number(monthFilter))
-        return false;
+      const ts = new Date(e.startedAt).getTime();
+      if (startMs !== null && ts < startMs) return false;
+      if (endMs !== null && ts > endMs) return false;
       if (siteFilter !== "all" && e.site !== siteFilter) return false;
       if (clientFilter !== "all" && e.client !== clientFilter) return false;
       if (statusFilter !== "all") {
@@ -262,8 +248,8 @@ export default function HistoriquePage() {
     });
   }, [
     allHistory,
-    yearFilter,
-    monthFilter,
+    startDateFilter,
+    endDateFilter,
     siteFilter,
     clientFilter,
     statusFilter,
@@ -542,10 +528,31 @@ export default function HistoriquePage() {
                       ? "bg-red-500"
                       : "bg-slate-500";
 
+                const RowTag = hasIncident ? "button" : "div";
                 return (
-                  <div
+                  <RowTag
                     key={scan.checkpointId}
-                    className="relative flex items-start gap-3"
+                    onClick={
+                      hasIncident
+                        ? () =>
+                            setIncidentModal({
+                              open: true,
+                              scan,
+                              scanIndex: index,
+                            })
+                        : undefined
+                    }
+                    type={hasIncident ? "button" : undefined}
+                    aria-label={
+                      hasIncident
+                        ? `Ouvrir l'incident sur ${checkpoint?.name ?? `Point ${index + 1}`}`
+                        : undefined
+                    }
+                    className={cn(
+                      "relative flex items-start gap-3 w-full text-left rounded-md -mx-1 px-1 py-0.5",
+                      hasIncident &&
+                        "cursor-pointer hover:bg-red-500/8 transition-colors",
+                    )}
                   >
                     <div
                       className={cn(
@@ -556,6 +563,14 @@ export default function HistoriquePage() {
                     />
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono tabular-nums text-muted-foreground shrink-0">
+                          {scan.scannedAt
+                            ? new Date(scan.scannedAt).toLocaleTimeString(
+                                "fr-FR",
+                                { hour: "2-digit", minute: "2-digit" },
+                              )
+                            : "—:—"}
+                        </span>
                         <span className="text-xs font-medium">
                           {checkpoint?.name ?? `Point ${index + 1}`}
                         </span>
@@ -576,22 +591,13 @@ export default function HistoriquePage() {
                               : "En attente"}
                         </Badge>
                         {hasIncident && (
-                          <button
-                            onClick={() =>
-                              setIncidentModal({
-                                open: true,
-                                scan,
-                                scanIndex: index,
-                              })
-                            }
-                            className="flex items-center gap-1 text-[9px] font-medium text-red-400 border border-red-500/30 bg-red-500/8 rounded px-1.5 py-0 hover:bg-red-500/15 transition-colors"
-                          >
+                          <span className="flex items-center gap-1 text-[9px] font-medium text-red-400 border border-red-500/30 bg-red-500/8 rounded px-1.5 py-0">
                             <Flame className="h-2.5 w-2.5" />
                             Incident
-                          </button>
+                          </span>
                         )}
                       </div>
-                      {scan.comment && !hasIncident && (
+                      {scan.comment && (
                         <div className="flex items-start gap-1.5">
                           <MessageSquare className="h-3 w-3 text-muted-foreground/60 shrink-0 mt-0.5" />
                           <p className="text-[10px] text-muted-foreground italic leading-relaxed">
@@ -600,7 +606,7 @@ export default function HistoriquePage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </RowTag>
                 );
               })}
             </div>
@@ -642,36 +648,40 @@ export default function HistoriquePage() {
           </p>
         </div>
 
-        {/* Dropdowns */}
+        {/* Date range */}
         <div className="grid grid-cols-2 gap-1.5">
-          <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger className="h-7 text-xs">
-              <SelectValue placeholder="Année" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes années</SelectItem>
-              {availableYears.map((y) => (
-                <SelectItem key={y} value={String(y)}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-muted-foreground">
+              Date début
+            </label>
+            <div className="relative">
+              <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input
+                type="date"
+                value={startDateFilter}
+                onChange={(e) => setStartDateFilter(e.target.value)}
+                className="h-7 w-full text-xs rounded-md border border-input bg-background pl-6 pr-2 focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-medium text-muted-foreground">
+              Date fin
+            </label>
+            <div className="relative">
+              <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+              <input
+                type="date"
+                value={endDateFilter}
+                onChange={(e) => setEndDateFilter(e.target.value)}
+                className="h-7 w-full text-xs rounded-md border border-input bg-background pl-6 pr-2 focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+            </div>
+          </div>
+        </div>
 
-          <Select value={monthFilter} onValueChange={setMonthFilter}>
-            <SelectTrigger className="h-7 text-xs">
-              <SelectValue placeholder="Mois" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous mois</SelectItem>
-              {FRENCH_MONTHS.map((m, i) => (
-                <SelectItem key={i} value={String(i)}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
+        {/* Site / Client */}
+        <div className="grid grid-cols-2 gap-1.5">
           <Select value={siteFilter} onValueChange={setSiteFilter}>
             <SelectTrigger className="h-7 text-xs">
               <SelectValue placeholder="Site" />
@@ -716,7 +726,7 @@ export default function HistoriquePage() {
                       ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-400"
                       : value === "incomplete"
                         ? "border-amber-500/50 bg-amber-500/15 text-amber-400"
-                        : "border-border bg-muted text-foreground"
+                        : "border-cyan-500/50 bg-cyan-500/15 text-cyan-400"
                   : "border-border/50 text-muted-foreground hover:bg-muted/40",
               )}
             >
@@ -818,15 +828,36 @@ export default function HistoriquePage() {
           ) ?? null
         }
         checkpointIndex={incidentModal.scanIndex}
-        onSendReport={() => setEmailModalOpen(true)}
+        onSendReport={(target) => {
+          setEmailTarget(target);
+          setEmailModalOpen(true);
+        }}
+        onSaveObservation={(text) => {
+          if (!incidentModal.scan) return;
+          setIncidentModal((prev) =>
+            prev.scan
+              ? { ...prev, scan: { ...prev.scan, incidentDescription: text } }
+              : prev,
+          );
+        }}
       />
 
       {/* ── Email modal ────────────────────────────────────────────── */}
       <PatrolReportEmailModal
         open={emailModalOpen}
-        onOpenChange={setEmailModalOpen}
+        onOpenChange={(open) => {
+          setEmailModalOpen(open);
+          if (!open) setEmailTarget(null);
+        }}
         execution={selectedExecution}
         onDownloadPDF={handleGenerateReport}
+        recipientLabel={
+          emailTarget === "client"
+            ? "Client"
+            : emailTarget === "responsable"
+              ? "Responsable"
+              : undefined
+        }
       />
     </div>
   );

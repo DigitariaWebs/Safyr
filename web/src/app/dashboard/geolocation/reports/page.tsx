@@ -66,6 +66,14 @@ import {
   getUniqueAgentNames,
   getUniqueZoneNames,
 } from "@/data/geolocation-reports";
+import {
+  buildDeplacementsCharts,
+  buildIncidentsCharts,
+  buildPresencesCharts,
+  buildRondesCharts,
+  buildZonesCharts,
+} from "@/lib/geolocation-report-charts";
+import { ReportCharts } from "@/components/geolocation/ReportCharts";
 
 // ── Discriminated Union Types ────────────────────────────────────────
 
@@ -1680,6 +1688,42 @@ export default function GeolocationReportsPage() {
     }
   }, [filteredReport]);
 
+  const chartData = useMemo(() => {
+    if (!filteredReport) return null;
+    switch (filteredReport.type) {
+      case "presences":
+        return {
+          data: buildPresencesCharts(filteredReport.rows),
+          histogramTitle: "Présences par jour",
+          pieTitle: "Répartition par statut",
+        };
+      case "rondes":
+        return {
+          data: buildRondesCharts(filteredReport.rows),
+          histogramTitle: "Rondes par jour",
+          pieTitle: "Répartition par statut",
+        };
+      case "deplacements":
+        return {
+          data: buildDeplacementsCharts(filteredReport.rows),
+          histogramTitle: "Distance parcourue par jour (km)",
+          pieTitle: "Temps en mouvement vs à l'arrêt",
+        };
+      case "incidents":
+        return {
+          data: buildIncidentsCharts(filteredReport.rows),
+          histogramTitle: "Incidents par jour",
+          pieTitle: "Répartition par gravité",
+        };
+      case "zones":
+        return {
+          data: buildZonesCharts(filteredReport.rows),
+          histogramTitle: "Top 5 zones — entrées",
+          pieTitle: "Répartition des entrées",
+        };
+    }
+  }, [filteredReport]);
+
   const handleGenerate = () => {
     switch (reportType) {
       case "presences":
@@ -1964,6 +2008,15 @@ export default function GeolocationReportsPage() {
                 />
               ))}
             </InfoCardContainer>
+          )}
+
+          {/* Charts */}
+          {chartData && (
+            <ReportCharts
+              data={chartData.data}
+              histogramTitle={chartData.histogramTitle}
+              pieTitle={chartData.pieTitle}
+            />
           )}
 
           {/* Export Bar */}

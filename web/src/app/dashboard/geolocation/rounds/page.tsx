@@ -336,9 +336,9 @@ export default function RoundsPage() {
     sidebarView === "form"
       ? editingRoute
         ? "Modifier"
-        : "Nouvel itinéraire"
+        : "Nouvelle Ronde"
       : activeTab === "itineraires"
-        ? "Itinéraires"
+        ? "Rondes"
         : "En cours";
 
   const sidebarWidth = "w-96";
@@ -364,7 +364,7 @@ export default function RoundsPage() {
           <div className="flex items-center justify-between px-3 py-2">
             <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList>
-                <TabsTrigger value="itineraires">Itinéraires</TabsTrigger>
+                <TabsTrigger value="itineraires">Rondes</TabsTrigger>
                 <TabsTrigger value="en-cours">En cours</TabsTrigger>
               </TabsList>
             </Tabs>
@@ -443,8 +443,8 @@ export default function RoundsPage() {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         type="warning"
-        title="Supprimer l'itinéraire"
-        description={`Voulez-vous vraiment supprimer l'itinéraire "${deleteTarget?.name}" ? Cette action est irréversible.`}
+        title="Supprimer la ronde"
+        description={`Voulez-vous vraiment supprimer la ronde "${deleteTarget?.name}" ? Cette action est irréversible.`}
         actions={{
           primary: {
             label: "Supprimer",

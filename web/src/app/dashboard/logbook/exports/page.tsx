@@ -295,10 +295,10 @@ export default function ExportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-3xl font-light tracking-tight">
-            Export, Reporting & Archivage
+            Rapports
           </h1>
           <p className="mt-2 text-sm font-light text-muted-foreground">
-            Exports PDF/Excel/CSV, rapports paramétrables et archivage légal 10
+            Rapports paramétrables, exports PDF/Excel/CSV et archivage légal 10
             ans
           </p>
         </div>
@@ -315,7 +315,7 @@ export default function ExportsPage() {
           onClick={() => setActiveTab("exports")}
         >
           <FileText className="h-4 w-4 mr-2" />
-          Exports
+          Rapports
         </Button>
         <Button
           variant={activeTab === "archives" ? "default" : "ghost"}
@@ -339,7 +339,7 @@ export default function ExportsPage() {
           <CardHeader>
             <CardTitle className="text-lg font-light flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Exports disponibles
+              Rapports disponibles
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -462,7 +462,7 @@ export function PatrolRouteFormPanel({
                 className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border/60 py-2 text-xs text-muted-foreground hover:border-cyan-500/40 hover:text-cyan-400 hover:bg-cyan-500/5 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Ajouter un point
+                Nouveau point
               </button>
             </>
           )}

@@ -20,6 +20,7 @@ interface PatrolReportEmailModalProps {
   onOpenChange: (open: boolean) => void;
   execution: PatrolExecution | null;
   onDownloadPDF?: () => void;
+  recipientLabel?: string;
 }
 
 export function PatrolReportEmailModal({
@@ -27,6 +28,7 @@ export function PatrolReportEmailModal({
   onOpenChange,
   execution,
   onDownloadPDF,
+  recipientLabel,
 }: PatrolReportEmailModalProps) {
   const [recipient, setRecipient] = useState("");
   const [attachPdf, setAttachPdf] = useState(true);
@@ -70,7 +72,9 @@ export function PatrolReportEmailModal({
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/15">
               <Mail className="h-3.5 w-3.5 text-cyan-400" />
             </span>
-            Envoyer le rapport par mail
+            {recipientLabel
+              ? `Envoyer le rapport — ${recipientLabel}`
+              : "Envoyer le rapport par mail"}
           </DialogTitle>
         </DialogHeader>
 

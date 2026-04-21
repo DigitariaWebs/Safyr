@@ -10,7 +10,7 @@ import {
   Calendar,
   Users,
   Shield,
-  Download,
+  FileBarChart,
   FileText,
   ChevronRight,
   BarChart3,
@@ -440,16 +440,6 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       icon: Users,
     },
     {
-      label: "Sécurité",
-      href: "/dashboard/logbook/security",
-      icon: Shield,
-    },
-    {
-      label: "Exports",
-      href: "/dashboard/logbook/exports",
-      icon: Download,
-    },
-    {
       label: "Démarque inconnue",
       href: "/dashboard/logbook/unknown-losses",
       icon: FileText,
@@ -458,6 +448,16 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       label: "Interpellations",
       href: "/dashboard/logbook/interpellation-archives",
       icon: FileText,
+    },
+    {
+      label: "Rapports",
+      href: "/dashboard/logbook/exports",
+      icon: FileBarChart,
+    },
+    {
+      label: "Sécurité",
+      href: "/dashboard/logbook/security",
+      icon: Shield,
     },
   ];
 

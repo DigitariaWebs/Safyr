@@ -12,7 +12,7 @@ import {
   Calendar,
   Users,
   Shield,
-  Download,
+  FileBarChart,
   FileText,
 } from "lucide-react";
 
@@ -52,16 +52,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: "Sécurité",
-    icon: Shield,
-    href: "/dashboard/logbook/security",
-  },
-  {
-    label: "Exports",
-    icon: Download,
-    href: "/dashboard/logbook/exports",
-  },
-  {
     label: "Gestion",
     icon: FileText,
     children: [
@@ -74,6 +64,16 @@ const navItems: NavItem[] = [
         href: "/dashboard/logbook/interpellation-archives",
       },
     ],
+  },
+  {
+    label: "Rapports",
+    icon: FileBarChart,
+    href: "/dashboard/logbook/exports",
+  },
+  {
+    label: "Sécurité",
+    icon: Shield,
+    href: "/dashboard/logbook/security",
   },
 ];
 

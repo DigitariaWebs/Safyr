@@ -31,6 +31,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Week-number pill ("Semaine XX") centered above the weekly view weekday header, highlighted when it is the current ISO week (P3-PG7)
 - Explicit 3-value agent summary (Contrat / Affectées / Restantes, Dépassement in red) in daily, weekly, and monthly agent cells (P3-PG8)
 - Dedicated "Simulation" page at `/dashboard/planning/simulation` (named `ScheduleView` export with `forceSimulation` prop) — shares the schedule grid but forces simulation mode, shows red top banner and red "Simulation" title; nav entry between Planning and Paramètres with `FlaskConical` icon (P3-SIM1)
+- Charts on geolocation Rapports page — stacked/grouped histogramme and secteur (camembert) per report type (Présences, Rondes, Déplacements, Incidents, Zones) with semantic color palette
+- Editable "Observation" field on patrol incident modal (Historique) with _Enregistrer_ action
+- "Envoyer au client" action on incident modal alongside existing "Envoyer au responsable"
+- Time stamp (HH:MM) in front of each point de contrôle in Historique ronde detail
+- Date début / Date fin filter on Historique (replaces year + month selects)
+- Distinct colors for all four status pills on Historique (Toutes = cyan, Complètes = emerald, Incomplètes = amber, Incident = red)
+- Whole incident row clickable in Historique detail (previously only the "Incident" badge)
+- Montant, Statut paiement (Réglé / Non réglé), and Justificatif fields on Fiche d'interpellation (justificatif as placeholder, stockage à venir)
 
 ### Changed
 
@@ -48,6 +56,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Month-view shift dot uses the shift's own color instead of the site color (P3-PG9)
 - Remove in-page Simulation button, exit flow, and exit-confirmation modal from the schedule page — simulation now lives exclusively on the dedicated route (P3-SIM1)
 - Simulation banner restyled to match copy-mode banner (bright red, white bold uppercase, larger padding)
+- Logbook nav: "Exports" renamed **"Rapports"**, placed before Sécurité; Sécurité moved to end of menu
+- Geolocation Rondes: "Itinéraire" → "Ronde", "Nouvel itinéraire" → "Nouvelle Ronde", "Ajouter un point" → "Nouveau point"
+- Live Tracking top-left overlay enlarged (min-w 480px, increased padding)
+- Comments on Historique checkpoints now shown inline regardless of incident flag
+- PatrolReportEmailModal title adapts when a recipient label is passed ("— Responsable" / "— Client")
 
 ### Fixed
 

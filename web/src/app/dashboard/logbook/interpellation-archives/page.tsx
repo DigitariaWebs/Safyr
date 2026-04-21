@@ -55,6 +55,7 @@ interface InterpellationRecord {
   detailForcesOrdre?: string;
   typeInfraction?: "vol" | "degradation" | "intrusion" | "autre";
   montantProduits?: number;
+  statutPaiement?: "regle" | "non_regle";
 }
 
 const mockSites = [
@@ -89,6 +90,7 @@ const mockInterpellationRecords: InterpellationRecord[] = [
       "Police nationale contactée à 14:45. Arrivée sur site à 15:10. PV numéro 2024-1247.",
     typeInfraction: "vol",
     montantProduits: 245.5,
+    statutPaiement: "regle",
   },
   {
     id: "INT-2024-002",
@@ -138,6 +140,7 @@ const mockInterpellationRecords: InterpellationRecord[] = [
     appelForcesOrdre: false,
     typeInfraction: "degradation",
     montantProduits: 80.0,
+    statutPaiement: "non_regle",
   },
 ];
 
@@ -157,6 +160,11 @@ const infractionOptions = [
   { value: "autre", label: "Autre" },
 ];
 
+const statutPaiementOptions = [
+  { value: "regle", label: "Réglé" },
+  { value: "non_regle", label: "Non réglé" },
+];
+
 const emptyFicheData = {
   reason: "",
   description: "",
@@ -171,6 +179,7 @@ const emptyFicheData = {
   detailForcesOrdre: "",
   typeInfraction: "",
   montantProduits: "",
+  statutPaiement: "",
 };
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -202,8 +211,9 @@ function FicheFormSections({
     minute: "2-digit",
   });
 
-  const showMontant =
-    data.typeInfraction === "vol" || data.typeInfraction === "degradation";
+  const showMontant = !!data.typeInfraction;
+  const montantValue = Number(data.montantProduits);
+  const showStatutPaiement = showMontant && montantValue > 0;
 
   return (
     <div className="space-y-6">
@@ -464,6 +474,58 @@ function FicheFormSections({
               )}
             </div>
           )}
+
+          {showStatutPaiement && (
+            <div>
+              <Label>Statut du paiement</Label>
+              {readOnly ? (
+                <p className="text-sm mt-1">
+                  {statutPaiementOptions.find(
+                    (o) => o.value === data.statutPaiement,
+                  )?.label ?? "-"}
+                </p>
+              ) : (
+                <div className="flex gap-4 mt-2">
+                  {statutPaiementOptions.map((o) => (
+                    <label
+                      key={o.value}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="statutPaiement"
+                        value={o.value}
+                        checked={data.statutPaiement === o.value}
+                        onChange={() => onChange({ statutPaiement: o.value })}
+                        className="h-4 w-4"
+                      />
+                      {o.label}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {showMontant && (
+            <div className="md:col-span-2">
+              <Label>Justificatif</Label>
+              <div
+                className="mt-2 flex items-center gap-3 rounded-md border border-dashed border-border/60 bg-muted/20 p-3 opacity-60"
+                title="Disponible bientôt"
+              >
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  disabled
+                  className="text-xs text-muted-foreground"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Disponible bientôt — ex. ticket de caisse si restitution
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -485,6 +547,7 @@ function recordToFormData(record: InterpellationRecord): FicheFormData {
     detailForcesOrdre: record.detailForcesOrdre ?? "",
     typeInfraction: record.typeInfraction ?? "",
     montantProduits: record.montantProduits?.toString() ?? "",
+    statutPaiement: record.statutPaiement ?? "",
   };
 }
 

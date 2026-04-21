@@ -226,7 +226,7 @@ export function PatrolRouteSidebar({
     <div
       className="flex flex-col h-full"
       role="region"
-      aria-label="Liste des itinéraires"
+      aria-label="Liste des rondes"
     >
       {/* Create CTA */}
       <div className="p-3 border-b border-border/50">
@@ -236,7 +236,7 @@ export function PatrolRouteSidebar({
           onClick={onCreateRoute}
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Nouvel itinéraire
+          Nouvelle Ronde
         </Button>
       </div>
 
@@ -250,8 +250,8 @@ export function PatrolRouteSidebar({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un itinéraire…"
-            aria-label="Rechercher un itinéraire"
+            placeholder="Rechercher une ronde…"
+            aria-label="Rechercher une ronde"
             className="pl-8 h-8 text-xs"
           />
         </div>
@@ -295,7 +295,7 @@ export function PatrolRouteSidebar({
             <li className="flex flex-col items-center justify-center gap-2 py-16 text-center">
               <Route className="h-8 w-8 text-muted-foreground/30" />
               <p className="text-sm text-muted-foreground">
-                Aucun itinéraire trouvé
+                Aucune ronde trouvée
               </p>
             </li>
           ) : (
@@ -324,7 +324,7 @@ export function PatrolRouteSidebar({
                     <button
                       onClick={() => onSelectRoute(route.id)}
                       className="flex-1 flex items-start gap-2.5 p-2.5 pl-3.5 text-left min-w-0 cursor-pointer"
-                      aria-label={`Sélectionner l'itinéraire ${route.name}`}
+                      aria-label={`Sélectionner la ronde ${route.name}`}
                       aria-current={isSelected ? "true" : undefined}
                     >
                       <div className="flex-1 min-w-0 space-y-1">
