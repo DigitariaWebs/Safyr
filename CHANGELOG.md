@@ -39,6 +39,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Distinct colors for all four status pills on Historique (Toutes = cyan, Complètes = emerald, Incomplètes = amber, Incident = red)
 - Whole incident row clickable in Historique detail (previously only the "Incident" badge)
 - Montant, Statut paiement (Réglé / Non réglé), and Justificatif fields on Fiche d'interpellation (justificatif as placeholder, stockage à venir)
+- Weekly view week-navigator bar under the planning grid — pills for every week of the current month with date range and active-week highlight (P4-PG7)
+- "Détail des heures" section in the schedule sidebar — H normales / H de nuit / H dimanche / H fériés, hides zero categories (P4-PG3 / P4-PG4)
+- Distinct simulation page background (diagonal rose hatching + rose inset ring) to prevent confusion with the Planning menu (P4-SIM2)
 
 ### Changed
 
@@ -61,6 +64,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Live Tracking top-left overlay enlarged (min-w 480px, increased padding)
 - Comments on Historique checkpoints now shown inline regardless of incident flag
 - PatrolReportEmailModal title adapts when a recipient label is passed ("— Responsable" / "— Client")
+- Nouveau poste modal shrunk (`xl` → `lg`, ≈ ⅓ narrower) and Certifications requises dropdown aligned to the Type de poste Select style (P4-PP1 / P4-PP2)
+- "Assigner un agent" renamed to "Affecter un agent" across the schedule (button, modal, action labels) (P4-PG1)
+- Copy-mode and simulation banners now center their text with icon and "Désactiver" pinned to the edges (P4-PG2)
+- Besoin row switched from count-based (`covered/required`) to time-interval coverage — cell shows remaining gaps (e.g. `14h–22h`) and flips to green "Affecter" once the vacation is fully covered (P4-PG5)
+- Agent hours cell is now month-scoped across day/week/month views — contract shown as monthly equivalent (`151.67h` for a 35h weekly), affected hours cumulative for the month, overflow in red (P4-PG6)
+- Monthly view replaces colored dots with compact `début-fin` shift labels (e.g. `7-14`, `14h30-22h`), stacked when multiple shifts land on the same day (P4-PG8)
 
 ### Fixed
 
