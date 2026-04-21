@@ -20,7 +20,8 @@ import type { DateConflict } from "./types";
 import { ShiftBlock } from "./ShiftBlock";
 import {
   inferPosteWindow,
-  countPosteCoverage,
+  computeUncoveredIntervals,
+  formatHourLabel,
   getPosteRequirementForDay,
 } from "./besoin-utils";
 import { summarizeAgentHours } from "./contract-utils";
@@ -107,8 +108,14 @@ export function DailyView({
               const win = inferPosteWindow(poste);
               const required = getPosteRequirementForDay(poste, date.getDay());
               if (required === 0) return null;
-              const covered = countPosteCoverage(shifts, poste, dateStr);
-              const complete = covered >= required;
+              const gaps = computeUncoveredIntervals(shifts, poste, dateStr);
+              const complete = gaps.length === 0;
+              const gapLabel = gaps
+                .map(
+                  (g) =>
+                    `${formatHourLabel(g.start)}–${formatHourLabel(g.end)}`,
+                )
+                .join(", ");
 
               // Compute bar segments — overnight postes wrap past 00:00
               const startPct = (win.startHour / 24) * 100;
@@ -135,8 +142,9 @@ export function DailyView({
                     <Badge
                       variant="secondary"
                       className={`text-[10px] shrink-0 ${complete ? "bg-green-500/15 text-green-600 border-green-500/30" : "bg-amber-500/15 text-amber-600 border-amber-500/30"}`}
+                      title={complete ? "Besoin couvert" : gapLabel}
                     >
-                      {covered}/{required}
+                      {complete ? "Affecter" : gapLabel || "—"}
                     </Badge>
                   </div>
                   <div className="flex-1 relative h-7 border rounded-md bg-background/50">

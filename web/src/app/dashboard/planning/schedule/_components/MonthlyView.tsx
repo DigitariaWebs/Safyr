@@ -248,18 +248,27 @@ function MonthAgentRow({
             style={{ minHeight: 24 }}
           >
             {dayShifts.length > 0 ? (
-              <div className="flex items-center gap-0.5 flex-wrap justify-center">
-                {dayShifts.map((shift) => (
-                  <button
-                    key={shift.id}
-                    onClick={() => onEditShift(shift)}
-                    title={`${shift.startTime}–${shift.endTime}${shift.isSplit ? ` | ${shift.splitStartTime2}–${shift.splitEndTime2}` : ""} · ${agent.agentName}`}
-                    className="h-2 w-2 rounded-full hover:ring-2 hover:ring-offset-1 hover:ring-primary/40 transition"
-                    style={{
-                      backgroundColor: shift.color ?? undefined,
-                    }}
-                  />
-                ))}
+              <div className="flex flex-col items-stretch justify-center gap-px w-full px-0.5">
+                {dayShifts.map((shift) => {
+                  const compactHour = (t: string) => {
+                    const [h, m] = t.split(":").map(Number);
+                    return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}`;
+                  };
+                  const label = `${compactHour(shift.startTime)}-${compactHour(shift.endTime)}`;
+                  return (
+                    <button
+                      key={shift.id}
+                      onClick={() => onEditShift(shift)}
+                      title={`${shift.startTime}–${shift.endTime}${shift.isSplit ? ` | ${shift.splitStartTime2}–${shift.splitEndTime2}` : ""} · ${agent.agentName}`}
+                      className="text-[9px] leading-tight font-semibold rounded-sm px-0.5 py-px text-center text-white hover:ring-1 hover:ring-offset-0 hover:ring-primary/40 transition truncate"
+                      style={{
+                        backgroundColor: shift.color ?? "#6366f1",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             ) : !closed ? (
               <button

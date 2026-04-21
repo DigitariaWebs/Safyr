@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
   Ban,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock,
   Download,
   FileText,
+  Moon,
   PanelRightClose,
+  Sun,
 } from "lucide-react";
 
 type ViewType = "daily" | "weekly" | "monthly";
@@ -19,6 +22,10 @@ export type PlanningSummary = {
   overtimeHours: number;
   mealCount: number;
   absenceCount: number;
+  hoursNormal: number;
+  hoursNight: number;
+  hoursSunday: number;
+  hoursHoliday: number;
 };
 
 type Props = {
@@ -191,6 +198,64 @@ export function PlanningSidebar({
             ))}
           </div>
         </section>
+
+        {/* Détail des heures — catégories (masque les zéros) */}
+        {(() => {
+          const categories = [
+            {
+              label: "H. normales",
+              value: summary.hoursNormal,
+              icon: Sun,
+              tint: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+            },
+            {
+              label: "H. de nuit",
+              value: summary.hoursNight,
+              icon: Moon,
+              tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+            },
+            {
+              label: "H. dimanche",
+              value: summary.hoursSunday,
+              icon: CalendarDays,
+              tint: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+            },
+            {
+              label: "H. fériés",
+              value: summary.hoursHoliday,
+              icon: AlertCircle,
+              tint: "bg-red-500/10 text-red-600 dark:text-red-400",
+            },
+          ].filter((c) => c.value > 0.01);
+          if (categories.length === 0) return null;
+          return (
+            <section className="space-y-2">
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Détail des heures
+              </h3>
+              <div className="space-y-1.5">
+                {categories.map(({ label, value, icon: Icon, tint }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-2.5 rounded-lg border border-border/40 bg-background px-3 py-2"
+                  >
+                    <div
+                      className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${tint}`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-[11px] text-muted-foreground flex-1">
+                      {label}
+                    </span>
+                    <span className="text-sm font-semibold tabular-nums">
+                      {value.toFixed(1)}h
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
       </div>
     </aside>
   );

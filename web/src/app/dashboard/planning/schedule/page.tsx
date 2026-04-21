@@ -1329,11 +1329,87 @@ export function ScheduleView({
     const absenceCount = visibleAgentsFlat.filter(({ agentId }) =>
       displayDates.some((date) => hasTimeOff(agentId, formatDate(date))),
     ).length;
+
+    // Category hour breakdown (H normale, H nuit, H dimanche, H férié)
+    const visibleDateSet = new Set(displayDates.map((d) => formatDate(d)));
+    const computeNightHours = (
+      startTime: string,
+      endTime: string,
+      breakMins: number,
+    ) => {
+      const [sh, sm] = startTime.split(":").map(Number);
+      const [eh, em] = endTime.split(":").map(Number);
+      const startMins = sh * 60 + sm;
+      let endMins = eh * 60 + em;
+      if (endMins <= startMins) endMins += 24 * 60;
+      const dayStart = settings.dayHourStart * 60;
+      const dayEnd = settings.dayHourEnd * 60;
+      let nightMins = 0;
+      if (startMins < dayStart)
+        nightMins += Math.min(endMins, dayStart) - startMins;
+      if (endMins > dayEnd) nightMins += endMins - Math.max(startMins, dayEnd);
+      const totalMins = endMins - startMins;
+      if (totalMins > 0 && breakMins > 0) {
+        nightMins = Math.max(
+          0,
+          nightMins - breakMins * (nightMins / totalMins),
+        );
+      }
+      return nightMins / 60;
+    };
+
+    let hoursNight = 0;
+    let hoursSunday = 0;
+    let hoursHoliday = 0;
+    for (const s of shiftsAcrossVisibleSites) {
+      if (!visibleDateSet.has(s.date)) continue;
+      const [sh, sm] = s.startTime.split(":").map(Number);
+      const [eh, em] = s.endTime.split(":").map(Number);
+      let mins = eh * 60 + em - (sh * 60 + sm);
+      if (mins < 0) mins += 24 * 60;
+      mins -= s.breakDuration;
+      const hrs = Math.max(0, mins / 60);
+      const date = new Date(s.date + "T00:00:00");
+      const isSunday = date.getDay() === 0;
+      const isHoliday = isPublicHoliday(date);
+      const nightHrs = computeNightHours(
+        s.startTime,
+        s.endTime,
+        s.breakDuration,
+      );
+      hoursNight += nightHrs;
+      if (isSunday) hoursSunday += hrs;
+      if (isHoliday) hoursHoliday += hrs;
+      if (s.isSplit && s.splitStartTime2 && s.splitEndTime2) {
+        const [s2h, s2m] = s.splitStartTime2.split(":").map(Number);
+        const [e2h, e2m] = s.splitEndTime2.split(":").map(Number);
+        let mins2 = e2h * 60 + e2m - (s2h * 60 + s2m);
+        if (mins2 < 0) mins2 += 24 * 60;
+        const hrs2 = Math.max(0, mins2 / 60);
+        const nightHrs2 = computeNightHours(
+          s.splitStartTime2,
+          s.splitEndTime2,
+          0,
+        );
+        hoursNight += nightHrs2;
+        if (isSunday) hoursSunday += hrs2;
+        if (isHoliday) hoursHoliday += hrs2;
+      }
+    }
+    const hoursNormal = Math.max(
+      0,
+      totalPlannedHours - hoursNight - hoursSunday - hoursHoliday,
+    );
+
     return {
       totalHours: totalPlannedHours,
       overtimeHours,
       mealCount,
       absenceCount,
+      hoursNormal,
+      hoursNight,
+      hoursSunday,
+      hoursHoliday,
     };
   }, [
     totalPlannedHours,
@@ -1341,6 +1417,9 @@ export function ScheduleView({
     visibleSites,
     agentShifts,
     displayDates,
+    shiftsAcrossVisibleSites,
+    settings,
+    isPublicHoliday,
   ]);
 
   const toggleSiteCollapse = (siteId: string) => {
@@ -1435,9 +1514,9 @@ export function ScheduleView({
 
         {/* Optional copy-mode banner row */}
         {(copiedShift || copiedWeekDates) && (
-          <div className="flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
-            <Clipboard className="h-5 w-5 shrink-0" />
-            <span className="text-base font-bold tracking-wide flex-1 uppercase">
+          <div className="relative flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
+            <Clipboard className="h-5 w-5 shrink-0 absolute left-6" />
+            <span className="text-base font-bold tracking-wide flex-1 uppercase text-center">
               {copiedShift
                 ? `Mode copie actif — ${copiedShift.startTime}–${copiedShift.endTime} · cliquez sur une cellule vide pour coller`
                 : "Mode copie — semaine copiée · cliquez sur une ligne vide pour coller"}
@@ -1445,7 +1524,7 @@ export function ScheduleView({
             <Button
               size="sm"
               variant="ghost"
-              className="h-8 text-sm font-semibold text-white hover:bg-red-700"
+              className="h-8 text-sm font-semibold text-white hover:bg-red-700 absolute right-4"
               onClick={() => {
                 setCopiedShift(null);
                 setCopiedWeekDates(null);
@@ -1460,9 +1539,9 @@ export function ScheduleView({
 
         {/* Optional simulation banner row */}
         {simulationMode && (
-          <div className="flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
-            <AlertTriangle className="h-5 w-5 shrink-0" />
-            <span className="text-base font-bold tracking-wide flex-1 uppercase">
+          <div className="relative flex items-center gap-3 px-6 py-3 bg-red-600 border-t border-red-700 text-white shadow-sm">
+            <AlertTriangle className="h-5 w-5 shrink-0 absolute left-6" />
+            <span className="text-base font-bold tracking-wide flex-1 uppercase text-center">
               Mode simulation actif — les modifications ne sont pas sauvegardées
             </span>
           </div>
@@ -1501,7 +1580,7 @@ export function ScheduleView({
             }}
           >
             <Plus className="h-4 w-4" />
-            Assigner un agent
+            Affecter un agent
           </Button>
         </div>
 
@@ -1646,6 +1725,104 @@ export function ScheduleView({
             </Card>
           )}
         </div>
+
+        {/* Week navigator — scroll month's weeks (weekly view only) */}
+        {viewType === "weekly" &&
+          (() => {
+            const firstOfMonth = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              1,
+            );
+            const lastOfMonth = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth() + 1,
+              0,
+            );
+            // Start from Monday of week containing first-of-month
+            const weekStarts: Date[] = [];
+            const cursor = new Date(firstOfMonth);
+            const day = cursor.getDay();
+            const diffToMon = day === 0 ? -6 : 1 - day;
+            cursor.setDate(cursor.getDate() + diffToMon);
+            while (cursor <= lastOfMonth) {
+              weekStarts.push(new Date(cursor));
+              cursor.setDate(cursor.getDate() + 7);
+            }
+            const activeMon = new Date(currentDate);
+            const adjDay = activeMon.getDay();
+            activeMon.setDate(
+              activeMon.getDate() + (adjDay === 0 ? -6 : 1 - adjDay),
+            );
+            const activeKey = activeMon.toISOString().split("T")[0];
+            return (
+              <div className="rounded-lg border border-border/50 bg-muted/20 p-2">
+                <div className="flex items-center gap-2 overflow-x-auto">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-2 shrink-0">
+                    Semaines de{" "}
+                    {firstOfMonth.toLocaleDateString("fr-FR", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {weekStarts.map((ws) => {
+                      const we = new Date(ws);
+                      we.setDate(we.getDate() + 6);
+                      const key = ws.toISOString().split("T")[0];
+                      const isActive = key === activeKey;
+                      const weekNum = (() => {
+                        const d = new Date(
+                          Date.UTC(
+                            ws.getFullYear(),
+                            ws.getMonth(),
+                            ws.getDate(),
+                          ),
+                        );
+                        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                        const yearStart = new Date(
+                          Date.UTC(d.getUTCFullYear(), 0, 1),
+                        );
+                        return Math.ceil(
+                          ((d.getTime() - yearStart.getTime()) / 86400000 + 1) /
+                            7,
+                        );
+                      })();
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setCurrentDate(new Date(ws))}
+                          className={`shrink-0 flex flex-col items-center gap-0.5 rounded-md border px-3 py-1.5 text-xs font-medium transition ${
+                            isActive
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-background border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <span className="font-bold">
+                            S{String(weekNum).padStart(2, "0")}
+                          </span>
+                          <span
+                            className={`text-[10px] ${isActive ? "opacity-90" : "text-muted-foreground"}`}
+                          >
+                            {ws.toLocaleDateString("fr-FR", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                            {" – "}
+                            {we.toLocaleDateString("fr-FR", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         {/* Détail des majorations — bottom of page, filter-scoped */}
         <HourDetailsSection
@@ -1907,18 +2084,18 @@ export function ScheduleView({
               }}
               type="form"
               size="lg"
-              title="Assigner des agents"
+              title="Affecter des agents"
               description={
                 activeSite
                   ? `${activeSite.name} · ${availableAgents.length} agent${availableAgents.length > 1 ? "s" : ""} disponible${availableAgents.length > 1 ? "s" : ""}`
-                  : "Sélectionnez un site puis les agents à assigner"
+                  : "Sélectionnez un site puis les agents à affecter"
               }
               actions={{
                 primary: {
                   label:
                     agentsToAssign.length > 0
-                      ? `Assigner ${agentsToAssign.length} agent${agentsToAssign.length > 1 ? "s" : ""}`
-                      : "Assigner",
+                      ? `Affecter ${agentsToAssign.length} agent${agentsToAssign.length > 1 ? "s" : ""}`
+                      : "Affecter",
                   onClick: handleBulkAssignAgents,
                   disabled: !assignSiteId || agentsToAssign.length === 0,
                 },

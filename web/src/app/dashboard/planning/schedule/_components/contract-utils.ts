@@ -32,29 +32,32 @@ export function getAgentWeeklyContract(agentId: string): number {
 }
 
 /**
- * Contract hours pro-rated across the visible period.
- * Uses `weeklyContract × (days / 7)` so every view (day=1, week=7, month≈30)
- * scales proportionally.
+ * Monthly contract hours for an agent. Mock data stores weekly contract
+ * (e.g. 35h) — convert to legal monthly equivalent: weekly × 52 / 12.
+ * A 35h weekly contract yields 151.67h/month.
  */
-export function getAgentContractForView(
-  agentId: string,
-  dates: Date[],
-): number {
-  const weekly = getAgentWeeklyContract(agentId);
-  return (weekly * dates.length) / 7;
+export function getAgentMonthlyContract(agentId: string): number {
+  return (getAgentWeeklyContract(agentId) * 52) / 12;
 }
 
 /**
- * Total planned hours for an agent across the visible dates.
+ * Total planned hours for an agent within the month containing `reference`.
+ * View-agnostic — always month-scoped so agents show 151.67h/contract
+ * and cumulative affected hours in day, week, and month views.
  */
-export function getAgentPlannedForView(
+export function getAgentPlannedForMonth(
   agentId: string,
   shifts: AgentShift[],
-  dates: Date[],
+  reference: Date,
 ): number {
-  const visible = new Set(dates.map((d) => d.toISOString().split("T")[0]));
+  const year = reference.getFullYear();
+  const month = reference.getMonth();
   return shifts
-    .filter((s) => s.agentId === agentId && visible.has(s.date))
+    .filter((s) => {
+      if (s.agentId !== agentId) return false;
+      const d = new Date(s.date + "T00:00:00");
+      return d.getFullYear() === year && d.getMonth() === month;
+    })
     .reduce((sum, s) => sum + shiftHours(s), 0);
 }
 
@@ -65,13 +68,19 @@ export interface AgentHoursSummary {
   isOver: boolean;
 }
 
+/**
+ * Always returns a month-scoped summary: contract = monthly (151.67h for 35h
+ * weekly), planned = month-to-date affected hours from `shifts`. `dates` is
+ * used only to pick the reference month (first element).
+ */
 export function summarizeAgentHours(
   agentId: string,
   shifts: AgentShift[],
   dates: Date[],
 ): AgentHoursSummary {
-  const contract = getAgentContractForView(agentId, dates);
-  const planned = getAgentPlannedForView(agentId, shifts, dates);
+  const reference = dates[0] ?? new Date();
+  const contract = getAgentMonthlyContract(agentId);
+  const planned = getAgentPlannedForMonth(agentId, shifts, reference);
   const diff = contract - planned;
   return {
     contract,

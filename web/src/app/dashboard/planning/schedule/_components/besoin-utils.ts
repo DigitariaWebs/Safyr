@@ -74,6 +74,56 @@ export function countPosteCoverage(
 }
 
 /**
+ * Uncovered intervals for a poste on `dateStr`. Subtracts each assigned
+ * shift's [start,end] from the poste window; returns the remaining gaps
+ * on a linear axis that may exceed 24h (for overnight postes).
+ */
+export function computeUncoveredIntervals(
+  shifts: AgentShift[],
+  poste: Poste,
+  dateStr: string,
+): Array<{ start: number; end: number }> {
+  const win = inferPosteWindow(poste);
+  const pStart = win.startHour;
+  let pEnd = win.endHour;
+  if (pEnd <= pStart) pEnd += 24;
+
+  let gaps: Array<{ start: number; end: number }> = [
+    { start: pStart, end: pEnd },
+  ];
+
+  for (const s of shifts) {
+    if (s.date !== dateStr) continue;
+    const [sh, sm] = s.startTime.split(":").map(Number);
+    const [eh, em] = s.endTime.split(":").map(Number);
+    const sStart = sh + sm / 60;
+    let sEnd = eh + em / 60;
+    if (sEnd <= sStart) sEnd += 24;
+    const next: Array<{ start: number; end: number }> = [];
+    for (const g of gaps) {
+      const ovStart = Math.max(g.start, sStart);
+      const ovEnd = Math.min(g.end, sEnd);
+      if (ovStart >= ovEnd) {
+        next.push(g);
+        continue;
+      }
+      if (g.start < ovStart) next.push({ start: g.start, end: ovStart });
+      if (ovEnd < g.end) next.push({ start: ovEnd, end: g.end });
+    }
+    gaps = next.filter((g) => g.end - g.start > 0.01);
+  }
+  return gaps;
+}
+
+export function formatHourLabel(h: number): string {
+  const norm = h % 24;
+  const hours = Math.floor(norm);
+  const mins = Math.round((norm - hours) * 60);
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h${mins.toString().padStart(2, "0")}`;
+}
+
+/**
  * Requirement count for a poste on a given weekday (0 = Sunday).
  * Uses dailyRequirements if present, else falls back to capacity.minAgents.
  */

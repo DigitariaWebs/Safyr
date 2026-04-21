@@ -657,7 +657,8 @@ export default function PostesPage() {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-between font-normal"
+                      size="sm"
+                      className="w-full justify-between font-normal h-9"
                     >
                       <span className="text-muted-foreground">
                         {field.state.value.length === 0
@@ -667,7 +668,10 @@ export default function PostesPage() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2" align="start">
+                  <PopoverContent
+                    className="w-[var(--radix-popover-trigger-width)] p-2"
+                    align="start"
+                  >
                     <div className="space-y-1">
                       {CERTIFICATIONS_OPTIONS.map((cert) => (
                         <label
@@ -1198,7 +1202,7 @@ export default function PostesPage() {
           }
         }}
         type="form"
-        size="xl"
+        size="lg"
         title="Nouveau poste"
         description="Définissez les caractéristiques du poste de sécurité"
         actions={{

@@ -29,7 +29,8 @@ import { summarizeAgentHours } from "./contract-utils";
 import { AgentHoursCell } from "./AgentHoursCell";
 import {
   inferPosteWindow,
-  countPosteCoverage,
+  computeUncoveredIntervals,
+  formatHourLabel,
   getPosteRequirementForDay,
 } from "./besoin-utils";
 import { isoWeekNumber } from "./date-utils";
@@ -181,9 +182,12 @@ export function WeeklyView({
                       poste,
                       date.getDay(),
                     );
-                    const covered = countPosteCoverage(shifts, poste, dateStr);
-                    const remaining = Math.max(0, required - covered);
-                    const complete = required > 0 && covered >= required;
+                    const gaps = computeUncoveredIntervals(
+                      shifts,
+                      poste,
+                      dateStr,
+                    );
+                    const complete = required > 0 && gaps.length === 0;
                     return (
                       <div
                         key={dateStr}
@@ -194,21 +198,25 @@ export function WeeklyView({
                           <span className="text-[10px] text-muted-foreground">
                             —
                           </span>
+                        ) : complete ? (
+                          <span className="text-xs font-bold text-green-600 uppercase tracking-wide">
+                            Affecter
+                          </span>
                         ) : (
                           <>
                             <span className="text-[10px] font-medium text-muted-foreground tracking-tight">
                               {win.start}–{win.end}
                             </span>
                             <span
-                              className={`text-xs font-semibold ${complete ? "text-green-600" : "text-amber-600"}`}
-                              title={`${covered} couvert${covered > 1 ? "s" : ""} · ${remaining} restant${remaining > 1 ? "s" : ""}`}
+                              className="text-xs font-semibold text-amber-700 tracking-tight"
+                              title="Plage restante à couvrir"
                             >
-                              {covered}/{required}
-                              {remaining > 0 && (
-                                <span className="ml-1 text-[10px] font-normal opacity-80">
-                                  (−{remaining})
-                                </span>
-                              )}
+                              {gaps
+                                .map(
+                                  (g) =>
+                                    `${formatHourLabel(g.start)}–${formatHourLabel(g.end)}`,
+                                )
+                                .join(", ")}
                             </span>
                           </>
                         )}
