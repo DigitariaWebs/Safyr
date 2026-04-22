@@ -23,7 +23,7 @@ async function bootstrap(): Promise<void> {
     },
   );
 
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix("api", { exclude: ["health"] });
   app.useGlobalInterceptors(new EnvelopeInterceptor());
   app.useGlobalFilters(new AppExceptionFilter());
 

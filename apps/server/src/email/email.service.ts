@@ -19,6 +19,24 @@ export class EmailService {
     });
   }
 
+  async checkConnection(): Promise<{
+    status: "up" | "down";
+    error?: string;
+  }> {
+    try {
+      await this.transport.verify();
+      return { status: "up" };
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "SMTP verification failed";
+      this.logger.error(`SMTP health check failed: ${message}`);
+      return {
+        status: "down",
+        error: message,
+      };
+    }
+  }
+
   async sendMagicLink(
     to: string,
     params: { url: string; expiresInMinutes?: number },
