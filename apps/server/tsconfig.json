@@ -18,6 +18,6 @@
     "declarationMap": false,
     "noUncheckedIndexedAccess": false
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist", "prisma"]
 }
