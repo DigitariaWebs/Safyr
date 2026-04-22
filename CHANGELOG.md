@@ -8,6 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **Server** — New `apps/server` NestJS + Fastify backend scaffolded with envelope interceptor, AppError exception filter, Zod validation pipe, Pino logger, CORS allowlist, rate-limit, and `/api/health` endpoint
+- **Server** — better-auth integration with plugin set: organization, access-control, magic-link, email-otp, bearer, admin, expo, two-factor, username, captcha (env-gated)
+- **Server** — Prisma 7 schema with better-auth core (User, Session, Account, Verification), `organization` plugin tables (Organization with `siret`/`ape`/`address`, Member, Invitation, TwoFactor), and Safyr stubs (`Site`, `Employee` with orgId FK + lazy `userId` link)
+- **Server** — Access-control roles (`owner`, `dirigeant_rh`, `chef_exploitation`, `comptable`, `chef_de_site`, `agent`) with per-resource statements (employee, payroll, planning, billing, accounting, geolocation, logbook)
+- **Server** — `EmailService` (Nodemailer SMTP + React Email) with magic-link template; dev mode always console-logs URL, sends via SMTP when `SMTP_HOST` configured
+- **Server** — Prisma seed producing demo org `safyr-demo` and an owner user
+- **Server** — `prisma.config.ts` using new Prisma 7 config-first pattern; driver adapter via `@prisma/adapter-pg`
+- **Server** — `auth:generate` script wrapping `@better-auth/cli generate` to keep Prisma schema in sync with plugin set
+- **Shared** — New workspaces `packages/schemas`, `packages/constants`, `packages/api-client`
+- **Shared** — `@safyr/api-client` exposes `createSafyrAuthClient()` wiring magic-link, organization, admin, username, two-factor, email-otp better-auth client plugins
+- **Web** — Replaced stubbed login form with real magic-link flow (`authClient.signIn.magicLink`) and success state
+- **Web** — `/profile` page showing session user details + sign-out
+- **Web** — `SessionGuard` on dashboard layout redirects unauthenticated users to `/login`
+- **Web** — TanStack `QueryClientProvider` in root layout
+- **Tooling** — Root `tsconfig.base.json` shared compiler options
+- **Tooling** — Root `.env.example` documenting server + web env vars
+- **Tooling** — Turbo pipeline gains `db:generate`, `db:migrate`, `db:push`, `db:seed`, `db:studio`, `auth:generate` tasks
 - Multi-site schedule view — all active sites visible by default, grouped in collapsible color-banded cards
 - Cascading client → site filters (Clients, Sites, Agents popovers); Sites disabled until a client is picked
 - New three-row sticky header: title + stats + large week label / filters / controls (date nav + view switcher + simulation + PDF export); copy-mode and simulation banners pinned inside
@@ -45,6 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **Tooling** — Root workspaces glob `["apps/web", "apps/mobile"]` → `["apps/*", "packages/*"]`
 - Extracted schedule page into `schedule/_components/` (view components, modals, filter bar, utilities) — page.tsx reduced from 4717 → ~2900 lines
 - Shared `playAlertBeep` helper extracted to `lib/audio-alerts.ts`
 - Contract hours interpreted as weekly reference and pro-rated across each view's visible period
