@@ -4,8 +4,8 @@
 
 import type { PrismaClient } from "../../generated/prisma/client";
 import { createAuth } from "./auth.config";
-import type { Env } from "../config/env";
-import type { EmailService } from "../email/email.service";
+import type { Env } from "@/config/env";
+import type { EmailService } from "@/email/email.service";
 
 const stubEnv: Env = {
   NODE_ENV: "development",
@@ -15,12 +15,18 @@ const stubEnv: Env = {
   BETTER_AUTH_SECRET: "stub-stub-stub-stub-stub-stub-stub",
   BETTER_AUTH_URL: "http://localhost:4000",
   ALLOWED_ORIGINS: ["http://localhost:3000"],
+  SMTP_HOST: "smtp.stub.local",
   SMTP_PORT: 587,
+  SMTP_USER: "stub-user",
+  SMTP_PASS: "stub-pass",
   SMTP_FROM: "stub",
 };
 
-const stubEmail = { sendMagicLink: async () => {} } as unknown as EmailService;
 const stubPrisma = {} as unknown as PrismaClient;
+const stubEmail = {
+  sendMagicLink: async () => {},
+  sendOtp: async () => {},
+} as unknown as EmailService;
 
 export const auth = createAuth({
   env: stubEnv,

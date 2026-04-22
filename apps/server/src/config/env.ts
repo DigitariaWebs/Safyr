@@ -32,21 +32,11 @@ const envSchema = z.object({
         .filter(Boolean),
     ),
 
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().default(587),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().default("Safyr <no-reply@safyr.app>"),
-
-  CAPTCHA_PROVIDER: z
-    .enum([
-      "cloudflare-turnstile",
-      "google-recaptcha",
-      "hcaptcha",
-      "captchafox",
-    ])
-    .optional(),
-  CAPTCHA_SECRET_KEY: z.string().optional(),
+  SMTP_HOST: z.string().min(1),
+  SMTP_PORT: z.coerce.number().int().positive(),
+  SMTP_USER: z.string().min(1),
+  SMTP_PASS: z.string().min(1),
+  SMTP_FROM: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -5,7 +5,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import type { FastifyRequest } from "fastify";
-import { UnauthorizedError } from "../shared/errors/app-error";
+import { UnauthorizedError } from "@/shared/errors/app-error";
 import { AUTH } from "./auth.tokens";
 import type { Auth } from "./auth.config";
 

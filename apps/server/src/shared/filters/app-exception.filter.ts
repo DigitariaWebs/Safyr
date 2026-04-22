@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { ZodError } from "zod";
-import { AppError } from "../errors/app-error";
+import { AppError } from "@/shared/errors/app-error";
 
 interface ErrorBody {
   success: false;

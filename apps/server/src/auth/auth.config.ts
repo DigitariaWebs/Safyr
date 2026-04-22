@@ -8,12 +8,11 @@ import {
   organization,
   twoFactor,
   username,
-  captcha,
 } from "better-auth/plugins";
 import { expo } from "@better-auth/expo";
 import type { PrismaClient } from "../../generated/prisma/client";
-import type { Env } from "../config/env";
-import type { EmailService } from "../email/email.service";
+import type { Env } from "@/config/env";
+import type { EmailService } from "@/email/email.service";
 import { ac, safyrRoles } from "./auth.access-control";
 
 interface AuthDeps {
@@ -23,18 +22,7 @@ interface AuthDeps {
 }
 
 export function createAuth({ env, prisma, email }: AuthDeps) {
-  const captchaPlugin =
-    env.CAPTCHA_PROVIDER && env.CAPTCHA_SECRET_KEY
-      ? [
-          captcha({
-            provider: env.CAPTCHA_PROVIDER,
-            secretKey: env.CAPTCHA_SECRET_KEY,
-          }),
-        ]
-      : [];
-
   const plugins = [
-    ...captchaPlugin,
     organization({
       ac,
       roles: safyrRoles,
@@ -54,9 +42,8 @@ export function createAuth({ env, prisma, email }: AuthDeps) {
       },
     }),
     emailOTP({
-      async sendVerificationOTP({ email: to, otp }) {
-        // TODO: wire to EmailService.sendOtp when mobile lands
-        console.log(`[email-otp] ${to} → ${otp}`);
+      async sendVerificationOTP({ email: to, otp, type }) {
+        await email.sendOtp(to, otp, { type });
       },
     }),
     bearer(),
@@ -73,6 +60,14 @@ export function createAuth({ env, prisma, email }: AuthDeps) {
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     emailAndPassword: { enabled: false },
     plugins,
+    advanced: {
+      useSecureCookies: true,
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+      },
+    },
   });
 }
 
