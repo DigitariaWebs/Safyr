@@ -107,3 +107,4 @@ temp/
 .turbo/
 docs
 assets
+tsconfig.tsbuildinfo

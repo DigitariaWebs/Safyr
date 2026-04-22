@@ -24,6 +24,7 @@ import { SendEmailProvider } from "@/contexts/SendEmailContext";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { AgendaModal } from "@/components/modals/AgendaModal";
 import { LiensUtilesModal } from "@/components/modals/LiensUtilesModal";
+import { SessionGuard } from "@/components/session-guard";
 import Image from "next/image";
 
 interface Module {
@@ -272,8 +273,10 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <SendEmailProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </SendEmailProvider>
+    <SessionGuard>
+      <SendEmailProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </SendEmailProvider>
+    </SessionGuard>
   );
 }

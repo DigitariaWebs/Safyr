@@ -3,7 +3,26 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "lint", "typecheck", "format:check"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    },
+    "db:studio": {
+      "persistent": true,
+      "cache": false
+    },
+    "auth:generate": {
+      "cache": false
     },
     "dev": {
       "persistent": true,
@@ -20,14 +39,6 @@
     "format:check": {},
     "typecheck": {
       "dependsOn": ["^build"]
-    },
-    "android": {
-      "persistent": true,
-      "cache": false
-    },
-    "ios": {
-      "persistent": true,
-      "cache": false
     }
   }
 }

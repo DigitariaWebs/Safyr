@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Aldrich, Space_Grotesk } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const aldrich = Aldrich({
@@ -33,7 +34,7 @@ export default function RootLayout({
       <body
         className={`${aldrich.variable} ${spaceGrotesk.variable} antialiased overflow-x-hidden font-sans`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
