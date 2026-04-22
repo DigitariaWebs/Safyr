@@ -7,15 +7,39 @@ import type { Auth } from "./auth.config";
 export class AuthController {
   constructor(@Inject(AUTH) private readonly auth: Auth) {}
 
+  private getFirstHeaderValue(
+    value: string | string[] | undefined,
+  ): string | undefined {
+    if (!value) return undefined;
+    const firstValue = Array.isArray(value) ? value[0] : value;
+    return firstValue.split(",")[0]?.trim() || undefined;
+  }
+
+  private getBaseOrigin(request: FastifyRequest): string {
+    const configuredOrigin = process.env.BETTER_AUTH_URL;
+    if (configuredOrigin) {
+      return new URL(configuredOrigin).origin;
+    }
+
+    const forwardedProto =
+      this.getFirstHeaderValue(request.headers["x-forwarded-proto"]) ?? "http";
+    const forwardedHost = this.getFirstHeaderValue(
+      request.headers["x-forwarded-host"],
+    );
+    const host =
+      forwardedHost ??
+      this.getFirstHeaderValue(request.headers.host) ??
+      "localhost";
+
+    return `${forwardedProto}://${host}`;
+  }
+
   @All("*")
   async handle(
     @Req() request: FastifyRequest,
     @Res() reply: FastifyReply,
   ): Promise<void> {
-    const url = new URL(
-      request.url,
-      `http://${request.headers.host ?? "localhost"}`,
-    );
+    const url = new URL(request.url, this.getBaseOrigin(request));
     const headers = new Headers();
     for (const [key, value] of Object.entries(request.headers)) {
       if (!value) continue;
