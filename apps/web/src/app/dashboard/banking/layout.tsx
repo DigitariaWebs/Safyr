@@ -20,7 +20,6 @@ export default function BankingLayout({
           moduleTitle="Banque"
           moduleIcon={Building2}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

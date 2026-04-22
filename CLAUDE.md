@@ -31,7 +31,7 @@ bun run --filter=@safyr/web build        # Production build
 bun run --filter=@safyr/web start        # Start production server
 bun run --filter=@safyr/web lint         # Run ESLint
 bun run --filter=@safyr/web format       # Format code with Prettier
-bun run --filter=@safyr/web test         # Type check with tsc --noEmit
+bun run --filter=@safyr/web typecheck         # Type check with tsc --noEmit
 bun run --filter=@safyr/web prune        # Remove unused code with knip
 ```
 

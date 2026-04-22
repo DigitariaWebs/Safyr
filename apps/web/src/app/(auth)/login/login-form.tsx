@@ -1,24 +1,144 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
-type Status = "idle" | "sending" | "sent" | "error";
+type LoginMode = "otp" | "magic-link";
+type Status = "idle" | "sending" | "verifying" | "error";
+const LOGIN_DRAFT_KEY = "safyr-login-draft";
+
+interface LoginDraft {
+  mode: LoginMode;
+  email: string;
+  otpRequested: boolean;
+  otpRequestedEmail: string | null;
+}
+
+function getLoginDraft(): LoginDraft {
+  if (typeof window === "undefined") {
+    return {
+      mode: "otp",
+      email: "",
+      otpRequested: false,
+      otpRequestedEmail: null,
+    };
+  }
+
+  const rawDraft = sessionStorage.getItem(LOGIN_DRAFT_KEY);
+  if (!rawDraft) {
+    return {
+      mode: "otp",
+      email: "",
+      otpRequested: false,
+      otpRequestedEmail: null,
+    };
+  }
+
+  try {
+    const draft = JSON.parse(rawDraft) as Partial<LoginDraft>;
+    return {
+      mode: draft.mode === "magic-link" ? "magic-link" : "otp",
+      email: typeof draft.email === "string" ? draft.email : "",
+      otpRequested: Boolean(draft.otpRequested),
+      otpRequestedEmail:
+        typeof draft.otpRequestedEmail === "string"
+          ? draft.otpRequestedEmail
+          : null,
+    };
+  } catch {
+    sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+    return {
+      mode: "otp",
+      email: "",
+      otpRequested: false,
+      otpRequestedEmail: null,
+    };
+  }
+}
 
 export function LoginForm() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+  const [draft] = useState<LoginDraft>(() => getLoginDraft());
+  const [mode, setMode] = useState<LoginMode>(draft.mode);
+  const [email, setEmail] = useState(draft.email);
+  const [otp, setOtp] = useState("");
+  const [otpRequested, setOtpRequested] = useState(draft.otpRequested);
+  const [otpRequestedEmail, setOtpRequestedEmail] = useState(
+    draft.otpRequestedEmail,
+  );
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    sessionStorage.setItem(
+      LOGIN_DRAFT_KEY,
+      JSON.stringify({ mode, email, otpRequested, otpRequestedEmail }),
+    );
+  }, [mode, email, otpRequested, otpRequestedEmail]);
+
+  const requestOtp = async () => {
+    const targetEmail = email.trim();
+    setStatus("sending");
+    const { error } = await authClient.emailOtp.sendVerificationOtp({
+      email: targetEmail,
+      type: "sign-in",
+    });
+
+    if (error) {
+      setStatus("error");
+      setErrorMessage(error.message ?? "Impossible d'envoyer le code");
+      return false;
+    }
+
+    setOtpRequested(true);
+    setOtpRequestedEmail(targetEmail);
+    setMagicLinkSent(false);
+    setStatus("idle");
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("sending");
     setErrorMessage(null);
 
+    if (mode === "otp") {
+      if (!otpRequested) {
+        await requestOtp();
+        return;
+      }
+
+      setStatus("verifying");
+      const verificationEmail = otpRequestedEmail ?? email.trim();
+      const { error } = await authClient.signIn.emailOtp({
+        email: verificationEmail,
+        otp,
+      });
+
+      if (error) {
+        setStatus("error");
+        setErrorMessage(error.message ?? "Code invalide");
+        return;
+      }
+
+      sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+      router.replace("/dashboard");
+      return;
+    }
+
+    setStatus("sending");
+    const targetEmail = email.trim();
     const { error } = await authClient.signIn.magicLink({
-      email,
+      email: targetEmail,
       callbackURL: `${window.location.origin}/dashboard`,
     });
 
@@ -28,31 +148,50 @@ export function LoginForm() {
       return;
     }
 
-    setStatus("sent");
+    sessionStorage.removeItem(LOGIN_DRAFT_KEY);
+    setMagicLinkSent(true);
+    setStatus("idle");
   };
-
-  if (status === "sent") {
-    return (
-      <div className="space-y-4 rounded-xl border border-[#22d3ee]/30 bg-[#22d3ee]/5 p-6 text-center">
-        <CheckCircle2 size={40} className="mx-auto text-[#22d3ee]" />
-        <h3 className="text-lg font-semibold text-white">Lien envoyé</h3>
-        <p className="text-sm text-[#94a3b8]">
-          Vérifiez <span className="text-white font-medium">{email}</span> et
-          cliquez sur le lien pour vous connecter.
-        </p>
-        <button
-          type="button"
-          onClick={() => setStatus("idle")}
-          className="text-sm text-[#22d3ee] hover:text-[#06b6d4] transition-colors"
-        >
-          Utiliser une autre adresse
-        </button>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#2d4160]/60 bg-[#111c30]/60 p-1">
+        <button
+          type="button"
+          onClick={() => {
+            setMode("otp");
+            setStatus("idle");
+            setErrorMessage(null);
+            setMagicLinkSent(false);
+          }}
+          className={`h-10 min-h-10 rounded-lg text-sm font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96] ${
+            mode === "otp"
+              ? "bg-[#22d3ee] text-[#0f172a]"
+              : "text-[#94a3b8] hover:text-white"
+          }`}
+        >
+          Code OTP
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode("magic-link");
+            setStatus("idle");
+            setErrorMessage(null);
+            setOtpRequested(false);
+            setOtpRequestedEmail(null);
+            setOtp("");
+          }}
+          className={`h-10 min-h-10 rounded-lg text-sm font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.96] ${
+            mode === "magic-link"
+              ? "bg-[#22d3ee] text-[#0f172a]"
+              : "text-[#94a3b8] hover:text-white"
+          }`}
+        >
+          Lien magique
+        </button>
+      </div>
+
       <div className="space-y-2">
         <label
           htmlFor="email"
@@ -65,37 +204,122 @@ export function LoginForm() {
           type="email"
           required
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            const nextEmail = e.target.value;
+            setEmail(nextEmail);
+            setMagicLinkSent(false);
+
+            if (
+              mode === "otp" &&
+              otpRequested &&
+              nextEmail.trim() !== (otpRequestedEmail ?? email.trim())
+            ) {
+              setOtpRequested(false);
+              setOtpRequestedEmail(null);
+              setOtp("");
+              setStatus("idle");
+              setErrorMessage(null);
+            }
+          }}
           placeholder="vous@entreprise.com"
-          className="w-full h-12 px-4 rounded-xl bg-[#1e293b]/80 border border-[#2d4160]/60 text-white placeholder:text-[#475569] focus:outline-none focus:border-[#22d3ee]/50 focus:ring-2 focus:ring-[#22d3ee]/20 transition-all duration-200"
+          className="w-full h-12 px-4 rounded-xl bg-[#1e293b]/80 border border-[#2d4160]/60 text-white placeholder:text-[#475569] focus:outline-none focus:border-[#22d3ee]/50 focus:ring-2 focus:ring-[#22d3ee]/20 transition-[border-color,box-shadow] duration-200"
         />
       </div>
 
+      {mode === "otp" && otpRequested && (
+        <div className="space-y-2">
+          <label
+            htmlFor="otp"
+            className="block text-sm font-medium text-[#94a3b8]"
+          >
+            Code reçu par e-mail
+          </label>
+          <div className="flex justify-center">
+            <InputOTP
+              id="otp"
+              required
+              maxLength={6}
+              value={otp}
+              onChange={setOtp}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              containerClassName="justify-center"
+              className="text-white tabular-nums"
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} className="h-12 w-12 bg-[#1e293b]/80" />
+                <InputOTPSlot index={1} className="h-12 w-12 bg-[#1e293b]/80" />
+                <InputOTPSlot index={2} className="h-12 w-12 bg-[#1e293b]/80" />
+              </InputOTPGroup>
+              <InputOTPSeparator className="text-[#64748b]" />
+              <InputOTPGroup>
+                <InputOTPSlot index={3} className="h-12 w-12 bg-[#1e293b]/80" />
+                <InputOTPSlot index={4} className="h-12 w-12 bg-[#1e293b]/80" />
+                <InputOTPSlot index={5} className="h-12 w-12 bg-[#1e293b]/80" />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+        </div>
+      )}
+
+      {mode === "otp" && otpRequested && (
+        <button
+          type="button"
+          onClick={() => {
+            void requestOtp();
+          }}
+          className="inline-flex h-10 min-h-10 items-center text-sm text-[#22d3ee] hover:text-[#06b6d4] transition-[color,transform] duration-150 ease-out active:scale-[0.96]"
+        >
+          Renvoyer le code
+        </button>
+      )}
+
+      {mode === "magic-link" && magicLinkSent && (
+        <p className="text-sm text-[#94a3b8] text-pretty">
+          Lien envoyé. Vérifiez votre boîte de réception.
+        </p>
+      )}
+
       {errorMessage && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm text-red-400 text-pretty" role="alert">
           {errorMessage}
         </p>
       )}
 
       <motion.button
         type="submit"
-        disabled={status === "sending"}
-        className="w-full h-12 rounded-xl bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-[#0f172a] font-semibold flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
-        whileHover={{ scale: status === "sending" ? 1 : 1.01 }}
-        whileTap={{ scale: status === "sending" ? 1 : 0.99 }}
+        disabled={
+          status === "sending" ||
+          status === "verifying" ||
+          (mode === "otp" && otpRequested && otp.trim().length === 0)
+        }
+        className="w-full h-12 rounded-xl bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-[#0f172a] font-semibold flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] transition-[box-shadow,opacity,transform] duration-300 will-change-transform disabled:opacity-70 disabled:cursor-not-allowed"
+        whileHover={{
+          scale: status === "sending" || status === "verifying" ? 1 : 1.01,
+        }}
+        whileTap={{
+          scale: status === "sending" || status === "verifying" ? 1 : 0.96,
+        }}
       >
-        {status === "sending" ? (
+        {status === "sending" || status === "verifying" ? (
           <>
             <Loader2 size={18} className="animate-spin" />
-            Envoi du lien...
+            {status === "verifying" ? "Vérification..." : "Envoi..."}
           </>
         ) : (
-          "Recevoir un lien de connexion"
+          <>
+            {mode === "otp"
+              ? otpRequested
+                ? "Valider le code"
+                : "Recevoir un code"
+              : "Recevoir un lien de connexion"}
+          </>
         )}
       </motion.button>
 
-      <p className="text-xs text-[#64748b] text-center">
-        Pas de mot de passe. Un lien magique sera envoyé à votre adresse e-mail.
+      <p className="text-xs text-[#64748b] text-center text-pretty">
+        Le code OTP est la méthode par défaut. Vous pouvez aussi utiliser un
+        lien magique.
       </p>
     </form>
   );

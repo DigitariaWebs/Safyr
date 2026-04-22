@@ -20,7 +20,6 @@ export default function PlanningLayout({
           moduleTitle="Planning"
           moduleIcon={Calendar}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

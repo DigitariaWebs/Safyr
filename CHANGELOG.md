@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **Web** — Shared `getUserDisplayData()` utility (`apps/web/src/lib/user-display.ts`) to centralize user name/email/role/avatar/initials derivation
 - **Server** — New `apps/server` NestJS + Fastify backend scaffolded with envelope interceptor, AppError exception filter, Zod validation pipe, Pino logger, CORS allowlist, rate-limit, and `/api/health` endpoint
 - **Server** — better-auth integration with plugin set: organization, access-control, magic-link, email-otp, bearer, admin, expo, two-factor, username, captcha (env-gated)
 - **Server** — Prisma 7 schema with better-auth core (User, Session, Account, Verification), `organization` plugin tables (Organization with `siret`/`ape`/`address`, Member, Invitation, TwoFactor), and Safyr stubs (`Site`, `Employee` with orgId FK + lazy `userId` link)
@@ -62,6 +63,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **Web** — `ProfileModal` and `ModuleTopBar` now use centralized session-driven user display derivation instead of duplicated local fallback logic
 - **Tooling** — Root workspaces glob `["apps/web", "apps/mobile"]` → `["apps/*", "packages/*"]`
 - Extracted schedule page into `schedule/_components/` (view components, modals, filter bar, utilities) — page.tsx reduced from 4717 → ~2900 lines
 - Shared `playAlertBeep` helper extracted to `lib/audio-alerts.ts`
@@ -91,6 +93,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- **Web** — OTP sign-in verification now uses the exact email address used for OTP request, preventing verification against a different edited email
+- **Web** — Login draft in `sessionStorage` is now cleared after successful magic-link submission to avoid stale auth state
 - Résumé du planning showed 0 for Heures totales and Heures sup. on load (hour calculation was locked to a single active-site ref)
 - Meal voucher count was scoped to the last-interacted site instead of all visible sites
 - Past-date shifts were not editable in any view (click/dropdown/quick-pencil were all gated on `!isPast`); the "Date passée" placeholder replaced the add button on past cells. Edit, customize, copy, delete and add actions now work on past dates (create/paste still trigger the audio alert + confirmation modal).

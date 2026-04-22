@@ -29,7 +29,6 @@ export default function PayrollLayout({
           moduleTitle="Paie"
           moduleIcon={DollarSign}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

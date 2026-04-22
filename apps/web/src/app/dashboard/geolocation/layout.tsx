@@ -22,7 +22,6 @@ export default function GeolocationLayout({
           moduleTitle="Géolocalisation"
           moduleIcon={MapPin}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

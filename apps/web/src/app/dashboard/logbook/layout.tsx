@@ -26,7 +26,6 @@ export default function LogbookLayout({
           moduleTitle="Main Courante Digitale"
           moduleIcon={BookOpen}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

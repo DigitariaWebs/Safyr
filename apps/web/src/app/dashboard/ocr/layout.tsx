@@ -16,7 +16,6 @@ export default function OCRLayout({ children }: { children: React.ReactNode }) {
           moduleTitle="OCR"
           moduleIcon={FileText}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

@@ -20,7 +20,6 @@ export default function BillingLayout({
           moduleTitle="Facturation"
           moduleIcon={FileText}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

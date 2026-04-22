@@ -37,7 +37,6 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
           moduleTitle="Ressources Humaines"
           moduleIcon={Users}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

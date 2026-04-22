@@ -20,7 +20,6 @@ export default function AccountingLayout({
           moduleTitle="Comptabilité"
           moduleIcon={Calculator}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />

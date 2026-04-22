@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { useUiStore } from "@/lib/stores/uiStore";
 import { useAgendaStore } from "@/lib/stores/agendaStore";
 import { useLiensUtilesStore } from "@/lib/stores/liensUtilesStore";
+import { authClient } from "@/lib/auth-client";
+import { getUserDisplayData } from "@/lib/user-display";
 
 export interface ModuleTopBarProps {
   moduleTitle: string;
   moduleIcon: React.ElementType;
   onProfileClick: () => void;
-  userInitials?: string;
   userAvatar?: string;
   showConteurs?: boolean;
 }
@@ -21,10 +22,17 @@ export function ModuleTopBar({
   moduleTitle,
   moduleIcon: ModuleIcon,
   onProfileClick,
-  userInitials = "JD",
   userAvatar,
   showConteurs = true,
 }: ModuleTopBarProps) {
+  const { data } = authClient.useSession();
+  const user = data?.user;
+  const { displayName, initials, avatarSrc } = getUserDisplayData(user, {
+    fallbackName: "Utilisateur",
+    fallbackInitials: "U",
+    fallbackAvatar: userAvatar,
+  });
+
   const openAgenda = useAgendaStore((s) => s.openAgenda);
   const openLiensUtiles = useLiensUtilesStore((s) => s.openLiensUtiles);
   const { isNavExpanded, toggleNavExpanded } = useUiStore();
@@ -82,9 +90,9 @@ export function ModuleTopBar({
             className="flex items-center gap-2 hover:ring-2 hover:ring-primary/30 rounded-full p-0.5 transition-all"
           >
             <Avatar className="h-8 w-8 ring-2 ring-border/50">
-              <AvatarImage src={userAvatar} alt="User" />
+              <AvatarImage src={avatarSrc} alt={displayName} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                {userInitials}
+                {initials}
               </AvatarFallback>
             </Avatar>
           </button>

@@ -20,6 +20,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { authClient } from "@/lib/auth-client";
+import { getUserDisplayData } from "@/lib/user-display";
 
 interface ProfileModalProps {
   open: boolean;
@@ -27,12 +29,22 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
+  const { data } = authClient.useSession();
+  const user = data?.user;
+  const { displayName, displayEmail, displayRole, initials, avatarSrc } =
+    getUserDisplayData(user, {
+      fallbackName: "Utilisateur",
+      fallbackEmail: "—",
+      fallbackRole: "Membre",
+      fallbackInitials: "U",
+    });
+
   const menuItems = [
     {
       icon: User,
       label: "Profil",
       description: "Gérer vos informations personnelles",
-      href: "/profil",
+      href: "/profile",
     },
     {
       icon: Settings,
@@ -66,20 +78,24 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
         <SheetHeader className="p-6 pb-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src="/avatars/admin.jpg" alt="John Doe" />
+              <AvatarImage
+                src={avatarSrc}
+                alt={displayName}
+                className="outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+              />
               <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                JD
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <SheetTitle className="text-left text-lg font-semibold">
-                John Doe
+              <SheetTitle className="text-left text-lg font-semibold text-balance">
+                {displayName}
               </SheetTitle>
-              <p className="text-sm text-muted-foreground">
-                john.doe@safyr.com
+              <p className="text-sm text-muted-foreground text-pretty">
+                {displayEmail}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Administrateur
+              <p className="mt-1 text-xs text-muted-foreground text-pretty">
+                {displayRole}
               </p>
             </div>
           </div>
@@ -89,19 +105,25 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
           <div className="space-y-1">
             {menuItems.map((item, index) => (
               <React.Fragment key={item.label}>
-                <Link href={item.href} onClick={() => onOpenChange(false)}>
+                <Link
+                  href={item.href}
+                  onClick={() => onOpenChange(false)}
+                  className="block w-full"
+                >
                   <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 h-auto p-4 hover:bg-accent min-h-16"
+                    className="group h-auto min-h-16 w-full justify-start gap-3 overflow-hidden pl-4 pr-3.5 py-4 hover:bg-accent transition-[background-color,transform] duration-150 ease-out active:scale-[0.96]"
                   >
-                    <item.icon className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-sm">{item.label}</div>
-                      <div className="text-xs text-muted-foreground wrap-break-words">
+                    <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="truncate text-sm font-medium">
+                        {item.label}
+                      </div>
+                      <div className="text-pretty text-xs text-muted-foreground [overflow-wrap:anywhere]">
                         {item.description}
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
                   </Button>
                 </Link>
                 {index < menuItems.length - 1 && <Separator className="my-1" />}

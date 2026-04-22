@@ -20,7 +20,6 @@ export default function StockLayout({
           moduleTitle="Stock"
           moduleIcon={Package}
           onProfileClick={() => setProfileModalOpen(true)}
-          userInitials="JD"
           userAvatar="/avatars/admin.jpg"
           showConteurs={true}
         />
