@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Server** — Prisma 7 schema with better-auth core (User, Session, Account, Verification), `organization` plugin tables (Organization with `siret`/`ape`/`address`, Member, Invitation, TwoFactor), and Safyr stubs (`Site`, `Employee` with orgId FK + lazy `userId` link)
 - **Server** — Access-control roles (`owner`, `dirigeant_rh`, `chef_exploitation`, `comptable`, `chef_de_site`, `agent`) with per-resource statements (employee, payroll, planning, billing, accounting, geolocation, logbook)
 - **Server** — `EmailService` (Nodemailer SMTP + React Email) with magic-link template; dev mode always console-logs URL, sends via SMTP when `SMTP_HOST` configured
-- **Server** — Prisma seed producing demo org `safyr-demo` and owner user `owner@safyr-demo.fr`
+- **Server** — Prisma seed producing demo org `safyr-demo` and an owner user
 - **Server** — `prisma.config.ts` using new Prisma 7 config-first pattern; driver adapter via `@prisma/adapter-pg`
 - **Server** — `auth:generate` script wrapping `@better-auth/cli generate` to keep Prisma schema in sync with plugin set
 - **Shared** — New workspaces `packages/schemas`, `packages/constants`, `packages/api-client`
