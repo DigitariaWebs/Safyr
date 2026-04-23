@@ -7,9 +7,9 @@ import { EmailService } from "@/email/email.service";
 import { PrismaService } from "@/prisma/prisma.service";
 
 const APP_VERSION = (
-  JSON.parse(
-    readFileSync(resolve(process.cwd(), "package.json"), "utf8"),
-  ) as { version: string }
+  JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as {
+    version: string;
+  }
 ).version;
 
 @Controller("health")
@@ -32,8 +32,7 @@ export class HealthController {
     };
   }> {
     const [dbResult, smtp] = await Promise.all([
-      this.prisma
-        .$queryRaw`SELECT 1`
+      this.prisma.$queryRaw`SELECT 1`
         .then((): { status: "up" } => ({ status: "up" }))
         .catch((error: unknown): { status: "down"; error: string } => ({
           status: "down",
