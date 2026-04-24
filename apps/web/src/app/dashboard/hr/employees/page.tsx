@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,18 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
-import { Stepper, Step } from "@/components/ui/stepper";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PhoneInput } from "@/components/ui/PhoneInput";
-import { IbanInput } from "@/components/ui/IbanInput";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { EmployeeCreateDialog } from "@/components/employees/EmployeeCreateDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,17 +32,56 @@ import {
   Phone,
   Send,
   X,
-  ChevronLeft,
-  ChevronRight,
-  Save,
 } from "lucide-react";
-import type { Employee, EmployeeFormData, Contract } from "@/lib/types";
-import { mockEmployees, mockStats } from "@/data/employees";
+import type { Employee } from "@/lib/types";
 import { useSendEmail } from "@/hooks/useSendEmail";
+import {
+  useEmployees,
+  useEmployeeStats,
+  useDeleteEmployee,
+  employeeKeys,
+} from "@/hooks/employees";
+import { toUiEmployee } from "@/lib/employee-adapter";
+import { useMutationState } from "@tanstack/react-query";
+import type { CreateEmployeePayload } from "@safyr/api-client";
+import { Loader2 } from "lucide-react";
+
+const STATUS_VARIANTS = {
+  active: { variant: "default" as const, label: "Actif" },
+  inactive: { variant: "secondary" as const, label: "Inactif" },
+  suspended: { variant: "destructive" as const, label: "Suspendu" },
+  terminated: { variant: "outline" as const, label: "Terminé" },
+};
+
+const selectPendingCreate = (m: { state: { variables: unknown } }) =>
+  m.state.variables as CreateEmployeePayload;
+const selectPendingDelete = (m: { state: { variables: unknown } }) =>
+  m.state.variables as string;
 
 export default function EmployeesPage() {
   const router = useRouter();
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
+  const { data: apiEmployees, isLoading: isEmployeesLoading } = useEmployees();
+  const { data: apiStats } = useEmployeeStats();
+  const deleteEmployeeMutation = useDeleteEmployee();
+  const pendingCreates = useMutationState<CreateEmployeePayload>({
+    filters: { mutationKey: employeeKeys.create(), status: "pending" },
+    select: selectPendingCreate,
+  });
+  const pendingDeleteIds = useMutationState<string>({
+    filters: { mutationKey: employeeKeys.delete(), status: "pending" },
+    select: selectPendingDelete,
+  });
+  const pendingDeleteIdSet = useMemo(
+    () => new Set(pendingDeleteIds),
+    [pendingDeleteIds],
+  );
+  const employees = useMemo(() => {
+    const real = apiEmployees?.map(toUiEmployee) ?? [];
+    const pending: Employee[] = pendingCreates.map((p, i) =>
+      pendingToEmployee(p, i),
+    );
+    return [...pending, ...real];
+  }, [apiEmployees, pendingCreates]);
   const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
@@ -62,45 +90,9 @@ export default function EmployeesPage() {
   );
   const { openEmailModal } = useSendEmail();
   const [isNewEmployeeModalOpen, setIsNewEmployeeModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [newEmployeeData, setNewEmployeeData] = useState<EmployeeFormData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    dateOfBirth: "",
-    placeOfBirth: "",
-    nationality: "Française",
-    gender: "male",
-    civilStatus: "single",
-    children: 0,
-    street: "",
-    city: "",
-    postalCode: "",
-    country: "France",
-    iban: "",
-    bic: "",
-    bankName: "",
-    socialSecurityNumber: "",
-    employeeNumber: "",
-    hireDate: "",
-    position: "",
-    department: "",
-    contractType: "CDI",
-    workSchedule: "full-time",
-    status: "active",
-    cnapsNumber: "",
-    ssiapNumber: "",
-  });
 
   const getStatusBadge = (status: Employee["status"]) => {
-    const variants = {
-      active: { variant: "default" as const, label: "Actif" },
-      inactive: { variant: "secondary" as const, label: "Inactif" },
-      suspended: { variant: "destructive" as const, label: "Suspendu" },
-      terminated: { variant: "outline" as const, label: "Terminé" },
-    };
-    const config = variants[status];
+    const config = STATUS_VARIANTS[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
@@ -109,12 +101,11 @@ export default function EmployeesPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (employeeToDelete) {
-      setEmployees(employees.filter((emp) => emp.id !== employeeToDelete.id));
-      setIsDeleteModalOpen(false);
-      setEmployeeToDelete(null);
-    }
+  const confirmDelete = async () => {
+    if (!employeeToDelete) return;
+    await deleteEmployeeMutation.mutateAsync(employeeToDelete.id);
+    setIsDeleteModalOpen(false);
+    setEmployeeToDelete(null);
   };
 
   const handleViewProfile = (employee: Employee) => {
@@ -125,9 +116,12 @@ export default function EmployeesPage() {
     setIsBulkDeleteModalOpen(true);
   };
 
-  const confirmBulkDelete = () => {
-    const idsToDelete = new Set(selectedEmployees.map((emp) => emp.id));
-    setEmployees(employees.filter((emp) => !idsToDelete.has(emp.id)));
+  const confirmBulkDelete = async () => {
+    await Promise.all(
+      selectedEmployees.map((emp) =>
+        deleteEmployeeMutation.mutateAsync(emp.id),
+      ),
+    );
     setSelectedEmployees([]);
     setIsBulkDeleteModalOpen(false);
   };
@@ -142,190 +136,6 @@ export default function EmployeesPage() {
     setSelectedEmployees([]);
   };
 
-  const steps: Step[] = [
-    {
-      label: "Informations personnelles",
-      description: "Identité et état civil",
-    },
-    {
-      label: "Coordonnées",
-      description: "Contact et adresse",
-    },
-    {
-      label: "Emploi",
-      description: "Poste et contrat",
-    },
-    {
-      label: "Informations bancaires",
-      description: "RIB et banque",
-    },
-  ];
-
-  const handleNewEmployeeChange = (field: string, value: string | number) => {
-    setNewEmployeeData((prev) => ({
-      ...prev,
-      [field]: field === "children" ? (value as number) : value,
-    }));
-  };
-
-  const handleNextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleCreateEmployee();
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleCreateEmployee = () => {
-    const newEmployee: Employee = {
-      id: `EMP${Date.now()}`,
-      firstName: newEmployeeData.firstName,
-      lastName: newEmployeeData.lastName,
-      email: newEmployeeData.email,
-      phone: newEmployeeData.phone,
-      photo: "/avatars/default.jpg",
-      dateOfBirth: new Date(newEmployeeData.dateOfBirth),
-      placeOfBirth: newEmployeeData.placeOfBirth,
-      nationality: newEmployeeData.nationality,
-      gender: newEmployeeData.gender as Employee["gender"],
-      civilStatus: newEmployeeData.civilStatus as Employee["civilStatus"],
-      children: newEmployeeData.children,
-      address: {
-        street: newEmployeeData.street,
-        city: newEmployeeData.city,
-        postalCode: newEmployeeData.postalCode,
-        country: newEmployeeData.country,
-      },
-      bankDetails: {
-        iban: newEmployeeData.iban,
-        bic: newEmployeeData.bic,
-        bankName: newEmployeeData.bankName,
-      },
-      socialSecurityNumber: newEmployeeData.socialSecurityNumber,
-      employeeNumber: newEmployeeData.employeeNumber,
-      hireDate: new Date(newEmployeeData.hireDate),
-      position: newEmployeeData.position,
-      department: newEmployeeData.department,
-      contractType: newEmployeeData.contractType as Contract["type"],
-      workSchedule: newEmployeeData.workSchedule,
-      status: newEmployeeData.status as Employee["status"],
-      documents: {
-        proCard: newEmployeeData.cnapsNumber
-          ? {
-              id: `PROCARD${Date.now()}`,
-              name: "Carte professionnelle CNAPS",
-              type: "pro-card",
-              fileUrl: "",
-              uploadedAt: new Date(),
-              uploadedBy: "admin",
-              verified: false,
-              notes: `Numéro: ${newEmployeeData.cnapsNumber}`,
-            }
-          : undefined,
-        ssiap: newEmployeeData.ssiapNumber
-          ? {
-              id: `SSIAP${Date.now()}`,
-              type: "SSIAP1",
-              number: newEmployeeData.ssiapNumber,
-              issueDate: new Date(),
-              expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-              issuer: "CNAPS",
-              verified: false,
-              status: "valid",
-            }
-          : undefined,
-      },
-      contracts: [],
-      assignedEquipment: [],
-      savingsPlans: {
-        pee: {
-          contributions: 0,
-          balance: 0,
-        },
-        pereco: {
-          contributions: 0,
-          balance: 0,
-        },
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setEmployees([...employees, newEmployee]);
-    setIsNewEmployeeModalOpen(false);
-    setCurrentStep(0);
-    setNewEmployeeData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      dateOfBirth: "",
-      placeOfBirth: "",
-      nationality: "Française",
-      gender: "male",
-      civilStatus: "single",
-      children: 0,
-      street: "",
-      city: "",
-      postalCode: "",
-      country: "France",
-      iban: "",
-      bic: "",
-      bankName: "",
-      socialSecurityNumber: "",
-      employeeNumber: "",
-      hireDate: "",
-      position: "",
-      department: "",
-      contractType: "CDI",
-      workSchedule: "full-time",
-      status: "active",
-      cnapsNumber: "",
-      ssiapNumber: "",
-    });
-  };
-
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 0: // Personal info
-        return (
-          newEmployeeData.firstName &&
-          newEmployeeData.lastName &&
-          newEmployeeData.dateOfBirth
-        );
-      case 1: // Contact
-        return (
-          newEmployeeData.email &&
-          newEmployeeData.phone &&
-          newEmployeeData.street &&
-          newEmployeeData.city &&
-          newEmployeeData.postalCode
-        );
-      case 2: // Employment
-        return (
-          newEmployeeData.employeeNumber &&
-          newEmployeeData.socialSecurityNumber &&
-          newEmployeeData.position &&
-          newEmployeeData.department &&
-          newEmployeeData.hireDate
-        );
-      case 3: // Bank
-        return (
-          newEmployeeData.iban &&
-          newEmployeeData.bic &&
-          newEmployeeData.bankName
-        );
-      default:
-        return false;
-    }
-  };
-
   const columns: ColumnDef<Employee>[] = [
     {
       key: "employee",
@@ -333,25 +143,48 @@ export default function EmployeesPage() {
       icon: UserIcon,
       sortable: true,
       sortValue: (employee) => `${employee.firstName} ${employee.lastName}`,
-      render: (employee) => (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={employee.photo} alt={employee.firstName} />
-            <AvatarFallback>
-              {employee.firstName[0]}
-              {employee.lastName[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-medium">
-              {employee.firstName} {employee.lastName}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {employee.employeeNumber}
+      render: (employee) => {
+        const isCreating = employee.id.startsWith("__pending_");
+        const isDeleting = pendingDeleteIdSet.has(employee.id);
+        const showSpinner = isCreating || isDeleting;
+        const label = isCreating
+          ? "(création…)"
+          : isDeleting
+            ? "(suppression…)"
+            : null;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              {showSpinner ? (
+                <AvatarFallback>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </AvatarFallback>
+              ) : (
+                <>
+                  <AvatarImage src={employee.photo} alt={employee.firstName} />
+                  <AvatarFallback>
+                    {employee.firstName[0]}
+                    {employee.lastName[0]}
+                  </AvatarFallback>
+                </>
+              )}
+            </Avatar>
+            <div>
+              <div className="font-medium">
+                {employee.firstName} {employee.lastName}
+                {label && (
+                  <span className="ml-2 text-xs text-muted-foreground italic">
+                    {label}
+                  </span>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {employee.employeeNumber}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "position",
@@ -360,8 +193,12 @@ export default function EmployeesPage() {
       render: (employee) => (
         <div>
           <div className="font-medium">{employee.position}</div>
-          <div className="text-sm text-muted-foreground">
-            {employee.department}
+          <div className="text-sm text-muted-foreground capitalize">
+            {employee.role === "owner"
+              ? "Propriétaire"
+              : employee.role === "agent"
+                ? "Agent"
+                : "—"}
           </div>
         </div>
       ),
@@ -428,23 +265,27 @@ export default function EmployeesPage() {
         <InfoCard
           icon={Users}
           title="Total Employés"
-          value={mockStats.total}
-          subtext={`${mockStats.active} actifs`}
+          value={apiStats?.total ?? 0}
+          subtext={`${apiStats?.active ?? 0} actifs`}
           color="gray"
         />
 
         <InfoCard
           icon={UserCheck}
           title="Actifs"
-          value={mockStats.active}
-          subtext={`${((mockStats.active / mockStats.total) * 100).toFixed(1)}% du total`}
+          value={apiStats?.active ?? 0}
+          subtext={
+            apiStats && apiStats.total > 0
+              ? `${((apiStats.active / apiStats.total) * 100).toFixed(1)}% du total`
+              : "—"
+          }
           color="green"
         />
 
         <InfoCard
           icon={AlertCircle}
           title="Alertes expiration"
-          value={mockStats.expiringCertifications}
+          value={0}
           subtext="Certificats à renouveler"
           color="orange"
         />
@@ -452,7 +293,7 @@ export default function EmployeesPage() {
         <InfoCard
           icon={FileWarning}
           title="Contrats en attente"
-          value={mockStats.pendingContracts}
+          value={0}
           subtext="Signatures requises"
           color="blue"
         />
@@ -508,6 +349,7 @@ export default function EmployeesPage() {
       {/* Employees DataTable */}
       <DataTable
         data={employees}
+        isLoading={isEmployeesLoading}
         columns={columns}
         searchKeys={["firstName", "lastName", "email", "employeeNumber"]}
         getSearchValue={(employee) =>
@@ -518,6 +360,12 @@ export default function EmployeesPage() {
         onSelectionChange={setSelectedEmployees}
         getRowId={(employee) => employee.id}
         onRowClick={handleViewProfile}
+        rowClassName={(employee) =>
+          employee.id.startsWith("__pending_") ||
+          pendingDeleteIdSet.has(employee.id)
+            ? "opacity-60 pointer-events-none"
+            : ""
+        }
         filters={[
           {
             key: "status",
@@ -531,14 +379,12 @@ export default function EmployeesPage() {
             ],
           },
           {
-            key: "department",
-            label: "Département",
+            key: "role",
+            label: "Rôle",
             options: [
               { value: "all", label: "Tous" },
-              { value: "Sécurité", label: "Sécurité" },
-              { value: "Direction", label: "Direction" },
-              { value: "RH", label: "RH" },
-              { value: "Commercial", label: "Commercial" },
+              { value: "owner", label: "Propriétaire" },
+              { value: "agent", label: "Agent" },
             ],
           },
         ]}
@@ -700,471 +546,61 @@ export default function EmployeesPage() {
         </div>
       </Modal>
 
-      {/* New Employee Modal with Stepper */}
-      <Modal
+      <EmployeeCreateDialog
         open={isNewEmployeeModalOpen}
-        onOpenChange={(open) => {
-          setIsNewEmployeeModalOpen(open);
-          if (!open) {
-            setCurrentStep(0);
-            setNewEmployeeData({
-              firstName: "",
-              lastName: "",
-              email: "",
-              phone: "",
-              dateOfBirth: "",
-              placeOfBirth: "",
-              nationality: "Française",
-              gender: "male",
-              civilStatus: "single",
-              children: 0,
-              street: "",
-              city: "",
-              postalCode: "",
-              country: "France",
-              iban: "",
-              bic: "",
-              bankName: "",
-              socialSecurityNumber: "",
-              employeeNumber: "",
-              hireDate: "",
-              position: "",
-              department: "",
-              contractType: "CDI",
-              workSchedule: "full-time",
-              status: "active",
-              cnapsNumber: "",
-              ssiapNumber: "",
-            });
-          }
-        }}
-        type="form"
-        title="Nouvel employé"
-        description={`Étape ${currentStep + 1} sur ${steps.length}`}
-        size="xl"
-        actions={{
-          tertiary:
-            currentStep > 0
-              ? {
-                  label: "Précédent",
-                  onClick: handlePrevStep,
-                  variant: "outline",
-                  icon: <ChevronLeft className="h-4 w-4" />,
-                }
-              : undefined,
-          secondary: {
-            label: "Annuler",
-            onClick: () => {
-              setIsNewEmployeeModalOpen(false);
-              setCurrentStep(0);
-            },
-            variant: "outline",
-          },
-          primary: {
-            label: currentStep === steps.length - 1 ? "Créer" : "Suivant",
-            onClick: handleNextStep,
-            disabled: !isStepValid(),
-            icon:
-              currentStep === steps.length - 1 ? (
-                <Save className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              ),
-          },
-        }}
-      >
-        <div className="space-y-6">
-          <Stepper steps={steps} currentStep={currentStep} />
-
-          <div className="min-h-100">
-            {/* Step 0: Personal Information */}
-            {currentStep === 0 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">
-                      Prénom <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="firstName"
-                      value={newEmployeeData.firstName}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("firstName", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">
-                      Nom <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="lastName"
-                      value={newEmployeeData.lastName}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("lastName", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">
-                      Date de naissance{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={newEmployeeData.dateOfBirth}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("dateOfBirth", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="placeOfBirth">
-                      Lieu de naissance{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="placeOfBirth"
-                      value={newEmployeeData.placeOfBirth}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("placeOfBirth", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="nationality">Nationalité</Label>
-                    <Input
-                      id="nationality"
-                      value={newEmployeeData.nationality}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("nationality", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gender">Genre</Label>
-                    <Select
-                      value={newEmployeeData.gender}
-                      onValueChange={(value) =>
-                        handleNewEmployeeChange("gender", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Homme</SelectItem>
-                        <SelectItem value="female">Femme</SelectItem>
-                        <SelectItem value="other">Autre</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="civilStatus">Situation familiale</Label>
-                    <Select
-                      value={newEmployeeData.civilStatus}
-                      onValueChange={(value) =>
-                        handleNewEmployeeChange("civilStatus", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single">Célibataire</SelectItem>
-                        <SelectItem value="married">Marié(e)</SelectItem>
-                        <SelectItem value="divorced">Divorcé(e)</SelectItem>
-                        <SelectItem value="widowed">Veuf/Veuve</SelectItem>
-                        <SelectItem value="civil-union">
-                          Union civile
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="children">Nombre d&apos;enfants</Label>
-                    <Input
-                      id="children"
-                      type="number"
-                      min="0"
-                      value={newEmployeeData.children}
-                      onChange={(e) =>
-                        handleNewEmployeeChange(
-                          "children",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 1: Contact & Address */}
-            {currentStep === 1 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">
-                      Email <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newEmployeeData.email}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("email", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">
-                      Téléphone <span className="text-destructive">*</span>
-                    </Label>
-                    <PhoneInput
-                      id="phone"
-                      value={newEmployeeData.phone}
-                      onChange={(value) =>
-                        handleNewEmployeeChange("phone", value)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="street">
-                    Rue <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="street"
-                    value={newEmployeeData.street}
-                    onChange={(e) =>
-                      handleNewEmployeeChange("street", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">
-                      Ville <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="city"
-                      value={newEmployeeData.city}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("city", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">
-                      Code postal <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="postalCode"
-                      value={newEmployeeData.postalCode}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("postalCode", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Pays</Label>
-                    <Input
-                      id="country"
-                      value={newEmployeeData.country}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("country", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Employment */}
-            {currentStep === 2 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="employeeNumber">
-                      Numéro d&apos;employé{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="employeeNumber"
-                      placeholder="EMP013"
-                      value={newEmployeeData.employeeNumber}
-                      onChange={(e) =>
-                        handleNewEmployeeChange(
-                          "employeeNumber",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="socialSecurityNumber">
-                      Numéro de sécurité sociale{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="socialSecurityNumber"
-                      placeholder="1 90 05 75 001 234 56"
-                      value={newEmployeeData.socialSecurityNumber}
-                      onChange={(e) =>
-                        handleNewEmployeeChange(
-                          "socialSecurityNumber",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="position">
-                      Poste <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="position"
-                      placeholder="Agent de sécurité"
-                      value={newEmployeeData.position}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("position", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department">
-                      Département <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="department"
-                      placeholder="Sécurité"
-                      value={newEmployeeData.department}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("department", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contractType">Type de contrat</Label>
-                    <Select
-                      value={newEmployeeData.contractType}
-                      onValueChange={(value) =>
-                        handleNewEmployeeChange("contractType", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CDI">CDI</SelectItem>
-                        <SelectItem value="CDD">CDD</SelectItem>
-                        <SelectItem value="INTERIM">Intérim</SelectItem>
-                        <SelectItem value="APPRENTICESHIP">
-                          Apprentissage
-                        </SelectItem>
-                        <SelectItem value="INTERNSHIP">Stage</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="workSchedule">Temps de travail</Label>
-                    <Select
-                      value={newEmployeeData.workSchedule}
-                      onValueChange={(value) =>
-                        handleNewEmployeeChange("workSchedule", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="full-time">Temps complet</SelectItem>
-                        <SelectItem value="part-time">Temps partiel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="hireDate">
-                      Date d&apos;embauche{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="hireDate"
-                      type="date"
-                      value={newEmployeeData.hireDate}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("hireDate", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cnapsNumber">N° carte Pro CNAPS</Label>
-                    <Input
-                      id="cnapsNumber"
-                      placeholder="Numéro de carte CNAPS"
-                      value={newEmployeeData.cnapsNumber}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("cnapsNumber", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ssiapNumber">N° Diplôme SSIAP</Label>
-                    <Input
-                      id="ssiapNumber"
-                      placeholder="Numéro de diplôme SSIAP"
-                      value={newEmployeeData.ssiapNumber}
-                      onChange={(e) =>
-                        handleNewEmployeeChange("ssiapNumber", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Statut</Label>
-                    <Select
-                      value={newEmployeeData.status}
-                      onValueChange={(value) =>
-                        handleNewEmployeeChange("status", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Actif</SelectItem>
-                        <SelectItem value="inactive">Inactif</SelectItem>
-                        <SelectItem value="suspended">Suspendu</SelectItem>
-                        <SelectItem value="terminated">Terminé</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Bank Details */}
-            {currentStep === 3 && (
-              <div className="space-y-4">
-                <IbanInput
-                  ibanValue={newEmployeeData.iban}
-                  bicValue={newEmployeeData.bic}
-                  bankNameValue={newEmployeeData.bankName}
-                  onIbanChange={(value) =>
-                    handleNewEmployeeChange("iban", value)
-                  }
-                  onBicChange={(value) => handleNewEmployeeChange("bic", value)}
-                  onBankNameChange={(value) =>
-                    handleNewEmployeeChange("bankName", value)
-                  }
-                  required
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </Modal>
+        onOpenChange={setIsNewEmployeeModalOpen}
+      />
     </div>
   );
+}
+
+function pendingToEmployee(p: CreateEmployeePayload, idx: number): Employee {
+  const now = new Date().toISOString();
+  return toUiEmployee({
+    id: `__pending_${idx}`,
+    organizationId: "",
+    userId: "",
+    role: p.role ?? "agent",
+    createdAt: now,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    email: p.email,
+    phone: p.phone ?? null,
+    birthDate: p.dateOfBirth ?? null,
+    birthPlace: p.placeOfBirth ?? null,
+    nationality: p.nationality ?? null,
+    gender: p.gender ?? null,
+    civilStatus: p.civilStatus ?? null,
+    children: p.children ?? null,
+    socialSecurityNumber: p.socialSecurityNumber ?? null,
+    employeeNumber: p.employeeNumber,
+    hireDate: p.hireDate ?? null,
+    position: p.position,
+    contractType: p.contractType ?? null,
+    workSchedule: p.workSchedule ?? null,
+    status: p.status ?? "active",
+    terminatedAt: null,
+    addressRecord: {
+      id: "",
+      memberId: "",
+      street: p.address.street,
+      city: p.address.city,
+      postalCode: p.address.postalCode,
+      country: p.address.country ?? "France",
+      createdAt: now,
+      updatedAt: now,
+    },
+    bankDetails: {
+      id: "",
+      memberId: "",
+      iban: p.bankDetails.iban,
+      bic: p.bankDetails.bic,
+      bankName: p.bankDetails.bankName,
+      createdAt: now,
+      updatedAt: now,
+    },
+    certifications: [],
+    documents: [],
+    user: { id: "", email: p.email, name: `${p.firstName} ${p.lastName}` },
+  });
 }

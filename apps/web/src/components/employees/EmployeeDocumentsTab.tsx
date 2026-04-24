@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import {
+  useEmployeeCompliance,
+  useUploadMemberDocument,
+} from "@/hooks/employees";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +34,36 @@ interface EmployeeDocumentsTabProps {
 }
 
 export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingRequirementId, setPendingRequirementId] = useState<
+    string | null
+  >(null);
+  const { data: compliance } = useEmployeeCompliance(employee.id);
+  const uploadMutation = useUploadMemberDocument(employee.id);
+
+  const openFilePicker = (requirementId: string) => {
+    setPendingRequirementId(requirementId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !pendingRequirementId) return;
+    try {
+      await uploadMutation.mutateAsync({
+        file,
+        requirementId: pendingRequirementId,
+      });
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setPendingRequirementId(null);
+    }
+  };
+
+  const firstMemberRequirementId = compliance?.[0]?.requirement.id ?? null;
+
   const [documents] = useState<Document[]>([
     {
       id: "1",
@@ -473,11 +507,23 @@ export function EmployeeDocumentsTab({ employee }: EmployeeDocumentsTabProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Documents</CardTitle>
-          <Button>
+          <Button
+            disabled={!firstMemberRequirementId || uploadMutation.isPending}
+            onClick={() =>
+              firstMemberRequirementId &&
+              openFilePicker(firstMemberRequirementId)
+            }
+          >
             <Upload className="mr-2 h-4 w-4" />
-            Ajouter un document
+            {uploadMutation.isPending ? "Envoi..." : "Ajouter un document"}
           </Button>
         </CardHeader>
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileSelected}
+        />
         <CardContent>
           <DataTable
             data={documents.filter(

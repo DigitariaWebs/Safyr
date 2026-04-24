@@ -15,6 +15,7 @@
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
     "turbo": "^2.7.5"
   },
   "overrides": {

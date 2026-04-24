@@ -14,10 +14,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Per-row upload loading state and inline error messages on the entreprise Documents tab
 - `date-utils` (`src/lib/date-utils.ts`) exposing `formatDate` and `formatDateForInput`
 - Entreprise page now wires organization info, representative, and compliance documents through tanstack-form + react-query
+- Employees list and detail pages wired to `/organization/employees` via React Query hooks under `src/hooks/employees/` (`useEmployees`, `useEmployee`, mutations)
+- `EmployeeCreateDialog` (`src/components/employees/EmployeeCreateDialog.tsx`) — create employee form with owner/agent role selection
+- `editable-select` UI primitive (`src/components/ui/editable-select.tsx`)
+- `employee-adapter` (`src/lib/employee-adapter.ts`) mapping API employees to UI `Employee` type
+- `DataTable` `isLoading` prop renders skeleton rows; empty label localized to "Aucun résultat"
+- `Employee.role: "owner" | "agent"` on `lib/types`
 
 ### Changed
 
 - Entreprise page refactored to consume the new hook modules; loading/error states split from data-rendering component (keyed remount on `organization.id`)
+- Employee detail page now reads from API (`useEmployee`) instead of mock `getEmployeeById`; dropped `?edit=true` query toggle in favour of inline edit
+- Employees list page rewritten on top of API data (drops ~900 lines of mock scaffolding)
+- `EmployeeInfoTab` and `EmployeeDocumentsTab` rewritten for API-backed editing and upload
 - Form `defaultValues` now computed via `useMemo` instead of `useEffect` + `form.reset`
 - API client `baseURL` now auto-appends `/api`; `NEXT_PUBLIC_API_URL` is expected to be the server origin only (fixes 404s on `/organization` routes)
 - Document upload on the entreprise page switched from the generic `uploadFile` to `uploadOrganizationDocument`, which links the resulting `Document` to a `DocumentRequirement`

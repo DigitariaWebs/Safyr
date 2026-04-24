@@ -64,6 +64,7 @@ export interface FilterDef {
 
 interface DataTableProps<T> {
   data: T[];
+  isLoading?: boolean;
   columns: ColumnDef<T>[];
   filters?: FilterDef[];
   searchKey?: keyof T;
@@ -87,6 +88,7 @@ interface DataTableProps<T> {
 
 export function DataTable<T extends object>({
   data,
+  isLoading = false,
   columns,
   filters = [],
   searchKey,
@@ -485,13 +487,21 @@ export function DataTable<T extends object>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell colSpan={totalColumns} className="py-3">
+                    <div className="h-10 w-full animate-pulse rounded bg-muted/40" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={totalColumns}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  No data found
+                  Aucun résultat
                 </TableCell>
               </TableRow>
             ) : groupedData ? (

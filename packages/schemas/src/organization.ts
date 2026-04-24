@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const optionalPattern = (
+ const stripSpaces = (v: string) => v.replace(/\s+/g, "");
+ const upperTrim = (v: string) => v.trim().toUpperCase();
+ const plainTrim = (v: string) => v.trim();
+
+ const optionalPattern = (
   pattern: RegExp,
   message: string,
   normalize?: (v: string) => string,
@@ -13,12 +17,82 @@ const optionalPattern = (
     )
     .optional();
 
-const optionalText = (max: number, message = `${max} caractères maximum`) =>
-  z.string().trim().max(max, message).optional();
+ const optionalText = (
+  max: number,
+  message = `${max} caractères maximum`,
+) => z.string().trim().max(max, message).optional();
 
-const stripSpaces = (v: string) => v.replace(/\s+/g, "");
-const upperTrim = (v: string) => v.trim().toUpperCase();
-const plainTrim = (v: string) => v.trim();
+ const isIsoDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
+
+ const startOfToday = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+ const NAME_REGEX = /^[\p{L}][\p{L}\s'’-]*$/u;
+ const NAME_MSG =
+  "Caractères autorisés: lettres, espaces, tirets, apostrophes";
+
+ const NameSchema = z
+  .string()
+  .trim()
+  .min(1, "Champ requis")
+  .max(100, "100 caractères maximum")
+  .regex(NAME_REGEX, NAME_MSG);
+
+ const OptionalNameSchema = z
+  .string()
+  .refine(
+    (v) => v === "" || (v.trim().length <= 100 && NAME_REGEX.test(v.trim())),
+    "Nom invalide",
+  )
+  .optional();
+
+ const EmailSchema = z
+  .string()
+  .refine(
+    (v) =>
+      v === "" || (v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)),
+    "Email invalide",
+  )
+  .optional();
+
+ const PhoneFrSchema = optionalPattern(
+  /^(?:(?:\+|00)33|0)[1-9]\d{8}$/,
+  "Numéro de téléphone invalide (format français)",
+  stripSpaces,
+);
+
+ const SsnFrSchema = optionalPattern(
+  /^[12]\d{2}(?:0[1-9]|1[0-2])(?:2[AB]|\d{2})\d{3}\d{3}\d{2}$/,
+  "Numéro de sécurité sociale invalide",
+  stripSpaces,
+);
+
+ const BirthDateSchema = z
+  .string()
+  .refine((v) => v === "" || isIsoDate(v), "Date invalide")
+  .refine(
+    (v) => v === "" || new Date(v) < startOfToday(),
+    "La date de naissance doit être dans le passé",
+  )
+  .optional();
+
+ const PastOrTodayDate = z
+  .string()
+  .refine((v) => v === "" || isIsoDate(v), "Date invalide")
+  .refine(
+    (v) => v === "" || new Date(v) <= startOfToday(),
+    "La date ne peut pas être dans le futur",
+  )
+  .optional();
+
+ const AnyIsoDate = z
+  .string()
+  .refine((v) => v === "" || isIsoDate(v), "Date invalide")
+  .optional();
+
 
 const SiretSchema = optionalPattern(
   /^\d{14}$/,
@@ -32,81 +106,16 @@ const ApeSchema = optionalPattern(
   upperTrim,
 );
 
-const PhoneFrSchema = optionalPattern(
-  /^(?:(?:\+|00)33|0)[1-9]\d{8}$/,
-  "Numéro de téléphone invalide (format français)",
-  stripSpaces,
-);
-
 const ShareCapitalSchema = optionalPattern(
   /^\d+(?:[.,]\d{1,2})?$/,
   "Capital social invalide (montant positif, 2 décimales max)",
 );
 
-const AuthorizationNumberSchema = optionalPattern(
+export const AuthorizationNumberSchema = optionalPattern(
   /^[A-Z0-9-]{6,60}$/i,
   "Numéro d'autorisation CNAPS invalide",
   plainTrim,
 );
-
-const SsnFrSchema = optionalPattern(
-  /^[12]\d{2}(?:0[1-9]|1[0-2])(?:2[AB]|\d{2})\d{3}\d{3}\d{2}$/,
-  "Numéro de sécurité sociale invalide",
-  stripSpaces,
-);
-
-const NAME_REGEX = /^[\p{L}][\p{L}\s'’-]*$/u;
-const NAME_MSG = "Caractères autorisés: lettres, espaces, tirets, apostrophes";
-
-const NameSchema = z
-  .string()
-  .trim()
-  .min(1, "Champ requis")
-  .max(100, "100 caractères maximum")
-  .regex(NAME_REGEX, NAME_MSG);
-
-const OptionalNameSchema = z
-  .string()
-  .refine(
-    (v) => v === "" || (v.trim().length <= 100 && NAME_REGEX.test(v.trim())),
-    "Nom invalide",
-  )
-  .optional();
-
-const EmailSchema = z
-  .string()
-  .refine(
-    (v) =>
-      v === "" || (v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)),
-    "Email invalide",
-  )
-  .optional();
-
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const isIsoDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
-
-const BirthDateSchema = z
-  .string()
-  .refine((v) => v === "" || isIsoDate(v), "Date invalide")
-  .refine(
-    (v) => v === "" || new Date(v) < startOfToday(),
-    "La date de naissance doit être dans le passé",
-  )
-  .optional();
-
-const AppointmentDateSchema = z
-  .string()
-  .refine((v) => v === "" || isIsoDate(v), "Date invalide")
-  .refine(
-    (v) => v === "" || new Date(v) <= startOfToday(),
-    "La date de nomination ne peut pas être dans le futur",
-  )
-  .optional();
 
 export const UpdateRepresentativeSchema = z.object({
   firstName: OptionalNameSchema,
@@ -118,7 +127,7 @@ export const UpdateRepresentativeSchema = z.object({
   email: EmailSchema,
   phone: PhoneFrSchema,
   position: optionalText(120),
-  appointmentDate: AppointmentDateSchema,
+  appointmentDate: PastOrTodayDate,
   socialSecurityNumber: SsnFrSchema,
 });
 

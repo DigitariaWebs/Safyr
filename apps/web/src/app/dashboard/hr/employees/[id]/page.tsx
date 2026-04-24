@@ -2,14 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
-  Edit,
   Mail,
   Phone,
   MapPin,
@@ -25,7 +23,8 @@ import {
   FileSignature,
 } from "lucide-react";
 import type { Employee } from "@/lib/types";
-import { getEmployeeById } from "@/data/employees";
+import { useEmployee } from "@/hooks/employees";
+import { toUiEmployee } from "@/lib/employee-adapter";
 import {
   EmployeeInfoTab,
   EmployeeDocumentsTab,
@@ -46,11 +45,18 @@ export default function EmployeeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = React.use(params);
-  const searchParams = useSearchParams();
-  const isEditMode = searchParams.get("edit") === "true";
   const [activeTab, setActiveTab] = useState("info");
-  const employee = getEmployeeById(id);
+  const { data: apiEmployee, isLoading } = useEmployee(id);
+  const employee = apiEmployee ? toUiEmployee(apiEmployee) : null;
   const { openEmailModal } = useSendEmail();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] p-6">
+        <p className="text-muted-foreground">Chargement...</p>
+      </div>
+    );
+  }
 
   if (!employee) {
     return (
@@ -140,32 +146,13 @@ export default function EmployeeDetailPage({
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {!isEditMode && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => openEmailModal([employee])}
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  Envoyer un email
-                </Button>
-                <Button asChild>
-                  <Link
-                    href={`/dashboard/hr/employees/${employee.id}?edit=true`}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Modifier
-                  </Link>
-                </Button>
-              </>
-            )}
-            {isEditMode && (
-              <Button asChild variant="outline">
-                <Link href={`/dashboard/hr/employees/${employee.id}`}>
-                  Annuler
-                </Link>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => openEmailModal([employee])}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Envoyer un email
+            </Button>
           </div>
         </div>
 
@@ -211,8 +198,10 @@ export default function EmployeeDetailPage({
                 <div className="flex items-center gap-3">
                   <Building className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Département</p>
-                    <p className="font-medium">{employee.department}</p>
+                    <p className="text-sm text-muted-foreground">Rôle</p>
+                    <p className="font-medium capitalize">
+                      {apiEmployee?.role ?? "—"}
+                    </p>
                   </div>
                 </div>
 
@@ -244,7 +233,7 @@ export default function EmployeeDetailPage({
           </CardContent>
         </Card>
         <TabsContent value="info">
-          <EmployeeInfoTab employee={employee} isEditMode={isEditMode} />
+          <EmployeeInfoTab employee={employee} />
         </TabsContent>
         <TabsContent value="documents">
           <EmployeeDocumentsTab employee={employee} />

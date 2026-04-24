@@ -19,23 +19,9 @@ import {
   type CreateRepresentativeDto,
 } from "@safyr/schemas/organization";
 import type { FastifyRequest } from "fastify";
-import type { ZodType } from "zod";
 import { PrismaService } from "@/prisma/prisma.service";
-
-function parseOrThrow<T>(schema: ZodType<T>, body: unknown): T {
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    throw new BadRequestException({
-      code: "VALIDATION_ERROR",
-      message: "Invalid input",
-      details: result.error.issues.map((e) => ({
-        path: e.path.join("."),
-        message: e.message,
-      })),
-    });
-  }
-  return result.data;
-}
+import { parseOrThrow } from "@/common/parse-or-throw";
+import { resolveOrgId } from "@/common/org-context";
 
 @Controller("organization")
 @UseGuards(AuthGuard)
@@ -45,28 +31,8 @@ export class OrganizationController {
     private readonly prisma: PrismaService,
   ) {}
 
-  private async getOrgId(req: FastifyRequest): Promise<string> {
-    const session = req.authSession;
-    if (!session) {
-      throw new ForbiddenException("No active session found");
-    }
-
-    const sessionAny = session.session as { activeOrganizationId?: string };
-    const activeId = sessionAny.activeOrganizationId;
-    if (activeId) return activeId;
-
-    const member = await this.prisma.member.findFirst({
-      where: { userId: session.user.id },
-      select: { organizationId: true },
-    });
-
-    if (!member) {
-      throw new ForbiddenException(
-        "User is not affiliated with any organization",
-      );
-    }
-
-    return member.organizationId;
+  private getOrgId(req: FastifyRequest): Promise<string> {
+    return resolveOrgId(req, this.prisma);
   }
 
   @Get()
