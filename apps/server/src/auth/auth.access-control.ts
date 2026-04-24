@@ -28,6 +28,14 @@ export const owner = ac.newRole({
   logbook: ["read", "write"],
 });
 
+export const agent = ac.newRole({
+  employee: ["read"],
+  planning: ["read"],
+  logbook: ["read", "write"],
+  geolocation: ["read"],
+});
+
 export const safyrRoles = {
   owner,
+  agent,
 };

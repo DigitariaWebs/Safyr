@@ -7,12 +7,16 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./organization": "./src/organization.ts"
+    "./organization": "./src/organization.ts",
+    "./employee": "./src/employee.ts"
   },
   "typesVersions": {
     "*": {
       "organization": [
         "src/organization.ts"
+      ],
+      "employee": [
+        "src/employee.ts"
       ]
     }
   },

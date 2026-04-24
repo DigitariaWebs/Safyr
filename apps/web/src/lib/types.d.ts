@@ -393,6 +393,7 @@ export interface Employee {
   contractType?: Contract["type"];
   workSchedule: "full-time" | "part-time";
   status: "active" | "inactive" | "suspended" | "terminated";
+  role?: "owner" | "agent";
 
   // Documents
   documents: EmployeeDocuments;

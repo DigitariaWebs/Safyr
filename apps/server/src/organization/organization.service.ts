@@ -12,22 +12,11 @@ import {
 import type {
   UpdateOrganizationDto,
   CreateRepresentativeDto,
-} from "@safyr/schemas";
-
-const EXPIRING_WINDOW_DAYS = 30;
+} from "@safyr/schemas/organization";
+import { computeExpiryStatus as computeStatus } from "@/common/document-status";
 
 function toDate(v: string | null | undefined): Date | null {
   return v ? new Date(v) : null;
-}
-
-function computeStatus(expiryDate: Date | null | undefined): string {
-  if (!expiryDate) return "valid";
-  const now = Date.now();
-  const expiry = expiryDate.getTime();
-  if (expiry < now) return "expired";
-  if (expiry < now + EXPIRING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
-    return "expiring";
-  return "valid";
 }
 
 @Injectable()

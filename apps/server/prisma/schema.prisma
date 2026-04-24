@@ -150,6 +150,7 @@ model Member {
   // --- HR Additional Fields ---
   firstName            String?
   lastName             String?
+  email                String?
   phone                String?
   birthDate            DateTime?
   birthPlace           String?
@@ -159,11 +160,76 @@ model Member {
   appointmentDate      DateTime?
   socialSecurityNumber String?
 
-  documents Document[]
+  // --- Employment ---
+  employeeNumber String?
+  hireDate       DateTime?
+  contractType   String?
+  workSchedule   String?
+  status         String  @default("active")
+  gender         String?
+  civilStatus    String?
+  children       Int?
+  terminatedAt   DateTime?
 
+  documents      Document[]
+  addressRecord  MemberAddress?
+  bankDetails    MemberBankDetails?
+  certifications Certification[]
+
+  @@unique([organizationId, employeeNumber])
   @@index([organizationId])
   @@index([userId])
   @@map("member")
+}
+
+model MemberAddress {
+  id         String  @id @default(cuid())
+  memberId   String  @unique
+  member     Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  street     String
+  city       String
+  postalCode String
+  country    String  @default("France")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("member_address")
+}
+
+model MemberBankDetails {
+  id       String @id @default(cuid())
+  memberId String @unique
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  iban     String
+  bic      String
+  bankName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("member_bank_details")
+}
+
+model Certification {
+  id         String    @id @default(cuid())
+  memberId   String
+  member     Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  type       String // CQP_APS | CNAPS | SSIAP1 | SSIAP2 | SSIAP3 | SST | VM | H0B0 | FIRE
+  number     String
+  issuer     String
+  issueDate  DateTime
+  expiryDate DateTime
+  verified   Boolean   @default(false)
+  status     String    @default("valid") // "valid" | "expiring" | "expired" | "pending-renewal"
+  documentId String?   @unique
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@map("certification")
 }
 
 model Invitation {
@@ -238,6 +304,8 @@ model Document {
 
   uploaderId String
   uploader   User   @relation(fields: [uploaderId], references: [id])
+
+  certification Certification?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

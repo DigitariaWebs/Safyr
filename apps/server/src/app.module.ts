@@ -6,6 +6,7 @@ import { HealthController } from "./health/health.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 import { StorageModule } from "./storage/storage.module";
 import { OrganizationModule } from "./organization/organization.module";
+import { EmployeesModule } from "./employees/employees.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { OrganizationModule } from "./organization/organization.module";
     AuthModule,
     StorageModule,
     OrganizationModule,
+    EmployeesModule,
   ],
   controllers: [HealthController],
 })
