@@ -81,7 +81,6 @@ export class AppExceptionFilter implements ExceptionFilter {
       };
     } else if (exception instanceof Error) {
       this.logger.error(exception.stack ?? exception.message);
-      body.error.message = exception.message;
     } else {
       this.logger.error(String(exception));
     }

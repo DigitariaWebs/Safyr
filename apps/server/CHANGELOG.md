@@ -17,9 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `OrganizationService` representative date coercion consolidated into a single `toDate()` helper (removes duplicated block between `updateOrganization` and `createRepresentative`)
 - `prisma/seed.ts` rewritten — now runs `TRUNCATE ... RESTART IDENTITY CASCADE` on all 11 tables before seeding, and provisions the `Prodige Securite` organization, a representative (Chaffa Belarbi, Gérant), two owner accounts (`prodigesecurite@gmail.com`, `khalil3cheddadi@gmail.com`), and 10 organization document requirements (8 required, 2 optional)
 - `EmailService` no longer opens an SMTP transport in `NODE_ENV=development`; it logs recipient, subject, metadata, and rendered HTML through the Nest logger instead
 - `EmailService.checkConnection()` short-circuits to `{ status: "up" }` in development
+
+### Security
+
+- `AppExceptionFilter` no longer leaks raw `Error.message` to clients for uncaught non-`HttpException`/non-`AppError` errors; response stays on the generic `INTERNAL_ERROR` payload while the stack is still logged server-side
 
 ## [0.1.0] - 2026-04-22
 

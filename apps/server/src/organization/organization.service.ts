@@ -16,6 +16,10 @@ import type {
 
 const EXPIRING_WINDOW_DAYS = 30;
 
+function toDate(v: string | null | undefined): Date | null {
+  return v ? new Date(v) : null;
+}
+
 function computeStatus(expiryDate: Date | null | undefined): string {
   if (!expiryDate) return "valid";
   const now = Date.now();
@@ -68,9 +72,16 @@ export class OrganizationService {
         });
 
       if (representative && updatedOrg.representativeId) {
+        const { birthDate, appointmentDate, ...rest } = representative;
         const updatedRep = await tx.representative.update({
           where: { id: updatedOrg.representativeId },
-          data: representative,
+          data: {
+            ...rest,
+            ...(birthDate !== undefined && { birthDate: toDate(birthDate) }),
+            ...(appointmentDate !== undefined && {
+              appointmentDate: toDate(appointmentDate),
+            }),
+          },
         });
         return { ...updatedOrg, representative: updatedRep };
       }
@@ -95,8 +106,15 @@ export class OrganizationService {
         );
       }
 
+      const { birthDate, appointmentDate, ...rest } = data;
       const representative = await tx.representative.create({
-        data,
+        data: {
+          ...rest,
+          ...(birthDate && { birthDate: toDate(birthDate) }),
+          ...(appointmentDate && {
+            appointmentDate: toDate(appointmentDate),
+          }),
+        },
       });
 
       return await tx.organization.update({

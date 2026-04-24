@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,18 +19,16 @@ import {
   Calendar,
   Loader2,
 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
+import { ApiError, type UpdateOrganizationPayload } from "@safyr/api-client";
 import {
-  getActiveOrganization,
-  updateActiveOrganization,
-  createRepresentative,
-  getOrganizationCompliance,
-  uploadOrganizationDocument,
-  getSignedUrl,
-  ApiError,
-  type UpdateOrganizationPayload,
-} from "@safyr/api-client";
+  useOrganization,
+  useOrganizationCompliance,
+  useUpdateOrganization,
+  useCreateRepresentative,
+  useUploadOrganizationDocument,
+} from "@/hooks/organization";
+import { getSignedUrl } from "@safyr/api-client";
 import {
   UpdateOrganizationDto,
   UpdateOrganizationSchema,
@@ -40,45 +38,62 @@ import { PhoneField } from "@/components/ui/phone-field";
 import { formatDate, formatDateForInput } from "@/lib/date-utils";
 
 export default function InformationEntreprisePage() {
-  const queryClient = useQueryClient();
+  const { data: organization, isLoading: isOrgLoading } = useOrganization();
+  const { data: compliance, isLoading: isComplianceLoading } =
+    useOrganizationCompliance();
 
-  const { data: organization, isLoading: isOrgLoading } = useQuery({
-    queryKey: ["organization", "active"],
-    queryFn: getActiveOrganization,
-  });
+  if (isOrgLoading || isComplianceLoading) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const { data: compliance, isLoading: isComplianceLoading } = useQuery({
-    queryKey: ["organization", "compliance"],
-    queryFn: getOrganizationCompliance,
-  });
+  if (!organization)
+    return <div>Erreur lors du chargement de l&apos;entreprise</div>;
 
-  const updateOrgMutation = useMutation({
-    mutationFn: updateActiveOrganization,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization", "active"] });
-    },
-    onError: (error: unknown) => {
-      if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-        const details = error.details as { path: string; message: string }[];
-        details.forEach((detail) => {
-          form.setFieldMeta(detail.path as never, (prev) => ({
-            ...prev,
-            errors: [detail.message],
-          }));
-        });
-      }
-    },
-  });
+  return (
+    <EntrepriseContent
+      key={organization.id}
+      organization={organization}
+      compliance={compliance ?? []}
+    />
+  );
+}
 
-  const createRepMutation = useMutation({
-    mutationFn: createRepresentative,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization", "active"] });
-    },
-  });
+type EntrepriseContentProps = {
+  organization: NonNullable<ReturnType<typeof useOrganization>["data"]>;
+  compliance: NonNullable<ReturnType<typeof useOrganizationCompliance>["data"]>;
+};
+
+function EntrepriseContent({
+  organization,
+  compliance,
+}: EntrepriseContentProps) {
+  const updateOrgMutation = useUpdateOrganization();
+  const createRepMutation = useCreateRepresentative();
+
+  const defaultValues = useMemo<UpdateOrganizationDto>(() => {
+    const rep = organization.representative;
+    return {
+      ...organization,
+      representative: rep
+        ? {
+            ...rep,
+            birthDate: rep.birthDate
+              ? formatDateForInput(rep.birthDate)
+              : rep.birthDate,
+            appointmentDate: rep.appointmentDate
+              ? formatDateForInput(rep.appointmentDate)
+              : rep.appointmentDate,
+          }
+        : rep,
+    };
+  }, [organization]);
 
   const form = useForm({
-    defaultValues: organization as UpdateOrganizationDto,
+    defaultValues,
     validators: {
       onChange: UpdateOrganizationSchema,
     },
@@ -93,34 +108,21 @@ export default function InformationEntreprisePage() {
     } catch (error) {
       if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
         const details = error.details as { path: string; message: string }[];
-        const relevantError = details.find((d) => d.path === path);
-        if (relevantError) {
-          throw new Error(relevantError.message);
+        let relevantMessage: string | undefined;
+        for (const detail of details) {
+          form.setFieldMeta(detail.path as never, (prev) => ({
+            ...prev,
+            errors: [detail.message],
+          }));
+          if (detail.path === path) relevantMessage = detail.message;
+        }
+        if (relevantMessage) {
+          throw new Error(relevantMessage);
         }
       }
       throw error;
     }
   };
-
-  useEffect(() => {
-    if (!organization) return;
-    const rep = organization.representative;
-    const values: UpdateOrganizationDto = {
-      ...organization,
-      representative: rep
-        ? {
-            ...rep,
-            birthDate: rep.birthDate
-              ? formatDateForInput(rep.birthDate)
-              : rep.birthDate,
-            appointmentDate: rep.appointmentDate
-              ? formatDateForInput(rep.appointmentDate)
-              : rep.appointmentDate,
-          }
-        : rep,
-    };
-    form.reset(values);
-  }, [organization, form]);
 
   const handleCreateRepresentative = () => {
     createRepMutation.mutate({
@@ -132,31 +134,7 @@ export default function InformationEntreprisePage() {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
 
-  const uploadMutation = useMutation({
-    mutationFn: ({
-      file,
-      requirementId,
-    }: {
-      file: File;
-      requirementId: string;
-    }) => uploadOrganizationDocument(file, requirementId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["organization", "compliance"],
-      });
-    },
-    onError: (error: unknown, variables) => {
-      const message =
-        error instanceof ApiError ? error.message : "Échec du téléversement";
-      setUploadErrors((prev) => ({
-        ...prev,
-        [variables.requirementId]: message,
-      }));
-    },
-    onSettled: () => {
-      setUploadingId(null);
-    },
-  });
+  const uploadMutation = useUploadOrganizationDocument();
 
   const handleUpload = async (requirementId: string) => {
     const input = document.createElement("input");
@@ -170,7 +148,24 @@ export default function InformationEntreprisePage() {
           delete next[requirementId];
           return next;
         });
-        uploadMutation.mutate({ file, requirementId });
+        uploadMutation.mutate(
+          { file, requirementId },
+          {
+            onError: (error: unknown) => {
+              const message =
+                error instanceof ApiError
+                  ? error.message
+                  : "Échec du téléversement";
+              setUploadErrors((prev) => ({
+                ...prev,
+                [requirementId]: message,
+              }));
+            },
+            onSettled: () => {
+              setUploadingId(null);
+            },
+          },
+        );
       }
     };
     input.click();
@@ -181,22 +176,11 @@ export default function InformationEntreprisePage() {
     window.open(url, "_blank");
   };
 
-  if (isOrgLoading || isComplianceLoading) {
-    return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!organization)
-    return <div>Erreur lors du chargement de l&apos;entreprise</div>;
-
   const representative = organization.representative;
-  const totalDocs = compliance?.length || 0;
+  const totalDocs = compliance.length;
   let validDocs = 0;
   let expiringDocs = 0;
-  for (const c of compliance ?? []) {
+  for (const c of compliance) {
     if (c.status === "valid") validDocs++;
     else if (c.status === "expiring") expiringDocs++;
   }
@@ -389,7 +373,6 @@ export default function InformationEntreprisePage() {
                 </form.Field>
               </div>
 
-              {/* Dirigeant Section */}
               <div className="border-t pt-6 mt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium flex items-center gap-2">
@@ -693,7 +676,7 @@ export default function InformationEntreprisePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {compliance?.map((item) => {
+                  {compliance.map((item) => {
                     const meta =
                       STATUS_META[item.status as ComplianceStatus] ??
                       STATUS_META.missing;
