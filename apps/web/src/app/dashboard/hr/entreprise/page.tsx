@@ -1,220 +1,226 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
 import {
   Building2,
-  FileText,
   Upload,
   Download,
   AlertTriangle,
   ExternalLink,
-  Euro,
-  CreditCard,
   FileCheck,
-  Edit3,
-  Archive,
   CheckCircle2,
   Calendar,
+  Loader2,
 } from "lucide-react";
-
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  uploadDate: string;
-  expiryDate?: string;
-  status: "valid" | "expiring" | "expired";
-  required: boolean;
-}
-
-interface DirigeantInfo {
-  nom: string;
-  prenom: string;
-  dateNaissance: string;
-  lieuNaissance: string;
-  nationalite: string;
-  adresse: string;
-  email: string;
-  telephone: string;
-  fonction: string;
-  dateNomination: string;
-  numeroSecuriteSociale: string;
-}
-
-interface CompanyInfo {
-  name: string;
-  siret: string;
-  address: string;
-  capitalSocial: string;
-  numeroAutorisation: string;
-  dirigeant: DirigeantInfo;
-  email: string;
-  telephone: string;
-}
-
-const requiredDocuments = [
-  { type: "cni_dirigeant", name: "CNI du dirigeant", category: "dirigeant" },
-  {
-    type: "carte_pro_dirigeant",
-    name: "Carte pro CNAPS du dirigeant",
-    category: "dirigeant",
-  },
-  {
-    type: "carte_pro_entreprise",
-    name: "Carte pro CNAPS de l'entreprise",
-    category: "entreprise",
-  },
-  { type: "kbis", name: "Kbis", category: "entreprise" },
-  {
-    type: "urssaf",
-    name: "Attestation de vigilance URSSAF",
-    category: "attestations",
-  },
-  {
-    type: "fiscale",
-    name: "Attestation de régularité Fiscale",
-    category: "attestations",
-  },
-  {
-    type: "assurance_rc",
-    name: "Attestation d'assurance RC PRO",
-    category: "attestations",
-  },
-  { type: "rib", name: "RIB", category: "bancaire" },
-];
-
-const optionalDocuments = [
-  { type: "statuts", name: "Statuts", category: "juridique" },
-  { type: "pv_ag", name: "PV Assemblée Générale", category: "juridique" },
-];
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "@tanstack/react-form";
+import {
+  getActiveOrganization,
+  updateActiveOrganization,
+  createRepresentative,
+  getOrganizationCompliance,
+  uploadOrganizationDocument,
+  getSignedUrl,
+  ApiError,
+  type UpdateOrganizationPayload,
+} from "@safyr/api-client";
+import {
+  UpdateOrganizationDto,
+  UpdateOrganizationSchema,
+} from "@safyr/schemas/organization";
+import { EditableFormField } from "@/components/ui/editable-form-field";
+import { PhoneField } from "@/components/ui/phone-field";
+import { formatDate, formatDateForInput } from "@/lib/date-utils";
 
 export default function InformationEntreprisePage() {
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
-    name: "Safyr Security",
-    siret: "12345678901234",
-    address: "123 Rue de la Sécurité, 75001 Paris",
-    capitalSocial: "50000",
-    numeroAutorisation: "AUT-123456-CNAPS",
-    dirigeant: {
-      nom: "Dupont",
-      prenom: "Jean",
-      dateNaissance: "1980-05-15",
-      lieuNaissance: "Paris, France",
-      nationalite: "Française",
-      adresse: "45 Avenue des Champs, 75008 Paris",
-      email: "jean.dupont@safyr-security.fr",
-      telephone: "06 12 34 56 78",
-      fonction: "Gérant",
-      dateNomination: "2020-01-01",
-      numeroSecuriteSociale: "1 80 05 75 123 456 78",
-    },
-    email: "contact@safyr-security.fr",
-    telephone: "01 23 45 67 89",
+  const queryClient = useQueryClient();
+
+  const { data: organization, isLoading: isOrgLoading } = useQuery({
+    queryKey: ["organization", "active"],
+    queryFn: getActiveOrganization,
   });
 
-  const [documents] = useState<Document[]>([
-    {
-      id: "1",
-      name: "CNI Jean Dupont",
-      type: "cni_dirigeant",
-      uploadDate: "2024-11-15",
-      expiryDate: "2029-11-15",
-      status: "valid",
-      required: true,
-    },
-    {
-      id: "2",
-      name: "Carte Pro CNAPS - Jean Dupont",
-      type: "carte_pro_dirigeant",
-      uploadDate: "2024-08-10",
-      expiryDate: "2025-02-15",
-      status: "expiring",
-      required: true,
-    },
-    {
-      id: "3",
-      name: "Attestation URSSAF",
-      type: "urssaf",
-      uploadDate: "2024-10-01",
-      expiryDate: "2025-04-01",
-      status: "expiring",
-      required: true,
-    },
-  ]);
+  const { data: compliance, isLoading: isComplianceLoading } = useQuery({
+    queryKey: ["organization", "compliance"],
+    queryFn: getOrganizationCompliance,
+  });
 
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
+  const updateOrgMutation = useMutation({
+    mutationFn: updateActiveOrganization,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization", "active"] });
+    },
+    onError: (error: unknown) => {
+      if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+        const details = error.details as { path: string; message: string }[];
+        details.forEach((detail) => {
+          form.setFieldMeta(detail.path as never, (prev) => ({
+            ...prev,
+            errors: [detail.message],
+          }));
+        });
+      }
+    },
+  });
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "valid":
-        return "Valide";
-      case "expiring":
-        return "Expire bientôt";
-      case "expired":
-        return "Expiré";
-      default:
-        return "Inconnu";
+  const createRepMutation = useMutation({
+    mutationFn: createRepresentative,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization", "active"] });
+    },
+  });
+
+  const form = useForm({
+    defaultValues: organization as UpdateOrganizationDto,
+    validators: {
+      onChange: UpdateOrganizationSchema,
+    },
+  });
+
+  const handleSave = async (
+    payload: UpdateOrganizationPayload,
+    path: string,
+  ) => {
+    try {
+      await updateOrgMutation.mutateAsync(payload);
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+        const details = error.details as { path: string; message: string }[];
+        const relevantError = details.find((d) => d.path === path);
+        if (relevantError) {
+          throw new Error(relevantError.message);
+        }
+      }
+      throw error;
     }
   };
 
-  const handleExportPdf = (includeOptional = false) => {
-    const docsToExport = documents.filter(
-      (doc) => doc.required || (includeOptional && !doc.required),
+  useEffect(() => {
+    if (!organization) return;
+    const rep = organization.representative;
+    const values: UpdateOrganizationDto = {
+      ...organization,
+      representative: rep
+        ? {
+            ...rep,
+            birthDate: rep.birthDate
+              ? formatDateForInput(rep.birthDate)
+              : rep.birthDate,
+            appointmentDate: rep.appointmentDate
+              ? formatDateForInput(rep.appointmentDate)
+              : rep.appointmentDate,
+          }
+        : rep,
+    };
+    form.reset(values);
+  }, [organization, form]);
+
+  const handleCreateRepresentative = () => {
+    createRepMutation.mutate({
+      firstName: "Prénom",
+      lastName: "Nom",
+    });
+  };
+
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
+
+  const uploadMutation = useMutation({
+    mutationFn: ({
+      file,
+      requirementId,
+    }: {
+      file: File;
+      requirementId: string;
+    }) => uploadOrganizationDocument(file, requirementId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["organization", "compliance"],
+      });
+    },
+    onError: (error: unknown, variables) => {
+      const message =
+        error instanceof ApiError ? error.message : "Échec du téléversement";
+      setUploadErrors((prev) => ({
+        ...prev,
+        [variables.requirementId]: message,
+      }));
+    },
+    onSettled: () => {
+      setUploadingId(null);
+    },
+  });
+
+  const handleUpload = async (requirementId: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setUploadingId(requirementId);
+        setUploadErrors((prev) => {
+          const next = { ...prev };
+          delete next[requirementId];
+          return next;
+        });
+        uploadMutation.mutate({ file, requirementId });
+      }
+    };
+    input.click();
+  };
+
+  const handleDownload = async (key: string) => {
+    const url = await getSignedUrl(key);
+    window.open(url, "_blank");
+  };
+
+  if (isOrgLoading || isComplianceLoading) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
-    console.log("Exporting PDF with documents:", docsToExport);
-    // Logique d'export PDF
-  };
+  }
 
-  const handleDocumentUpload = (type: string) => {
-    console.log("Uploading document for type:", type);
-    // Logique d'upload
-  };
+  if (!organization)
+    return <div>Erreur lors du chargement de l&apos;entreprise</div>;
 
-  const handleBulkDownload = () => {
-    const selectedDocs = documents.filter((doc) =>
-      selectedDocuments.includes(doc.id),
-    );
-    console.log("Downloading documents:", selectedDocs);
-    // Logique de téléchargement en lot
-    alert(`Téléchargement de ${selectedDocs.length} document(s) en cours...`);
-  };
+  const representative = organization.representative;
+  const totalDocs = compliance?.length || 0;
+  let validDocs = 0;
+  let expiringDocs = 0;
+  for (const c of compliance ?? []) {
+    if (c.status === "valid") validDocs++;
+    else if (c.status === "expiring") expiringDocs++;
+  }
 
-  const toggleDocumentSelection = (docId: string) => {
-    setSelectedDocuments((prev) =>
-      prev.includes(docId)
-        ? prev.filter((id) => id !== docId)
-        : [...prev, docId],
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedDocuments.length === documents.length) {
-      setSelectedDocuments([]);
-    } else {
-      setSelectedDocuments(documents.map((doc) => doc.id));
-    }
-  };
-
-  const quickLinks = [
-    { name: "URSSAF", url: "https://urssaf.fr", icon: ExternalLink },
-    { name: "Impôts", url: "https://impots.gouv.fr", icon: ExternalLink },
-    { name: "Infogreffe", url: "https://infogreffe.fr", icon: ExternalLink },
-  ];
-
-  const validDocuments = documents.filter((d) => d.status === "valid").length;
-  const expiringDocuments = documents.filter(
-    (d) => d.status === "expiring",
-  ).length;
+  const STATUS_META = {
+    valid: { variant: "default", label: "Valide", dot: "bg-green-500" },
+    expired: {
+      variant: "destructive",
+      label: "Expiré",
+      dot: "bg-destructive",
+    },
+    expiring: {
+      variant: "secondary",
+      label: "Expire bientôt",
+      dot: "bg-warning",
+    },
+    missing: { variant: "outline", label: "Manquant", dot: "bg-neutral-300" },
+    optional: {
+      variant: "outline",
+      label: "Optionnel",
+      dot: "bg-neutral-300",
+    },
+  } as const;
+  type ComplianceStatus = keyof typeof STATUS_META;
 
   return (
     <div className="space-y-6">
@@ -226,36 +232,34 @@ export default function InformationEntreprisePage() {
             l&apos;entreprise
           </p>
         </div>
-        <div className="flex gap-2"></div>
       </div>
 
-      {/* Statistics Overview */}
       <InfoCardContainer>
         <InfoCard
           icon={Building2}
           title="Entreprise"
-          value={companyInfo.name}
-          subtext={`SIRET: ${companyInfo.siret}`}
+          value={organization.name}
+          subtext={`SIRET: ${organization.siret || "Non renseigné"}`}
           color="blue"
         />
         <InfoCard
           icon={CheckCircle2}
           title="Documents valides"
-          value={validDocuments}
-          subtext={`sur ${documents.length} documents`}
+          value={validDocs}
+          subtext={`sur ${totalDocs} documents requis`}
           color="green"
         />
         <InfoCard
           icon={AlertTriangle}
           title="Expire bientôt"
-          value={expiringDocuments}
-          subtext={expiringDocuments > 0 ? "nécessite renouvellement" : "aucun"}
+          value={expiringDocs}
+          subtext={expiringDocs > 0 ? "nécessite renouvellement" : "aucun"}
           color="orange"
         />
         <InfoCard
           icon={Calendar}
           title="Capital social"
-          value={`${Number(companyInfo.capitalSocial).toLocaleString()} €`}
+          value={`${organization.shareCapital ? Number(organization.shareCapital).toLocaleString() : "0"} €`}
           subtext="capital déclaré"
           color="purple"
         />
@@ -264,503 +268,391 @@ export default function InformationEntreprisePage() {
       <Tabs defaultValue="info" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 rounded-xl">
           <TabsTrigger value="info">Informations</TabsTrigger>
-          <TabsTrigger value="documents">Documents </TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  <CardTitle>Informations de l&apos;entreprise</CardTitle>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="flex items-center gap-2"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  {isEditing ? "Annuler" : "Modifier"}
-                </Button>
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                <CardTitle>Informations de l&apos;entreprise</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nom de l&apos;entreprise</Label>
-                  <Input
-                    id="name"
-                    value={companyInfo.name}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({ ...companyInfo, name: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="siret">SIRET</Label>
-                  <Input
-                    id="siret"
-                    value={companyInfo.siret}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({ ...companyInfo, siret: e.target.value })
-                    }
-                  />
-                </div>
+                <form.Field name="name">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="Nom de l'entreprise"
+                      onSave={(val) =>
+                        handleSave({ name: val as string }, "name")
+                      }
+                    >
+                      <Input placeholder="Nom" />
+                    </EditableFormField>
+                  )}
+                </form.Field>
+                <form.Field name="siret">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="SIRET"
+                      onSave={(val) =>
+                        handleSave({ siret: val as string }, "siret")
+                      }
+                    >
+                      <Input placeholder="Numéro SIRET" />
+                    </EditableFormField>
+                  )}
+                </form.Field>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Textarea
-                  id="address"
-                  value={companyInfo.address}
-                  disabled={!isEditing}
-                  onChange={(e) =>
-                    setCompanyInfo({ ...companyInfo, address: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="capital" className="flex items-center gap-2">
-                    <Euro className="h-4 w-4" />
-                    Capital Social (€)
-                  </Label>
-                  <Input
-                    id="capital"
-                    value={companyInfo.capitalSocial}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({
-                        ...companyInfo,
-                        capitalSocial: e.target.value,
-                      })
+              <form.Field name="address">
+                {(field) => (
+                  <EditableFormField
+                    field={field}
+                    label="Adresse"
+                    onSave={(val) =>
+                      handleSave({ address: val as string }, "address")
                     }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="autorisation"
-                    className="flex items-center gap-2"
                   >
-                    <CreditCard className="h-4 w-4" />
-                    N° Autorisation CNAPS
-                  </Label>
-                  <Input
-                    id="autorisation"
-                    value={companyInfo.numeroAutorisation}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({
-                        ...companyInfo,
-                        numeroAutorisation: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                    <Textarea placeholder="Adresse complète" />
+                  </EditableFormField>
+                )}
+              </form.Field>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form.Field name="shareCapital">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="Capital Social (€)"
+                      className="flex-1"
+                      onSave={(val) =>
+                        handleSave(
+                          { shareCapital: val as string },
+                          "shareCapital",
+                        )
+                      }
+                    >
+                      <Input placeholder="0" />
+                    </EditableFormField>
+                  )}
+                </form.Field>
+                <form.Field name="authorizationNumber">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="N° Autorisation CNAPS"
+                      className="flex-1"
+                      onSave={(val) =>
+                        handleSave(
+                          { authorizationNumber: val as string },
+                          "authorizationNumber",
+                        )
+                      }
+                    >
+                      <Input placeholder="AUT-..." />
+                    </EditableFormField>
+                  )}
+                </form.Field>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email de l&apos;entreprise</Label>
-                  <Input
-                    id="email"
-                    value={companyInfo.email}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({ ...companyInfo, email: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="telephone">
-                    Téléphone de l&apos;entreprise
-                  </Label>
-                  <Input
-                    id="telephone"
-                    value={companyInfo.telephone}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setCompanyInfo({
-                        ...companyInfo,
-                        telephone: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                <form.Field name="email">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="Email de l'entreprise"
+                      onSave={(val) =>
+                        handleSave({ email: val as string }, "email")
+                      }
+                    >
+                      <Input type="email" placeholder="email@entreprise.com" />
+                    </EditableFormField>
+                  )}
+                </form.Field>
+                <form.Field name="phone">
+                  {(field) => (
+                    <EditableFormField
+                      field={field}
+                      label="Téléphone de l'entreprise"
+                      onSave={(val) =>
+                        handleSave({ phone: val as string }, "phone")
+                      }
+                    >
+                      <PhoneField placeholder="01 23 45 67 89" />
+                    </EditableFormField>
+                  )}
+                </form.Field>
               </div>
 
               {/* Dirigeant Section */}
               <div className="border-t pt-6 mt-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Informations du dirigeant
-                </h3>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-nom">Nom</Label>
-                      <Input
-                        id="dirigeant-nom"
-                        value={companyInfo.dirigeant.nom}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              nom: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-prenom">Prénom</Label>
-                      <Input
-                        id="dirigeant-prenom"
-                        value={companyInfo.dirigeant.prenom}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              prenom: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-fonction">Fonction</Label>
-                      <Input
-                        id="dirigeant-fonction"
-                        value={companyInfo.dirigeant.fonction}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              fonction: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-date-nomination">
-                        Date de nomination
-                      </Label>
-                      <Input
-                        id="dirigeant-date-nomination"
-                        type="date"
-                        value={companyInfo.dirigeant.dateNomination}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              dateNomination: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-date-naissance">
-                        Date de naissance
-                      </Label>
-                      <Input
-                        id="dirigeant-date-naissance"
-                        type="date"
-                        value={companyInfo.dirigeant.dateNaissance}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              dateNaissance: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-lieu-naissance">
-                        Lieu de naissance
-                      </Label>
-                      <Input
-                        id="dirigeant-lieu-naissance"
-                        value={companyInfo.dirigeant.lieuNaissance}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              lieuNaissance: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-nationalite">Nationalité</Label>
-                      <Input
-                        id="dirigeant-nationalite"
-                        value={companyInfo.dirigeant.nationalite}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              nationalite: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-secu">
-                        Numéro de sécurité sociale
-                      </Label>
-                      <Input
-                        id="dirigeant-secu"
-                        value={companyInfo.dirigeant.numeroSecuriteSociale}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              numeroSecuriteSociale: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dirigeant-adresse">
-                      Adresse personnelle
-                    </Label>
-                    <Textarea
-                      id="dirigeant-adresse"
-                      value={companyInfo.dirigeant.adresse}
-                      disabled={!isEditing}
-                      onChange={(e) =>
-                        setCompanyInfo({
-                          ...companyInfo,
-                          dirigeant: {
-                            ...companyInfo.dirigeant,
-                            adresse: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-email">Email personnel</Label>
-                      <Input
-                        id="dirigeant-email"
-                        type="email"
-                        value={companyInfo.dirigeant.email}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              email: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dirigeant-telephone">
-                        Téléphone personnel
-                      </Label>
-                      <Input
-                        id="dirigeant-telephone"
-                        value={companyInfo.dirigeant.telephone}
-                        disabled={!isEditing}
-                        onChange={(e) =>
-                          setCompanyInfo({
-                            ...companyInfo,
-                            dirigeant: {
-                              ...companyInfo.dirigeant,
-                              telephone: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    Informations du dirigeant
+                  </h3>
+                  {!representative && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCreateRepresentative}
+                      disabled={createRepMutation.isPending}
+                    >
+                      {createRepMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Ajouter un dirigeant
+                    </Button>
+                  )}
                 </div>
+
+                {representative ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <form.Field name="representative.lastName">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Nom"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: { lastName: val as string },
+                                },
+                                "representative.lastName",
+                              )
+                            }
+                          >
+                            <Input placeholder="Nom" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                      <form.Field name="representative.firstName">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Prénom"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: { firstName: val as string },
+                                },
+                                "representative.firstName",
+                              )
+                            }
+                          >
+                            <Input placeholder="Prénom" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <form.Field name="representative.position">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Fonction"
+                            onSave={(val) =>
+                              handleSave(
+                                { representative: { position: val as string } },
+                                "representative.position",
+                              )
+                            }
+                          >
+                            <Input placeholder="Fonction" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                      <form.Field name="representative.appointmentDate">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Date de nomination"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    appointmentDate: val as string,
+                                  },
+                                },
+                                "representative.appointmentDate",
+                              )
+                            }
+                          >
+                            <Input type="date" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <form.Field name="representative.birthDate">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Date de naissance"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    birthDate: val as string,
+                                  },
+                                },
+                                "representative.birthDate",
+                              )
+                            }
+                          >
+                            <Input type="date" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                      <form.Field name="representative.birthPlace">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Lieu de naissance"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    birthPlace: val as string,
+                                  },
+                                },
+                                "representative.birthPlace",
+                              )
+                            }
+                          >
+                            <Input placeholder="Ville, Pays" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <form.Field name="representative.nationality">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Nationalité"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    nationality: val as string,
+                                  },
+                                },
+                                "representative.nationality",
+                              )
+                            }
+                          >
+                            <Input placeholder="Nationalité" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                      <form.Field name="representative.socialSecurityNumber">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Numéro de sécurité sociale"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    socialSecurityNumber: val as string,
+                                  },
+                                },
+                                "representative.socialSecurityNumber",
+                              )
+                            }
+                          >
+                            <Input placeholder="1 00..." />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                    </div>
+
+                    <form.Field name="representative.address">
+                      {(field) => (
+                        <EditableFormField
+                          field={field}
+                          label="Adresse personnelle"
+                          onSave={(val) =>
+                            handleSave(
+                              {
+                                representative: {
+                                  address: val as string,
+                                },
+                              },
+                              "representative.address",
+                            )
+                          }
+                        >
+                          <Textarea placeholder="Adresse complète" />
+                        </EditableFormField>
+                      )}
+                    </form.Field>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <form.Field name="representative.email">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Email personnel"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    email: val as string,
+                                  },
+                                },
+                                "representative.email",
+                              )
+                            }
+                          >
+                            <Input type="email" placeholder="email@perso.com" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                      <form.Field name="representative.phone">
+                        {(field) => (
+                          <EditableFormField
+                            field={field}
+                            label="Téléphone personnel"
+                            onSave={(val) =>
+                              handleSave(
+                                {
+                                  representative: {
+                                    phone: val as string,
+                                  },
+                                },
+                                "representative.phone",
+                              )
+                            }
+                          >
+                            <PhoneField placeholder="06 12 34 56 78" />
+                          </EditableFormField>
+                        )}
+                      </form.Field>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    Aucun dirigeant configuré pour cette entreprise.
+                  </p>
+                )}
               </div>
-
-              {isEditing && (
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={() => setIsEditing(false)}>
-                    Sauvegarder
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
-                    Annuler
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="documents">
           <div className="space-y-6">
-            {/* Export Actions */}
-            <div className="flex gap-2 justify-end">
-              {selectedDocuments.length > 0 && (
-                <Button
-                  variant="default"
-                  onClick={handleBulkDownload}
-                  className="flex items-center gap-2"
-                >
-                  <Archive className="h-4 w-4" />
-                  Télécharger ({selectedDocuments.length})
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={() => handleExportPdf(false)}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exporter PDF (Documents requis)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleExportPdf(true)}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exporter PDF (Tous documents)
-              </Button>
-            </div>
-            {/* Alertes de renouvellement */}
-            <Card className="border-l-4 border-l-orange-500">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-orange-700">
-                  <AlertTriangle className="h-5 w-5" />
-                  Documents à Renouveler Prochainement
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center justify-between py-2 px-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-destructive rounded-full"></div>
-                    <div>
-                      <p className="font-medium text-sm">
-                        Cartes Pro CNAPS - Dirigeant
-                      </p>
-                      <p className="text-xs text-destructive">
-                        Expiré le 15/02/2025
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() =>
-                      window.open("https://cnaps-securite.fr", "_blank")
-                    }
-                  >
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Renouveler
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between py-2 px-3 bg-warning/10 border border-warning/20 rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-warning rounded-full"></div>
-                    <div>
-                      <p className="font-medium text-sm">Kbis</p>
-                      <p className="text-xs text-warning-foreground">
-                        Expire le 15/04/2025
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() =>
-                      window.open("https://infogreffe.fr", "_blank")
-                    }
-                  >
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Télécharger
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between py-2 px-3 bg-info/10 border border-info/20 rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-info rounded-full"></div>
-                    <div>
-                      <p className="font-medium text-sm">
-                        Attestations URSSAF et Fiscales
-                      </p>
-                      <p className="text-xs text-info-foreground">
-                        Prochaine échéance: 01/04/2025
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      onClick={() => window.open("https://urssaf.fr", "_blank")}
-                    >
-                      URSSAF
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      onClick={() =>
-                        window.open("https://impots.gouv.fr", "_blank")
-                      }
-                    >
-                      Impôts
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Liens rapides */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
@@ -770,7 +662,11 @@ export default function InformationEntreprisePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
-                  {quickLinks.map((link) => (
+                  {[
+                    { name: "URSSAF", url: "https://urssaf.fr" },
+                    { name: "Impôts", url: "https://impots.gouv.fr" },
+                    { name: "Infogreffe", url: "https://infogreffe.fr" },
+                  ].map((link) => (
                     <Button
                       key={link.name}
                       variant="outline"
@@ -786,234 +682,95 @@ export default function InformationEntreprisePage() {
               </CardContent>
             </Card>
 
-            {/* Documents requis */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <FileCheck className="h-5 w-5" />
-                    Documents Administratifs Requis
+                    Documents Administratifs
                   </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="select-all"
-                      checked={selectedDocuments.length === documents.length}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                    <Label htmlFor="select-all" className="text-sm">
-                      Tout sélectionner
-                    </Label>
-                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {requiredDocuments.map((docType) => {
-                    const existingDoc = documents.find(
-                      (d) => d.type === docType.type,
-                    );
-
-                    // Check if document is expiring soon (within 30 days) or expired
-                    const isExpiring =
-                      existingDoc?.expiryDate &&
-                      new Date(existingDoc.expiryDate) <=
-                        new Date(Date() + 30 * 24 * 60 * 60 * 1000);
-                    const isExpired =
-                      existingDoc?.expiryDate &&
-                      new Date(existingDoc.expiryDate) < new Date();
-
+                  {compliance?.map((item) => {
+                    const meta =
+                      STATUS_META[item.status as ComplianceStatus] ??
+                      STATUS_META.missing;
+                    const containerCls =
+                      item.status === "expired"
+                        ? "border-destructive/20 bg-destructive/10"
+                        : item.status === "expiring"
+                          ? "border-warning/20 bg-warning/10"
+                          : "hover:bg-accent";
                     return (
                       <div
-                        key={docType.type}
-                        className={`flex items-center justify-between py-3 px-3 border rounded-md ${
-                          isExpired
-                            ? "border-destructive/20 bg-destructive/10"
-                            : isExpiring
-                              ? "border-warning/20 bg-warning/10"
-                              : "hover:bg-accent"
-                        }`}
+                        key={item.requirement.id}
+                        className={`flex flex-col py-3 px-3 border rounded-md ${containerCls}`}
                       >
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={selectedDocuments.includes(
-                              existingDoc?.id || "",
-                            )}
-                            onCheckedChange={() =>
-                              toggleDocumentSelection(existingDoc?.id || "")
-                            }
-                            disabled={!existingDoc}
-                          />
-                          {isExpired || isExpiring ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
                             <div
-                              className={`w-2 h-2 rounded-full ${isExpired ? "bg-destructive" : "bg-warning"}`}
+                              className={`w-2 h-2 rounded-full ${meta.dot}`}
                             ></div>
-                          ) : (
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="font-medium text-sm">
-                              {docType.name}
-                            </p>
-                            {existingDoc && (
+                            <div>
+                              <p className="font-medium text-sm">
+                                {item.requirement.name}
+                                {item.requirement.isRequired && (
+                                  <span className="text-destructive ml-1">
+                                    *
+                                  </span>
+                                )}
+                              </p>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <Badge
-                                  variant={
-                                    isExpired
-                                      ? "destructive"
-                                      : isExpiring
-                                        ? "secondary"
-                                        : "default"
-                                  }
+                                  variant={meta.variant}
                                   className="text-xs h-5"
                                 >
-                                  {isExpired
-                                    ? "Expiré"
-                                    : isExpiring
-                                      ? "Expire bientôt"
-                                      : getStatusText(existingDoc.status)}
+                                  {meta.label}
                                 </Badge>
-                                {existingDoc.expiryDate && (
+                                {item.document?.expiryDate && (
                                   <span className="text-xs text-muted-foreground">
-                                    {new Date(
-                                      existingDoc.expiryDate,
-                                    ).toLocaleDateString("fr-FR")}
+                                    Expire le{" "}
+                                    {formatDate(item.document.expiryDate)}
                                   </span>
                                 )}
                               </div>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-1">
-                          {existingDoc && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0"
-                            >
-                              <Download className="h-3 w-3" />
-                            </Button>
-                          )}
-                          {(isExpiring || isExpired) &&
-                            docType.type === "kbis" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs"
-                                onClick={() =>
-                                  window.open("https://infogreffe.fr", "_blank")
-                                }
-                              >
-                                Renouveler
-                              </Button>
-                            )}
-                          {(isExpiring || isExpired) &&
-                            docType.type === "urssaf" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs"
-                                onClick={() =>
-                                  window.open("https://urssaf.fr", "_blank")
-                                }
-                              >
-                                URSSAF
-                              </Button>
-                            )}
-                          {(isExpiring || isExpired) &&
-                            docType.type === "fiscal" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs"
-                                onClick={() =>
-                                  window.open(
-                                    "https://impots.gouv.fr",
-                                    "_blank",
-                                  )
-                                }
-                              >
-                                Impôts
-                              </Button>
-                            )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleDocumentUpload(docType.type)}
-                          >
-                            <Upload className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Documents optionnels */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Documents Juridiques (Optionnels)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {optionalDocuments.map((docType) => {
-                    const existingDoc = documents.find(
-                      (d) => d.type === docType.type,
-                    );
-                    return (
-                      <div
-                        key={docType.type}
-                        className="flex items-center justify-between py-3 px-3 border rounded-md hover:bg-accent"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium text-sm">
-                              {docType.name}
-                            </p>
-                            {existingDoc && (
-                              <span className="text-xs text-muted-foreground">
-                                Uploadé le{" "}
-                                {new Date(
-                                  existingDoc.uploadDate,
-                                ).toLocaleDateString("fr-FR")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-1">
-                          {existingDoc && (
-                            <>
+                          <div className="flex gap-1">
+                            {item.document && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  handleDownload(item.document!.storageKey)
+                                }
                               >
                                 <Download className="h-3 w-3" />
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                              >
-                                Export PDF
-                              </Button>
-                            </>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleDocumentUpload(docType.type)}
-                          >
-                            <Upload className="h-3 w-3" />
-                          </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleUpload(item.requirement.id)}
+                              disabled={uploadingId === item.requirement.id}
+                            >
+                              {uploadingId === item.requirement.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Upload className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
+                        {uploadErrors[item.requirement.id] && (
+                          <p className="text-xs text-destructive mt-2">
+                            {uploadErrors[item.requirement.id]}
+                          </p>
+                        )}
                       </div>
                     );
                   })}

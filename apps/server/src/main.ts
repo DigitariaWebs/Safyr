@@ -23,21 +23,41 @@ async function bootstrap(): Promise<void> {
     },
   );
 
-  app.setGlobalPrefix("api", { exclude: ["health"] });
-  app.useGlobalInterceptors(new EnvelopeInterceptor());
-  app.useGlobalFilters(new AppExceptionFilter());
-
   const { default: fastifyCors } = await import("@fastify/cors");
-  // Nest bundles its own fastify instance; plugin types drift across the boundary.
   await app.register(fastifyCors as never, {
     origin: env.ALLOWED_ORIGINS,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Organization-Id",
+      "X-Requested-With",
+      "Accept",
+    ],
+    exposedHeaders: ["set-cookie"],
   });
+
+  app.setGlobalPrefix("api", { exclude: ["health"] });
+  app.useGlobalInterceptors(new EnvelopeInterceptor());
+  app.useGlobalFilters(new AppExceptionFilter());
 
   const { default: fastifyRateLimit } = await import("@fastify/rate-limit");
   await app.register(fastifyRateLimit as never, {
     max: 100,
     timeWindow: "1 minute",
+  });
+
+  const { default: fastifyMultipart } = await import("@fastify/multipart");
+  await app.register(fastifyMultipart as never, {
+    limits: {
+      fieldNameSize: 100, // Max field name size in bytes
+      fieldSize: 100, // Max field value size in bytes
+      fields: 10, // Max number of non-file fields
+      fileSize: 10 * 1024 * 1024, // 10MB
+      files: 1, // Max number of file fields
+      headerPairs: 2000, // Max number of header key=>value pairs
+    },
   });
 
   await app.listen({ port: env.PORT, host: "0.0.0.0" });

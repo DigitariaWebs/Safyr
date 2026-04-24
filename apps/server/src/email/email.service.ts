@@ -9,20 +9,27 @@ import { OtpEmail } from "@/email/templates/otp";
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly transport: Transporter;
+  private readonly transport: Transporter | null;
+  private readonly isDev: boolean;
 
   constructor(@Inject(ENV) private readonly env: Env) {
-    this.transport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT,
-      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-    });
+    this.isDev = env.NODE_ENV === "development";
+    this.transport = this.isDev
+      ? null
+      : nodemailer.createTransport({
+          host: env.SMTP_HOST,
+          port: env.SMTP_PORT,
+          auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+        });
   }
 
   async checkConnection(): Promise<{
     status: "up" | "down";
     error?: string;
   }> {
+    if (this.isDev || !this.transport) {
+      return { status: "up" };
+    }
     try {
       await this.transport.verify();
       return { status: "up" };
@@ -37,6 +44,19 @@ export class EmailService {
     }
   }
 
+  private logDevEmail(payload: {
+    to: string;
+    subject: string;
+    html: string;
+    meta?: Record<string, unknown>;
+  }): void {
+    this.logger.log(
+      `[DEV] Email suppressed — to=${payload.to} subject="${payload.subject}"` +
+        (payload.meta ? ` meta=${JSON.stringify(payload.meta)}` : ""),
+    );
+    this.logger.debug(`[DEV] HTML body:\n${payload.html}`);
+  }
+
   async sendMagicLink(
     to: string,
     params: { url: string; expiresInMinutes?: number },
@@ -47,10 +67,22 @@ export class EmailService {
     const html = await render(
       MagicLinkEmail({ url: params.url, expiresInMinutes }),
     );
+    const subject = "Votre lien de connexion Safyr";
+
+    if (this.isDev || !this.transport) {
+      this.logDevEmail({
+        to,
+        subject,
+        html,
+        meta: { url: params.url, expiresInMinutes },
+      });
+      return;
+    }
+
     await this.transport.sendMail({
       from: this.env.SMTP_FROM,
       to,
-      subject: "Votre lien de connexion Safyr",
+      subject,
       html,
     });
   }
@@ -68,14 +100,24 @@ export class EmailService {
     },
   ): Promise<void> {
     const expiresInMinutes = params?.expiresInMinutes ?? 5;
-    const html = await render(
-      OtpEmail({ otp, type: params?.type ?? "sign-in", expiresInMinutes }),
-    );
+    const type = params?.type ?? "sign-in";
+    const html = await render(OtpEmail({ otp, type, expiresInMinutes }));
+    const subject = "Votre code de connexion Safyr";
+
+    if (this.isDev || !this.transport) {
+      this.logDevEmail({
+        to,
+        subject,
+        html,
+        meta: { otp, type, expiresInMinutes },
+      });
+      return;
+    }
 
     await this.transport.sendMail({
       from: this.env.SMTP_FROM,
       to,
-      subject: "Votre code de connexion Safyr",
+      subject,
       html,
     });
   }

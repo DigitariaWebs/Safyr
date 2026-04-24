@@ -54,16 +54,30 @@ export class AppExceptionFilter implements ExceptionFilter {
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const response = exception.getResponse();
-      const message =
-        typeof response === "string"
-          ? response
-          : ((response as { message?: string }).message ?? exception.message);
+      const fallbackCode = exception.name
+        .replace(/Exception$/, "")
+        .toUpperCase();
+
+      let code = fallbackCode;
+      let message = exception.message;
+      let details: unknown;
+
+      if (typeof response === "string") {
+        message = response;
+      } else if (response !== null && typeof response === "object") {
+        const r = response as {
+          code?: unknown;
+          message?: unknown;
+          details?: unknown;
+        };
+        if (typeof r.code === "string") code = r.code;
+        if (typeof r.message === "string") message = r.message;
+        details = r.details;
+      }
+
       body = {
         success: false,
-        error: {
-          code: exception.name.replace(/Exception$/, "").toUpperCase(),
-          message,
-        },
+        error: { code, message, details },
       };
     } else if (exception instanceof Error) {
       this.logger.error(exception.stack ?? exception.message);

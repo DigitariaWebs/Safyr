@@ -22,6 +22,9 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(16),
   BETTER_AUTH_URL: z.url(),
 
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+
   ALLOWED_ORIGINS: z
     .string()
     .default("http://localhost:3000")

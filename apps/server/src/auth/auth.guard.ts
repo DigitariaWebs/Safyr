@@ -21,10 +21,15 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
+
     const headers = new Headers();
     for (const [key, value] of Object.entries(request.headers)) {
       if (!value) continue;
-      headers.set(key, Array.isArray(value) ? value.join(",") : String(value));
+      if (Array.isArray(value)) {
+        value.forEach((v) => headers.append(key, v));
+      } else {
+        headers.set(key, String(value));
+      }
     }
 
     const session = await this.auth.api.getSession({ headers });

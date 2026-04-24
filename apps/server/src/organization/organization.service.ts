@@ -1,0 +1,214 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "@/prisma/prisma.service";
+import {
+  SAFYR_BUCKET,
+  STORAGE_PREFIX_DOCUMENTS,
+  StorageService,
+} from "@/storage/storage.service";
+import type {
+  UpdateOrganizationDto,
+  CreateRepresentativeDto,
+} from "@safyr/schemas";
+
+const EXPIRING_WINDOW_DAYS = 30;
+
+function computeStatus(expiryDate: Date | null | undefined): string {
+  if (!expiryDate) return "valid";
+  const now = Date.now();
+  const expiry = expiryDate.getTime();
+  if (expiry < now) return "expired";
+  if (expiry < now + EXPIRING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+    return "expiring";
+  return "valid";
+}
+
+@Injectable()
+export class OrganizationService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
+
+  async getOrganization(orgId: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: orgId },
+      include: {
+        representative: true,
+      },
+    });
+
+    if (!org) {
+      throw new NotFoundException(`Organization with ID ${orgId} not found`);
+    }
+
+    return org;
+  }
+
+  async updateOrganization(orgId: string, data: UpdateOrganizationDto) {
+    const { representative, ...orgData } = data;
+
+    return await this.prisma.$transaction(async (tx) => {
+      const updatedOrg = await tx.organization
+        .update({
+          where: { id: orgId },
+          data: orgData,
+          include: { representative: true },
+        })
+        .catch((err) => {
+          if (err?.code === "P2025") {
+            throw new NotFoundException(
+              `Organization with ID ${orgId} not found`,
+            );
+          }
+          throw err;
+        });
+
+      if (representative && updatedOrg.representativeId) {
+        const updatedRep = await tx.representative.update({
+          where: { id: updatedOrg.representativeId },
+          data: representative,
+        });
+        return { ...updatedOrg, representative: updatedRep };
+      }
+
+      return updatedOrg;
+    });
+  }
+
+  async createRepresentative(orgId: string, data: CreateRepresentativeDto) {
+    return await this.prisma.$transaction(async (tx) => {
+      const org = await tx.organization.findUnique({
+        where: { id: orgId },
+      });
+
+      if (!org) {
+        throw new NotFoundException(`Organization with ID ${orgId} not found`);
+      }
+
+      if (org.representativeId) {
+        throw new BadRequestException(
+          "Organization already has a representative linked",
+        );
+      }
+
+      const representative = await tx.representative.create({
+        data,
+      });
+
+      return await tx.organization.update({
+        where: { id: orgId },
+        data: {
+          representativeId: representative.id,
+        },
+        include: { representative: true },
+      });
+    });
+  }
+
+  async getComplianceReport(orgId: string) {
+    const [requirements, documents] = await Promise.all([
+      this.prisma.documentRequirement.findMany({
+        where: { targetType: "ORGANIZATION" },
+      }),
+      this.prisma.document.findMany({ where: { organizationId: orgId } }),
+    ]);
+
+    const docByRequirement = new Map(
+      documents.map((doc) => [doc.requirementId, doc]),
+    );
+
+    return requirements.map((req) => {
+      const linkedDoc = docByRequirement.get(req.id) ?? null;
+      const status = linkedDoc
+        ? computeStatus(linkedDoc.expiryDate)
+        : req.isRequired
+          ? "missing"
+          : "optional";
+      return { requirement: req, document: linkedDoc, status };
+    });
+  }
+
+  async createOrReplaceDocument(
+    orgId: string,
+    uploaderId: string,
+    file: { buffer: Buffer; filename: string; mimetype: string },
+    requirementId: string,
+    expiryDate?: string,
+  ) {
+    const [requirement, existing] = await Promise.all([
+      this.prisma.documentRequirement.findUnique({
+        where: { id: requirementId },
+      }),
+      this.prisma.document.findUnique({
+        where: {
+          organizationId_requirementId: {
+            organizationId: orgId,
+            requirementId,
+          },
+        },
+      }),
+    ]);
+    if (!requirement) {
+      throw new NotFoundException(`Requirement ${requirementId} not found`);
+    }
+    if (requirement.targetType !== "ORGANIZATION") {
+      throw new BadRequestException(
+        `Requirement ${requirementId} is not an organization requirement`,
+      );
+    }
+
+    const key = this.storage.buildStorageKey(
+      STORAGE_PREFIX_DOCUMENTS,
+      file.filename,
+    );
+
+    await this.storage.uploadObject(SAFYR_BUCKET, key, file.buffer, {
+      contentType: file.mimetype,
+      metadata: {
+        uploaderId,
+        entityType: "document",
+        originalName: file.filename,
+        mimeType: file.mimetype,
+      },
+    });
+
+    const expiry = expiryDate ? new Date(expiryDate) : null;
+    const status = computeStatus(expiry);
+
+    const document = await this.prisma.document.upsert({
+      where: {
+        organizationId_requirementId: { organizationId: orgId, requirementId },
+      },
+      create: {
+        name: file.filename,
+        storageKey: key,
+        mimeType: file.mimetype,
+        size: file.buffer.length,
+        status,
+        expiryDate: expiry,
+        requirementId,
+        organizationId: orgId,
+        uploaderId,
+      },
+      update: {
+        name: file.filename,
+        storageKey: key,
+        mimeType: file.mimetype,
+        size: file.buffer.length,
+        status,
+        expiryDate: expiry,
+        uploaderId,
+      },
+    });
+
+    if (existing && existing.storageKey !== key) {
+      await this.storage.deleteObjectSafe(SAFYR_BUCKET, existing.storageKey);
+    }
+
+    return document;
+  }
+}

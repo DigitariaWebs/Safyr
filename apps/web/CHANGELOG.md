@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `PhoneField` component (`src/components/ui/phone-field.tsx`) — event-style, digit-only with auto-format; compatible with `EditableFormField`'s cloneElement pattern
+- `EditableFormField` (`src/components/ui/editable-form-field.tsx`) and `form-field` (`src/components/ui/form-field.tsx`) for inline-edit forms
+- Per-row upload loading state and inline error messages on the entreprise Documents tab
+- `date-utils` (`src/lib/date-utils.ts`) exposing `formatDate` and `formatDateForInput`
+- Entreprise page now wires organization info, representative, and compliance documents through tanstack-form + react-query
+
+### Changed
+
+- API client `baseURL` now auto-appends `/api`; `NEXT_PUBLIC_API_URL` is expected to be the server origin only (fixes 404s on `/organization` routes)
+- Document upload on the entreprise page switched from the generic `uploadFile` to `uploadOrganizationDocument`, which links the resulting `Document` to a `DocumentRequirement`
+- Phone and mobile inputs on the entreprise page use the new `PhoneField` instead of bare `<Input>`
+
+### Fixed
+
+- Tanstack-form validation on the entreprise page now uses a single form-level Zod validator instead of broken inline `getValidator(...)` calls (every render previously threw `ReferenceError`)
+- Field error rendering now maps Standard-Schema issue objects to `.message` strings (no more `[object Object]`)
+- Validation errors only surface on touched fields (`field.state.meta.isTouched`)
+- Network errors, non-JSON responses, empty 5xx bodies, and hung requests in `@safyr/api-client` all surface as typed `ApiError` with codes `NETWORK_ERROR`, `TIMEOUT`, `PARSE_ERROR`, `HTTP_ERROR`; a 30s default request timeout was added
+
 ## [0.1.0] - 2026-04-22
 
 ### Added

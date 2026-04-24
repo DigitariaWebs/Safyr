@@ -5,6 +5,7 @@ import { ENV } from "@/config/env.module";
 import type { Env } from "@/config/env";
 import { EmailService } from "@/email/email.service";
 import { PrismaService } from "@/prisma/prisma.service";
+import { StorageService } from "@/storage/storage.service";
 
 const APP_VERSION = (
   JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as {
@@ -18,6 +19,7 @@ export class HealthController {
     @Inject(ENV) private readonly env: Env,
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
+    private readonly storage: StorageService,
   ) {}
 
   @Get()
@@ -29,9 +31,10 @@ export class HealthController {
     services: {
       database: { status: "up" | "down"; error?: string };
       smtp: { status: "up" | "down"; error?: string };
+      storage: { status: "up" | "down"; error?: string };
     };
   }> {
-    const [dbResult, smtp] = await Promise.all([
+    const [dbResult, smtp, storage] = await Promise.all([
       this.prisma.$queryRaw`SELECT 1`
         .then((): { status: "up" } => ({ status: "up" }))
         .catch((error: unknown): { status: "down"; error: string } => ({
@@ -42,10 +45,15 @@ export class HealthController {
               : "Database health check failed",
         })),
       this.email.checkConnection(),
+      this.storage.checkConnection(),
     ]);
 
     const status =
-      dbResult.status === "up" && smtp.status === "up" ? "ok" : "degraded";
+      dbResult.status === "up" &&
+      smtp.status === "up" &&
+      storage.status === "up"
+        ? "ok"
+        : "degraded";
 
     return {
       status,
@@ -55,6 +63,7 @@ export class HealthController {
       services: {
         database: dbResult,
         smtp,
+        storage,
       },
     };
   }
