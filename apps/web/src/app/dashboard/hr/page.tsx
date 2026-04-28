@@ -268,7 +268,7 @@ function TrainingWidget({ isLoading }: { isLoading: boolean }) {
             Formations & Habilitations
           </CardTitle>
           <Link
-            href="/dashboard/hr/training/ssiap"
+            href="/dashboard/hr/safety-health-training/authorizations-matrix/ssiap"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             Voir tout
@@ -370,7 +370,7 @@ function AlertsWidget({ isLoading }: { isLoading: boolean }) {
             Alertes RH
           </CardTitle>
           <Link
-            href="/dashboard/hr/pilotage/communication/notifications"
+            href="/dashboard/hr/hr-services/communication/notifications"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             Voir tout
@@ -432,7 +432,7 @@ function PendingRequestsWidget({ isLoading }: { isLoading: boolean }) {
             Demandes en attente
           </CardTitle>
           <Link
-            href="/dashboard/hr/time-management"
+            href="/dashboard/hr/time-activity/absences"
             className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             Traiter
@@ -884,17 +884,17 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
   const actions = [
     {
       label: "Nouveau salarié",
-      href: "/dashboard/hr/employees",
+      href: "/dashboard/hr/collaborators",
       icon: UserCheck,
     },
     {
       label: "Voir congés",
-      href: "/dashboard/hr/time-management",
+      href: "/dashboard/hr/time-activity/absences",
       icon: Calendar,
     },
     {
       label: "Bilan social",
-      href: "/dashboard/hr/pilotage/dashboards",
+      href: "/dashboard/hr/hr-services/social-audit",
       icon: BarChart3,
     },
     {
@@ -909,7 +909,7 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
     },
     {
       label: "AKTO & OPCO",
-      href: "/dashboard/hr/akto-opco",
+      href: "/dashboard/hr/safety-health-training/training-plan/akto",
       icon: GraduationCap,
     },
     {
@@ -919,7 +919,7 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
     },
     {
       label: "Communication",
-      href: "/dashboard/hr/pilotage/communication/send-email",
+      href: "/dashboard/hr/hr-services/communication/send-email",
       icon: Mail,
     },
   ];

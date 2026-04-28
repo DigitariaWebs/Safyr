@@ -18,11 +18,10 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
     useSendEmail();
 
   const isEmployeeDetails =
-    pathname.startsWith("/dashboard/hr/employees/") &&
-    !pathname.endsWith("duerp") &&
-    !pathname.endsWith("akto-opco") &&
-    !pathname.endsWith("employees") &&
-    !pathname.endsWith("archives");
+    pathname.startsWith("/dashboard/hr/collaborators/") &&
+    !["personnel-register", "contracts", "interviews", "discipline"].some(
+      (path) => pathname.includes(path),
+    );
 
   const handleSendEmail = (emailData: { subject: string; body: string }) => {
     console.log("Sending email to:", selectedEmployees);
