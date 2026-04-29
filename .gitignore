@@ -105,6 +105,7 @@ temp/
 
 # Turbo
 .turbo/
-docs
+docs/assets
+docs/.obsidian
 assets
 tsconfig.tsbuildinfo
