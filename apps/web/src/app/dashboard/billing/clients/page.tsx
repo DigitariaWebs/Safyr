@@ -32,7 +32,18 @@ export default function BillingClientsPage() {
   const [siretLookupLoading, setSiretLookupLoading] = useState(false);
   const [siretLookupError, setSiretLookupError] = useState<string | null>(null);
 
-  async function fetchCompanyInfo(siret: string): Promise<any | null> {
+  type SiretInfo = {
+    name?: string;
+    raisonSociale?: string;
+    address?: string;
+    street?: string;
+    postalCode?: string;
+    codePostal?: string;
+    city?: string;
+    ville?: string;
+  };
+
+  async function fetchCompanyInfo(siret: string): Promise<SiretInfo | null> {
     // Use a remote API to resolve SIRET -> company info. The exact
     // peppers.fr API may vary; this implementation attempts a simple
     // GET and treats non-2xx as not found. Adjust endpoint as needed.
@@ -47,7 +58,16 @@ export default function BillingClientsPage() {
       if (!res.ok) return null;
       const data = await res.json();
       // Normalize common shapes
-      return data?.company || data || null;
+      const payload = data?.company || data || null;
+      if (!payload) return null;
+      // Map probable keys to our SiretInfo shape
+      const info: SiretInfo = {
+        name: payload.name || payload.raisonSociale || undefined,
+        address: payload.address || payload.street || undefined,
+        postalCode: payload.postalCode || payload.codePostal || undefined,
+        city: payload.city || payload.ville || undefined,
+      };
+      return info;
     } catch (err) {
       clearTimeout(timeout);
       // Propagate error to caller

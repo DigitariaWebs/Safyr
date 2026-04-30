@@ -552,7 +552,7 @@ export default function BillingInvoicesPage() {
 
               {selectedInvoice.paymentDueDate && (
                 <div>
-                  <Label>Date d'échéance</Label>
+                  <Label>Date d&apos;échéance</Label>
                   <p className="text-sm font-medium">
                     {new Date(selectedInvoice.paymentDueDate).toLocaleDateString(
                       "fr-FR",

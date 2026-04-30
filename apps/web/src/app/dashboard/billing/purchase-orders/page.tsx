@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { mockBillingServices, computePriceTTC } from "@/data/billing-services";
 import { mockSubcontractors } from "@/data/subcontractors";
 import { QuoteLine } from "@/data/billing-quotes";
@@ -23,10 +23,12 @@ interface PurchaseOrder {
   lines?: QuoteLine[];
 }
 
+let PO_LINE_COUNTER = 0;
 function createEmptyLine(): QuoteLine {
   const today = new Date().toISOString().split("T")[0];
+  PO_LINE_COUNTER += 1;
   return {
-    id: `QL-${Date.now()}-${Math.random()}`,
+    id: `QL-PO-${PO_LINE_COUNTER}`,
     description: "",
     date: today,
     qty: 1,

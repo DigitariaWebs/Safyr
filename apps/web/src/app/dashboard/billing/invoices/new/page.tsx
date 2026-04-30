@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,22 +20,25 @@ import { mockBillingServices, computePriceTTC } from "@/data/billing-services";
 import { mockBillingClients } from "@/data/billing-clients";
 import { mockBillingInvoices } from "@/data/billing-invoices";
 
+let LINE_COUNTER = 0;
+function createEmptyLine(): QuoteLine {
+  const today = new Date().toISOString().split("T")[0];
+  LINE_COUNTER += 1;
+  return {
+    id: `QL-${LINE_COUNTER}`,
+    description: "",
+    date: today,
+    qty: 1,
+    unit: "h",
+    priceHT: 0,
+    vatRate: 20,
+    amountHT: 0,
+    amountTTC: 0,
+  };
+}
+
 export default function NewInvoicePage() {
   const router = useRouter();
-  function createEmptyLine(): QuoteLine {
-    const today = new Date().toISOString().split("T")[0];
-    return {
-      id: `QL-${Date.now()}-${Math.random()}`,
-      description: "",
-      date: today,
-      qty: 1,
-      unit: "h",
-      priceHT: 0,
-      vatRate: 20,
-      amountHT: 0,
-      amountTTC: 0,
-    };
-  }
 
   const [formData, setFormData] = useState({
     clientId: "",
@@ -121,16 +124,7 @@ export default function NewInvoicePage() {
     setFormData({ ...formData, lines });
   };
 
-  const handleServiceSelect = (index: number, serviceId: string) => {
-    const service = mockBillingServices.find((s) => s.id === serviceId);
-    if (!service) return;
-    updateLine(index, {
-      description: service.name,
-      priceHT: service.priceHT,
-      vatRate: service.vatRate,
-      unit: service.unit,
-    } as Partial<QuoteLine>);
-  };
+  // removed unused handleServiceSelect
 
   const totalsFromLines = (lines?: QuoteLine[]) => {
     const l = lines || [];
