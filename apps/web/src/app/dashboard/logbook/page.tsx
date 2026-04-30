@@ -45,7 +45,10 @@ import {
   EventTypesWidget,
   TopZonesWidget,
   CriticalSplitWidget,
-} from "@/components/logbook/dashboard/LogbookKpiWidgets";
+  IncidentsByPeriodWidget,
+  AlertsTrendWidget,
+  StatusDistributionWidget,
+} from "../../../components/logbook/dashboard/LogbookKpiWidgets";
 import { type DateFilterPreset } from "@/lib/date-range";
 
 type LogbookWidgetConfig = WidgetConfig & {
@@ -631,10 +634,11 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
     span: "lg:col-span-2",
   },
   {
-    id: "validation",
-    name: "Validation",
-    component: ValidationWidget,
+    id: "incidentsByPeriod",
+    name: "Incidents par période",
+    component: IncidentsByPeriodWidget,
     visible: true,
+    span: "lg:col-span-2",
   },
   {
     id: "portals",
@@ -655,11 +659,17 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
     visible: true,
   },
   {
-    id: "reportsFilter",
-    name: "Incidents filtrés",
-    component: ReportsFilterWidget,
+    id: "alertsTrend",
+    name: "Alertes (tendance)",
+    component: AlertsTrendWidget,
     visible: true,
     span: "lg:col-span-2",
+  },
+  {
+    id: "statusDistribution",
+    name: "Répartition statuts",
+    component: StatusDistributionWidget,
+    visible: true,
   },
   {
     id: "moduleHighlights",
@@ -774,11 +784,12 @@ export default function LogbookDashboardPage() {
                   "criticalSplit",
                   "liveFeed",
                   "alerts",
-                  "validation",
+                  "incidentsByPeriod",
+                  "alertsTrend",
+                  "statusDistribution",
                   "portals",
                   "planning",
                   "security",
-                  "reportsFilter",
                   "moduleHighlights",
                   "quickActions",
                 ].includes(config.id),
