@@ -27,6 +27,9 @@ export interface Simulation {
   clientId?: string;
   siteName: string;
   siteAddress?: string;
+  // Date range for the need
+  startDate?: string;
+  endDate?: string;
   status: "Brouillon" | "En cours" | "Terminée" | "Convertie";
   shiftNeeds: SimulationShiftNeed[];
   additionalServices: SimulationService[];

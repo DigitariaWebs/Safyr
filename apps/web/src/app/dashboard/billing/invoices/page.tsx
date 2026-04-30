@@ -550,6 +550,17 @@ export default function BillingInvoicesPage() {
                 </p>
               </div>
 
+              {selectedInvoice.paymentDueDate && (
+                <div>
+                  <Label>Date d'échéance</Label>
+                  <p className="text-sm font-medium">
+                    {new Date(selectedInvoice.paymentDueDate).toLocaleDateString(
+                      "fr-FR",
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div className="col-span-2 border-t pt-4">
                 <Label className="text-base font-semibold mb-2 block">
                   Sources de données

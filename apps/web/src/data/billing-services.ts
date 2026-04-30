@@ -14,6 +14,7 @@ export interface BillingService {
   name: string;
   serviceType: ServiceType;
   comment?: string;
+  detail?: string;
   unit: ServiceUnit;
   priceBase?: PriceBase;
   priceHT: number;

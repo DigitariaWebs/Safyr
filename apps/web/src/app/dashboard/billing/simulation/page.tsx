@@ -270,6 +270,8 @@ const emptySimulation = (): Partial<Simulation> => ({
   clientName: "",
   siteName: "",
   siteAddress: "",
+  startDate: new Date().toISOString().split("T")[0],
+  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   status: "Brouillon",
   shiftNeeds: [],
   additionalServices: [],
@@ -453,6 +455,15 @@ export default function BillingSimulationPage() {
   };
 
   const handleSave = () => {
+    // Validate required date fields
+    if (!formData.startDate || !formData.endDate) {
+      alert("Veuillez renseigner la date de début du besoin et la date de fin du besoin.");
+      return;
+    }
+    if (new Date(formData.startDate) > new Date(formData.endDate)) {
+      alert("La date de début doit être antérieure ou égale à la date de fin.");
+      return;
+    }
     const now = new Date().toISOString().split("T")[0];
     if (formData.id) {
       // Edit
@@ -719,6 +730,29 @@ export default function BillingSimulationPage() {
                       setFormData({ ...formData, siteAddress: e.target.value })
                     }
                     placeholder="Ex: Rosny-sous-Bois"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="startDate">Date de début du besoin *</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="endDate">Date de fin du besoin *</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endDate: e.target.value })
+                    }
                   />
                 </div>
                 <div>

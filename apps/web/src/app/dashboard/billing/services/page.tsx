@@ -27,6 +27,19 @@ import {
 } from "@/data/billing-services";
 
 export default function BillingServicesPage() {
+  const SERVICE_NAME_OPTIONS = [
+    "Agent de Sécurité",
+    "SSIAP1",
+    "SSIAP2",
+    "SSIAP3",
+    "Rondier",
+    "Agent Cynophile",
+    "Agent d'accueil",
+    "Chef de poste",
+    "Opérateur vidéo",
+    "DI",
+  ] as const;
+
   const [services, setServices] =
     useState<BillingService[]>(mockBillingServices);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -77,6 +90,7 @@ export default function BillingServicesPage() {
       name: "",
       serviceType: "Service" as ServiceType,
       comment: "",
+      detail: "",
       unit: "h" as ServiceUnit,
       priceBase: "Prix HT" as PriceBase,
       priceHT: 0,
@@ -119,6 +133,7 @@ export default function BillingServicesPage() {
         name: formData.name || "",
         serviceType: (formData.serviceType as ServiceType) || "Service",
         comment: formData.comment,
+        detail: formData.detail,
         unit: (formData.unit as ServiceUnit) || "h",
         priceBase: (formData.priceBase as PriceBase) || "Prix HT",
         priceHT,
@@ -233,13 +248,23 @@ export default function BillingServicesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Label>Nom</Label>
-              <Input
+              <Select
                 value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, name: value })
                 }
-                placeholder="SSIAP1, Accueil, Frais dossier..."
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SERVICE_NAME_OPTIONS.map((serviceName) => (
+                    <SelectItem key={serviceName} value={serviceName}>
+                      {serviceName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -288,6 +313,18 @@ export default function BillingServicesPage() {
                   setFormData({ ...formData, comment: e.target.value })
                 }
                 placeholder="Description optionnelle..."
+                rows={4}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Label>Détail</Label>
+              <Textarea
+                value={formData.detail || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, detail: e.target.value })
+                }
+                placeholder="Précision optionnelle pour différencier ce service selon le client..."
                 rows={4}
               />
             </div>
@@ -438,6 +475,15 @@ export default function BillingServicesPage() {
                 <Label>Commentaire</Label>
                 <p className="text-sm whitespace-pre-wrap">
                   {viewingService.comment}
+                </p>
+              </div>
+            )}
+
+            {viewingService.detail && (
+              <div>
+                <Label>Détail</Label>
+                <p className="text-sm whitespace-pre-wrap">
+                  {viewingService.detail}
                 </p>
               </div>
             )}

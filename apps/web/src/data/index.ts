@@ -34,7 +34,6 @@ export * from "./logbook-security";
 // Other Mock Data
 export * from "./billing-clients";
 export * from "./billing-invoices";
-export * from "./billing-vat-configs";
 export * from "./accounting-plans";
 export * from "./banking-accounts";
 export * from "./planning-agents";
