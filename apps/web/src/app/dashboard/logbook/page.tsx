@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Calendar,
   Users,
   Shield,
   FileBarChart,
@@ -45,6 +44,9 @@ import {
   EventTypesWidget,
   TopZonesWidget,
   CriticalSplitWidget,
+  SiteComparisonWidget,
+  AgentActivityHeatmapWidget,
+  ResolutionTrendWidget,
 } from "@/components/logbook/dashboard/LogbookKpiWidgets";
 import { type DateFilterPreset } from "@/lib/date-range";
 
@@ -334,16 +336,18 @@ function PlanningWidget({ isLoading }: { isLoading: boolean }) {
     <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-primary" />
-          Planning & RH
+          <Shield className="h-4 w-4 text-primary" />
+          Agent affecté
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Link
-          href="/dashboard/logbook/planning-rh"
+          href="/dashboard/logbook/agent-affecte"
           className="flex items-center justify-between rounded-lg bg-muted/30 p-3 hover:bg-muted/50 transition-colors"
         >
-          <span className="text-sm">Accéder au suivi RH opérationnel</span>
+          <span className="text-sm">
+            Configurer les règles d&apos;affectation
+          </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
       </CardContent>
@@ -425,11 +429,6 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       icon: AlertTriangle,
     },
     {
-      label: "Planning & RH",
-      href: "/dashboard/logbook/planning-rh",
-      icon: Calendar,
-    },
-    {
       label: "Portail Clients",
       href: "/dashboard/logbook/client-portal",
       icon: Users,
@@ -440,14 +439,14 @@ function QuickActionsWidget({ isLoading }: { isLoading: boolean }) {
       icon: Users,
     },
     {
-      label: "Démarque inconnue",
-      href: "/dashboard/logbook/unknown-losses",
+      label: "Fiches d'Interpellation",
+      href: "/dashboard/logbook/interpellation-archives",
       icon: FileText,
     },
     {
-      label: "Interpellations",
-      href: "/dashboard/logbook/interpellation-archives",
-      icon: FileText,
+      label: "Agent affecté",
+      href: "/dashboard/logbook/agent-affecte",
+      icon: Shield,
     },
     {
       label: "Rapports",
@@ -550,42 +549,6 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
     span: "lg:col-span-4",
   },
   {
-    id: "kpiSecurityIncidents",
-    name: "KPI Incidents",
-    component: SecurityIncidentsWidget,
-    visible: true,
-  },
-  {
-    id: "kpiCritical",
-    name: "KPI Critiques",
-    component: CriticalEventsWidget,
-    visible: true,
-  },
-  {
-    id: "kpiResolution",
-    name: "KPI Résolution",
-    component: ResolutionRateWidget,
-    visible: true,
-  },
-  {
-    id: "kpiPatrols",
-    name: "KPI Rondes",
-    component: PatrolRoundsWidget,
-    visible: true,
-  },
-  {
-    id: "kpiRH",
-    name: "KPI RH",
-    component: RHImpactWidget,
-    visible: true,
-  },
-  {
-    id: "kpiClient",
-    name: "KPI Client",
-    component: ClientPerformanceWidget,
-    visible: true,
-  },
-  {
     id: "chartTrend",
     name: "Graphique Tendance",
     component: TrendChartWidget,
@@ -593,28 +556,46 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
     span: "lg:col-span-2",
   },
   {
-    id: "chartSeverity",
-    name: "Graphique Gravité",
-    component: SeverityDistributionWidget,
+    id: "chartResolutionTrend",
+    name: "Tendance taux de résolution",
+    component: ResolutionTrendWidget,
     visible: true,
+    span: "lg:col-span-2",
+  },
+  {
+    id: "chartSiteComparison",
+    name: "Comparaison par site",
+    component: SiteComparisonWidget,
+    visible: true,
+    span: "lg:col-span-2",
   },
   {
     id: "chartTypes",
     name: "Graphique Types",
     component: EventTypesWidget,
     visible: true,
+    span: "lg:col-span-2",
+  },
+  {
+    id: "chartHeatmap",
+    name: "Activité agents (heatmap)",
+    component: AgentActivityHeatmapWidget,
+    visible: true,
+    span: "lg:col-span-4",
+  },
+  {
+    id: "chartSeverity",
+    name: "Graphique Gravité",
+    component: SeverityDistributionWidget,
+    visible: true,
+    span: "lg:col-span-2",
   },
   {
     id: "zones",
     name: "Zones impactées",
     component: TopZonesWidget,
     visible: true,
-  },
-  {
-    id: "criticalSplit",
-    name: "Critiques vs mineurs",
-    component: CriticalSplitWidget,
-    visible: true,
+    span: "lg:col-span-2",
   },
   {
     id: "liveFeed",
@@ -631,6 +612,48 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
     span: "lg:col-span-2",
   },
   {
+    id: "kpiRH",
+    name: "KPI RH",
+    component: RHImpactWidget,
+    visible: true,
+  },
+  {
+    id: "kpiClient",
+    name: "KPI Client",
+    component: ClientPerformanceWidget,
+    visible: true,
+  },
+  {
+    id: "kpiSecurityIncidents",
+    name: "KPI Incidents",
+    component: SecurityIncidentsWidget,
+    visible: false,
+  },
+  {
+    id: "kpiCritical",
+    name: "KPI Critiques",
+    component: CriticalEventsWidget,
+    visible: false,
+  },
+  {
+    id: "kpiResolution",
+    name: "KPI Résolution",
+    component: ResolutionRateWidget,
+    visible: false,
+  },
+  {
+    id: "kpiPatrols",
+    name: "KPI Rondes",
+    component: PatrolRoundsWidget,
+    visible: false,
+  },
+  {
+    id: "criticalSplit",
+    name: "Critiques vs mineurs",
+    component: CriticalSplitWidget,
+    visible: false,
+  },
+  {
     id: "validation",
     name: "Validation",
     component: ValidationWidget,
@@ -644,7 +667,7 @@ const defaultWidgetConfigs: LogbookWidgetConfig[] = [
   },
   {
     id: "planning",
-    name: "Planning & RH",
+    name: "Agent affecté",
     component: PlanningWidget,
     visible: true,
   },

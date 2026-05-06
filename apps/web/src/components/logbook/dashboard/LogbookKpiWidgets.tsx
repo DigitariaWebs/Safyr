@@ -8,6 +8,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -48,6 +50,9 @@ type AnalyticsData = {
   trendData: { date: string; evenements: number }[];
   pieData: { name: string; value: number; color: string }[];
   typeData: { type: string; count: number }[];
+  siteData: { site: string; count: number }[];
+  heatmapData: { day: string; dayIndex: number; hour: number; count: number }[];
+  resolutionTrendData: { date: string; rate: number }[];
 };
 
 const DARK_TOOLTIP_STYLE = {
@@ -167,6 +172,52 @@ function computeAnalytics(events: LogbookEvent[]): AnalyticsData {
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ type: TYPE_LABELS[k] ?? k, count: v }));
 
+  const siteCounts: Record<string, number> = {};
+  for (const e of events) {
+    siteCounts[e.site] = (siteCounts[e.site] || 0) + 1;
+  }
+  const siteData = Object.entries(siteCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([site, count]) => ({ site, count }));
+
+  const dayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+  const heatmapMap: Record<string, number> = {};
+  for (const e of events) {
+    const d = new Date(e.timestamp);
+    const day = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    const hour = d.getHours();
+    const key = `${day}-${hour}`;
+    heatmapMap[key] = (heatmapMap[key] || 0) + 1;
+  }
+  const heatmapData = Object.entries(heatmapMap).map(([key, count]) => {
+    const [dayIndex, hour] = key.split("-").map(Number);
+    return { day: dayLabels[dayIndex], dayIndex, hour, count };
+  });
+
+  const resolutionByDay: Record<string, { total: number; resolved: number }> =
+    {};
+  for (const e of events) {
+    if (e.type !== "incident") continue;
+    const d = new Date(e.timestamp).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    if (!resolutionByDay[d]) resolutionByDay[d] = { total: 0, resolved: 0 };
+    resolutionByDay[d].total += 1;
+    if (e.status === "resolved") resolutionByDay[d].resolved += 1;
+  }
+  const resolutionTrendData = Object.entries(resolutionByDay)
+    .sort((a, b) => {
+      const [da, ma] = a[0].split("/").map(Number);
+      const [db, mb] = b[0].split("/").map(Number);
+      return ma !== mb ? ma - mb : da - db;
+    })
+    .map(([date, { total, resolved }]) => ({
+      date,
+      rate: total > 0 ? Math.round((resolved / total) * 100) : 0,
+    }));
+
   return {
     totalIncidents,
     criticalIncidents,
@@ -181,6 +232,9 @@ function computeAnalytics(events: LogbookEvent[]): AnalyticsData {
     trendData,
     pieData,
     typeData,
+    siteData,
+    heatmapData,
+    resolutionTrendData,
   };
 }
 
@@ -549,6 +603,207 @@ export function TopZonesWidget({ isLoading }: KpiWidgetProps) {
               </div>
             ))}
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function SiteComparisonWidget({ isLoading }: KpiWidgetProps) {
+  if (isLoading) return <SmallSkeletonCard />;
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          Comparaison par site
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {analytics.siteData.length === 0 ? (
+          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+            Aucun événement
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={analytics.siteData}
+              layout="vertical"
+              margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#334155"
+                horizontal={false}
+              />
+              <XAxis
+                type="number"
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="site"
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={140}
+              />
+              <Tooltip
+                {...DARK_TOOLTIP_STYLE}
+                formatter={(value) => [value, "Événements"]}
+              />
+              <Bar dataKey="count" fill="#22d3ee" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function AgentActivityHeatmapWidget({ isLoading }: KpiWidgetProps) {
+  if (isLoading) return <SmallSkeletonCard />;
+
+  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+  const hours = Array.from({ length: 24 }, (_, h) => h);
+  const cellMap = new Map<string, number>();
+  for (const cell of analytics.heatmapData) {
+    cellMap.set(`${cell.dayIndex}-${cell.hour}`, cell.count);
+  }
+  const max = Math.max(1, ...analytics.heatmapData.map((c) => c.count));
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <Clock className="h-4 w-4 text-primary" />
+          Activité agents — jour × heure
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {analytics.heatmapData.length === 0 ? (
+          <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+            Aucun événement
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <div className="grid grid-cols-[40px_repeat(24,minmax(0,1fr))] gap-[2px] text-[10px] text-muted-foreground">
+              <span />
+              {hours.map((h) => (
+                <span
+                  key={h}
+                  className="text-center"
+                  style={{ visibility: h % 3 === 0 ? "visible" : "hidden" }}
+                >
+                  {h}h
+                </span>
+              ))}
+            </div>
+            {days.map((day, dayIndex) => (
+              <div
+                key={day}
+                className="grid grid-cols-[40px_repeat(24,minmax(0,1fr))] gap-[2px]"
+              >
+                <span className="text-[10px] text-muted-foreground self-center">
+                  {day}
+                </span>
+                {hours.map((h) => {
+                  const v = cellMap.get(`${dayIndex}-${h}`) ?? 0;
+                  const intensity = v === 0 ? 0 : 0.15 + (v / max) * 0.85;
+                  return (
+                    <div
+                      key={h}
+                      title={`${day} ${h}h — ${v} événement${v > 1 ? "s" : ""}`}
+                      className="h-5 rounded-sm"
+                      style={{
+                        background:
+                          v === 0
+                            ? "rgba(148,163,184,0.08)"
+                            : `rgba(34,211,238,${intensity})`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+            <div className="flex items-center gap-2 pt-2 text-[10px] text-muted-foreground">
+              <span>Moins</span>
+              <div className="flex gap-[2px]">
+                {[0.15, 0.4, 0.65, 0.9].map((i) => (
+                  <span
+                    key={i}
+                    className="h-3 w-3 rounded-sm"
+                    style={{ background: `rgba(34,211,238,${i})` }}
+                  />
+                ))}
+              </div>
+              <span>Plus</span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function ResolutionTrendWidget({ isLoading }: KpiWidgetProps) {
+  if (isLoading) return <SmallSkeletonCard />;
+
+  return (
+    <Card className="glass-card border-border/40 hover:border-primary/30 transition-all h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-light text-muted-foreground flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-emerald-500" />
+          Taux de résolution — tendance
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {analytics.resolutionTrendData.length === 0 ? (
+          <div className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">
+            Aucun incident
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart
+              data={analytics.resolutionTrendData}
+              margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#334155"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 100]}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip
+                {...DARK_TOOLTIP_STYLE}
+                formatter={(value) => [`${value}%`, "Résolution"]}
+              />
+              <Line
+                type="monotone"
+                dataKey="rate"
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={{ fill: "#10b981", r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         )}
       </CardContent>
     </Card>

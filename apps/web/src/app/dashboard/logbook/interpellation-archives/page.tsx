@@ -24,9 +24,16 @@ import {
   Pencil,
   Trash2,
   Plus,
+  History,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { InfoCard, InfoCardContainer } from "@/components/ui/info-card";
+import { DateRangeFilter } from "@/components/ui/date-range-filter";
+import {
+  buildDateRange,
+  isDateInRange,
+  type DateFilterPreset,
+} from "@/lib/date-range";
 
 interface InterpellationRecord {
   id: string;
@@ -570,6 +577,7 @@ export default function InterpellationArchivesPage() {
     endDate: "",
     searchTerm: "",
   });
+  const [datePreset, setDatePreset] = useState<DateFilterPreset>("all");
 
   const [newFicheData, setNewFicheData] =
     useState<FicheFormData>(emptyFicheData);
@@ -593,14 +601,14 @@ export default function InterpellationArchivesPage() {
       (r) => r.reason === searchFilters.reason,
     );
   }
-  if (searchFilters.startDate) {
-    filteredRecords = filteredRecords.filter(
-      (r) => new Date(r.date) >= new Date(searchFilters.startDate),
-    );
-  }
-  if (searchFilters.endDate) {
-    filteredRecords = filteredRecords.filter(
-      (r) => new Date(r.date) <= new Date(searchFilters.endDate),
+  const dateRange = buildDateRange(
+    datePreset,
+    searchFilters.startDate,
+    searchFilters.endDate,
+  );
+  if (dateRange.from || dateRange.to) {
+    filteredRecords = filteredRecords.filter((r) =>
+      isDateInRange(r.date, dateRange),
     );
   }
   if (searchFilters.searchTerm) {
@@ -763,6 +771,31 @@ export default function InterpellationArchivesPage() {
         </div>
       </div>
 
+      {/* Historique */}
+      <Card className="glass-card border-border/40">
+        <CardHeader>
+          <CardTitle className="text-lg font-light flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Historique — Recherche par période
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DateRangeFilter
+            preset={datePreset}
+            customStartDate={searchFilters.startDate}
+            customEndDate={searchFilters.endDate}
+            onPresetChange={setDatePreset}
+            onCustomStartDateChange={(value) =>
+              setSearchFilters((prev) => ({ ...prev, startDate: value }))
+            }
+            onCustomEndDateChange={(value) =>
+              setSearchFilters((prev) => ({ ...prev, endDate: value }))
+            }
+            label="Période"
+          />
+        </CardContent>
+      </Card>
+
       {/* Search Filters */}
       <Card className="glass-card border-border/40">
         <CardHeader>
@@ -828,36 +861,6 @@ export default function InterpellationArchivesPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="startDate">Date début</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={searchFilters.startDate}
-                onChange={(e) =>
-                  setSearchFilters({
-                    ...searchFilters,
-                    startDate: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="endDate">Date fin</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={searchFilters.endDate}
-                onChange={(e) =>
-                  setSearchFilters({
-                    ...searchFilters,
-                    endDate: e.target.value,
-                  })
-                }
-              />
             </div>
 
             <div>

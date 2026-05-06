@@ -9,7 +9,6 @@ import {
   BookOpen,
   CheckCircle,
   AlertTriangle,
-  Calendar,
   Users,
   Shield,
   FileBarChart,
@@ -33,11 +32,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/logbook/alerts",
   },
   {
-    label: "Planning & RH",
-    icon: Calendar,
-    href: "/dashboard/logbook/planning-rh",
-  },
-  {
     label: "Portails",
     icon: Users,
     children: [
@@ -52,18 +46,9 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: "Gestion",
+    label: "Fiches d'Interpellation",
     icon: FileText,
-    children: [
-      {
-        label: "Démarque Inconnue (DI)",
-        href: "/dashboard/logbook/unknown-losses",
-      },
-      {
-        label: "Fiches d'Interpellation",
-        href: "/dashboard/logbook/interpellation-archives",
-      },
-    ],
+    href: "/dashboard/logbook/interpellation-archives",
   },
   {
     label: "Rapports",
@@ -73,7 +58,16 @@ const navItems: NavItem[] = [
   {
     label: "Sécurité",
     icon: Shield,
-    href: "/dashboard/logbook/security",
+    children: [
+      {
+        label: "Sécurité",
+        href: "/dashboard/logbook/security",
+      },
+      {
+        label: "Agent affecté",
+        href: "/dashboard/logbook/agent-affecte",
+      },
+    ],
   },
 ];
 
