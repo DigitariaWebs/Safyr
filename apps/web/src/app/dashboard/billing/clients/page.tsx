@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
@@ -17,7 +17,79 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
+import { Stepper } from "@/components/ui/stepper";
 import { mockBillingClients, BillingClient } from "@/data/billing-clients";
+
+// `recherche-entreprises.api.gouv.fr` is a free, no-auth public endpoint
+// (CORS-enabled), so the browser can call it directly. We pull whatever
+// fields the API exposes and map them onto the BillingClient form.
+type RechercheEntrepriseHit = {
+  nom_complet?: string;
+  nom_raison_sociale?: string;
+  siren?: string;
+  activite_principale?: string;
+  libelle_activite_principale?: string;
+  nature_juridique?: string;
+  libelle_nature_juridique?: string;
+  tranche_effectif_salarie?: string;
+  date_creation?: string;
+  dirigeants?: Array<{
+    nom?: string;
+    prenoms?: string;
+    qualite?: string;
+  }>;
+  siege?: {
+    siret?: string;
+    adresse?: string | null;
+    numero_voie?: string | null;
+    type_voie?: string | null;
+    libelle_voie?: string | null;
+    complement_adresse?: string | null;
+    code_postal?: string | null;
+    libelle_commune?: string | null;
+  };
+};
+
+type RechercheEntrepriseResponse = {
+  results?: RechercheEntrepriseHit[];
+};
+
+// Compute the French intra-community VAT number from a SIREN.
+// Formula: FR + key + SIREN, where key = (12 + 3 * (SIREN % 97)) % 97.
+function computeFrTvaNumber(siret: string): string | null {
+  const siren = siret.slice(0, 9);
+  if (!/^\d{9}$/.test(siren)) return null;
+  const key = (12 + 3 * (Number(siren) % 97)) % 97;
+  return `FR${String(key).padStart(2, "0")}${siren}`;
+}
+
+function formatSiegeAddress(siege: RechercheEntrepriseHit["siege"]): string {
+  if (!siege) return "";
+  if (siege.adresse) {
+    return [siege.adresse, siege.code_postal, siege.libelle_commune]
+      .filter((p): p is string => Boolean(p))
+      .join(", ");
+  }
+  const street = [siege.numero_voie, siege.type_voie, siege.libelle_voie]
+    .filter((p): p is string => Boolean(p))
+    .join(" ");
+  return [
+    street,
+    siege.complement_adresse,
+    siege.code_postal,
+    siege.libelle_commune,
+  ]
+    .filter((p): p is string => Boolean(p))
+    .join(", ");
+}
+
+function formatDirigeantName(
+  d: NonNullable<RechercheEntrepriseHit["dirigeants"]>[number],
+): string {
+  const prenoms = (d.prenoms ?? "").trim();
+  const nom = (d.nom ?? "").trim();
+  return [prenoms, nom].filter(Boolean).join(" ");
+}
 
 export default function BillingClientsPage() {
   const [clients, setClients] = useState<BillingClient[]>(mockBillingClients);
@@ -27,6 +99,95 @@ export default function BillingClientsPage() {
     null,
   );
   const [formData, setFormData] = useState<Partial<BillingClient>>({});
+  const [currentStep, setCurrentStep] = useState(0);
+  const [stepError, setStepError] = useState<string | null>(null);
+  const [siretLookupLoading, setSiretLookupLoading] = useState(false);
+  const [siretLookupError, setSiretLookupError] = useState<string | null>(null);
+  const siretAbortRef = useRef<AbortController | null>(null);
+  const siretDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      siretAbortRef.current?.abort();
+      if (siretDebounceRef.current) clearTimeout(siretDebounceRef.current);
+    };
+  }, []);
+
+  function scheduleSiretLookup(siret: string) {
+    if (siretDebounceRef.current) clearTimeout(siretDebounceRef.current);
+    siretAbortRef.current?.abort();
+    setSiretLookupError(null);
+
+    if (!/^\d{14}$/.test(siret)) {
+      setSiretLookupLoading(false);
+      return;
+    }
+
+    siretDebounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      siretAbortRef.current = controller;
+      setSiretLookupLoading(true);
+      try {
+        const url = `https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(
+          siret,
+        )}&page=1&per_page=1`;
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: { accept: "application/json" },
+        });
+        if (controller.signal.aborted) return;
+        if (!res.ok) {
+          setSiretLookupError("Erreur lors de la recherche");
+          return;
+        }
+        const data = (await res.json()) as RechercheEntrepriseResponse;
+        const hit = data.results?.[0];
+        if (!hit) {
+          setSiretLookupError("SIRET introuvable");
+          return;
+        }
+
+        const name = hit.nom_complet ?? hit.nom_raison_sociale ?? "";
+        const address = formatSiegeAddress(hit.siege);
+        const tva = computeFrTvaNumber(siret);
+        const dirigeant = hit.dirigeants?.[0];
+        const contactName = dirigeant ? formatDirigeantName(dirigeant) : "";
+
+        // Stale-response guard: only apply if SIRET still matches
+        setFormData((fd) => {
+          if (fd.siret !== siret) return fd;
+          return {
+            ...fd,
+            name: name || fd.name,
+            address: address || fd.address,
+            tva: fd.tva || tva || fd.tva,
+            contactName: fd.contactName || contactName || fd.contactName,
+          };
+        });
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        setSiretLookupError("Erreur lors de la recherche");
+      } finally {
+        if (siretAbortRef.current === controller) {
+          setSiretLookupLoading(false);
+        }
+      }
+    }, 400);
+  }
+
+  function validateStep(step: number): string | null {
+    if (step === 0) {
+      if (!formData.name?.trim()) return "Le nom du client est requis.";
+      if (!/^\d{14}$/.test((formData.siret || "").replace(/\s+/g, "")))
+        return "Le SIRET doit comporter 14 chiffres.";
+    }
+    if (step === 1) {
+      if (!formData.contractType) return "Le type de contrat est requis.";
+      if (!formData.contractStartDate)
+        return "La date de début de contrat est requise.";
+    }
+    return null;
+  }
 
   const columns: ColumnDef<BillingClient>[] = [
     {
@@ -107,6 +268,7 @@ export default function BillingClientsPage() {
       phone: "",
       email: "",
     });
+    setCurrentStep(0);
     setIsCreateModalOpen(true);
   };
 
@@ -152,6 +314,7 @@ export default function BillingClientsPage() {
       setClients([...clients, newClient]);
     }
     setIsCreateModalOpen(false);
+    setCurrentStep(0);
     setFormData({});
   };
 
@@ -186,505 +349,577 @@ export default function BillingClientsPage() {
       {/* Create/Edit Modal */}
       <Modal
         open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCurrentStep(0);
+          }
+          setIsCreateModalOpen(open);
+        }}
         type="form"
         title={formData.id ? "Modifier le client" : "Nouveau client"}
         size="lg"
         actions={{
           primary: {
-            label: formData.id ? "Modifier" : "Créer",
-            onClick: handleSave,
+            label:
+              currentStep === 2
+                ? formData.id
+                  ? "Modifier"
+                  : "Créer"
+                : "Suivant",
+            onClick: () => {
+              const error = validateStep(currentStep);
+              if (error) {
+                setStepError(error);
+                return;
+              }
+              setStepError(null);
+              if (currentStep === 2) {
+                handleSave();
+              } else {
+                setCurrentStep(currentStep + 1);
+              }
+            },
           },
           secondary: {
-            label: "Annuler",
-            onClick: () => setIsCreateModalOpen(false),
+            label: currentStep > 0 ? "Précédent" : "Annuler",
+            onClick: () => {
+              setStepError(null);
+              if (currentStep > 0) {
+                setCurrentStep(currentStep - 1);
+              } else {
+                setIsCreateModalOpen(false);
+              }
+            },
             variant: "outline",
           },
         }}
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="name">Nom du client</Label>
-              <Input
-                id="name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Centre Commercial..."
-              />
-            </div>
+        <div className="space-y-6">
+          {/* Stepper */}
+          <Stepper
+            steps={[
+              { label: "Informations générales" },
+              { label: "Informations contrat" },
+              { label: "Connexions" },
+            ]}
+            currentStep={currentStep}
+          />
 
-            <div>
-              <Label htmlFor="siret">SIRET</Label>
-              <Input
-                id="siret"
-                value={formData.siret || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, siret: e.target.value })
-                }
-                placeholder="12345678901234"
-              />
-            </div>
+          {stepError && <p className="text-sm text-rose-600">{stepError}</p>}
 
-            <div>
-              <Label htmlFor="tva">Numéro de TVA</Label>
-              <Input
-                id="tva"
-                value={formData.tva || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, tva: e.target.value })
-                }
-                placeholder="FR12345678901"
-              />
-            </div>
+          {/* Step Content */}
+          <div className="space-y-4">
+            {/* Step 0: General Information */}
+            {currentStep === 0 && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label htmlFor="name">Nom du client</Label>
+                  <Input
+                    id="name"
+                    value={formData.name || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="Centre Commercial..."
+                  />
+                </div>
 
-            <div className="col-span-2 border-t pt-4">
-              <Label className="text-base font-semibold mb-2 block">
-                Informations Entreprise
-              </Label>
-            </div>
+                <div>
+                  <Label htmlFor="siret">SIRET</Label>
+                  <Input
+                    id="siret"
+                    value={formData.siret || ""}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\s+/g, "");
+                      setFormData({ ...formData, siret: value });
+                      scheduleSiretLookup(value);
+                    }}
+                    placeholder="12345678901234"
+                  />
+                  {siretLookupLoading && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Recherche du SIRET…
+                    </p>
+                  )}
+                  {siretLookupError && (
+                    <p className="text-xs text-rose-600 mt-1">
+                      {siretLookupError}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <Label htmlFor="companyPhone">Téléphone entreprise</Label>
-              <PhoneInput
-                id="companyPhone"
-                value={formData.companyPhone || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, companyPhone: value })
-                }
-              />
-            </div>
+                <div>
+                  <Label htmlFor="tva">Numéro de TVA</Label>
+                  <Input
+                    id="tva"
+                    value={formData.tva || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tva: e.target.value })
+                    }
+                    placeholder="FR12345678901"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="companyEmail">Email entreprise</Label>
-              <Input
-                id="companyEmail"
-                type="email"
-                value={formData.companyEmail || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, companyEmail: e.target.value })
-                }
-                placeholder="contact@entreprise.com"
-              />
-            </div>
+                <div className="col-span-2 border-t pt-4">
+                  <Label className="text-base font-semibold mb-2 block">
+                    Informations Entreprise
+                  </Label>
+                </div>
 
-            <div className="col-span-2">
-              <Label htmlFor="address">Adresse</Label>
-              <Input
-                id="address"
-                value={formData.address || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                placeholder="1 Rue du Commerce, 75000 Paris"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="companyPhone">Téléphone entreprise</Label>
+                  <PhoneInput
+                    id="companyPhone"
+                    value={formData.companyPhone || ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, companyPhone: value })
+                    }
+                  />
+                </div>
 
-            <div className="col-span-2 border-t pt-4">
-              <Label className="text-base font-semibold mb-2 block">
-                Informations Interlocuteur
-              </Label>
-            </div>
+                <div>
+                  <Label htmlFor="companyEmail">Email entreprise</Label>
+                  <Input
+                    id="companyEmail"
+                    type="email"
+                    value={formData.companyEmail || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, companyEmail: e.target.value })
+                    }
+                    placeholder="contact@entreprise.com"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="contactName">Nom interlocuteur</Label>
-              <Input
-                id="contactName"
-                value={formData.contactName || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, contactName: e.target.value })
-                }
-                placeholder="Nom interlocuteur"
-              />
-            </div>
+                <div className="col-span-2">
+                  <Label htmlFor="address">Adresse</Label>
+                  <Input
+                    id="address"
+                    value={formData.address || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    placeholder="1 Rue du Commerce, 75000 Paris"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="contactPhone">Téléphone interlocuteur</Label>
-              <PhoneInput
-                id="contactPhone"
-                value={formData.contactPhone || ""}
-                onChange={(value) =>
-                  setFormData({ ...formData, contactPhone: value })
-                }
-              />
-            </div>
+                <div className="col-span-2 border-t pt-4">
+                  <Label className="text-base font-semibold mb-2 block">
+                    Informations Interlocuteur
+                  </Label>
+                </div>
 
-            <div>
-              <Label htmlFor="contactEmail">Email interlocuteur</Label>
-              <Input
-                id="contactEmail"
-                type="email"
-                value={formData.contactEmail || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, contactEmail: e.target.value })
-                }
-                placeholder="interlocuteur@exemple.com"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="contactName">Nom interlocuteur</Label>
+                  <Input
+                    id="contactName"
+                    value={formData.contactName || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactName: e.target.value })
+                    }
+                    placeholder="Nom interlocuteur"
+                  />
+                </div>
 
-            <div className="col-span-2 border-t pt-4">
-              <Label className="text-base font-semibold mb-2 block">
-                Informations Contrat
-              </Label>
-            </div>
+                <div>
+                  <Label htmlFor="contactPhone">Téléphone interlocuteur</Label>
+                  <PhoneInput
+                    id="contactPhone"
+                    value={formData.contactPhone || ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, contactPhone: value })
+                    }
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="contractType">Type de contrat</Label>
-              <Select
-                value={formData.contractType}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    contractType: value as BillingClient["contractType"],
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Mensuel">Mensuel</SelectItem>
-                  <SelectItem value="Forfaitaire">Forfaitaire</SelectItem>
-                  <SelectItem value="Heure réelle">Heure réelle</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Type de prestation</Label>
-              <Select
-                value={
-                  Array.isArray(formData.serviceTypes) &&
-                  formData.serviceTypes.length > 0
-                    ? formData.serviceTypes[0]
-                    : formData.serviceType || ""
-                }
-                onValueChange={(value) => {
-                  setFormData({
-                    ...formData,
-                    serviceType: value as ServiceType,
-                    serviceTypes: [value as ServiceType],
-                  });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERVICE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="contractStartDate">Date début contrat</Label>
-              <Input
-                id="contractStartDate"
-                type="date"
-                value={formData.contractStartDate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    contractStartDate: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="contractEndDate">
-                Date fin contrat (optionnel)
-              </Label>
-              <Input
-                id="contractEndDate"
-                type="date"
-                value={formData.contractEndDate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    contractEndDate: e.target.value || undefined,
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="monthlyHours">
-                Volumes horaires mensuels (h)
-              </Label>
-              <HoursInput
-                value={formData.monthlyHours || 0}
-                onChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    monthlyHours: value,
-                  })
-                }
-                step={1}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="indexationRate">
-                Indexation contractuelle (%)
-              </Label>
-              <Input
-                id="indexationRate"
-                type="number"
-                step="0.1"
-                value={formData.indexationRate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    indexationRate: e.target.value
-                      ? parseFloat(e.target.value)
-                      : undefined,
-                  })
-                }
-                placeholder="2.5"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="sites">Nombre de sites</Label>
-              <Input
-                id="sites"
-                type="number"
-                value={formData.sites || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sites: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="hourlyRate">Taux horaire (€/h)</Label>
-              <Input
-                id="hourlyRate"
-                type="number"
-                step="0.01"
-                value={formData.hourlyRate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    hourlyRate: parseFloat(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="nightBonus">Majoration nuit (%)</Label>
-              <Input
-                id="nightBonus"
-                type="number"
-                value={formData.nightBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nightBonus: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="sundayBonus">Majoration dimanche (%)</Label>
-              <Input
-                id="sundayBonus"
-                type="number"
-                value={formData.sundayBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sundayBonus: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="holidayBonus">Majoration jours fériés (%)</Label>
-              <Input
-                id="holidayBonus"
-                type="number"
-                value={formData.holidayBonus || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    holidayBonus: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="billingDay">Jour facturation</Label>
-              <Input
-                id="billingDay"
-                type="number"
-                min="1"
-                max="31"
-                value={formData.billingDay || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    billingDay: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="paymentTerm">Délai paiement</Label>
-              <Select
-                value={String(formData.paymentTerm || 30)}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    paymentTerm: parseInt(value),
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">À réception</SelectItem>
-                  <SelectItem value="15">15 jours</SelectItem>
-                  <SelectItem value="30">30 jours</SelectItem>
-                  <SelectItem value="45">45 jours</SelectItem>
-                  <SelectItem value="60">60 jours</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="status">Statut</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    status: value as BillingClient["status"],
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Actif">Actif</SelectItem>
-                  <SelectItem value="Suspendu">Suspendu</SelectItem>
-                  <SelectItem value="Inactif">Inactif</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="col-span-2 border-t pt-4">
-              <Label className="text-base font-semibold mb-2 block">
-                Connexion RH : Typologie des agents affectés
-              </Label>
-              <div className="space-y-2">
-                {[
-                  "Agent de sécurité",
-                  "Chef de poste",
-                  "Rondier",
-                  "Agent événementiel",
-                  "Superviseur",
-                  "SSIAP1",
-                  "SSIAP2",
-                  "SSIAP3",
-                  "Agent Cynophile",
-                ].map((type) => (
-                  <div key={type} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`agentType-${type}`}
-                      checked={formData.agentTypes?.includes(type) || false}
-                      onChange={(e) => {
-                        const current = formData.agentTypes || [];
-                        if (e.target.checked) {
-                          setFormData({
-                            ...formData,
-                            agentTypes: [...current, type],
-                          });
-                        } else {
-                          setFormData({
-                            ...formData,
-                            agentTypes: current.filter((t) => t !== type),
-                          });
-                        }
-                      }}
-                      className="rounded border-gray-300"
-                    />
-                    <Label
-                      htmlFor={`agentType-${type}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {type}
-                    </Label>
-                  </div>
-                ))}
+                <div>
+                  <Label htmlFor="contactEmail">Email interlocuteur</Label>
+                  <Input
+                    id="contactEmail"
+                    type="email"
+                    value={formData.contactEmail || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactEmail: e.target.value })
+                    }
+                    placeholder="interlocuteur@exemple.com"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="col-span-2 border-t pt-4">
-              <Label className="text-base font-semibold mb-2 block">
-                Connexion Planning : Volumes contractuels par site
-              </Label>
-              <div className="space-y-2">
-                {Array.from({ length: formData.sites || 1 }).map((_, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder={`Nom du site ${index + 1}`}
-                      value={formData.planningVolumes?.[index]?.site || ""}
-                      onChange={(e) => {
-                        const volumes = formData.planningVolumes || [];
-                        const newVolumes = [...volumes];
-                        newVolumes[index] = {
-                          ...newVolumes[index],
-                          site: e.target.value,
-                          monthlyHours: newVolumes[index]?.monthlyHours || 0,
-                        };
-                        setFormData({
-                          ...formData,
-                          planningVolumes: newVolumes,
-                        });
-                      }}
-                    />
-                    <HoursInput
-                      value={
-                        formData.planningVolumes?.[index]?.monthlyHours || 0
-                      }
-                      onChange={(value) => {
-                        const volumes = formData.planningVolumes || [];
-                        const newVolumes = [...volumes];
-                        newVolumes[index] = {
-                          ...newVolumes[index],
-                          site: newVolumes[index]?.site || `Site ${index + 1}`,
-                          monthlyHours: value,
-                        };
-                        setFormData({
-                          ...formData,
-                          planningVolumes: newVolumes,
-                        });
-                      }}
-                      step={1}
-                    />
-                  </div>
-                ))}
+            {/* Step 1: Contract Information */}
+            {currentStep === 1 && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-base font-semibold mb-2 block">
+                    Informations Contrat
+                  </Label>
+                </div>
+
+                <div>
+                  <Label htmlFor="contractType">Type de contrat</Label>
+                  <Select
+                    value={formData.contractType}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        contractType: value as BillingClient["contractType"],
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Mensuel">Mensuel</SelectItem>
+                      <SelectItem value="Forfaitaire">Forfaitaire</SelectItem>
+                      <SelectItem value="Heure réelle">Heure réelle</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Type de prestation</Label>
+                  <Select
+                    value={
+                      Array.isArray(formData.serviceTypes) &&
+                      formData.serviceTypes.length > 0
+                        ? formData.serviceTypes[0]
+                        : formData.serviceType || ""
+                    }
+                    onValueChange={(value) => {
+                      setFormData({
+                        ...formData,
+                        serviceType: value as ServiceType,
+                        serviceTypes: [value as ServiceType],
+                      });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SERVICE_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="contractStartDate">Date début contrat</Label>
+                  <Input
+                    id="contractStartDate"
+                    type="date"
+                    value={formData.contractStartDate || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contractStartDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="contractEndDate">
+                    Date fin contrat (optionnel)
+                  </Label>
+                  <Input
+                    id="contractEndDate"
+                    type="date"
+                    value={formData.contractEndDate || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contractEndDate: e.target.value || undefined,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="monthlyHours">
+                    Volumes horaires mensuels (h)
+                  </Label>
+                  <HoursInput
+                    value={formData.monthlyHours || 0}
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        monthlyHours: value,
+                      })
+                    }
+                    step={1}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="indexationRate">
+                    Indexation contractuelle (%)
+                  </Label>
+                  <Input
+                    id="indexationRate"
+                    type="number"
+                    step="0.1"
+                    value={formData.indexationRate || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        indexationRate: e.target.value
+                          ? parseFloat(e.target.value)
+                          : undefined,
+                      })
+                    }
+                    placeholder="2.5"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="sites">Nombre de sites</Label>
+                  <Input
+                    id="sites"
+                    type="number"
+                    value={formData.sites || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        sites: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="hourlyRate">Taux horaire (€/h)</Label>
+                  <Input
+                    id="hourlyRate"
+                    type="number"
+                    step="0.01"
+                    value={formData.hourlyRate || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hourlyRate: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="nightBonus">Majoration nuit (%)</Label>
+                  <Input
+                    id="nightBonus"
+                    type="number"
+                    value={formData.nightBonus || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        nightBonus: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="sundayBonus">Majoration dimanche (%)</Label>
+                  <Input
+                    id="sundayBonus"
+                    type="number"
+                    value={formData.sundayBonus || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        sundayBonus: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="holidayBonus">
+                    Majoration jours fériés (%)
+                  </Label>
+                  <Input
+                    id="holidayBonus"
+                    type="number"
+                    value={formData.holidayBonus || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        holidayBonus: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="billingDay">Jour facturation</Label>
+                  <Input
+                    id="billingDay"
+                    type="number"
+                    min="1"
+                    max="31"
+                    value={formData.billingDay || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        billingDay: parseInt(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="paymentTerm">Délai paiement</Label>
+                  <Select
+                    value={String(formData.paymentTerm || 30)}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        paymentTerm: parseInt(value),
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">À réception</SelectItem>
+                      <SelectItem value="15">15 jours</SelectItem>
+                      <SelectItem value="30">30 jours</SelectItem>
+                      <SelectItem value="45">45 jours</SelectItem>
+                      <SelectItem value="60">60 jours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="status">Statut</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        status: value as BillingClient["status"],
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Actif">Actif</SelectItem>
+                      <SelectItem value="Suspendu">Suspendu</SelectItem>
+                      <SelectItem value="Inactif">Inactif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Step 2: Connections */}
+            {currentStep === 2 && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 border-b pb-4">
+                  <Label
+                    htmlFor="agentType"
+                    className="text-base font-semibold mb-2 block"
+                  >
+                    Connexion RH : Typologie des agents affectés
+                  </Label>
+                  <Select
+                    value={formData.agentTypes?.[0] || ""}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        agentTypes: value ? [value] : [],
+                      })
+                    }
+                  >
+                    <SelectTrigger id="agentType">
+                      <SelectValue placeholder="Sélectionner un type d'agent" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Agent de sécurité">
+                        Agent de sécurité
+                      </SelectItem>
+                      <SelectItem value="Chef de poste">
+                        Chef de poste
+                      </SelectItem>
+                      <SelectItem value="Rondier">Rondier</SelectItem>
+                      <SelectItem value="Agent événementiel">
+                        Agent événementiel
+                      </SelectItem>
+                      <SelectItem value="Superviseur">Superviseur</SelectItem>
+                      <SelectItem value="SSIAP1">SSIAP1</SelectItem>
+                      <SelectItem value="SSIAP2">SSIAP2</SelectItem>
+                      <SelectItem value="SSIAP3">SSIAP3</SelectItem>
+                      <SelectItem value="Agent Cynophile">
+                        Agent Cynophile
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="col-span-2 border-t pt-4">
+                  <Label className="text-base font-semibold mb-2 block">
+                    Connexion Planning : Volumes contractuels par site
+                  </Label>
+                  <div className="space-y-2">
+                    {Array.from({ length: formData.sites || 1 }).map(
+                      (_, index) => (
+                        <div key={index} className="grid grid-cols-2 gap-2">
+                          <Input
+                            placeholder={`Nom du site ${index + 1}`}
+                            value={
+                              formData.planningVolumes?.[index]?.site || ""
+                            }
+                            onChange={(e) => {
+                              const volumes = formData.planningVolumes || [];
+                              const newVolumes = [...volumes];
+                              newVolumes[index] = {
+                                ...newVolumes[index],
+                                site: e.target.value,
+                                monthlyHours:
+                                  newVolumes[index]?.monthlyHours || 0,
+                              };
+                              setFormData({
+                                ...formData,
+                                planningVolumes: newVolumes,
+                              });
+                            }}
+                          />
+                          <HoursInput
+                            value={
+                              formData.planningVolumes?.[index]?.monthlyHours ||
+                              0
+                            }
+                            onChange={(value) => {
+                              const volumes = formData.planningVolumes || [];
+                              const newVolumes = [...volumes];
+                              newVolumes[index] = {
+                                ...newVolumes[index],
+                                site:
+                                  newVolumes[index]?.site ||
+                                  `Site ${index + 1}`,
+                                monthlyHours: value,
+                              };
+                              setFormData({
+                                ...formData,
+                                planningVolumes: newVolumes,
+                              });
+                            }}
+                            step={1}
+                          />
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Modal>

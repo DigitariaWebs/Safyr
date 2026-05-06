@@ -10,7 +10,6 @@ import {
   FilePlus,
   CreditCard,
   Receipt,
-  Wallet,
   Calculator,
   TrendingUp,
   Settings,
@@ -57,16 +56,6 @@ const navItems: NavItem[] = [
     label: "Avoirs",
     href: "/dashboard/billing/credits",
     icon: CreditCard,
-  },
-  {
-    label: "TVA",
-    href: "/dashboard/billing/vat",
-    icon: Receipt,
-  },
-  {
-    label: "Paie",
-    href: "/dashboard/billing/payroll",
-    icon: Wallet,
   },
   {
     label: "Comptabilité",

@@ -270,6 +270,10 @@ const emptySimulation = (): Partial<Simulation> => ({
   clientName: "",
   siteName: "",
   siteAddress: "",
+  startDate: new Date().toISOString().split("T")[0],
+  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0],
   status: "Brouillon",
   shiftNeeds: [],
   additionalServices: [],
@@ -318,6 +322,7 @@ export default function BillingSimulationPage() {
     null,
   );
   const [activeTab, setActiveTab] = useState("general");
+  const [dateError, setDateError] = useState<string | null>(null);
 
   // Stats
   const totalSimulations = simulations.length;
@@ -453,6 +458,21 @@ export default function BillingSimulationPage() {
   };
 
   const handleSave = () => {
+    if (!formData.startDate || !formData.endDate) {
+      setDateError(
+        "Veuillez renseigner la date de début et la date de fin du besoin.",
+      );
+      setActiveTab("general");
+      return;
+    }
+    if (new Date(formData.startDate) > new Date(formData.endDate)) {
+      setDateError(
+        "La date de début doit être antérieure ou égale à la date de fin.",
+      );
+      setActiveTab("general");
+      return;
+    }
+    setDateError(null);
     const now = new Date().toISOString().split("T")[0];
     if (formData.id) {
       // Edit
@@ -721,6 +741,34 @@ export default function BillingSimulationPage() {
                     placeholder="Ex: Rosny-sous-Bois"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="startDate">Date de début du besoin *</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="endDate">Date de fin du besoin *</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endDate: e.target.value })
+                    }
+                  />
+                </div>
+                {dateError && (
+                  <p className="col-span-2 text-sm text-rose-600">
+                    {dateError}
+                  </p>
+                )}
                 <div>
                   <Label htmlFor="hourlyRate">Taux horaire (€/h)</Label>
                   <Input

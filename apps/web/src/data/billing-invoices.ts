@@ -1,3 +1,5 @@
+import { QuoteLine } from "@/data/billing-quotes";
+
 export interface BillingInvoice {
   id: string;
   invoiceNumber: string;
@@ -76,6 +78,7 @@ export interface BillingInvoice {
   };
   createdAt: string;
   updatedAt: string;
+  lines?: QuoteLine[];
 }
 
 export const mockBillingInvoices: BillingInvoice[] = [
