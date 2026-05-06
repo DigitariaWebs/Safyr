@@ -78,8 +78,7 @@ export interface BillingInvoice {
   };
   createdAt: string;
   updatedAt: string;
-    // Services lines (optionnel) — compatible avec les lignes de devis
-    lines?: QuoteLine[];
+  lines?: QuoteLine[];
 }
 
 export const mockBillingInvoices: BillingInvoice[] = [

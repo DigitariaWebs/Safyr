@@ -8,6 +8,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- F22-PO1: "Nouveau BC" button on the Purchase Orders page
+- F22-PO2: "Besoins de service" section in the New Purchase Order form
+- F22-INV3: Manual service entry in the New Invoice form
+- F22-SIM1: "Date de début" and "Date de fin du besoin" fields in the New Simulation form
+- F22-CLI1: SIRET auto-fill via the public `recherche-entreprises.api.gouv.fr` endpoint (no key) with debounce, abort, and stale-response guard. Pulls company name, full siege address, computed FR intra-community VAT number, and first dirigeant as contact name.
+
+### Changed
+
+- F22-CLI2: "Nouveau client" form split into a 3-step wizard with per-step validation
+- F22-CLI3: Agent typology field converted to a dropdown
+- F22-SRV1: Service name field converted to a pre-filled dropdown
+- F22-SRV2: Optional "Détail" field added on the New Service form
+- F22-INV1: Due date displayed in the invoice details view
+- F22-INV2: Full detail (origin, badge, retained value) shown per data source in New Invoice
+
+### Removed
+
+- F22-MENU1: VAT (TVA) menu and route
+- F22-MENU2: Payroll (Paie) menu and route
+
+### Added (other)
+
 - React Query hook modules for organization (`useOrganization`, `useOrganizationCompliance`, `useUpdateOrganization`, `useCreateRepresentative`, `useUploadOrganizationDocument`) and storage (`useSignedUrl`, `useUploadFile`) under `src/hooks/{organization,storage}/`
 - `PhoneField` component (`src/components/ui/phone-field.tsx`) — event-style, digit-only with auto-format; compatible with `EditableFormField`'s cloneElement pattern
 - `EditableFormField` (`src/components/ui/editable-form-field.tsx`) and `form-field` (`src/components/ui/form-field.tsx`) for inline-edit forms

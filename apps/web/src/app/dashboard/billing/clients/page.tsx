@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable, ColumnDef } from "@/components/ui/DataTable";
 import { Modal } from "@/components/ui/modal";
@@ -16,9 +16,80 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Stepper } from "@/components/ui/stepper";
 import { mockBillingClients, BillingClient } from "@/data/billing-clients";
+
+// `recherche-entreprises.api.gouv.fr` is a free, no-auth public endpoint
+// (CORS-enabled), so the browser can call it directly. We pull whatever
+// fields the API exposes and map them onto the BillingClient form.
+type RechercheEntrepriseHit = {
+  nom_complet?: string;
+  nom_raison_sociale?: string;
+  siren?: string;
+  activite_principale?: string;
+  libelle_activite_principale?: string;
+  nature_juridique?: string;
+  libelle_nature_juridique?: string;
+  tranche_effectif_salarie?: string;
+  date_creation?: string;
+  dirigeants?: Array<{
+    nom?: string;
+    prenoms?: string;
+    qualite?: string;
+  }>;
+  siege?: {
+    siret?: string;
+    adresse?: string | null;
+    numero_voie?: string | null;
+    type_voie?: string | null;
+    libelle_voie?: string | null;
+    complement_adresse?: string | null;
+    code_postal?: string | null;
+    libelle_commune?: string | null;
+  };
+};
+
+type RechercheEntrepriseResponse = {
+  results?: RechercheEntrepriseHit[];
+};
+
+// Compute the French intra-community VAT number from a SIREN.
+// Formula: FR + key + SIREN, where key = (12 + 3 * (SIREN % 97)) % 97.
+function computeFrTvaNumber(siret: string): string | null {
+  const siren = siret.slice(0, 9);
+  if (!/^\d{9}$/.test(siren)) return null;
+  const key = (12 + 3 * (Number(siren) % 97)) % 97;
+  return `FR${String(key).padStart(2, "0")}${siren}`;
+}
+
+function formatSiegeAddress(siege: RechercheEntrepriseHit["siege"]): string {
+  if (!siege) return "";
+  if (siege.adresse) {
+    return [siege.adresse, siege.code_postal, siege.libelle_commune]
+      .filter((p): p is string => Boolean(p))
+      .join(", ");
+  }
+  const street = [siege.numero_voie, siege.type_voie, siege.libelle_voie]
+    .filter((p): p is string => Boolean(p))
+    .join(" ");
+  return [
+    street,
+    siege.complement_adresse,
+    siege.code_postal,
+    siege.libelle_commune,
+  ]
+    .filter((p): p is string => Boolean(p))
+    .join(", ");
+}
+
+function formatDirigeantName(
+  d: NonNullable<RechercheEntrepriseHit["dirigeants"]>[number],
+): string {
+  const prenoms = (d.prenoms ?? "").trim();
+  const nom = (d.nom ?? "").trim();
+  return [prenoms, nom].filter(Boolean).join(" ");
+}
 
 export default function BillingClientsPage() {
   const [clients, setClients] = useState<BillingClient[]>(mockBillingClients);
@@ -29,30 +100,93 @@ export default function BillingClientsPage() {
   );
   const [formData, setFormData] = useState<Partial<BillingClient>>({});
   const [currentStep, setCurrentStep] = useState(0);
+  const [stepError, setStepError] = useState<string | null>(null);
   const [siretLookupLoading, setSiretLookupLoading] = useState(false);
   const [siretLookupError, setSiretLookupError] = useState<string | null>(null);
+  const siretAbortRef = useRef<AbortController | null>(null);
+  const siretDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function fetchCompanyInfo(siret: string): Promise<any | null> {
-    // Use a remote API to resolve SIRET -> company info. The exact
-    // peppers.fr API may vary; this implementation attempts a simple
-    // GET and treats non-2xx as not found. Adjust endpoint as needed.
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    try {
-      const url = `https://www.peppers.fr/api/siret/${encodeURIComponent(
-        siret,
-      )}`;
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (!res.ok) return null;
-      const data = await res.json();
-      // Normalize common shapes
-      return data?.company || data || null;
-    } catch (err) {
-      clearTimeout(timeout);
-      // Propagate error to caller
-      throw err;
+  useEffect(() => {
+    return () => {
+      siretAbortRef.current?.abort();
+      if (siretDebounceRef.current) clearTimeout(siretDebounceRef.current);
+    };
+  }, []);
+
+  function scheduleSiretLookup(siret: string) {
+    if (siretDebounceRef.current) clearTimeout(siretDebounceRef.current);
+    siretAbortRef.current?.abort();
+    setSiretLookupError(null);
+
+    if (!/^\d{14}$/.test(siret)) {
+      setSiretLookupLoading(false);
+      return;
     }
+
+    siretDebounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      siretAbortRef.current = controller;
+      setSiretLookupLoading(true);
+      try {
+        const url = `https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(
+          siret,
+        )}&page=1&per_page=1`;
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: { accept: "application/json" },
+        });
+        if (controller.signal.aborted) return;
+        if (!res.ok) {
+          setSiretLookupError("Erreur lors de la recherche");
+          return;
+        }
+        const data = (await res.json()) as RechercheEntrepriseResponse;
+        const hit = data.results?.[0];
+        if (!hit) {
+          setSiretLookupError("SIRET introuvable");
+          return;
+        }
+
+        const name = hit.nom_complet ?? hit.nom_raison_sociale ?? "";
+        const address = formatSiegeAddress(hit.siege);
+        const tva = computeFrTvaNumber(siret);
+        const dirigeant = hit.dirigeants?.[0];
+        const contactName = dirigeant ? formatDirigeantName(dirigeant) : "";
+
+        // Stale-response guard: only apply if SIRET still matches
+        setFormData((fd) => {
+          if (fd.siret !== siret) return fd;
+          return {
+            ...fd,
+            name: name || fd.name,
+            address: address || fd.address,
+            tva: fd.tva || tva || fd.tva,
+            contactName: fd.contactName || contactName || fd.contactName,
+          };
+        });
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        setSiretLookupError("Erreur lors de la recherche");
+      } finally {
+        if (siretAbortRef.current === controller) {
+          setSiretLookupLoading(false);
+        }
+      }
+    }, 400);
+  }
+
+  function validateStep(step: number): string | null {
+    if (step === 0) {
+      if (!formData.name?.trim()) return "Le nom du client est requis.";
+      if (!/^\d{14}$/.test((formData.siret || "").replace(/\s+/g, "")))
+        return "Le SIRET doit comporter 14 chiffres.";
+    }
+    if (step === 1) {
+      if (!formData.contractType) return "Le type de contrat est requis.";
+      if (!formData.contractStartDate)
+        return "La date de début de contrat est requise.";
+    }
+    return null;
   }
 
   const columns: ColumnDef<BillingClient>[] = [
@@ -226,8 +360,19 @@ export default function BillingClientsPage() {
         size="lg"
         actions={{
           primary: {
-            label: currentStep === 2 ? (formData.id ? "Modifier" : "Créer") : "Suivant",
+            label:
+              currentStep === 2
+                ? formData.id
+                  ? "Modifier"
+                  : "Créer"
+                : "Suivant",
             onClick: () => {
+              const error = validateStep(currentStep);
+              if (error) {
+                setStepError(error);
+                return;
+              }
+              setStepError(null);
               if (currentStep === 2) {
                 handleSave();
               } else {
@@ -238,6 +383,7 @@ export default function BillingClientsPage() {
           secondary: {
             label: currentStep > 0 ? "Précédent" : "Annuler",
             onClick: () => {
+              setStepError(null);
               if (currentStep > 0) {
                 setCurrentStep(currentStep - 1);
               } else {
@@ -258,6 +404,8 @@ export default function BillingClientsPage() {
             ]}
             currentStep={currentStep}
           />
+
+          {stepError && <p className="text-sm text-rose-600">{stepError}</p>}
 
           {/* Step Content */}
           <div className="space-y-4">
@@ -281,47 +429,22 @@ export default function BillingClientsPage() {
                   <Input
                     id="siret"
                     value={formData.siret || ""}
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const value = e.target.value.replace(/\s+/g, "");
                       setFormData({ ...formData, siret: value });
-                      setSiretLookupError(null);
-
-                      // Trigger lookup only when exactly 14 digits entered
-                      if (/^\d{14}$/.test(value)) {
-                        setSiretLookupLoading(true);
-                        try {
-                          const info = await fetchCompanyInfo(value);
-                          if (info) {
-                            // Prefill fields when available
-                            const street = info.address || info.street || "";
-                            const postal = info.postalCode || info.codePostal || "";
-                            const city = info.city || info.ville || "";
-                            const fullAddress = [street, postal, city]
-                              .filter(Boolean)
-                              .join(", ");
-                            setFormData((fd) => ({
-                              ...fd,
-                              name: info.name || info.raisonSociale || fd?.name,
-                              address: fullAddress || fd?.address,
-                            }));
-                          } else {
-                            setSiretLookupError("SIRET introuvable");
-                          }
-                        } catch (err) {
-                          console.error("SIRET lookup error", err);
-                          setSiretLookupError("Erreur lors de la recherche");
-                        } finally {
-                          setSiretLookupLoading(false);
-                        }
-                      }
+                      scheduleSiretLookup(value);
                     }}
                     placeholder="12345678901234"
                   />
                   {siretLookupLoading && (
-                    <p className="text-xs text-muted-foreground mt-1">Recherche du SIRET…</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Recherche du SIRET…
+                    </p>
                   )}
                   {siretLookupError && (
-                    <p className="text-xs text-rose-600 mt-1">{siretLookupError}</p>
+                    <p className="text-xs text-rose-600 mt-1">
+                      {siretLookupError}
+                    </p>
                   )}
                 </div>
 
@@ -615,7 +738,9 @@ export default function BillingClientsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="holidayBonus">Majoration jours fériés (%)</Label>
+                  <Label htmlFor="holidayBonus">
+                    Majoration jours fériés (%)
+                  </Label>
                   <Input
                     id="holidayBonus"
                     type="number"
@@ -698,7 +823,10 @@ export default function BillingClientsPage() {
             {currentStep === 2 && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 border-b pb-4">
-                  <Label htmlFor="agentType" className="text-base font-semibold mb-2 block">
+                  <Label
+                    htmlFor="agentType"
+                    className="text-base font-semibold mb-2 block"
+                  >
                     Connexion RH : Typologie des agents affectés
                   </Label>
                   <Select
@@ -714,15 +842,23 @@ export default function BillingClientsPage() {
                       <SelectValue placeholder="Sélectionner un type d'agent" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Agent de sécurité">Agent de sécurité</SelectItem>
-                      <SelectItem value="Chef de poste">Chef de poste</SelectItem>
+                      <SelectItem value="Agent de sécurité">
+                        Agent de sécurité
+                      </SelectItem>
+                      <SelectItem value="Chef de poste">
+                        Chef de poste
+                      </SelectItem>
                       <SelectItem value="Rondier">Rondier</SelectItem>
-                      <SelectItem value="Agent événementiel">Agent événementiel</SelectItem>
+                      <SelectItem value="Agent événementiel">
+                        Agent événementiel
+                      </SelectItem>
                       <SelectItem value="Superviseur">Superviseur</SelectItem>
                       <SelectItem value="SSIAP1">SSIAP1</SelectItem>
                       <SelectItem value="SSIAP2">SSIAP2</SelectItem>
                       <SelectItem value="SSIAP3">SSIAP3</SelectItem>
-                      <SelectItem value="Agent Cynophile">Agent Cynophile</SelectItem>
+                      <SelectItem value="Agent Cynophile">
+                        Agent Cynophile
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -732,46 +868,54 @@ export default function BillingClientsPage() {
                     Connexion Planning : Volumes contractuels par site
                   </Label>
                   <div className="space-y-2">
-                    {Array.from({ length: formData.sites || 1 }).map((_, index) => (
-                      <div key={index} className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder={`Nom du site ${index + 1}`}
-                          value={formData.planningVolumes?.[index]?.site || ""}
-                          onChange={(e) => {
-                            const volumes = formData.planningVolumes || [];
-                            const newVolumes = [...volumes];
-                            newVolumes[index] = {
-                              ...newVolumes[index],
-                              site: e.target.value,
-                              monthlyHours: newVolumes[index]?.monthlyHours || 0,
-                            };
-                            setFormData({
-                              ...formData,
-                              planningVolumes: newVolumes,
-                            });
-                          }}
-                        />
-                        <HoursInput
-                          value={
-                            formData.planningVolumes?.[index]?.monthlyHours || 0
-                          }
-                          onChange={(value) => {
-                            const volumes = formData.planningVolumes || [];
-                            const newVolumes = [...volumes];
-                            newVolumes[index] = {
-                              ...newVolumes[index],
-                              site: newVolumes[index]?.site || `Site ${index + 1}`,
-                              monthlyHours: value,
-                            };
-                            setFormData({
-                              ...formData,
-                              planningVolumes: newVolumes,
-                            });
-                          }}
-                          step={1}
-                        />
-                      </div>
-                    ))}
+                    {Array.from({ length: formData.sites || 1 }).map(
+                      (_, index) => (
+                        <div key={index} className="grid grid-cols-2 gap-2">
+                          <Input
+                            placeholder={`Nom du site ${index + 1}`}
+                            value={
+                              formData.planningVolumes?.[index]?.site || ""
+                            }
+                            onChange={(e) => {
+                              const volumes = formData.planningVolumes || [];
+                              const newVolumes = [...volumes];
+                              newVolumes[index] = {
+                                ...newVolumes[index],
+                                site: e.target.value,
+                                monthlyHours:
+                                  newVolumes[index]?.monthlyHours || 0,
+                              };
+                              setFormData({
+                                ...formData,
+                                planningVolumes: newVolumes,
+                              });
+                            }}
+                          />
+                          <HoursInput
+                            value={
+                              formData.planningVolumes?.[index]?.monthlyHours ||
+                              0
+                            }
+                            onChange={(value) => {
+                              const volumes = formData.planningVolumes || [];
+                              const newVolumes = [...volumes];
+                              newVolumes[index] = {
+                                ...newVolumes[index],
+                                site:
+                                  newVolumes[index]?.site ||
+                                  `Site ${index + 1}`,
+                                monthlyHours: value,
+                              };
+                              setFormData({
+                                ...formData,
+                                planningVolumes: newVolumes,
+                              });
+                            }}
+                            step={1}
+                          />
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
               </div>
