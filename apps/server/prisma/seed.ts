@@ -1,6 +1,9 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { randomUUID } from "node:crypto";
+import { hashPassword } from "better-auth/crypto";
 import { PrismaClient } from "../generated/prisma/client";
+
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "Safyr2026!";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -453,6 +456,21 @@ async function main(): Promise<void> {
         bankDetails: { create: s.bankDetails },
       },
     });
+
+    // Better-auth credential account avec password — permet la connexion
+    // via email + mot de passe (en plus de OTP / magic-link).
+    const passwordHash = await hashPassword(DEMO_PASSWORD);
+    await prisma.account.create({
+      data: {
+        id: randomUUID(),
+        accountId: user.id,
+        providerId: "credential",
+        userId: user.id,
+        password: passwordHash,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
   }
 
   await prisma.documentRequirement.createMany({
@@ -480,6 +498,7 @@ async function main(): Promise<void> {
   console.log(`  org:    ${org.id} (${org.slug})`);
   console.log(`  owners: ${SEED_OWNERS.map((o) => o.email).join(", ")}`);
   console.log(`  agents: ${SEED_AGENTS.map((a) => a.email).join(", ")}`);
+  console.log(`  password (tous comptes): ${DEMO_PASSWORD}`);
   console.log(
     `  document requirements: ${DOCUMENT_REQUIREMENTS.length + MEMBER_DOCUMENT_REQUIREMENTS.length} (org: ${DOCUMENT_REQUIREMENTS.length}, member: ${MEMBER_DOCUMENT_REQUIREMENTS.length})`,
   );

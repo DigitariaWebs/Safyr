@@ -97,7 +97,11 @@ export function createAuth({ env, prisma, email }: AuthDeps) {
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: env.ALLOWED_ORIGINS,
     database: prismaAdapter(prisma, { provider: "postgresql" }),
-    emailAndPassword: { enabled: false },
+    emailAndPassword: {
+      enabled: true,
+      autoSignIn: true,
+      minPasswordLength: 8,
+    },
     plugins,
     advanced: {
       // En dev (localhost HTTP) on ne peut pas utiliser le préfixe __Secure-
